@@ -24,7 +24,7 @@ function CameraCardContent({ camera }: CameraCardProps) {
       </div>
 
       <div className={styles.videoContainer}>
-        <VideoPanel videoUrl={camera.videoUrl} />
+        <VideoPanel videoUrl={camera.videoUrl} cameraName={camera.name} cameraId={camera.id} />
       </div>
 
       <div className={styles.footer}>

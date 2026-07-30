@@ -26,3 +26,12 @@ build/
 # Temporary
 *.tmp
 tmp/
+
+# Compiled JS (keep only TypeScript)
+src/**/*.js
+
+# Media files (large, downloaded separately)
+public/*.mp4
+public/*.mov
+public/*.avi
+public/*.webm

@@ -54,6 +54,15 @@ vision-monitor/
 
 ## How to Run
 
+### Initial Setup
+
+1. **Download sample video**
+   ```bash
+   mkdir -p public
+   curl -L -o public/sample.mp4 "https://www.w3schools.com/html/mov_bbb.mp4"
+   ```
+   This provides mock video content for the CCTV feeds (creates "live streaming" effect with looping video).
+
 ### Development
 
 1. **Install dependencies**
@@ -66,6 +75,8 @@ vision-monitor/
    npm run dev
    ```
    The app opens automatically at `http://localhost:5173`
+   - Login with: `tester` / `tester123` (pre-filled)
+   - Videos will autoplay and loop continuously
 
 ### Production Build
 
@@ -116,20 +127,36 @@ Use the following credentials to log in:
   - Connection status indicator
   - Camera ID
 
-### 5. Performance Optimizations
+### 5. Mock Live Streaming
+- ✓ Video autoplays on page load
+- ✓ Video loops continuously for "live" effect
+- ✓ Video is muted (browser autoplay policy)
+- ✓ Seamless looping creates appearance of live CCTV feed
+- ✓ Easy upgrade path to real streaming (MediaMTX/WebRTC)
+
+### 6. Drag-and-Drop Camera Reordering
+- ✓ Drag any camera card to reorder
+- ✓ Visual feedback during drag (opacity, scale, highlight)
+- ✓ Drop zone highlights with accent border on hover
+- ✓ Smooth hover effect (slight lift animation)
+- ✓ Reorder state persists to localStorage
+- ✓ Order maintained across page refreshes
+- ✓ No layout shift during drag operations
+
+### 7. Performance Optimizations
 - ✓ Clock component memoized to prevent parent re-renders
 - ✓ Camera cards memoized for isolation
 - ✓ Efficient event handling with proper dependencies
 - ✓ Isolated video component for easy future integration
 
-### 6. Design & Styling
+### 8. Design & Styling
 - ✓ Professional dark theme (manufacturing industry standard)
 - ✓ CSS Modules for scoped styling
 - ✓ Consistent color palette and typography
 - ✓ Clean, readable, professional appearance
 - ✓ No unnecessary animations
 
-### 7. Code Quality
+### 9. Code Quality
 - ✓ Full TypeScript type safety
 - ✓ No "any" types
 - ✓ Clean component architecture

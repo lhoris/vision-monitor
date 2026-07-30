@@ -1,5 +1,14 @@
 import type { Camera, DashboardStats } from '../types/index';
 
+const VIDEO_URLS = [
+  '/video1.mp4',
+  '/video2.mp4',
+  '/video3.mp4',
+  '/video4.mp4',
+  '/video5.mp4',
+  '/video6.mp4',
+];
+
 export const MOCK_CAMERAS: Camera[] = [
   {
     id: 'CAM001',
@@ -7,7 +16,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'Factory Floor - Section 1',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[0],
   },
   {
     id: 'CAM002',
@@ -15,7 +24,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'Factory Floor - Section 2',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[1],
   },
   {
     id: 'CAM003',
@@ -23,7 +32,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'Factory Floor - Section 3',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[2],
   },
   {
     id: 'CAM004',
@@ -31,7 +40,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'QC Department',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[3],
   },
   {
     id: 'CAM005',
@@ -39,7 +48,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'Warehouse - Entrance',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[4],
   },
   {
     id: 'CAM006',
@@ -47,7 +56,7 @@ export const MOCK_CAMERAS: Camera[] = [
     location: 'Warehouse - Packing Area',
     status: 'connected',
     isLive: true,
-    videoUrl: '/sample.mp4',
+    videoUrl: VIDEO_URLS[5],
   },
 ];
 

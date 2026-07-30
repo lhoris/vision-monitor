@@ -162,6 +162,46 @@ Display
 
 Video component must be isolated so future MediaMTX/WebRTC integration only changes one component.
 
+Mock Live Streaming
+
+Video should autoplay
+
+Video should loop continuously
+
+Video should be muted (browser autoplay policy)
+
+Create effect of "live" streaming with looping video
+
+Real Video Content
+
+Each camera plays a different video file
+
+6 unique MP4 files required (video1.mp4 ~ video6.mp4)
+
+Place video files in public/ directory
+
+Each camera visually distinguishable by its content
+
+Professional CCTV overlay on video
+
+LIVE badge, camera name, ID, and recording timer displayed
+
+Connection status indicator visible
+
+Drag and Drop
+
+Cards must be draggable
+
+Users can reorder cameras by dragging cards
+
+Drop target shows visual feedback (highlight)
+
+Reordered state persists in localStorage
+
+Smooth drag experience with no layout shift
+
+--------------------------------------------------
+
 --------------------------------------------------
 DESIGN
 --------------------------------------------------
