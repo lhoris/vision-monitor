@@ -54,14 +54,12 @@ vision-monitor/
 
 ## How to Run
 
-### Initial Setup
+### Prerequisites
 
-1. **Download sample video**
-   ```bash
-   mkdir -p public
-   curl -L -o public/sample.mp4 "https://www.w3schools.com/html/mov_bbb.mp4"
-   ```
-   This provides mock video content for the CCTV feeds (creates "live streaming" effect with looping video).
+- Video files must be in `public/` directory:
+  - `video1.mp4` through `video6.mp4` (6 unique video files)
+  - Download from: Pexels, Pixabay, or similar free video sources
+  - Place in `public/` folder before running
 
 ### Development
 
