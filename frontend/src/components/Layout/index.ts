@@ -1,7 +1,7 @@
 /**
- * Layout Component
- * Phase 3에서 구현
+ * Layout Components
  */
 
-// TODO: Phase 3에서 구현
-export const Layout = () => null
+export { AppLayout } from './AppLayout'
+export { Sidebar } from './Sidebar'
+export { Header } from './Header'

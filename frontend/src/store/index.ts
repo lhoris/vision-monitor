@@ -21,8 +21,14 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['layout/fetchUserLayout/fulfilled'],
-        ignoredPaths: ['layout.layout'],
+        // 비직렬화 가능한 데이터(Date 등)를 포함하는 액션/상태 경로 무시
+        ignoredActions: [
+          'layout/fetchUserLayout/fulfilled',
+          'event/fetchEvents/fulfilled',
+          'event/fetchCameraEvents/fulfilled',
+          'event/fetchAlertSettings/fulfilled',
+        ],
+        ignoredPaths: ['layout.layout', 'event.events', 'event.alertSettings'],
       },
     }),
   devTools: import.meta.env.DEV,

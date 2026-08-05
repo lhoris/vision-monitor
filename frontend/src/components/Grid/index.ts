@@ -1,7 +1,14 @@
 /**
  * Grid Component (개인화된 카메라 그리드)
- * Phase 3에서 구현
  */
 
-// TODO: Phase 3에서 구현
-export const Grid = () => null
+export { GridContainer as Grid } from './GridContainer'
+export { GridContainer } from './GridContainer'
+export { TabsBar } from './TabsBar'
+export { LayoutSelector } from './LayoutSelector'
+export { DraggableCell } from './DraggableCell'
+export { CameraSelector } from './CameraSelector'
+export { useGridLayout } from './useGridLayout'
+export { useGridDnd } from './useGridDnd'
+
+export type { GridDimensions, DraggableItem, CellPosition } from './types'

@@ -5,8 +5,37 @@
  */
 
 import { apiClient } from './api'
-import type { Layout, Tab } from '@/types/layout'
+import type { Layout, Tab, GridConfig } from '@/types/layout'
 import type { ApiResponse } from '@/types'
+
+// Mock default layout for development
+const createDefaultLayout = (userId: number): Layout => {
+  const defaultGridConfig: GridConfig = {
+    rows: 3,
+    cols: 2,
+    layout: 'grid',
+    gapSize: 8,
+  }
+
+  const defaultTab: Tab = {
+    id: 'tab-default',
+    name: 'Process A',
+    cameras: [],
+    gridConfig: defaultGridConfig,
+    cameraPositions: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+
+  return {
+    id: 1,
+    userId,
+    tabs: [defaultTab],
+    activeTab: 'tab-default',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+}
 
 class LayoutService {
   /**
@@ -18,7 +47,8 @@ class LayoutService {
       return response.data || null
     } catch (error) {
       console.error('Failed to fetch user layout:', error)
-      return null
+      // Return mock data for development
+      return createDefaultLayout(userId)
     }
   }
 

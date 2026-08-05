@@ -1,32 +1,66 @@
 /**
  * Root Application Component
+ * Pages & Events UI Implementation
  */
 
 import { Provider } from 'react-redux'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { store } from '@/store'
+import { AppLayout } from '@/components/Layout'
+import Live from '@/pages/Live'
+import Playback from '@/pages/Playback'
+import Events from '@/pages/Events'
+import Settings from '@/pages/Settings'
 import '@/styles/global.css'
-
-// TODO: Phase 3에서 페이지/라우팅 구현
 
 export function App() {
   return (
     <Provider store={store}>
-      <div className="flex h-screen w-screen bg-gray-50 dark:bg-gray-900">
-        {/* TODO: Phase 3에서 Layout, Router, Pages 구현 */}
-        <div className="flex items-center justify-center w-full">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Vision Monitor VMS
-            </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              Manufacturing AI Monitoring Dashboard
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-600 mt-4">
-              Phase 2: Harness Engineering - Ready for Phase 3 Implementation
-            </p>
-          </div>
-        </div>
-      </div>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <AppLayout>
+                <Navigate to="/live" replace />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/live"
+            element={
+              <AppLayout>
+                <Live />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/playback"
+            element={
+              <AppLayout>
+                <Playback />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <AppLayout>
+                <Events />
+              </AppLayout>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <AppLayout>
+                <Settings />
+              </AppLayout>
+            }
+          />
+          <Route path="*" element={<Navigate to="/live" replace />} />
+        </Routes>
+      </Router>
     </Provider>
   )
 }

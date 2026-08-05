@@ -6,8 +6,10 @@
 export type { Camera } from './camera'
 export type { Event } from './api'
 export type { Layout, Tab, GridConfig } from './layout'
+export * from './streamPlayer'
 
 // Re-export all types
 export * from './camera'
 export * from './api'
 export * from './layout'
+export * from './streamPlayer'

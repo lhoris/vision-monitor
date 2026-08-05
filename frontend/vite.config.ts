@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
@@ -31,9 +34,13 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'redux-vendor': ['react-redux', '@reduxjs/toolkit'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react')) {
+            return 'react-vendor'
+          }
+          if (id.includes('node_modules/@reduxjs') || id.includes('node_modules/react-redux')) {
+            return 'redux-vendor'
+          }
         },
       },
     },
