@@ -169,7 +169,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
       <div className="flex-1 overflow-auto p-6">
         {activeTab && (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="grid" type="CAMERA">
+            <Droppable droppableId="grid" type="CAMERA" isDropDisabled={false}>
               {(provided) => (
                 <div
                   ref={provided.innerRef}
