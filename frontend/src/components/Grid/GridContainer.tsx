@@ -128,6 +128,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
     const position = activeTab!.cameraPositions.find((pos) => pos.row === row && pos.col === col)
     const camera = position ? cameraMap.get(position.cameraId) : undefined
 
+    if (position && !camera) {
+      console.warn(`Camera ${position.cameraId} not found in cameraMap at row=${row}, col=${col}`)
+    }
+
     return {
       id: `cell-${index}`,
       index,

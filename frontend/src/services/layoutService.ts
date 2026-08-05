@@ -22,7 +22,11 @@ const createDefaultLayout = (userId: number): Layout => {
     name: 'Process A',
     cameras: [],
     gridConfig: defaultGridConfig,
-    cameraPositions: [],
+    cameraPositions: [
+      { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+      { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
+      { cameraId: 3, row: 1, col: 0, rowSpan: 1, colSpan: 1 },
+    ],
     createdAt: new Date(),
     updatedAt: new Date(),
   }

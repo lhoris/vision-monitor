@@ -19,9 +19,13 @@ export function useGridDnd() {
   const handleDragEnd = useCallback(
     (result: DropResult) => {
       const { source, destination, draggableId } = result
+      console.log('🔄 Drag End:', { draggableId, source, destination })
 
       // 목적지가 없으면 드롭 취소
-      if (!destination) return
+      if (!destination) {
+        console.log('❌ No destination')
+        return
+      }
 
       // 같은 위치에 드롭되면 무시
       if (
@@ -38,11 +42,17 @@ export function useGridDnd() {
 
       // 드롭된 카메라 찾기 (draggableId는 "camera-{id}" 형식)
       const cameraIdFromDraggable = parseInt(draggableId.replace('camera-', ''))
+      console.log('🎬 Camera ID from draggable:', cameraIdFromDraggable, 'All positions:', activeTab.cameraPositions)
+
       const draggedCamera = activeTab.cameraPositions.find(
         (pos) => pos.cameraId === cameraIdFromDraggable
       )
 
-      if (!draggedCamera) return
+      if (!draggedCamera) {
+        console.log('❌ No camera found for ID:', cameraIdFromDraggable)
+        return
+      }
+      console.log('✅ Found camera:', draggedCamera)
 
       // 카메라 위치 업데이트
       const updatedPositions: CameraPosition[] = activeTab.cameraPositions.map((pos) => {
