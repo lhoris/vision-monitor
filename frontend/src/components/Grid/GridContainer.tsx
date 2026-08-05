@@ -1,10 +1,9 @@
 /**
  * Grid Container Component
- * 개인화된 카메라 그리드 메인 컨테이너
+ * HTML5 Drag & Drop API 사용
  */
 
 import React, { useEffect, useState } from 'react'
-import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { useLayout } from '@/hooks/useLayout'
 import { useAppDispatch } from '@/store'
 import { addTab, removeTab, setActiveTab, updateCameraPositions } from '@/store/slices/layoutSlice'
@@ -13,7 +12,6 @@ import LayoutSelector from './LayoutSelector'
 import DraggableCell from './DraggableCell'
 import CameraSelector from './CameraSelector'
 import { useGridLayout } from './useGridLayout'
-import { useGridDnd } from './useGridDnd'
 import type { Tab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
 
@@ -26,11 +24,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   const dispatch = useAppDispatch()
   const { layout } = useLayout(userId)
   const { gridOptions, handleChangeGridLayout, getCurrentGridLabel, activeTab } = useGridLayout()
-  const { handleDragEnd, removeCamera } = useGridDnd()
 
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null)
   const [showCameraSelector, setShowCameraSelector] = useState(false)
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
+  const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
 
   // 사용 중인 카메라 ID 추적
   useEffect(() => {
@@ -43,6 +41,37 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   const handleAddCamera = (cellId: string) => {
     setSelectedCellId(cellId)
     setShowCameraSelector(true)
+  }
+
+  const handleDragStart = (cameraId: number) => {
+    setDraggedCameraId(cameraId)
+  }
+
+  const handleDrop = (cellIndex: number) => {
+    if (!draggedCameraId || !activeTab) return
+
+    const colsPerRow = activeTab.gridConfig.cols
+    const row = Math.floor(cellIndex / colsPerRow)
+    const col = cellIndex % colsPerRow
+
+    // 드래그된 카메라의 위치 업데이트
+    const updatedPositions = activeTab.cameraPositions.map((pos) => {
+      if (pos.cameraId === draggedCameraId) {
+        return { ...pos, row, col }
+      }
+      return pos
+    })
+
+    dispatch(updateCameraPositions({ tabId: activeTab.id, positions: updatedPositions }))
+    setDraggedCameraId(null)
+  }
+
+  const removeCamera = (cameraId: number) => {
+    if (!activeTab) return
+    const updatedPositions = activeTab.cameraPositions.filter(
+      (pos) => pos.cameraId !== cameraId
+    )
+    dispatch(updateCameraPositions({ tabId: activeTab.id, positions: updatedPositions }))
   }
 
   const handleSelectCamera = (camera: Camera) => {
@@ -168,38 +197,31 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
       {/* Grid Content */}
       <div className="flex-1 overflow-auto p-6">
         {activeTab && (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="grid" type="CAMERA" isDropDisabled={false}>
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="grid gap-4 auto-fit"
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${activeTab.gridConfig.cols}, 1fr)`,
-                    gap: `${activeTab.gridConfig.gapSize}px`,
-                  }}
-                >
-                  {cellsData.map((cell) => (
-                    <DraggableCell
-                      key={cell.id}
-                      cellId={cell.id}
-                      index={cell.index}
-                      camera={cell.camera}
-                      onAddCamera={() => handleAddCamera(cell.id)}
-                      onRemoveCamera={() => {
-                        if (cell.camera) {
-                          removeCamera(cell.camera.id)
-                        }
-                      }}
-                    />
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <div
+            className="grid gap-4 auto-fit"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: `repeat(${activeTab.gridConfig.cols}, 1fr)`,
+              gap: `${activeTab.gridConfig.gapSize}px`,
+            }}
+          >
+            {cellsData.map((cell) => (
+              <DraggableCell
+                key={cell.id}
+                cellId={cell.id}
+                index={cell.index}
+                camera={cell.camera}
+                onAddCamera={() => handleAddCamera(cell.id)}
+                onRemoveCamera={() => {
+                  if (cell.camera) {
+                    removeCamera(cell.camera.id)
+                  }
+                }}
+                onDragStart={handleDragStart}
+                onDrop={handleDrop}
+              />
+            ))}
+          </div>
         )}
       </div>
 
