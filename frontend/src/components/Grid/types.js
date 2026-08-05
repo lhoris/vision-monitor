@@ -1,4 +1,0 @@
-/**
- * Grid Component Types
- */
-export {};

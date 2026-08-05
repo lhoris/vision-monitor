@@ -5,11 +5,12 @@
  */
 
 import { apiClient } from './api'
-import type { Layout, Tab, GridConfig } from '@/types/layout'
+import type { Layout, Tab, SubTab, GridConfig } from '@/types/layout'
 import type { ApiResponse } from '@/types'
 
 // Mock default layout for development
 const createDefaultLayout = (userId: number): Layout => {
+  const now = new Date().toISOString()
   const defaultGridConfig: GridConfig = {
     rows: 3,
     cols: 2,
@@ -17,18 +18,26 @@ const createDefaultLayout = (userId: number): Layout => {
     gapSize: 8,
   }
 
-  const defaultTab: Tab = {
-    id: 'tab-default',
-    name: 'Process A',
-    cameras: [],
+  const defaultSubTab1: SubTab = {
+    id: 'subtab-default-1',
+    name: 'Equipment 1',
     gridConfig: defaultGridConfig,
     cameraPositions: [
       { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
       { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
       { cameraId: 3, row: 1, col: 0, rowSpan: 1, colSpan: 1 },
     ],
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
+  }
+
+  const defaultTab: Tab = {
+    id: 'tab-default',
+    name: 'Process A',
+    subTabs: [defaultSubTab1],
+    activeSubTab: 'subtab-default-1',
+    createdAt: now,
+    updatedAt: now,
   }
 
   return {
@@ -36,8 +45,8 @@ const createDefaultLayout = (userId: number): Layout => {
     userId,
     tabs: [defaultTab],
     activeTab: 'tab-default',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: now,
+    updatedAt: now,
   }
 }
 

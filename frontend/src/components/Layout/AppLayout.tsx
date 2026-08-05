@@ -8,12 +8,12 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Sidebar */}
+    <div className="h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Sidebar (overlay only) */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <Header />
 

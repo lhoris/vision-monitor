@@ -12,9 +12,9 @@ interface DraggableCellProps {
   camera?: Camera
   onAddCamera: () => void
   onRemoveCamera: () => void
-  onDragStart?: (e: React.DragEvent, cameraId: number) => void
+  onDragStart?: (cameraId: number) => void
   onDragOver?: (e: React.DragEvent) => void
-  onDrop?: (e: React.DragEvent, cellIndex: number) => void
+  onDrop?: (cellIndex: number) => void
   isDragging?: boolean
 }
 
@@ -30,12 +30,13 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   isDragging = false,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
 
   const handleDragStart = (e: React.DragEvent) => {
     if (camera && onDragStart) {
       e.dataTransfer.effectAllowed = 'move'
       e.dataTransfer.setData('text/plain', camera.id.toString())
-      onDragStart(e, camera.id)
+      onDragStart(camera.id)
     }
   }
 
@@ -53,7 +54,17 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
-    if (onDrop) onDrop(e, index)
+    if (onDrop) onDrop(index)
+  }
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY })
+  }
+
+  const handleDeleteClick = () => {
+    onRemoveCamera()
+    setContextMenu(null)
   }
 
   return camera ? (
@@ -63,21 +74,22 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`relative bg-gray-50 dark:bg-gray-700 rounded-lg border-2 transition-all duration-200
+      onContextMenu={handleContextMenu}
+      className={`relative bg-gray-900 rounded-lg border-2 transition-all duration-200 aspect-video
         ${
           isDragOver
-            ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 shadow-xl opacity-90'
-            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:shadow-md opacity-100'
+            ? 'border-blue-500 bg-blue-900 shadow-xl opacity-90'
+            : 'border-gray-600 hover:border-blue-400 hover:shadow-md opacity-100'
         }
-        min-h-32 flex flex-col items-center justify-center cursor-move group
+        flex flex-col items-center justify-center cursor-move group overflow-hidden
       `}
     >
       {/* Camera Content */}
       <div className="w-full h-full flex flex-col items-center justify-center p-4">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-900 mb-2">
             <svg
-              className="w-6 h-6 text-blue-600 dark:text-blue-400"
+              className="w-6 h-6 text-blue-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -90,10 +102,10 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
               />
             </svg>
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
+          <h3 className="font-semibold text-white text-sm">
             {camera.name}
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{camera.location}</p>
+          <p className="text-xs text-gray-400">{camera.location}</p>
           <span
             className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium
             ${
@@ -110,34 +122,45 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         </div>
       </div>
 
-      {/* Remove Button - Always visible */}
-      <button
-        onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-          onRemoveCamera()
-        }}
-        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition-all shadow-md hover:shadow-lg active:scale-95"
-        title="Remove camera"
-        aria-label="Remove camera"
-      >
-        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
-        </svg>
-      </button>
+      {/* Context Menu */}
+      {contextMenu && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setContextMenu(null)}
+          />
+          <div
+            className="fixed z-50 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-32"
+            style={{
+              top: `${contextMenu.y}px`,
+              left: `${contextMenu.x}px`,
+            }}
+          >
+            <button
+              onClick={handleDeleteClick}
+              className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 hover:bg-opacity-50 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Remove
+            </button>
+          </div>
+        </>
+      )}
     </div>
   ) : (
     <button
       onClick={onAddCamera}
-      className="relative bg-white dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600
-                  min-h-32 flex flex-col items-center justify-center gap-2 cursor-pointer group transition-all
-                  hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 hover:shadow-md
+      className="relative bg-gray-900 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-600 dark:border-gray-600
+                  aspect-video flex flex-col items-center justify-center gap-2 cursor-pointer group transition-all
+                  hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-800 dark:hover:bg-gray-700 hover:shadow-md
                   w-full active:scale-98"
       title="Click to add camera"
       aria-label="Add camera to this cell"
     >
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
-        <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-900 group-hover:bg-blue-800 transition-colors">
+        <svg className="w-7 h-7 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -146,8 +169,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
           />
         </svg>
       </div>
-      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Add Camera</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">Click anywhere</p>
+      <p className="text-sm font-medium text-gray-300">Add Camera</p>
+      <p className="text-xs text-gray-400">Click to add</p>
     </button>
   )
 }

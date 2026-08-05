@@ -17,8 +17,8 @@ import {
 import { useAppSelector, useAppDispatch } from '@/store'
 import {
   addCamera,
-  updateCamera,
-  deleteCamera,
+  updateCameraAsync,
+  deleteCameraAsync,
 } from '@/store/slices/cameraSlice'
 import type { Camera } from '@/types/camera'
 
@@ -80,7 +80,7 @@ export function Settings() {
 
   const handleDelete = (cameraId: number) => {
     if (confirm('Are you sure you want to delete this camera?')) {
-      dispatch(deleteCamera(cameraId))
+      dispatch(deleteCameraAsync(cameraId))
     }
   }
 

@@ -106,10 +106,10 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black opacity-50 md:hidden"
+          className="fixed inset-0 z-40 bg-black opacity-50"
           onClick={() => dispatch(toggleSidebar())}
         />
       )}
@@ -117,11 +117,10 @@ export function Sidebar() {
       {/* Sidebar */}
       <nav
         className={`
-          fixed md:static
-          h-screen w-64 z-50
+          fixed h-screen w-64 z-50
           bg-gray-900 text-white
           transform transition-transform duration-300
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           flex flex-col
           border-r border-gray-800
         `}

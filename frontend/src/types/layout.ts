@@ -18,14 +18,22 @@ export interface CameraPosition {
   colSpan: number
 }
 
+export interface SubTab {
+  id: string
+  name: string
+  gridConfig: GridConfig
+  cameraPositions: CameraPosition[]
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Tab {
   id: string
   name: string
-  cameras: number[]
-  gridConfig: GridConfig
-  cameraPositions: CameraPosition[]
-  createdAt: Date
-  updatedAt: Date
+  subTabs: SubTab[]
+  activeSubTab: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Layout {
@@ -33,8 +41,8 @@ export interface Layout {
   userId: number
   tabs: Tab[]
   activeTab: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
 export interface LayoutState {

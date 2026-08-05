@@ -13,6 +13,7 @@ interface TabsBarProps {
   onAddTab: (tab: Tab) => void
   onRemoveTab: (tabId: string) => void
   onRenameTab?: (tabId: string, newName: string) => void
+  onReorderTabs?: (fromIndex: number, toIndex: number) => void
 }
 
 export const TabsBar: React.FC<TabsBarProps> = ({
@@ -22,11 +23,14 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   onAddTab,
   onRemoveTab,
   onRenameTab,
+  onReorderTabs,
 }) => {
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [showAddTabInput, setShowAddTabInput] = useState(false)
   const [newTabName, setNewTabName] = useState('')
+  const [draggedFromIndex, setDraggedFromIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const handleRenameSubmit = (tabId: string) => {
     if (editingName.trim() && onRenameTab) {
@@ -36,8 +40,33 @@ export const TabsBar: React.FC<TabsBarProps> = ({
     }
   }
 
+  const handleDragStart = (index: number, e: React.DragEvent) => {
+    setDraggedFromIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (index: number, e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverIndex(index)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (toIndex: number, e: React.DragEvent) => {
+    e.preventDefault()
+    setDragOverIndex(null)
+    if (draggedFromIndex !== null && draggedFromIndex !== toIndex && onReorderTabs) {
+      onReorderTabs(draggedFromIndex, toIndex)
+    }
+    setDraggedFromIndex(null)
+  }
+
   const handleAddTabSubmit = () => {
     if (newTabName.trim()) {
+      const now = new Date().toISOString()
       const newTab: Tab = {
         id: `tab-${Date.now()}`,
         name: newTabName.trim(),
@@ -49,8 +78,8 @@ export const TabsBar: React.FC<TabsBarProps> = ({
           gapSize: 8,
         },
         cameraPositions: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
       }
       onAddTab(newTab)
       setNewTabName('')
@@ -63,17 +92,24 @@ export const TabsBar: React.FC<TabsBarProps> = ({
       <div className="px-6 py-4">
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
           {/* Tabs */}
-          {tabs.map((tab) => (
+          {tabs.map((tab, index) => (
             <div
               key={tab.id}
+              draggable
+              onDragStart={(e) => handleDragStart(index, e)}
+              onDragOver={(e) => handleDragOver(index, e)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group px-4 py-2 rounded-t-lg cursor-pointer whitespace-nowrap
-                transition-all duration-200 flex items-center gap-2
+              className={`relative group px-4 py-3 rounded-t-lg cursor-move whitespace-nowrap
+                transition-all duration-200 flex items-center gap-2 border-b-4
                 ${
                   activeTabId === tab.id
-                    ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 font-semibold'
+                    : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
                 }
+                ${dragOverIndex === index && draggedFromIndex !== index ? 'border-l-4 border-l-blue-400' : ''}
+                ${draggedFromIndex === index ? 'opacity-50' : ''}
               `}
             >
               {editingTabId === tab.id ? (
