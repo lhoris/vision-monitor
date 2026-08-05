@@ -25,8 +25,6 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   onRemoveCamera,
   isDragging = false,
 }) => {
-  const [showActions, setShowActions] = useState(false)
-
   return camera ? (
     <Draggable draggableId={`camera-${camera.id}`} index={index}>
       {(provided, snapshot) => (
@@ -38,18 +36,13 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             ${
               snapshot.isDragging
                 ? 'border-blue-500 bg-blue-100 dark:bg-blue-900 shadow-xl opacity-90'
-                : 'border-gray-300 dark:border-gray-600 opacity-100'
+                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:shadow-md opacity-100'
             }
-            min-h-32 flex flex-col items-center justify-center cursor-move
+            min-h-32 flex flex-col items-center justify-center cursor-move group
           `}
-          onMouseEnter={() => setShowActions(true)}
-          onMouseLeave={() => setShowActions(false)}
         >
-          {/* Drag Handle */}
-          <div
-            className="w-full h-full flex flex-col items-center justify-center p-4"
-          >
-            {/* Camera Placeholder */}
+          {/* Camera Content */}
+          <div className="w-full h-full flex flex-col items-center justify-center p-4">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 mb-2">
                 <svg
@@ -86,51 +79,46 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             </div>
           </div>
 
-          {/* Remove Button */}
-          {showActions && (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onRemoveCamera()
-              }}
-              className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors shadow-md"
-              title="Remove camera"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          )}
+          {/* Remove Button - Always visible */}
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onRemoveCamera()
+            }}
+            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 transition-all shadow-md hover:shadow-lg active:scale-95"
+            title="Remove camera"
+            aria-label="Remove camera"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth={2} strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
       )}
     </Draggable>
   ) : (
     <button
       onClick={onAddCamera}
-      className="relative bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600
-                  min-h-32 flex flex-col items-center justify-center gap-3 cursor-pointer group transition-all
-                  hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-gray-600 w-full"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      className="relative bg-white dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600
+                  min-h-32 flex flex-col items-center justify-center gap-2 cursor-pointer group transition-all
+                  hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-gray-600 hover:shadow-md
+                  w-full active:scale-98"
       title="Click to add camera"
+      aria-label="Add camera to this cell"
     >
-      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-200 dark:group-hover:bg-blue-900 transition-colors pointer-events-none">
-        <svg className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
+        <svg className="w-7 h-7 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
+            strokeWidth={2.5}
             d="M12 4v16m8-8H4"
           />
         </svg>
       </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 pointer-events-none">Click to add camera</p>
+      <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Add Camera</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">Click anywhere</p>
     </button>
   )
 }
