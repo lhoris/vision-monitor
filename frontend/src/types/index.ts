@@ -1,0 +1,13 @@
+/**
+ * Vision Monitor VMS - Global Type Definitions
+ * Phase 3에서 구현될 타입들의 기본 구조
+ */
+
+export type { Camera } from './camera'
+export type { Event } from './api'
+export type { Layout, Tab, GridConfig } from './layout'
+
+// Re-export all types
+export * from './camera'
+export * from './api'
+export * from './layout'

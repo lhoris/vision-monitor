@@ -6,6 +6,15 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 
+# Maven/Backend
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.backup
+release.properties
+.flattened-pom.xml
+
 # Production
 dist/
 build/
@@ -18,6 +27,12 @@ build/
 # IDE
 .vscode/
 .idea/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
 *.swp
 *.swo
 *~
@@ -26,12 +41,24 @@ build/
 # Temporary
 *.tmp
 tmp/
+logs/
 
-# Compiled JS (keep only TypeScript)
-src/**/*.js
+# Database
+*.db
+*.sqlite
 
-# Media files (large, downloaded separately)
-public/*.mp4
-public/*.mov
-public/*.avi
-public/*.webm
+# Test coverage
+coverage/
+.nyc_output/
+.jacoco/
+
+# MCP email server
+mcp-email-server/
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Misc
+*.pem
