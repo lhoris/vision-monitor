@@ -33,6 +33,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
+          {...provided.dragHandleProps}
           className={`relative bg-gray-50 dark:bg-gray-700 rounded-lg border-2 transition-all duration-200
             ${
               snapshot.isDragging
@@ -46,7 +47,6 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         >
           {/* Drag Handle */}
           <div
-            {...provided.dragHandleProps}
             className="w-full h-full flex flex-col items-center justify-center p-4"
           >
             {/* Camera Placeholder */}
