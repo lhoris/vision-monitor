@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react'
-import type { Tab } from '@/types/layout'
+import type { Tab, SubTab } from '@/types/layout'
 
 interface TabsBarProps {
   tabs: Tab[]
@@ -67,10 +67,9 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   const handleAddTabSubmit = () => {
     if (newTabName.trim()) {
       const now = new Date().toISOString()
-      const newTab: Tab = {
-        id: `tab-${Date.now()}`,
-        name: newTabName.trim(),
-        cameras: [],
+      const defaultSubTab: SubTab = {
+        id: `subtab-${Date.now()}`,
+        name: 'Equipment 1',
         gridConfig: {
           rows: 3,
           cols: 2,
@@ -78,6 +77,14 @@ export const TabsBar: React.FC<TabsBarProps> = ({
           gapSize: 8,
         },
         cameraPositions: [],
+        createdAt: now,
+        updatedAt: now,
+      }
+      const newTab: Tab = {
+        id: `tab-${Date.now()}`,
+        name: newTabName.trim(),
+        subTabs: [defaultSubTab],
+        activeSubTab: defaultSubTab.id,
         createdAt: now,
         updatedAt: now,
       }

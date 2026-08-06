@@ -10,6 +10,7 @@ import layoutReducer from './slices/layoutSlice'
 import cameraReducer from './slices/cameraSlice'
 import eventReducer from './slices/eventSlice'
 import uiReducer from './slices/uiSlice'
+import authReducer from './slices/authSlice'
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     camera: cameraReducer,
     event: eventReducer,
     ui: uiReducer,
+    auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

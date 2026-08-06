@@ -24,7 +24,7 @@ interface UIState {
 }
 
 const initialState: UIState = {
-  sidebarOpen: true,
+  sidebarOpen: false,
   themeMode: 'dark',
   notifications: [],
   modal: {
