@@ -1,7 +1,6 @@
 # Vision Monitor VMS
 
 제조 공정 CCTV 모니터링 시스템 (Manufacturing AI Monitoring Dashboard)
-- POSCO 포항 제철소 4선재 공정 모니터링
 
 ## 🎯 프로젝트 개요
 
@@ -325,10 +324,6 @@ mvn flyway:migrate
 ### Infrastructure (1개 Agent)
 
 11. **DevOps & Deployment** - CI/CD 파이프라인, Docker, Kubernetes
-
-## 🤝 기여
-
-이 프로젝트는 POSCO 포항 제철소의 제조 공정 모니터링을 위해 개발되었습니다.
 
 ## 📄 라이선스
 

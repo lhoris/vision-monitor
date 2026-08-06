@@ -2,7 +2,7 @@
 
 **작성일**: 2026-08-05  
 **기준**: OpenAPI 3.0.0 / Swagger 호환  
-**Host**: `http://localhost:8080` (개발) / `https://visionmonitor.posco.local` (운영)  
+**Host**: `http://localhost:8080` (개발) / `https://visionmonitor.local` (운영)  
 **Base Path**: `/api`
 
 ---
@@ -59,9 +59,9 @@ Response: 200 OK
     "user": {
       "id": 1,
       "username": "operator1",
-      "email": "operator1@posco.com",
+      "email": "operator1@visionmonitor.local",
       "role": "operator",
-      "department": "포항 4선재"
+      "department": "생산 라인"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "expiresIn": 86400  // 초 단위 (24시간)
@@ -121,8 +121,8 @@ Response: 200 OK
     "content": [
       {
         "id": 1,
-        "name": "포항 4선재 라인1 입구",
-        "location": "포항 제강동",
+        "name": "생산 라인 1 입구",
+        "location": "제조 구역 A",
         "model": "Hikvision DS-2CD2T45FWD-I5",
         "ip_address": "192.168.1.101",
         "port": 554,
@@ -160,7 +160,7 @@ Response: 200 OK
   "success": true,
   "data": {
     "id": 1,
-    "name": "포항 4선재 라인1 입구",
+    "name": "생산 라인1 입구",
     // ... 동일한 필드
     "streams": [
       {
@@ -191,7 +191,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "name": "포항 4선재 라인2 입구",
+  "name": "생산 라인2 입구",
   "location": "포항 제강동",
   "model": "Hikvision DS-2CD2T45FWD-I5",
   "ip_address": "192.168.1.102",
@@ -212,7 +212,7 @@ Response: 201 Created
   "success": true,
   "data": {
     "id": 2,
-    "name": "포항 4선재 라인2 입구",
+    "name": "생산 라인2 입구",
     // ... 전체 필드
   }
 }
@@ -225,7 +225,7 @@ Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "name": "포항 4선재 라인1 입구 (수정됨)",
+  "name": "생산 라인1 입구 (수정됨)",
   "location": "포항 제강동 수정",
   // 수정할 필드만 포함
 }
@@ -755,13 +755,13 @@ Response: 200 OK
         {
           "cell_id": 0,
           "camera_id": 1,
-          "camera_name": "포항 4선재 라인1 입구",
+          "camera_name": "생산 라인1 입구",
           "position": {"row": 0, "col": 0}
         },
         {
           "cell_id": 1,
           "camera_id": 2,
-          "camera_name": "포항 4선재 라인2 입구",
+          "camera_name": "생산 라인2 입구",
           "position": {"row": 0, "col": 1}
         }
         // ... 나머지 카메라
@@ -803,7 +803,7 @@ Response: 200 OK
       {
         "cell_id": 0,
         "camera_id": 1,
-        "camera_name": "포항 4선재 라인1 입구",
+        "camera_name": "생산 라인1 입구",
         "position": {"row": 0, "col": 0},
         "stream_info": {
           "protocol": "hls",
@@ -912,7 +912,7 @@ Response: 200 OK
   "data": {
     "cell_id": 3,
     "camera_id": 5,
-    "camera_name": "포항 4선재 라인3 출구",
+    "camera_name": "생산 라인3 출구",
     "position": {"row": 1, "col": 0}
   }
 }
@@ -1107,9 +1107,9 @@ Response: 200 OK
       {
         "id": 1,
         "username": "operator1",
-        "email": "operator1@posco.com",
+        "email": "operator1@visionmonitor.local",
         "role": "operator",
-        "department": "포항 4선재",
+        "department": "생산 라인",
         "assigned_cameras": [1, 2, 3],
         "can_download": true,
         "can_configure": false,
