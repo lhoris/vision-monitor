@@ -5,6 +5,7 @@
 
 import React, { useState } from 'react'
 import type { Camera } from '@/types/camera'
+import { StreamPlayerComponent } from '@/components/StreamPlayer/StreamPlayerComponent'
 
 interface DraggableCellProps {
   cellId: string
@@ -69,8 +70,6 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
   return camera ? (
     <div
-      draggable
-      onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -81,33 +80,43 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             ? 'border-blue-500 bg-blue-900 shadow-xl opacity-90'
             : 'border-gray-600 hover:border-blue-400 hover:shadow-md opacity-100'
         }
-        flex flex-col items-center justify-center cursor-move group overflow-hidden
+        flex flex-col items-center justify-center group overflow-hidden
       `}
     >
-      {/* Camera Content */}
-      <div className="w-full h-full flex flex-col items-center justify-center p-4">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-900 mb-2">
-            <svg
-              className="w-6 h-6 text-blue-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="font-semibold text-white text-sm">
-            {camera.name}
-          </h3>
-          <p className="text-xs text-gray-400">{camera.location}</p>
+      {/* Drag Handle - Top Bar */}
+      <div
+        draggable
+        onDragStart={handleDragStart}
+        className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black/40 to-transparent z-20 cursor-move hover:from-black/60 group flex items-center px-2"
+        title="Drag to move camera"
+      >
+        <svg className="w-3 h-3 text-gray-400 group-hover:text-gray-200 transition-colors" fill="currentColor" viewBox="0 0 6 10">
+          <circle cx="1.5" cy="2" r="1" />
+          <circle cx="4.5" cy="2" r="1" />
+          <circle cx="1.5" cy="5" r="1" />
+          <circle cx="4.5" cy="5" r="1" />
+          <circle cx="1.5" cy="8" r="1" />
+          <circle cx="4.5" cy="8" r="1" />
+        </svg>
+        <span className="text-xs text-gray-300 ml-1.5 truncate group-hover:text-gray-100 transition-colors">
+          {camera.name}
+        </span>
+      </div>
+
+      {/* Video Stream Player */}
+      <StreamPlayerComponent
+        source={{ url: camera.streamUrl, protocol: 'hls' }}
+        controls={true}
+        autoplay={false}
+        className="w-full h-full"
+      />
+
+      {/* Camera Info Overlay - Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 z-10 pointer-events-none">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-gray-300">{camera.location}</p>
           <span
-            className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium
+            className={`px-2 py-1 rounded text-xs font-medium
             ${
               camera.status === 'online'
                 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100'

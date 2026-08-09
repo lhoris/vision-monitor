@@ -22,6 +22,8 @@ export class HLSPlayer extends StreamPlayer {
   private hlsInstance: Hls | null = null
   private qualityLevels: HLSQuality[] = []
   private currentQualityLevel: number = -1
+  private manifestParsed: boolean = false
+  private playPending: boolean = false
 
   constructor(videoElement: HTMLVideoElement, url: string, reconnectConfig?: ReconnectConfig) {
     super(url, reconnectConfig)
@@ -35,6 +37,9 @@ export class HLSPlayer extends StreamPlayer {
    */
   private setupVideoElement(): void {
     if (!this.videoElement) return
+
+    // 기본 controls 비활성화 (커스텀 PlayerControls 사용)
+    this.videoElement.controls = false
 
     this.videoElement.addEventListener('play', () => this.setState('playing'))
     this.videoElement.addEventListener('pause', () => this.setState('paused'))
@@ -89,9 +94,16 @@ export class HLSPlayer extends StreamPlayer {
       })
 
       this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        this.manifestParsed = true
         this.setState('loading')
         this.loadQualityLevels()
         this.emit('loadend', {})
+
+        // 매니페스트 파싱 후 대기 중인 재생 처리
+        if (this.playPending) {
+          this.playPending = false
+          this.performPlay().catch(console.error)
+        }
       })
 
       this.hlsInstance.on(Hls.Events.LEVEL_SWITCHING, (event, data) => {
@@ -160,9 +172,26 @@ export class HLSPlayer extends StreamPlayer {
   }
 
   /**
-   * 재생
+   * 재생 (매니페스트 파싱 대기)
    */
   async play(): Promise<void> {
+    if (!this.videoElement) {
+      throw new Error('Video element not initialized')
+    }
+
+    // 매니페스트가 파싱되지 않았으면 대기
+    if (!this.manifestParsed) {
+      this.playPending = true
+      return
+    }
+
+    return this.performPlay()
+  }
+
+  /**
+   * 실제 재생 수행
+   */
+  private async performPlay(): Promise<void> {
     if (!this.videoElement) {
       throw new Error('Video element not initialized')
     }
@@ -173,12 +202,15 @@ export class HLSPlayer extends StreamPlayer {
       await this.videoElement.play()
       this.cancelReconnect()
     } catch (error) {
-      this.handleError({
-        type: 'ABORT_ERROR',
-        message: 'Failed to play video',
-        original: error as Error,
-      })
-      throw error
+      // ABORT_ERROR는 무시 (새로운 로드 요청으로 인한 중단)
+      const err = error as any
+      if (err?.name !== 'AbortError') {
+        this.handleError({
+          type: 'ABORT_ERROR',
+          message: 'Failed to play video',
+          original: error as Error,
+        })
+      }
     }
   }
 
@@ -305,6 +337,8 @@ export class HLSPlayer extends StreamPlayer {
    */
   destroy(): void {
     this.cancelReconnect()
+    this.manifestParsed = false
+    this.playPending = false
 
     if (this.videoElement) {
       this.videoElement.src = ''

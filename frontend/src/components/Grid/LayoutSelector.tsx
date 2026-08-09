@@ -39,7 +39,8 @@ export const LayoutSelector: React.FC<LayoutSelectorProps> = ({
                    transition-colors flex items-center gap-2 font-medium"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 m0 0a2 2 0 m0 0a2 2 0 m0-10a2 2 0 m0 0a2 2 0 m0 0a2 2 0 m0 10v-6m0-6h6m0 0v10" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12h16M12 4v16" />
         </svg>
         Grid: {currentLayout}
         <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

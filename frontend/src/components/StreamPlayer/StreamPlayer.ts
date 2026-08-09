@@ -26,7 +26,7 @@ export abstract class StreamPlayer {
   constructor(url: string, reconnectConfig?: ReconnectConfig) {
     this.url = url
     this.reconnectConfig = reconnectConfig || {
-      enabled: true,
+      enabled: false,
       maxAttempts: 5,
       initialDelay: 1000,
       maxDelay: 30000,

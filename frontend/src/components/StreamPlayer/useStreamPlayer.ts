@@ -105,7 +105,6 @@ export function useStreamPlayer(
             videoElementRef.current.style.width = '100%'
             videoElementRef.current.style.height = '100%'
             videoElementRef.current.style.objectFit = 'contain'
-            videoElementRef.current.controls = true
             containerRef.current.appendChild(videoElementRef.current)
           }
 
@@ -231,7 +230,7 @@ export function useStreamPlayer(
         }
       }
     }
-  }, [initializePlayer])
+  }, [source.url])
 
   /**
    * 플레이어 메서드 래핑

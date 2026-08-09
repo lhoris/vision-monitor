@@ -15,76 +15,86 @@ export function Live() {
   const loading = useAppSelector((state) => state.layout.loading)
 
   // Mock cameras data - 실제 구현에서는 API에서 가져옴
+  // 테스트용 공개 HLS 스트림: Apple BipBop (CORS 지원)
+  const testStreamUrl = 'https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_4x3/bipbop_4x3_variant.m3u8'
+
   const mockCameras: Camera[] = [
     {
       id: 1,
-      name: 'Camera 1',
-      location: 'Area A',
+      name: 'Test Camera 1',
+      location: 'Test Area',
       zone: 'Zone 1',
-      streamUrl: 'rtsp://example.com/stream1',
+      streamUrl: testStreamUrl,
       status: 'online',
       resolution: '1920x1080',
-      fps: 30,
-    },
-    {
-      id: 2,
-      name: 'Camera 2',
-      location: 'Area B',
-      zone: 'Zone 2',
-      streamUrl: 'rtsp://example.com/stream2',
-      status: 'online',
-      resolution: '1920x1080',
-      fps: 30,
-    },
-    {
-      id: 3,
-      name: 'Camera 3',
-      location: 'Area C',
-      zone: 'Zone 3',
-      streamUrl: 'rtsp://example.com/stream3',
-      status: 'offline',
-      resolution: '1920x1080',
-      fps: 30,
-    },
-    {
-      id: 4,
-      name: 'Camera 4',
-      location: 'Area D',
-      zone: 'Zone 4',
-      streamUrl: 'rtsp://example.com/stream4',
-      status: 'online',
-      resolution: '1920x1080',
-      fps: 30,
-    },
-    {
-      id: 5,
-      name: 'Camera 5',
-      location: 'Area E',
-      zone: 'Zone 5',
-      streamUrl: 'rtsp://example.com/stream5',
-      status: 'online',
-      resolution: '1920x1080',
-      fps: 30,
-    },
-    {
-      id: 6,
-      name: 'Camera 6',
-      location: 'Area F',
-      zone: 'Zone 6',
-      streamUrl: 'rtsp://example.com/stream6',
-      status: 'error',
-      resolution: '1920x1080',
-      fps: 30,
+      fps: 24,
     },
   ]
 
-  // 사용자 레이아웃 초기화 (실제 구현에서는 실제 userId 사용)
+  // Mock 레이아웃 데이터 (Backend 없이 테스트용)
   useEffect(() => {
-    const userId = 1 // Mock user ID
-    if (!layout && !loading) {
-      dispatch(fetchUserLayout(userId))
+    if (!layout) {
+      const mockLayout = {
+        id: 1,
+        userId: 1,
+        tabs: [
+          {
+            id: 'tab-1',
+            name: 'Production Line A',
+            subTabs: [
+              {
+                id: 'subtab-1',
+                name: 'Equipment 1',
+                gridConfig: { rows: 3, cols: 2, layout: 'grid', gapSize: 8 },
+                cameraPositions: [
+                  { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 3, row: 1, col: 0, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 4, row: 1, col: 1, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 5, row: 2, col: 0, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 6, row: 2, col: 1, rowSpan: 1, colSpan: 1 },
+                ],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+            activeSubTab: 'subtab-1',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 'tab-2',
+            name: 'Production Line B',
+            subTabs: [
+              {
+                id: 'subtab-2',
+                name: 'Equipment 1',
+                gridConfig: { rows: 2, cols: 2, layout: 'grid', gapSize: 8 },
+                cameraPositions: [
+                  { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+                  { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
+                ],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+            activeSubTab: 'subtab-2',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+        activeTab: 'tab-1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      // Redux에 mock 레이아웃 저장
+      dispatch({
+        type: 'layout/fetchUserLayout/fulfilled',
+        payload: mockLayout,
+      })
     }
-  }, [dispatch, layout, loading])
+  }, [dispatch, layout])
 
   if (loading) {
     return (
