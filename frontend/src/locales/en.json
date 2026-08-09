@@ -1,0 +1,81 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "close": "Close",
+    "online": "Online",
+    "offline": "Offline",
+    "error": "Error"
+  },
+  "header": {
+    "title": "Vision Monitor VMS",
+    "language": "Language"
+  },
+  "navigation": {
+    "live": "Live",
+    "playback": "Playback",
+    "settings": "Settings",
+    "events": "Events"
+  },
+  "live": {
+    "title": "Live Monitoring",
+    "subtitle": "Real-time camera feeds"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage cameras and system preferences",
+    "cameras": "Cameras",
+    "addCamera": "Add Camera",
+    "addFirstCamera": "Add Your First Camera",
+    "noCameras": "No cameras configured yet",
+    "cameraName": "Camera Name",
+    "location": "Location",
+    "zone": "Zone",
+    "streamUrl": "Stream URL",
+    "streamProtocol": "Stream Protocol (Auto-detected if not specified)",
+    "status": "Status",
+    "resolution": "Resolution",
+    "fps": "FPS",
+    "editCamera": "Edit Camera",
+    "updateCamera": "Update Camera",
+    "deleteCamera": "Delete Camera",
+    "areYouSure": "Are you sure you want to delete this camera?",
+    "protocols": {
+      "hls": "HLS (.m3u8)",
+      "webrtc": "WebRTC (WHEP)",
+      "rtsp": "RTSP"
+    },
+    "systemPreferences": "System Preferences",
+    "recordingSettings": "Recording Settings",
+    "notificationSettings": "Notification Settings",
+    "enableAutoRecording": "Enable automatic recording",
+    "archiveOldRecordings": "Archive old recordings",
+    "retentionPeriod": "Retention Period",
+    "emailNotifications": "Email notifications",
+    "smsAlerts": "SMS alerts",
+    "notificationEmail": "Notification Email"
+  },
+  "playback": {
+    "title": "Playback",
+    "subtitle": "View recorded videos"
+  },
+  "events": {
+    "title": "Events",
+    "subtitle": "Manage system events and alerts"
+  },
+  "zones": {
+    "zone1": "Zone 1",
+    "zone2": "Zone 2",
+    "zone3": "Zone 3",
+    "zone4": "Zone 4"
+  },
+  "retentionPeriods": {
+    "7days": "7 days",
+    "30days": "30 days",
+    "90days": "90 days",
+    "1year": "1 year"
+  }
+}

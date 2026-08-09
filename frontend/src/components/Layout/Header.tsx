@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
   toggleSidebar,
@@ -10,11 +11,14 @@ import { logout } from '@/store/slices/authSlice'
 export function Header() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { i18n, t } = useTranslation()
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const notifications = useAppSelector((state) => state.ui.notifications)
   const user = useAppSelector((state) => state.auth.user)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
+  const languageMenuRef = useRef<HTMLDivElement>(null)
 
   const handleThemeToggle = () => {
     const newMode = themeMode === 'dark' ? 'light' : 'dark'
@@ -32,19 +36,27 @@ export function Header() {
     navigate('/login')
   }
 
+  const handleLanguageChange = async (lang: 'en' | 'ko') => {
+    await i18n.changeLanguage(lang)
+    setLanguageMenuOpen(false)
+  }
+
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setProfileMenuOpen(false)
       }
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setLanguageMenuOpen(false)
+      }
     }
 
-    if (profileMenuOpen) {
+    if (profileMenuOpen || languageMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [profileMenuOpen])
+  }, [profileMenuOpen, languageMenuOpen])
 
   return (
     <header className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
@@ -140,6 +152,48 @@ export function Header() {
             <div className="absolute top-full mt-2 left-0 hidden group-hover:block bg-gray-900 dark:bg-gray-950 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-50">
               {themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}
             </div>
+          </div>
+
+          {/* Language Toggle */}
+          <div className="relative" ref={languageMenuRef}>
+            <button
+              onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
+              title={t('header.language')}
+            >
+              <span className="text-lg">
+                {i18n.language === 'ko' ? '🇰🇷' : '🇺🇸'}
+              </span>
+              <span className="hidden sm:inline">
+                {i18n.language === 'ko' ? '한국어' : 'English'}
+              </span>
+            </button>
+            {languageMenuOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                <button
+                  onClick={() => handleLanguageChange('en')}
+                  className={`w-full text-left px-4 py-2 text-sm ${
+                    i18n.language === 'en'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  } transition-colors flex items-center gap-2`}
+                >
+                  <span>🇺🇸</span>
+                  <span>English</span>
+                </button>
+                <button
+                  onClick={() => handleLanguageChange('ko')}
+                  className={`w-full text-left px-4 py-2 text-sm ${
+                    i18n.language === 'ko'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  } transition-colors flex items-center gap-2`}
+                >
+                  <span>🇰🇷</span>
+                  <span>한국어</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Separator */}

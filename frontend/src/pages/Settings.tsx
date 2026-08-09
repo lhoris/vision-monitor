@@ -4,6 +4,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardBody,
@@ -24,15 +25,23 @@ import type { Camera } from '@/types/camera'
 
 export function Settings() {
   const dispatch = useAppDispatch()
+  const { t, i18n } = useTranslation()
   const cameras = useAppSelector((state) => state.camera.cameras)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCamera, setEditingCamera] = useState<Camera | null>(null)
+
+  // 디버깅: 번역 제대로 로드되는지 확인
+  console.log('Settings - Current language:', i18n.language)
+  console.log('settings.title translation:', t('settings.title'))
+  console.log('All available namespaces:', i18n.options.ns)
+  console.log('All resources:', i18n.options.resources)
   const [formData, setFormData] = useState<Omit<Camera, 'id'>>({
     name: '',
     location: '',
     zone: '',
     streamUrl: '',
     status: 'offline',
+    streamProtocol: undefined,
   })
 
   const handleAddClick = () => {
@@ -43,6 +52,7 @@ export function Settings() {
       zone: '',
       streamUrl: '',
       status: 'offline',
+      streamProtocol: undefined,
     })
     setIsModalOpen(true)
   }
@@ -55,6 +65,7 @@ export function Settings() {
       zone: camera.zone,
       streamUrl: camera.streamUrl,
       status: camera.status,
+      streamProtocol: camera.streamProtocol,
     })
     setIsModalOpen(true)
   }
@@ -79,22 +90,28 @@ export function Settings() {
   }
 
   const handleDelete = (cameraId: number) => {
-    if (confirm('Are you sure you want to delete this camera?')) {
+    if (window.confirm(t('settings.areYouSure'))) {
       dispatch(deleteCameraAsync(cameraId))
     }
   }
 
   const zoneOptions = [
-    { value: 'Zone 1', label: 'Zone 1' },
-    { value: 'Zone 2', label: 'Zone 2' },
-    { value: 'Zone 3', label: 'Zone 3' },
-    { value: 'Zone 4', label: 'Zone 4' },
+    { value: 'Zone 1', label: t('zones.zone1') },
+    { value: 'Zone 2', label: t('zones.zone2') },
+    { value: 'Zone 3', label: t('zones.zone3') },
+    { value: 'Zone 4', label: t('zones.zone4') },
   ]
 
   const statusOptions = [
-    { value: 'online', label: 'Online' },
-    { value: 'offline', label: 'Offline' },
-    { value: 'error', label: 'Error' },
+    { value: 'online', label: t('common.online') },
+    { value: 'offline', label: t('common.offline') },
+    { value: 'error', label: t('common.error') },
+  ]
+
+  const protocolOptions = [
+    { value: 'hls', label: t('settings.protocols.hls') },
+    { value: 'webrtc', label: t('settings.protocols.webrtc') },
+    { value: 'rtsp', label: t('settings.protocols.rtsp') },
   ]
 
   return (
@@ -103,19 +120,23 @@ export function Settings() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Settings
+            {t('settings.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage cameras and system preferences
+            {t('settings.subtitle')}
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Current language: <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{i18n.language}</span>
+            | Test: <span className="font-mono">{t('settings.cameras')}</span>
           </p>
         </div>
-        <Button onClick={handleAddClick}>Add Camera</Button>
+        <Button onClick={handleAddClick}>{t('settings.addCamera')}</Button>
       </div>
 
       {/* Cameras Section */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Cameras
+          {t('settings.cameras')}
         </h2>
         {cameras.length === 0 ? (
           <Card>
@@ -134,9 +155,9 @@ export function Settings() {
                 />
               </svg>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                No cameras configured yet
+                {t('settings.noCameras')}
               </p>
-              <Button onClick={handleAddClick}>Add Your First Camera</Button>
+              <Button onClick={handleAddClick}>{t('settings.addFirstCamera')}</Button>
             </CardBody>
           </Card>
         ) : (
@@ -189,14 +210,14 @@ export function Settings() {
                         variant="secondary"
                         onClick={() => handleEditClick(camera)}
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button
                         size="sm"
                         variant="danger"
                         onClick={() => handleDelete(camera.id)}
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </div>
                   </div>
@@ -210,13 +231,13 @@ export function Settings() {
       {/* System Settings Section */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          System Preferences
+          {t('settings.systemPreferences')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Recording Settings
+                {t('settings.recordingSettings')}
               </h3>
             </CardHeader>
             <CardBody className="space-y-4">
@@ -224,7 +245,7 @@ export function Settings() {
                 <label className="flex items-center gap-2">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span className="text-sm text-gray-900 dark:text-white">
-                    Enable automatic recording
+                    {t('settings.enableAutoRecording')}
                   </span>
                 </label>
               </div>
@@ -232,17 +253,17 @@ export function Settings() {
                 <label className="flex items-center gap-2">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span className="text-sm text-gray-900 dark:text-white">
-                    Archive old recordings
+                    {t('settings.archiveOldRecordings')}
                   </span>
                 </label>
               </div>
               <Select
-                label="Retention Period"
+                label={t('settings.retentionPeriod')}
                 options={[
-                  { value: '7', label: '7 days' },
-                  { value: '30', label: '30 days' },
-                  { value: '90', label: '90 days' },
-                  { value: '365', label: '1 year' },
+                  { value: '7', label: t('retentionPeriods.7days') },
+                  { value: '30', label: t('retentionPeriods.30days') },
+                  { value: '90', label: t('retentionPeriods.90days') },
+                  { value: '365', label: t('retentionPeriods.1year') },
                 ]}
               />
             </CardBody>
@@ -251,7 +272,7 @@ export function Settings() {
           <Card>
             <CardHeader>
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Notification Settings
+                {t('settings.notificationSettings')}
               </h3>
             </CardHeader>
             <CardBody className="space-y-4">
@@ -259,7 +280,7 @@ export function Settings() {
                 <label className="flex items-center gap-2">
                   <input type="checkbox" defaultChecked className="rounded" />
                   <span className="text-sm text-gray-900 dark:text-white">
-                    Email notifications
+                    {t('settings.emailNotifications')}
                   </span>
                 </label>
               </div>
@@ -267,13 +288,13 @@ export function Settings() {
                 <label className="flex items-center gap-2">
                   <input type="checkbox" className="rounded" />
                   <span className="text-sm text-gray-900 dark:text-white">
-                    SMS alerts
+                    {t('settings.smsAlerts')}
                   </span>
                 </label>
               </div>
               <Input
                 type="email"
-                label="Notification Email"
+                label={t('settings.notificationEmail')}
                 placeholder="admin@example.com"
               />
             </CardBody>
@@ -285,11 +306,11 @@ export function Settings() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingCamera ? 'Edit Camera' : 'Add Camera'}
+        title={editingCamera ? t('settings.editCamera') : t('settings.addCamera')}
       >
         <div className="space-y-4">
           <Input
-            label="Camera Name"
+            label={t('settings.cameraName')}
             value={formData.name}
             onChange={(e) =>
               setFormData({ ...formData, name: e.target.value })
@@ -297,7 +318,7 @@ export function Settings() {
             placeholder="e.g., Camera 1"
           />
           <Input
-            label="Location"
+            label={t('settings.location')}
             value={formData.location}
             onChange={(e) =>
               setFormData({ ...formData, location: e.target.value })
@@ -305,7 +326,7 @@ export function Settings() {
             placeholder="e.g., Area A"
           />
           <Select
-            label="Zone"
+            label={t('settings.zone')}
             options={zoneOptions}
             value={formData.zone}
             onChange={(e) =>
@@ -313,7 +334,7 @@ export function Settings() {
             }
           />
           <Input
-            label="Stream URL"
+            label={t('settings.streamUrl')}
             value={formData.streamUrl}
             onChange={(e) =>
               setFormData({ ...formData, streamUrl: e.target.value })
@@ -321,7 +342,18 @@ export function Settings() {
             placeholder="rtsp://example.com/stream"
           />
           <Select
-            label="Status"
+            label={t('settings.streamProtocol')}
+            options={protocolOptions}
+            value={formData.streamProtocol || ''}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                streamProtocol: (e.target.value || undefined) as 'hls' | 'webrtc' | 'rtsp' | undefined,
+              })
+            }
+          />
+          <Select
+            label={t('settings.status')}
             options={statusOptions}
             value={formData.status}
             onChange={(e) =>
@@ -334,14 +366,14 @@ export function Settings() {
 
           <div className="flex gap-2 pt-4">
             <Button className="flex-1" onClick={handleSave}>
-              {editingCamera ? 'Update' : 'Add'} Camera
+              {editingCamera ? t('settings.updateCamera') : t('settings.addCamera')}
             </Button>
             <Button
               variant="secondary"
               className="flex-1"
               onClick={() => setIsModalOpen(false)}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </div>

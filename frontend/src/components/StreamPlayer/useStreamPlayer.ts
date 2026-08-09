@@ -46,9 +46,29 @@ export interface UseStreamPlayerReturn {
  */
 function detectProtocol(url: string): 'hls' | 'webrtc' | 'rtsp' | 'unknown' {
   if (url.includes('.m3u8')) return 'hls'
+
   if (url.includes('ws://') || url.includes('wss://')) return 'webrtc'
+
   if (url.includes('rtsp://')) return 'rtsp'
-  if (url.includes('http://') || url.includes('https://')) return 'hls'
+
+  if (url.includes('http://') || url.includes('https://')) {
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname.toLowerCase()
+    const search = urlObj.search.toLowerCase()
+
+    // WHEP 관련 경로 패턴
+    if (pathname.includes('/whep') ||
+        pathname.includes('/webrtc') ||
+        pathname.includes('/rtp') ||
+        pathname.includes('/play') ||
+        search.includes('whep') ||
+        search.includes('webrtc')) {
+      return 'webrtc'
+    }
+
+    return 'hls'
+  }
+
   return 'unknown'
 }
 
@@ -78,7 +98,9 @@ export function useStreamPlayer(
   const [qualityLevels, setQualityLevels] = useState<HLSQuality[]>([])
   const [currentQuality, setCurrentQuality] = useState<HLSQuality | null>(null)
 
-  const protocol = source.protocol || detectProtocol(source.url)
+  const protocol = source.protocol === 'unknown' || !source.protocol
+    ? detectProtocol(source.url)
+    : source.protocol
 
   /**
    * 플레이어 생성 및 초기화

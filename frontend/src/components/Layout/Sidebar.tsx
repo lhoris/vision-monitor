@@ -1,17 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { toggleSidebar } from '@/store/slices/uiSlice'
 
 interface NavItem {
   path: string
-  label: string
+  labelKey: string
   icon: React.ReactNode
 }
 
-const navItems: NavItem[] = [
+const navItemsConfig: NavItem[] = [
   {
     path: '/live',
-    label: 'Live Monitoring',
+    labelKey: 'navigation.live',
     icon: (
       <svg
         className="w-5 h-5"
@@ -30,7 +31,7 @@ const navItems: NavItem[] = [
   },
   {
     path: '/playback',
-    label: 'Playback',
+    labelKey: 'navigation.playback',
     icon: (
       <svg
         className="w-5 h-5"
@@ -55,7 +56,7 @@ const navItems: NavItem[] = [
   },
   {
     path: '/events',
-    label: 'Events',
+    labelKey: 'navigation.events',
     icon: (
       <svg
         className="w-5 h-5"
@@ -74,7 +75,7 @@ const navItems: NavItem[] = [
   },
   {
     path: '/settings',
-    label: 'Settings',
+    labelKey: 'navigation.settings',
     icon: (
       <svg
         className="w-5 h-5"
@@ -100,9 +101,16 @@ const navItems: NavItem[] = [
 ]
 
 export function Sidebar() {
+  const { t } = useTranslation()
   const location = useLocation()
   const dispatch = useAppDispatch()
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen)
+
+  // 번역된 라벨로 navItems 생성
+  const navItems = navItemsConfig.map((item) => ({
+    ...item,
+    label: t(item.labelKey),
+  }))
 
   return (
     <>

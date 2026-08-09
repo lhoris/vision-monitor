@@ -5,7 +5,7 @@
 
 import { Provider } from 'react-redux'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useAppSelector, useAppDispatch } from '@/store'
+import { useAppSelector } from '@/store'
 import { AppLayout } from '@/components/Layout'
 import Login from '@/pages/Login'
 import Live from '@/pages/Live'
@@ -14,6 +14,8 @@ import Events from '@/pages/Events'
 import Settings from '@/pages/Settings'
 import { store } from '@/store'
 import { useEffect } from 'react'
+import { I18nextProvider } from 'react-i18next'
+import i18n from '@/i18n'
 import '@/styles/global.css'
 
 function AppRoutes() {
@@ -86,11 +88,13 @@ function AppRoutes() {
 
 export function App() {
   return (
-    <Provider store={store}>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </Provider>
+    <I18nextProvider i18n={i18n}>
+      <Provider store={store}>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </Provider>
+    </I18nextProvider>
   )
 }
 

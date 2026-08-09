@@ -1,0 +1,81 @@
+{
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "add": "추가",
+    "close": "닫기",
+    "online": "온라인",
+    "offline": "오프라인",
+    "error": "오류"
+  },
+  "header": {
+    "title": "Vision Monitor VMS",
+    "language": "언어"
+  },
+  "navigation": {
+    "live": "라이브",
+    "playback": "녹화",
+    "settings": "설정",
+    "events": "이벤트"
+  },
+  "live": {
+    "title": "라이브 모니터링",
+    "subtitle": "실시간 카메라 피드"
+  },
+  "settings": {
+    "title": "설정",
+    "subtitle": "카메라 및 시스템 환경설정 관리",
+    "cameras": "카메라",
+    "addCamera": "카메라 추가",
+    "addFirstCamera": "첫 번째 카메라 추가",
+    "noCameras": "아직 구성된 카메라가 없습니다",
+    "cameraName": "카메라 이름",
+    "location": "위치",
+    "zone": "구역",
+    "streamUrl": "스트림 URL",
+    "streamProtocol": "스트림 프로토콜 (지정하지 않으면 자동 감지)",
+    "status": "상태",
+    "resolution": "해상도",
+    "fps": "FPS",
+    "editCamera": "카메라 편집",
+    "updateCamera": "카메라 업데이트",
+    "deleteCamera": "카메라 삭제",
+    "areYouSure": "이 카메라를 삭제하시겠습니까?",
+    "protocols": {
+      "hls": "HLS (.m3u8)",
+      "webrtc": "WebRTC (WHEP)",
+      "rtsp": "RTSP"
+    },
+    "systemPreferences": "시스템 환경설정",
+    "recordingSettings": "녹화 설정",
+    "notificationSettings": "알림 설정",
+    "enableAutoRecording": "자동 녹화 활성화",
+    "archiveOldRecordings": "오래된 녹화 보관",
+    "retentionPeriod": "보관 기간",
+    "emailNotifications": "이메일 알림",
+    "smsAlerts": "SMS 알림",
+    "notificationEmail": "알림 이메일"
+  },
+  "playback": {
+    "title": "재생",
+    "subtitle": "녹화된 비디오 보기"
+  },
+  "events": {
+    "title": "이벤트",
+    "subtitle": "시스템 이벤트 및 알림 관리"
+  },
+  "zones": {
+    "zone1": "구역 1",
+    "zone2": "구역 2",
+    "zone3": "구역 3",
+    "zone4": "구역 4"
+  },
+  "retentionPeriods": {
+    "7days": "7일",
+    "30days": "30일",
+    "90days": "90일",
+    "1year": "1년"
+  }
+}

@@ -13,6 +13,7 @@ export interface Camera {
   lastSeen?: Date
   resolution?: string
   fps?: number
+  streamProtocol?: 'hls' | 'webrtc' | 'rtsp'
 }
 
 export interface Stream {

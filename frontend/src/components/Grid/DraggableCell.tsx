@@ -105,7 +105,10 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
       {/* Video Stream Player */}
       <StreamPlayerComponent
-        source={{ url: camera.streamUrl, protocol: 'hls' }}
+        source={{
+          url: camera.streamUrl,
+          protocol: (camera.streamProtocol || 'unknown') as 'hls' | 'webrtc' | 'rtsp' | 'unknown'
+        }}
         controls={true}
         autoplay={false}
         className="w-full h-full"
