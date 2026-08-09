@@ -1,7 +1,7 @@
 # Vision Monitor VMS - Resume Prompt
 
-**Last Updated**: 2026-08-05  
-**Current Status**: Phase 3 Frontend Team - 4/4 Complete ✅
+**Last Updated**: 2026-08-09  
+**Current Status**: Phase 3 Frontend - HLS Streaming ✅ + UI Polish
 
 ---
 
@@ -68,16 +68,23 @@
 
 ### 즉시 필요한 작업
 
-1. **MariaDB 설치 확인** (WSL Ubuntu)
+1. **테스트 카메라 추가** (Live.tsx에서 카메라 수 복원)
+   - 현재: 1개 카메라 (테스트용)
+   - 수정 후: 6개 카메라 원래대로
+   - 파일: `frontend/src/pages/Live.tsx`
+
+2. **Frontend 최종 검증**
+   - `http://localhost:3000`에서 영상 재생 확인
+   - 드래그 & 드롭 기능 ✅
+   - 플레이어 컨트롤 (재생/음량/진행바) ✅
+   - 다중 카메라 동시 재생 테스트
+
+3. **MariaDB 준비** (WSL Ubuntu)
    ```bash
-   wsl -- bash -c "sudo service mysql status"
+   wsl -- bash -c "sudo service mysql start"
    ```
 
-2. **Frontend 테스트**
-   - `http://localhost:3000`에서 UI 확인
-   - 드래그 & 드롭 기능 테스트 ✅
-
-### Phase 3 - Backend Team (대기 중)
+### Phase 3 - Backend Team (준비 완료)
 
 3. **Spring Boot Core Agent** - 3명 필요
    - Entity & Repository (Camera, Stream, Event, Recording, AlertSetting, Layout, User)
@@ -207,6 +214,17 @@ wsl -- bash -c "sudo service mysql start"
 
 ## 🔧 최근 수정사항
 
+### 2026-08-09 ⭐ (현재)
+- ✅ **HLS 스트림 재생 기능 정상 작동 확인**
+  - 무한 루프 버그 수정 (useStreamPlayer 의존성 최적화)
+  - 매니페스트 파싱 대기 로직 추가 (race condition 해결)
+  - AbortError 예외 처리 추가
+  - 비디오 컨트롤 중복 제거 (커스텀 PlayerControls만 표시)
+  - 자동 재연결 기능 비활성화 (CPU 리소스 절약)
+  - 드래그 핸들과 플레이어 영역 분리 (UX 개선)
+- ✅ StreamPlayer 추상화 아키텍처 검증 완료
+- ✅ 커밋 완료: `Fix: HLS stream playback and improve player UI`
+
 ### 2026-08-05
 - ✅ DraggableCell의 nested Droppable 제거 → 드래그&드롭 활성화
 - ✅ Frontend Team 4명 모두 완료
@@ -223,9 +241,15 @@ wsl -- bash -c "sudo service mysql start"
 3. 복사한 내용을 프롬프트에 입력
 4. 다음 단계 실행:
    ```
-   "앞서 완료한 Frontend Team 4명의 작업을 바탕으로 
-   이제 Backend Team 3명을 구성해서 Phase 3 구현을 계속 진행해주세요.
-   MariaDB WSL 설치 상태를 먼저 확인한 후 시작해주세요."
+   "HLS 스트림 재생 기능이 정상 작동하는 것을 확인했다.
+   
+   다음 작업:
+   1. Live.tsx의 mockCameras를 원래대로 복원 (1개 → 6개)
+   2. 다중 카메라 동시 재생 테스트 및 최적화
+   3. WebRTC/RTSP 플레이어도 마찬가지로 테스트
+   4. 그 후 Backend Team 작업 시작
+   
+   진행해주세요."
    ```
 
 ---
@@ -242,8 +266,19 @@ wsl -- bash -c "sudo service mysql start"
 
 ## 🎊 축하합니다!
 
-**Frontend Team 4/4 완료!** 🎉
+**Frontend HLS 스트림 재생 기능 완성!** 🎉
 
-이제 http://localhost:3000에서 완성된 Vision Monitor VMS 비디오 모니터링 대시보드를 볼 수 있습니다.
+이제 http://localhost:3000에서 HLS 형식의 라이브 스트림이 정상적으로 재생됩니다.
 
-다음 단계: Backend Team 구성 → Phase 3 Week 3-6 구현
+### 이번 세션의 주요 성과:
+- ✅ HLS 스트림 재생 완전 구현
+- ✅ 플레이어 UI 최적화
+- ✅ React 무한 루프 버그 해결
+- ✅ 매니페스트 파싱 race condition 해결
+- ✅ 드래그 & 드롭 UX 개선
+
+**다음 단계**: 
+1. 테스트 카메라 수 복원
+2. 다중 카메라 동시 재생 검증
+3. WebRTC/RTSP 테스트
+4. Backend Team 구성 → Phase 3 Week 3-6 구현
