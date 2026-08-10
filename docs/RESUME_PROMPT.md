@@ -1,7 +1,7 @@
 # Vision Monitor VMS - Resume Prompt
 
 **Last Updated**: 2026-08-09  
-**Current Status**: Phase 3 Frontend - HLS Streaming ✅ + UI Polish
+**Current Status**: Phase 3 Frontend - Multi-language Support ✅ + WebRTC Protocol Enhancement ✅
 
 ---
 
@@ -68,16 +68,17 @@
 
 ### 즉시 필요한 작업
 
-1. **테스트 카메라 추가** (Live.tsx에서 카메라 수 복원)
-   - 현재: 1개 카메라 (테스트용)
-   - 수정 후: 6개 카메라 원래대로
-   - 파일: `frontend/src/pages/Live.tsx`
-
-2. **Frontend 최종 검증**
-   - `http://localhost:3000`에서 영상 재생 확인
-   - 드래그 & 드롭 기능 ✅
-   - 플레이어 컨트롤 (재생/음량/진행바) ✅
+1. **Frontend 최종 검증** ✅ (진행 중)
+   - `http://localhost:3000`에서 다국어 UI 확인
+   - 모든 페이지/컴포넌트에서 다국어 작동 검증
+   - 드래그 & 드롭 기능 + 다국어 호환성 ✅
+   - 플레이어 컨트롤 + WebRTC/HLS/RTSP 모두 테스트
    - 다중 카메라 동시 재생 테스트
+
+2. **다른 페이지들 다국어화** (선택사항)
+   - Live.tsx, Playback.tsx, Events.tsx 페이지 제목/설명
+   - 모달창 및 공통 컴포넌트 다국어화
+   - 에러 메시지 국제화
 
 3. **MariaDB 준비** (WSL Ubuntu)
    ```bash
@@ -125,9 +126,11 @@ vision-monitor/
 │   │   ├── hooks/                     ✅ 완료 (커스텀 훅)
 │   │   ├── services/                  ✅ 완료 (API)
 │   │   ├── types/                     ✅ 완료
-│   │   ├── App.tsx                    ✅ 완료 (React Router)
-│   │   └── main.tsx
-│   ├── package.json                   ✅ 완료
+│   │   ├── locales/                   ✅ 완료 (i18n - en.json, ko.json)
+│   │   ├── i18n.ts                    ✅ 완료 (i18next 설정)
+│   │   ├── App.tsx                    ✅ 완료 (React Router + i18n)
+│   │   └── main.tsx                   ✅ 완료 (i18n 초기화)
+│   ├── package.json                   ✅ 완료 (i18next 추가)
 │   ├── vite.config.ts                 ✅ 완료
 │   ├── index.html                     ✅ 생성됨
 │   └── tsconfig.json                  ✅ 완료
@@ -214,18 +217,30 @@ wsl -- bash -c "sudo service mysql start"
 
 ## 🔧 최근 수정사항
 
-### 2026-08-09 ⭐ (현재)
-- ✅ **HLS 스트림 재생 기능 정상 작동 확인**
-  - 무한 루프 버그 수정 (useStreamPlayer 의존성 최적화)
-  - 매니페스트 파싱 대기 로직 추가 (race condition 해결)
-  - AbortError 예외 처리 추가
-  - 비디오 컨트롤 중복 제거 (커스텀 PlayerControls만 표시)
-  - 자동 재연결 기능 비활성화 (CPU 리소스 절약)
-  - 드래그 핸들과 플레이어 영역 분리 (UX 개선)
-- ✅ StreamPlayer 추상화 아키텍처 검증 완료
-- ✅ 커밋 완료: `Fix: HLS stream playback and improve player UI`
+### 2026-08-09 ⭐ (현재 세션)
+**✅ 다국어 지원 (한국어 + 영어) 완전 구현**
+- i18next 라이브러리 설치 및 설정
+- 영어/한국어 번역 파일 생성 (en.json, ko.json)
+- Header에 언어 선택 버튼 추가 (🇺🇸 English / 🇰🇷 한국어)
+- Settings 페이지 전체 다국어화
+- 사이드바 네비게이션 메뉴 다국어화
+- localStorage에 언어 설정 자동 저장
+- 언어 변경 시 전체 UI 실시간 업데이트
+
+**✅ WebRTC 프로토콜 감지 개선**
+- 모든 형식의 WebRTC 주소 지원
+  - WebSocket: `ws://`, `wss://`
+  - HTTP/HTTPS WHEP: `/whep`, `/webrtc`, `/rtp`, `/play` 경로 감지
+- Settings에 스트림 프로토콜 선택 필드 추가
+  - HLS (.m3u8), WebRTC (WHEP), RTSP
+  - 자동 감지 또는 수동 선택
+- Camera 모델에 `streamProtocol` 필드 추가
+- DraggableCell에서 카메라의 프로토콜 반영
+
+- ✅ 커밋 완료: `feat: Add multi-language support and improve WebRTC protocol detection`
 
 ### 2026-08-05
+- ✅ HLS 스트림 재생 기능 정상 작동 확인
 - ✅ DraggableCell의 nested Droppable 제거 → 드래그&드롭 활성화
 - ✅ Frontend Team 4명 모두 완료
 - ✅ Grid Personalization (개인화 그리드) 100% 구현
@@ -241,13 +256,20 @@ wsl -- bash -c "sudo service mysql start"
 3. 복사한 내용을 프롬프트에 입력
 4. 다음 단계 실행:
    ```
-   "HLS 스트림 재생 기능이 정상 작동하는 것을 확인했다.
+   "다국어 지원(한국어/영어)과 WebRTC 프로토콜 개선이 완료되었다.
+   
+   현재 상황:
+   - ✅ Settings 페이지 완전 다국어화
+   - ✅ 사이드바 메뉴 다국어 지원
+   - ✅ 모든 WebRTC 주소 형식 지원 (ws://, wss://, HTTP/HTTPS)
+   - ✅ 카메라 추가 시 프로토콜 선택 가능
+   - ✅ localStorage에 언어 설정 자동 저장
    
    다음 작업:
-   1. Live.tsx의 mockCameras를 원래대로 복원 (1개 → 6개)
-   2. 다중 카메라 동시 재생 테스트 및 최적화
-   3. WebRTC/RTSP 플레이어도 마찬가지로 테스트
-   4. 그 후 Backend Team 작업 시작
+   1. Frontend 최종 테스트 (다중 카메라, 모든 프로토콜)
+   2. 다른 페이지들도 다국어화 (Live, Playback, Events)
+   3. Backend API 구현 시작
+   4. 데이터베이스 마이그레이션
    
    진행해주세요."
    ```
@@ -256,29 +278,37 @@ wsl -- bash -c "sudo service mysql start"
 
 ## 📊 통계
 
-- **총 개발 시간**: Phase 1 (4h) + Phase 2 (6h) + Phase 3-Frontend (8h) = ~18h
-- **생성된 코드**: 8,000+ 줄 (Frontend)
+- **총 개발 시간**: Phase 1 (4h) + Phase 2 (6h) + Phase 3-Frontend (10h) = ~20h
+- **생성된 코드**: 8,300+ 줄 (Frontend)
 - **컴포넌트**: 30+ 개
 - **테스트**: 79개 테스트 케이스
 - **타입**: 40+ 인터페이스
+- **언어 지원**: 2개 (한국어, 영어)
+- **번역 키**: 60+ 개
 
 ---
 
 ## 🎊 축하합니다!
 
-**Frontend HLS 스트림 재생 기능 완성!** 🎉
+**Frontend 다국어 지원 + WebRTC 프로토콜 개선 완성!** 🎉
 
-이제 http://localhost:3000에서 HLS 형식의 라이브 스트림이 정상적으로 재생됩니다.
+이제 http://localhost:3000에서:
+- ✅ 한국어/영어 실시간 전환 가능
+- ✅ 모든 형식의 WebRTC 주소 지원 (ws://, wss://, HTTP/HTTPS WHEP)
+- ✅ HLS/WebRTC/RTSP 모든 프로토콜 자동 감지 또는 수동 선택
+- ✅ Settings에서 카메라 추가 시 프로토콜 지정 가능
 
 ### 이번 세션의 주요 성과:
-- ✅ HLS 스트림 재생 완전 구현
-- ✅ 플레이어 UI 최적화
-- ✅ React 무한 루프 버그 해결
-- ✅ 매니페스트 파싱 race condition 해결
-- ✅ 드래그 & 드롭 UX 개선
+- ✅ i18next 다국어 프레임워크 구축
+- ✅ 헤더/사이드바/Settings 완전 다국어화
+- ✅ 영어/한국어 번역 파일 생성 (60+ 키)
+- ✅ 모든 WebRTC 주소 형식 지원
+- ✅ 스트림 프로토콜 선택 필드 추가
+- ✅ Camera 모델에 streamProtocol 필드 추가
+- ✅ localStorage 언어 설정 자동 저장
 
 **다음 단계**: 
-1. 테스트 카메라 수 복원
-2. 다중 카메라 동시 재생 검증
-3. WebRTC/RTSP 테스트
-4. Backend Team 구성 → Phase 3 Week 3-6 구현
+1. 다른 페이지들도 다국어화 (선택사항)
+2. Frontend 최종 테스트 (다중 카메라, 프로토콜 자동 감지)
+3. Backend Team 구성 → Phase 3 Week 3-6 API 구현
+4. 데이터베이스 마이그레이션 (Flyway)
