@@ -79,6 +79,9 @@ const cameraSlice = createSlice({
         state.selectedCameraId = action.payload.id
       }
     },
+    selectCamera: (state, action: PayloadAction<number>) => {
+      state.selectedCameraId = action.payload
+    },
     clearSelectedCamera: (state) => {
       state.selectedCameraId = null
       state.selectedCamera = null
@@ -152,13 +155,14 @@ const cameraSlice = createSlice({
       })
       .addCase(updateCameraAsync.fulfilled, (state, action) => {
         state.loading = false
-        if (action.payload) {
-          const index = state.cameras.findIndex((c) => c.id === action.payload.id)
+        const updatedCamera = action.payload
+        if (updatedCamera) {
+          const index = state.cameras.findIndex((c) => c.id === updatedCamera.id)
           if (index !== -1) {
-            state.cameras[index] = action.payload
+            state.cameras[index] = updatedCamera
           }
-          if (state.selectedCamera?.id === action.payload.id) {
-            state.selectedCamera = action.payload as CameraDetail
+          if (state.selectedCamera?.id === updatedCamera.id) {
+            state.selectedCamera = updatedCamera as CameraDetail
           }
         }
       })
@@ -193,6 +197,7 @@ const cameraSlice = createSlice({
 export const {
   setCameras,
   setSelectedCamera,
+  selectCamera,
   clearSelectedCamera,
   addCamera,
   setLoading,

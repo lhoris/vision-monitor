@@ -1,0 +1,61 @@
+# SEMI-GENERATED: `bok context` maps KUs->areas (union, preserves
+# authored criticality/open_gap). status는 `bok ready`가 계산.
+scope: core
+areas:
+- id: context-and-scope
+  criticality: high
+  kus: []
+- id: solution-strategy
+  criticality: normal
+  kus: []
+- id: building-blocks
+  criticality: high
+  kus:
+  - bok://core/reference/pkg-_bmad
+  - bok://core/reference/pkg-backend
+  - bok://core/reference/pkg-frontend
+  - bok://core/reference/pkg-scripts
+- id: runtime-behavior
+  criticality: high
+  kus: []
+- id: deployment-ops
+  criticality: normal
+  kus: []
+- id: crosscutting-concepts
+  criticality: normal
+  kus: []
+- id: decisions-rationale
+  criticality: high
+  kus: []
+- id: quality-requirements
+  criticality: normal
+  kus: []
+- id: risks-tech-debt
+  criticality: high
+  kus: []
+- id: glossary-ubiquitous-lang
+  criticality: normal
+  kus: []
+- id: data-model
+  criticality: critical
+  kus:
+  - bok://core/reference/table-alert_settings
+  - bok://core/reference/table-audit_logs
+  - bok://core/reference/table-cameras
+  - bok://core/reference/table-events
+  - bok://core/reference/table-layouts
+  - bok://core/reference/table-recordings
+  - bok://core/reference/table-streams
+  - bok://core/reference/table-users
+- id: business-rules
+  criticality: critical
+  kus: []
+- id: dependencies-eol
+  criticality: normal
+  kus: []
+- id: security-compliance
+  criticality: high
+  kus: []
+- id: team-bus-factor
+  criticality: high
+  kus: []

@@ -214,8 +214,9 @@ const eventSlice = createSlice({
     // acknowledgeEvent
     builder
       .addCase(acknowledgeEventAsync.fulfilled, (state, action) => {
-        if (action.payload) {
-          const index = state.events.findIndex((e) => e.id === action.payload.id)
+        const acknowledgedEvent = action.payload
+        if (acknowledgedEvent) {
+          const index = state.events.findIndex((e) => e.id === acknowledgedEvent.id)
           if (index !== -1) {
             state.events[index].acknowledged = true
           }
@@ -292,10 +293,11 @@ const eventSlice = createSlice({
       })
       .addCase(updateAlertSettingAsync.fulfilled, (state, action) => {
         state.loading = false
-        if (action.payload) {
-          const index = state.alertSettings.findIndex((s) => s.id === action.payload.id)
+        const updatedSetting = action.payload
+        if (updatedSetting) {
+          const index = state.alertSettings.findIndex((s) => s.id === updatedSetting.id)
           if (index !== -1) {
-            state.alertSettings[index] = action.payload
+            state.alertSettings[index] = updatedSetting
           }
         }
       })

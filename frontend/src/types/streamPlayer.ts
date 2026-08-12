@@ -21,14 +21,7 @@ export interface StreamSource {
 /**
  * 플레이어 상태
  */
-export enum PlayerState {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  PLAYING = 'playing',
-  PAUSED = 'paused',
-  ERROR = 'error',
-  SEEKING = 'seeking',
-}
+export type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'seeking'
 
 /**
  * 플레이어 이벤트 타입
@@ -62,14 +55,13 @@ export interface PlayerEvent {
 /**
  * 플레이어 에러 타입
  */
-export enum PlayerErrorType {
-  NETWORK = 'NETWORK_ERROR',
-  DECODE = 'DECODE_ERROR',
-  ABORT = 'ABORT_ERROR',
-  TIMEOUT = 'TIMEOUT_ERROR',
-  NOT_SUPPORTED = 'NOT_SUPPORTED_ERROR',
-  UNKNOWN = 'UNKNOWN_ERROR',
-}
+export type PlayerErrorType =
+  | 'NETWORK_ERROR'
+  | 'DECODE_ERROR'
+  | 'ABORT_ERROR'
+  | 'TIMEOUT_ERROR'
+  | 'NOT_SUPPORTED_ERROR'
+  | 'UNKNOWN_ERROR'
 
 /**
  * 플레이어 에러 정보
@@ -87,7 +79,7 @@ export interface PlayerError {
 export interface PlayerStats {
   currentTime: number
   duration: number
-  buffered: TimeRanges | { start: number; end: number }[]
+  buffered: TimeRanges | { start: number; end: number } | { start: number; end: number }[]
   volume: number
   muted: boolean
   playbackRate: number

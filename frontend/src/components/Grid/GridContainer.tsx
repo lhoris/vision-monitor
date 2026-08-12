@@ -1,6 +1,5 @@
 /**
- * Grid Container Component (2중 탭 구조)
- * 공정(상위탭) > 설비(하위탭) > 그리드 레이아웃
+ * Grid Container Component
  */
 
 import React, { useEffect, useState } from 'react'
@@ -22,7 +21,12 @@ import LayoutSelector from './LayoutSelector'
 import DraggableCell from './DraggableCell'
 import CameraSelector from './CameraSelector'
 import { useGridLayout } from './useGridLayout'
-import type { Tab, SubTab } from '@/types/layout'
+import {
+  moveCameraPosition,
+  placeCameraAtCell,
+  removeCameraPosition,
+} from './useGridDnd'
+import type { CameraPosition, Tab, SubTab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
 
 interface GridContainerProps {
@@ -30,7 +34,10 @@ interface GridContainerProps {
   cameras?: Camera[]
 }
 
-export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, cameras = [] }) => {
+export const GridContainer: React.FC<GridContainerProps> = ({
+  userId: _userId = 1,
+  cameras = [],
+}) => {
   const dispatch = useAppDispatch()
   const layout = useAppSelector((state) => state.layout.layout)
   const activeTabId = useAppSelector((state) => state.layout.activeTab)
@@ -47,13 +54,23 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
 
-  // 사용 중인 카메라 ID 추적
   useEffect(() => {
     if (activeSubTab) {
-      const used = activeSubTab.cameraPositions.map((pos) => pos.cameraId)
-      setUsedCameraIds(used)
+      setUsedCameraIds(activeSubTab.cameraPositions.map((position) => position.cameraId))
     }
   }, [activeSubTab])
+
+  const updateActiveSubTabPositions = (positions: CameraPosition[]) => {
+    if (!activeTab || !activeSubTab) return
+
+    dispatch(
+      updateCameraPositions({
+        tabId: activeTab.id,
+        subTabId: activeSubTab.id,
+        positions,
+      })
+    )
+  }
 
   const handleAddCamera = (cellId: string) => {
     setSelectedCellId(cellId)
@@ -65,95 +82,38 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   }
 
   const handleDrop = (cellIndex: number) => {
-    if (!draggedCameraId || !activeTab?.activeSubTab || !activeTabId) return
+    if (!draggedCameraId || !activeSubTab) return
 
-    const colsPerRow = activeSubTab!.gridConfig.cols
-    const targetRow = Math.floor(cellIndex / colsPerRow)
-    const targetCol = cellIndex % colsPerRow
-
-    // 드래그 소스 카메라의 현재 위치 찾기
-    const draggedCameraPos = activeSubTab!.cameraPositions.find(
-      (pos) => pos.cameraId === draggedCameraId
-    )
-    if (!draggedCameraPos) {
-      setDraggedCameraId(null)
-      return
-    }
-
-    // 드롭 위치에 이미 있는 카메라 찾기
-    const targetCameraPos = activeSubTab!.cameraPositions.find(
-      (pos) =>
-        pos.row === targetRow && pos.col === targetCol && pos.cameraId !== draggedCameraId
-    )
-
-    // 위치 교환하기
-    const updatedPositions = activeSubTab!.cameraPositions.map((pos) => {
-      if (pos.cameraId === draggedCameraId) {
-        return { ...pos, row: targetRow, col: targetCol }
-      }
-      if (targetCameraPos && pos.cameraId === targetCameraPos.cameraId) {
-        return { ...pos, row: draggedCameraPos.row, col: draggedCameraPos.col }
-      }
-      return pos
-    })
-
-    dispatch(
-      updateCameraPositions({
-        tabId: activeTabId,
-        subTabId: activeTab.activeSubTab,
-        positions: updatedPositions,
-      })
+    updateActiveSubTabPositions(
+      moveCameraPosition(
+        activeSubTab.cameraPositions,
+        draggedCameraId,
+        cellIndex,
+        activeSubTab.gridConfig.cols
+      )
     )
     setDraggedCameraId(null)
   }
 
   const removeCamera = (cameraId: number) => {
-    if (!activeTabId || !activeTab?.activeSubTab) return
-    const updatedPositions = activeSubTab!.cameraPositions.filter(
-      (pos) => pos.cameraId !== cameraId
-    )
-    dispatch(
-      updateCameraPositions({
-        tabId: activeTabId,
-        subTabId: activeTab.activeSubTab,
-        positions: updatedPositions,
-      })
+    if (!activeSubTab) return
+
+    updateActiveSubTabPositions(
+      removeCameraPosition(activeSubTab.cameraPositions, cameraId)
     )
   }
 
   const handleSelectCamera = (camera: Camera) => {
-    if (!selectedCellId || !activeTabId || !activeTab?.activeSubTab) return
+    if (!selectedCellId || !activeSubTab) return
 
     const cellIndex = parseInt(selectedCellId.split('-')[1])
-    const colsPerRow = activeSubTab!.gridConfig.cols
-    const row = Math.floor(cellIndex / colsPerRow)
-    const col = cellIndex % colsPerRow
-
-    const newPosition = {
-      cameraId: camera.id,
-      row,
-      col,
-      rowSpan: 1,
-      colSpan: 1,
-    }
-
-    const existingIndex = activeSubTab!.cameraPositions.findIndex(
-      (pos) => pos.row === row && pos.col === col
-    )
-
-    let updatedPositions = [...activeSubTab!.cameraPositions]
-    if (existingIndex !== -1) {
-      updatedPositions[existingIndex] = newPosition
-    } else {
-      updatedPositions.push(newPosition)
-    }
-
-    dispatch(
-      updateCameraPositions({
-        tabId: activeTabId,
-        subTabId: activeTab.activeSubTab,
-        positions: updatedPositions,
-      })
+    updateActiveSubTabPositions(
+      placeCameraAtCell(
+        activeSubTab.cameraPositions,
+        camera.id,
+        cellIndex,
+        activeSubTab.gridConfig.cols
+      )
     )
 
     setShowCameraSelector(false)
@@ -179,10 +139,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   }
 
   const handleAddSubTab = (subTab: SubTab) => {
+    if (!activeTabId) return
+
     dispatch(addSubTab({ tabId: activeTabId, subTab }))
-    if (activeTab) {
-      dispatch(setActiveSubTab({ tabId: activeTabId, subTabId: subTab.id }))
-    }
+    dispatch(setActiveSubTab({ tabId: activeTabId, subTabId: subTab.id }))
   }
 
   const handleRemoveSubTab = (subTabId: string) => {
@@ -190,10 +150,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
       alert('Cannot remove the last subtab')
       return
     }
-    dispatch(removeSubTab({ tabId: activeTabId, subTabId }))
+    dispatch(removeSubTab({ tabId: activeTab.id, subTabId }))
   }
 
   const handleReorderSubTabs = (fromIndex: number, toIndex: number) => {
+    if (!activeTabId) return
     dispatch(reorderSubTabs({ tabId: activeTabId, fromIndex, toIndex }))
   }
 
@@ -222,12 +183,14 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
   }
 
   const totalCells = activeSubTab.gridConfig.rows * activeSubTab.gridConfig.cols
-  const cameraMap = new Map(cameras.map((cam) => [cam.id, cam]))
+  const cameraMap = new Map(cameras.map((camera) => [camera.id, camera]))
 
   const cellsData = Array.from({ length: totalCells }, (_, index) => {
     const col = index % activeSubTab.gridConfig.cols
     const row = Math.floor(index / activeSubTab.gridConfig.cols)
-    const position = activeSubTab.cameraPositions.find((pos) => pos.row === row && pos.col === col)
+    const position = activeSubTab.cameraPositions.find(
+      (cameraPosition) => cameraPosition.row === row && cameraPosition.col === col
+    )
     const camera = position ? cameraMap.get(position.cameraId) : undefined
 
     return {
@@ -241,9 +204,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      {/* Tabs Bar with Grid Selector */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        {/* Top Tabs (공정) */}
         <TabsBar
           tabs={layout.tabs}
           activeTabId={activeTabId}
@@ -253,12 +214,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
           onReorderTabs={handleReorderTabs}
         />
 
-        {/* Sub Tabs (설비) with Layout Selector */}
         <SubTabsBar
           subTabs={activeTab.subTabs}
           activeSubTabId={activeTab.activeSubTab}
           onSubTabChange={(subTabId) =>
-            dispatch(setActiveSubTab({ tabId: activeTabId, subTabId }))
+            dispatch(setActiveSubTab({ tabId: activeTab.id, subTabId }))
           }
           onAddSubTab={handleAddSubTab}
           onRemoveSubTab={handleRemoveSubTab}
@@ -273,7 +233,6 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
         />
       </div>
 
-      {/* Grid Content */}
       <div className="flex-1 overflow-auto p-6">
         <div
           className="grid gap-4 auto-fit"
@@ -302,7 +261,6 @@ export const GridContainer: React.FC<GridContainerProps> = ({ userId = 1, camera
         </div>
       </div>
 
-      {/* Camera Selector Modal */}
       <CameraSelector
         isOpen={showCameraSelector}
         cameras={cameras}

@@ -9,6 +9,13 @@ describe('HLSPlayer', () => {
   let videoElement: HTMLVideoElement
   let player: HLSPlayer
 
+  const setVideoDuration = (duration: number) => {
+    Object.defineProperty(videoElement, 'duration', {
+      configurable: true,
+      value: duration,
+    })
+  }
+
   beforeEach(() => {
     // DOM에서 비디오 요소 생성
     videoElement = document.createElement('video')
@@ -65,13 +72,13 @@ describe('HLSPlayer', () => {
   })
 
   it('should seek to valid time', () => {
-    videoElement.duration = 100
+    setVideoDuration(100)
     player.seek(50)
     expect(videoElement.currentTime).toBe(50)
   })
 
   it('should clamp seek time', () => {
-    videoElement.duration = 100
+    setVideoDuration(100)
     player.seek(-10)
     expect(videoElement.currentTime).toBe(0)
 
@@ -80,7 +87,7 @@ describe('HLSPlayer', () => {
   })
 
   it('should return player stats', () => {
-    videoElement.duration = 100
+    setVideoDuration(100)
     videoElement.currentTime = 25
     videoElement.volume = 0.8
     videoElement.muted = false
@@ -94,41 +101,58 @@ describe('HLSPlayer', () => {
     expect(stats.playbackRate).toBe(1)
   })
 
-  it('should handle play event', (done) => {
+  it('should handle play event', () => {
+    const callback = vi.fn()
     player.on('timeupdate', (data) => {
       expect(data.state).toBe('playing')
-      done()
+      callback()
     })
 
     // 수동으로 play 이벤트 발생
     const playEvent = new Event('play')
     videoElement.dispatchEvent(playEvent)
+
+    expect(callback).toHaveBeenCalled()
   })
 
-  it('should handle pause event', (done) => {
+  it('should handle pause event', () => {
+    const callback = vi.fn()
     player.on('timeupdate', (data) => {
       expect(data.state).toBe('paused')
-      done()
+      callback()
     })
 
     const pauseEvent = new Event('pause')
     videoElement.dispatchEvent(pauseEvent)
+
+    expect(callback).toHaveBeenCalled()
   })
 
-  it('should handle ended event', (done) => {
+  it('should handle ended event', () => {
+    const callback = vi.fn()
     player.on('ended', () => {
       expect(player.getState()).toBe('idle')
-      done()
+      callback()
     })
 
     const endedEvent = new Event('ended')
     videoElement.dispatchEvent(endedEvent)
+
+    expect(callback).toHaveBeenCalled()
   })
 
   it('should cleanup resources on destroy', () => {
     player.destroy()
     expect(videoElement.src).toBe('')
     expect(player['listeners'].size).toBe(0)
+  })
+
+  it('should remove video event listeners on destroy', () => {
+    player.destroy()
+
+    videoElement.dispatchEvent(new Event('play'))
+
+    expect(player.getState()).toBe('idle')
   })
 
   it('should have quality levels array', () => {

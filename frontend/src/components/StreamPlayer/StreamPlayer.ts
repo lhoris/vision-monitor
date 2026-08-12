@@ -21,7 +21,7 @@ export abstract class StreamPlayer {
   protected listeners: Map<PlayerEventType, Set<Function>> = new Map()
   protected reconnectConfig: ReconnectConfig
   protected reconnectAttempts: number = 0
-  protected reconnectTimer: NodeJS.Timeout | null = null
+  protected reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(url: string, reconnectConfig?: ReconnectConfig) {
     this.url = url
@@ -156,7 +156,7 @@ export abstract class StreamPlayer {
           this.reconnectAttempts = 0
           this.emit('reconnected', {})
         })
-        .catch((error) => {
+        .catch(() => {
           this.attemptReconnect()
         })
     }, delay)

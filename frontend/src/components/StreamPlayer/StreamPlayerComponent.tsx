@@ -1,15 +1,7 @@
-/**
- * StreamPlayerComponent - React 컴포넌트
- * 통합 비디오 플레이어 UI
- */
-
-import React, { useRef, useEffect, useState } from 'react'
-import type { StreamPlayerProps, HLSQuality, PlayerState } from '@/types/streamPlayer'
+import React, { useEffect, useRef, useState } from 'react'
+import type { StreamPlayerProps, HLSQuality } from '@/types/streamPlayer'
 import { useStreamPlayer } from './useStreamPlayer'
 
-/**
- * 플레이어 컨트롤 바
- */
 const PlayerControls: React.FC<{
   isPlaying: boolean
   currentTime: number
@@ -52,12 +44,13 @@ const PlayerControls: React.FC<{
   const handlePlayPause = async () => {
     if (isPlaying) {
       onPause()
-    } else {
-      try {
-        await onPlay()
-      } catch (error) {
-        console.error('Error playing video:', error)
-      }
+      return
+    }
+
+    try {
+      await onPlay()
+    } catch (error) {
+      console.error('Error playing video:', error)
     }
   }
 
@@ -68,9 +61,9 @@ const PlayerControls: React.FC<{
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const percent = (e.clientX - rect.left) / rect.width
+  const handleProgressClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const percent = (event.clientX - rect.left) / rect.width
     onSeek(percent * duration)
   }
 
@@ -78,24 +71,17 @@ const PlayerControls: React.FC<{
 
   return (
     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-      {/* 진행률 바 */}
       <div
         className="w-full h-1 bg-gray-600 rounded cursor-pointer hover:h-2 transition-all mb-3"
         onClick={handleProgressClick}
         role="slider"
         aria-label="Seek"
       >
-        <div
-          className="h-full bg-red-500 rounded"
-          style={{ width: `${progressPercent}%` }}
-        />
+        <div className="h-full bg-red-500 rounded" style={{ width: `${progressPercent}%` }} />
       </div>
 
-      {/* 컨트롤 바 */}
       <div className="flex items-center justify-between text-white">
-        {/* 왼쪽: 재생, 음량 */}
         <div className="flex items-center gap-2">
-          {/* 재생/일시정지 */}
           <button
             onClick={handlePlayPause}
             className="hover:bg-white/20 rounded p-2 transition"
@@ -112,7 +98,6 @@ const PlayerControls: React.FC<{
             )}
           </button>
 
-          {/* 음량 제어 */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => onMutedChange(!muted)}
@@ -135,24 +120,21 @@ const PlayerControls: React.FC<{
               max="1"
               step="0.05"
               value={muted ? 0 : volume}
-              onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+              onChange={(event) => onVolumeChange(parseFloat(event.target.value))}
               className="w-16 cursor-pointer"
               aria-label="Volume"
             />
           </div>
 
-          {/* 시간 표시 */}
           <span className="text-sm ml-2">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
 
-        {/* 오른쪽: 재생 속도, 품질, 자막, 설정, 전체화면 */}
         <div className="flex items-center gap-2">
-          {/* 재생 속도 */}
           <select
             value={playbackRate}
-            onChange={(e) => onPlaybackRateChange(parseFloat(e.target.value))}
+            onChange={(event) => onPlaybackRateChange(parseFloat(event.target.value))}
             className="bg-black/50 text-white text-sm px-2 py-1 rounded hover:bg-black/70"
             aria-label="Playback speed"
           >
@@ -164,13 +146,10 @@ const PlayerControls: React.FC<{
             <option value="2">2x</option>
           </select>
 
-          {/* 품질 선택 */}
           {showQualitySelector && qualityLevels.length > 0 && (
             <select
-              value={qualityLevels.findIndex(
-                (q) => currentQuality?.level === q.level
-              )}
-              onChange={(e) => onQualityChange(parseInt(e.target.value))}
+              value={qualityLevels.findIndex((quality) => currentQuality?.level === quality.level)}
+              onChange={(event) => onQualityChange(parseInt(event.target.value))}
               className="bg-black/50 text-white text-sm px-2 py-1 rounded hover:bg-black/70"
               aria-label="Video quality"
             >
@@ -183,7 +162,6 @@ const PlayerControls: React.FC<{
             </select>
           )}
 
-          {/* 설정 */}
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="hover:bg-white/20 rounded p-2 transition"
@@ -194,7 +172,6 @@ const PlayerControls: React.FC<{
             </svg>
           </button>
 
-          {/* 설정 메뉴 (선택) */}
           {showSettings && (
             <div className="absolute bottom-16 right-0 bg-black/90 rounded p-2 text-white text-sm min-w-32">
               {showCaptions && (
@@ -213,24 +190,18 @@ const PlayerControls: React.FC<{
   )
 }
 
-/**
- * 에러 표시 컴포넌트
- */
 const ErrorDisplay: React.FC<{ error: string }> = ({ error }) => (
   <div className="flex items-center justify-center h-full bg-black/80 text-white">
     <div className="text-center">
       <svg className="w-12 h-12 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <p className="font-semibold mb-2">재생 오류</p>
+      <p className="font-semibold mb-2">Playback error</p>
       <p className="text-sm text-gray-400">{error}</p>
     </div>
   </div>
 )
 
-/**
- * 로딩 인디케이터
- */
 const LoadingSpinner: React.FC = () => (
   <div className="flex items-center justify-center h-full">
     <div className="animate-spin">
@@ -242,15 +213,12 @@ const LoadingSpinner: React.FC = () => (
   </div>
 )
 
-/**
- * StreamPlayerComponent - 메인 플레이어 컴포넌트
- */
 export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   source,
   autoplay = false,
   controls = true,
-  muted: initialMuted = false,
-  loop = false,
+  muted: _initialMuted = false,
+  loop: _loop = false,
   width = '100%',
   height = '100%',
   poster,
@@ -265,11 +233,12 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   onQualityChange: onQualityChangeCallback,
   showQualitySelector = true,
   showCaptions = false,
-  captions = [],
+  captions: _captions = [],
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const latestStatsRef = useRef({ currentTime: 0, duration: 0 })
   const [showControls, setShowControls] = useState(true)
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const {
     state,
@@ -297,26 +266,36 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
     },
   })
 
-  // 상태 변경 콜백
+  useEffect(() => {
+    latestStatsRef.current = {
+      currentTime: stats.currentTime,
+      duration: stats.duration,
+    }
+  }, [stats.currentTime, stats.duration])
+
   useEffect(() => {
     if (onStateChange) {
       onStateChange(state)
     }
   }, [state, onStateChange])
 
-  // 에러 콜백
   useEffect(() => {
     if (error && onError) {
       onError(error)
     }
   }, [error, onError])
 
-  // 이벤트 콜백 등록
   useEffect(() => {
+    const handleTimeUpdate = () => {
+      if (!onTimeUpdate) return
+      const { currentTime, duration } = latestStatsRef.current
+      onTimeUpdate(currentTime, duration)
+    }
+
     if (onPlay) on('play', onPlay)
     if (onPause) on('pause', onPause)
     if (onEnded) on('ended', onEnded)
-    if (onTimeUpdate) on('timeupdate', () => onTimeUpdate(stats.currentTime, stats.duration))
+    if (onTimeUpdate) on('timeupdate', handleTimeUpdate)
     if (onBuffering) on('buffering', onBuffering)
     if (onQualityChangeCallback) on('qualitychange', onQualityChangeCallback)
 
@@ -324,20 +303,18 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
       if (onPlay) off('play', onPlay)
       if (onPause) off('pause', onPause)
       if (onEnded) off('ended', onEnded)
-      if (onTimeUpdate) off('timeupdate', () => onTimeUpdate(stats.currentTime, stats.duration))
+      if (onTimeUpdate) off('timeupdate', handleTimeUpdate)
       if (onBuffering) off('buffering', onBuffering)
       if (onQualityChangeCallback) off('qualitychange', onQualityChangeCallback)
     }
-  }, [on, off, onPlay, onPause, onEnded, onTimeUpdate, onBuffering, onQualityChangeCallback, stats])
+  }, [on, off, onPlay, onPause, onEnded, onTimeUpdate, onBuffering, onQualityChangeCallback])
 
-  // 자동 재생
   useEffect(() => {
     if (autoplay && state === 'idle') {
       play().catch(console.error)
     }
   }, [autoplay, state, play])
 
-  // 컨트롤 숨김 타이머
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true)
@@ -349,8 +326,16 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
 
     if (containerRef.current && state === 'playing') {
       containerRef.current.addEventListener('mousemove', handleMouseMove)
-      return () => containerRef.current?.removeEventListener('mousemove', handleMouseMove)
+      return () => {
+        containerRef.current?.removeEventListener('mousemove', handleMouseMove)
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current)
+          controlsTimeoutRef.current = null
+        }
+      }
     }
+
+    return undefined
   }, [state])
 
   return (
@@ -359,17 +344,10 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
       className={`relative bg-black overflow-hidden ${className}`}
       style={{ width, height }}
     >
-      {/* 에러 표시 */}
-      {error && (
-        <ErrorDisplay error={error.message} />
-      )}
+      {error && <ErrorDisplay error={error.message} />}
 
-      {/* 로딩 표시 */}
-      {isLoading && !error && (
-        <LoadingSpinner />
-      )}
+      {isLoading && !error && <LoadingSpinner />}
 
-      {/* 컨트롤 바 */}
       {controls && !error && showControls && state !== 'idle' && (
         <PlayerControls
           isPlaying={state === 'playing'}
@@ -392,7 +370,6 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
         />
       )}
 
-      {/* 초기 상태: 포스터 + 재생 버튼 */}
       {state === 'idle' && !error && (
         <div
           className="absolute inset-0 flex items-center justify-center cursor-pointer group"

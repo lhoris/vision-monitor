@@ -3,7 +3,7 @@
  * JSMpeg을 이용한 RTSP-over-WebSocket 재생
  */
 
-import type { PlayerError, PlayerStats, ReconnectConfig } from '@/types/streamPlayer'
+import type { PlayerStats, ReconnectConfig } from '@/types/streamPlayer'
 import { StreamPlayer } from './StreamPlayer'
 
 /**
@@ -26,6 +26,11 @@ export class RTSPPlayer extends StreamPlayer {
   private canvasElement: HTMLCanvasElement | null = null
   private jsmpegPlayer: JSMpegPlayer | null = null
   private wsUrl: string
+  private readonly handleCanvasClick = () => {
+    if (this.canvasElement?.requestFullscreen) {
+      this.canvasElement.requestFullscreen()
+    }
+  }
 
   constructor(
     canvasElement: HTMLCanvasElement,
@@ -66,13 +71,7 @@ export class RTSPPlayer extends StreamPlayer {
     this.canvasElement.height = 1080
 
     // 클릭 시 전체화면
-    this.canvasElement.addEventListener('click', () => {
-      if (this.canvasElement) {
-        if (this.canvasElement.requestFullscreen) {
-          this.canvasElement.requestFullscreen()
-        }
-      }
-    })
+    this.canvasElement.addEventListener('click', this.handleCanvasClick)
   }
 
   /**
@@ -181,7 +180,7 @@ export class RTSPPlayer extends StreamPlayer {
   /**
    * 시간 이동
    */
-  seek(time: number): void {
+  seek(_time: number): void {
     // RTSP는 시간 이동을 지원하지 않음
     console.warn('Seeking is not supported for RTSP streams')
   }
@@ -205,7 +204,7 @@ export class RTSPPlayer extends StreamPlayer {
   /**
    * 재생 속도 설정
    */
-  setPlaybackRate(rate: number): void {
+  setPlaybackRate(_rate: number): void {
     // RTSP는 재생 속도 조절을 지원하지 않음
     console.warn('Playback rate adjustment is not supported for RTSP streams')
   }
@@ -239,6 +238,7 @@ export class RTSPPlayer extends StreamPlayer {
     }
 
     if (this.canvasElement) {
+      this.canvasElement.removeEventListener('click', this.handleCanvasClick)
       this.canvasElement.width = 0
       this.canvasElement.height = 0
     }

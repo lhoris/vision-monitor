@@ -250,4 +250,42 @@ describe('useStreamPlayer', () => {
 
     expect(result.current.player).toBeTruthy()
   })
+
+  it('should replace media elements when protocol changes', () => {
+    const hlsSource: StreamSource = {
+      url: 'http://example.com/stream.m3u8',
+      protocol: 'hls',
+    }
+    const rtspSource: StreamSource = {
+      url: 'rtsp://example.com/stream',
+      protocol: 'rtsp',
+    }
+
+    const { rerender } = renderHook(
+      ({ source }) => useStreamPlayer(containerRef, source),
+      { initialProps: { source: hlsSource } }
+    )
+
+    expect(containerRef.current?.querySelectorAll('video')).toHaveLength(1)
+    expect(containerRef.current?.querySelectorAll('canvas')).toHaveLength(0)
+
+    rerender({ source: rtspSource })
+
+    expect(containerRef.current?.querySelectorAll('video')).toHaveLength(0)
+    expect(containerRef.current?.querySelectorAll('canvas')).toHaveLength(1)
+  })
+
+  it('should remove media elements on unmount', () => {
+    const source: StreamSource = {
+      url: 'http://example.com/stream.m3u8',
+      protocol: 'hls',
+    }
+
+    const { unmount } = renderHook(() => useStreamPlayer(containerRef, source))
+    expect(containerRef.current?.querySelectorAll('video')).toHaveLength(1)
+
+    unmount()
+
+    expect(containerRef.current?.querySelectorAll('video')).toHaveLength(0)
+  })
 })

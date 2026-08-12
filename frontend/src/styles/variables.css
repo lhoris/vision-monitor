@@ -78,8 +78,31 @@
   }
 }
 
-/* Explicitly set dark mode via data attribute */
+/* Explicitly set theme via data attribute */
+:root[data-theme='theme1'],
+:root[data-theme='light'] {
+  --color-primary: #0ea5e9;
+  --color-primary-dark: #0284c7;
+  --color-primary-light: #67e8f9;
+
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #eef6ff;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94a3b8;
+
+  --color-border: #dbeafe;
+  --color-border-light: #eff6ff;
+}
+
+:root[data-theme='theme2'],
 :root[data-theme='dark'] {
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
+
   --color-bg-primary: #0f172a;
   --color-bg-secondary: #1e293b;
   --color-bg-tertiary: #334155;
@@ -92,15 +115,19 @@
   --color-border-light: #1e293b;
 }
 
-:root[data-theme='light'] {
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8fafc;
-  --color-bg-tertiary: #f1f5f9;
+:root[data-theme='theme3'] {
+  --color-primary: #10b981;
+  --color-primary-dark: #059669;
+  --color-primary-light: #34d399;
 
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #94a3b8;
+  --color-bg-primary: #07110f;
+  --color-bg-secondary: #0d1f1b;
+  --color-bg-tertiary: #12352d;
 
-  --color-border: #e2e8f0;
-  --color-border-light: #f1f5f9;
+  --color-text-primary: #ecfdf5;
+  --color-text-secondary: #a7f3d0;
+  --color-text-tertiary: #6ee7b7;
+
+  --color-border: #1f4d42;
+  --color-border-light: #102a24;
 }

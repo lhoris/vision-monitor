@@ -9,7 +9,6 @@ import {
   Card,
   CardBody,
   CardHeader,
-  CardFooter,
   Button,
   Input,
   Select,
@@ -31,10 +30,6 @@ export function Settings() {
   const [editingCamera, setEditingCamera] = useState<Camera | null>(null)
 
   // 디버깅: 번역 제대로 로드되는지 확인
-  console.log('Settings - Current language:', i18n.language)
-  console.log('settings.title translation:', t('settings.title'))
-  console.log('All available namespaces:', i18n.options.ns)
-  console.log('All resources:', i18n.options.resources)
   const [formData, setFormData] = useState<Omit<Camera, 'id'>>({
     name: '',
     location: '',
@@ -73,9 +68,9 @@ export function Settings() {
   const handleSave = () => {
     if (editingCamera) {
       dispatch(
-        updateCamera({
-          ...editingCamera,
-          ...formData,
+        updateCameraAsync({
+          id: editingCamera.id,
+          camera: formData,
         })
       )
     } else {

@@ -85,70 +85,62 @@ describe('StreamPlayer', () => {
     expect(player.getState()).toBe('paused')
   })
 
-  it('should emit events', (done) => {
-    player.on('play', () => {
-      expect(true).toBe(true)
-      done()
-    })
+  it('should emit events', async () => {
+    const callback = vi.fn()
+    player.on('timeupdate', callback)
 
-    player.play().catch(() => {
-      // Handle error
-    })
+    await player.play()
+
+    expect(callback).toHaveBeenCalled()
   })
 
-  it('should register and trigger event listeners', (done) => {
+  it('should register and trigger event listeners', async () => {
     const callback = vi.fn()
-    player.on('pause', callback)
+    player.on('timeupdate', callback)
+    await player.play()
     player.pause()
 
-    setTimeout(() => {
-      expect(callback).toHaveBeenCalled()
-      done()
-    }, 100)
+    expect(callback).toHaveBeenCalledTimes(2)
   })
 
-  it('should remove event listeners', () => {
+  it('should remove event listeners', async () => {
     const callback = vi.fn()
-    player.on('play', callback)
-    player.off('play', callback)
-    player.play().catch(() => {
-      // Handle error
-    })
+    player.on('timeupdate', callback)
+    player.off('timeupdate', callback)
+    await player.play()
 
-    setTimeout(() => {
-      expect(callback).not.toHaveBeenCalled()
-    }, 100)
+    expect(callback).not.toHaveBeenCalled()
   })
 
-  it('should handle multiple listeners on same event', (done) => {
+  it('should handle multiple listeners on same event', async () => {
     const callback1 = vi.fn()
     const callback2 = vi.fn()
 
-    player.on('play', callback1)
-    player.on('play', callback2)
+    player.on('timeupdate', callback1)
+    player.on('timeupdate', callback2)
 
-    player.play().catch(() => {
-      // Handle error
-    })
+    await player.play()
 
-    setTimeout(() => {
-      expect(callback1).toHaveBeenCalled()
-      expect(callback2).toHaveBeenCalled()
-      done()
-    }, 100)
+    expect(callback1).toHaveBeenCalled()
+    expect(callback2).toHaveBeenCalled()
   })
 
-  it('should handle errors', (done) => {
+  it('should handle errors', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const callback = vi.fn()
     player.on('error', (error) => {
       expect(error.type).toBe('NETWORK_ERROR')
       expect(error.message).toContain('Network error')
-      done()
+      callback()
     })
 
     player['handleError']({
       type: 'NETWORK_ERROR',
       message: 'Network error: Connection failed',
     })
+
+    expect(callback).toHaveBeenCalled()
+    errorSpy.mockRestore()
   })
 
   it('should return player stats', () => {
@@ -162,7 +154,7 @@ describe('StreamPlayer', () => {
 
   it('should cleanup listeners on destroy', () => {
     const callback = vi.fn()
-    player.on('play', callback)
+    player.on('timeupdate', callback)
     player.destroy()
 
     expect(player['listeners'].size).toBe(0)

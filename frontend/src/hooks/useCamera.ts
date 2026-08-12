@@ -15,7 +15,7 @@ import {
   clearSelectedCamera,
   clearError,
 } from '@/store/slices/cameraSlice'
-import type { Camera, CameraDetail } from '@/types/camera'
+import type { Camera } from '@/types/camera'
 
 export function useCamera() {
   const dispatch = useAppDispatch()

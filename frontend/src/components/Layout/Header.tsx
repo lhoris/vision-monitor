@@ -6,7 +6,50 @@ import {
   toggleSidebar,
   setThemeMode,
 } from '@/store/slices/uiSlice'
+import type { ThemeMode } from '@/store/slices/uiSlice'
 import { logout } from '@/store/slices/authSlice'
+
+const themeOptions: Array<{
+  id: ThemeMode
+  swatch: string
+}> = [
+  {
+    id: 'theme1',
+    swatch: 'bg-sky-500',
+  },
+  {
+    id: 'theme2',
+    swatch: 'bg-indigo-500',
+  },
+  {
+    id: 'theme3',
+    swatch: 'bg-emerald-500',
+  },
+]
+
+const getThemeLabel = (theme: ThemeMode, language: string): string => {
+  const themeNumber = theme.replace('theme', '')
+  return language === 'ko' ? `테마 ${themeNumber}` : `Theme ${themeNumber}`
+}
+
+const getThemeDescription = (theme: ThemeMode, language: string): string => {
+  const descriptions: Record<ThemeMode, { en: string; ko: string }> = {
+    theme1: {
+      en: 'Bright control room',
+      ko: '밝은 관제실',
+    },
+    theme2: {
+      en: 'Classic dark VMS',
+      ko: '기본 다크 VMS',
+    },
+    theme3: {
+      en: 'Mint command center',
+      ko: '민트 관제 센터',
+    },
+  }
+
+  return language === 'ko' ? descriptions[theme].ko : descriptions[theme].en
+}
 
 export function Header() {
   const dispatch = useAppDispatch()
@@ -17,17 +60,16 @@ export function Header() {
   const user = useAppSelector((state) => state.auth.user)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const languageMenuRef = useRef<HTMLDivElement>(null)
+  const themeMenuRef = useRef<HTMLDivElement>(null)
+  const selectedTheme = themeOptions.find((theme) => theme.id === themeMode) ?? themeOptions[1]
+  const selectedThemeLabel = getThemeLabel(selectedTheme.id, i18n.language)
 
-  const handleThemeToggle = () => {
-    const newMode = themeMode === 'dark' ? 'light' : 'dark'
-    dispatch(setThemeMode(newMode))
-    if (newMode === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+  const handleThemeChange = (theme: ThemeMode) => {
+    dispatch(setThemeMode(theme))
+    setThemeMenuOpen(false)
   }
 
   const handleLogout = () => {
@@ -50,13 +92,17 @@ export function Header() {
       if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
         setLanguageMenuOpen(false)
       }
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setThemeMenuOpen(false)
+      }
     }
 
-    if (profileMenuOpen || languageMenuOpen) {
+    if (profileMenuOpen || languageMenuOpen || themeMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [profileMenuOpen, languageMenuOpen])
+    return undefined
+  }, [profileMenuOpen, languageMenuOpen, themeMenuOpen])
 
   return (
     <header className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
@@ -124,34 +170,52 @@ export function Header() {
             </button>
           </div>
 
-          {/* Theme Toggle */}
-          <div className="relative group">
+          {/* Theme Selector */}
+          <div className="relative" ref={themeMenuRef}>
             <button
-              onClick={handleThemeToggle}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title="Toggle theme"
+              onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+              className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-sm font-medium text-gray-700 dark:text-gray-300"
+              title="Select theme"
             >
-              {themeMode === 'dark' ? (
-                <svg
-                  className="w-5 h-5 text-yellow-500"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10.5 1.5H9.5V.5h1v1zm4.384 2.116l.707-.707.707.707-.707.707-.707-.707zm2.616 1.384h1v1h-1v-1zM15 10.5v-1h1v1h-1zm1.384 4.384l.707.707-.707.707-.707-.707.707-.707zM10.5 15.5h-1v-1h1v1zm-4.384-2.116l-.707.707-.707-.707.707-.707.707.707zM3.5 10.5v-1h-1v1h1zm-1.384-4.384l-.707-.707.707-.707.707.707-.707.707zM10 5a5 5 0 110 10A5 5 0 0110 5z" />
-                </svg>
-              ) : (
-                <svg
-                  className="w-5 h-5 text-gray-700"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
+              <span className={`h-4 w-4 rounded-full ${selectedTheme.swatch}`} />
+              <span className="hidden sm:inline">{selectedThemeLabel}</span>
+              <svg
+                className={`w-4 h-4 text-gray-500 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
-            <div className="absolute top-full mt-2 left-0 hidden group-hover:block bg-gray-900 dark:bg-gray-950 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-50">
-              {themeMode === 'dark' ? 'Light Mode' : 'Dark Mode'}
-            </div>
+            {themeMenuOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                {themeOptions.map((theme) => {
+                  const label = getThemeLabel(theme.id, i18n.language)
+                  const description = getThemeDescription(theme.id, i18n.language)
+
+                  return (
+                    <button
+                      key={theme.id}
+                      onClick={() => handleThemeChange(theme.id)}
+                      className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center gap-3 ${
+                        themeMode === theme.id
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <span className={`h-4 w-4 rounded-full ${theme.swatch}`} />
+                      <span>
+                        <span className="block">{label}</span>
+                        <span className="block text-xs font-normal text-gray-500 dark:text-gray-400">
+                          {description}
+                        </span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Language Toggle */}

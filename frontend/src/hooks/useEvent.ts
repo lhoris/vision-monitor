@@ -15,7 +15,7 @@ import {
   createAlertSettingAsync,
   updateAlertSettingAsync,
   deleteAlertSettingAsync,
-  setEventFilter,
+  setFilter,
   addEvent,
   updateEvent,
   acknowledgeEvent,
@@ -135,7 +135,7 @@ export function useEvent() {
    */
   const onSetFilter = useCallback(
     (filterData: typeof filter) => {
-      dispatch(setEventFilter(filterData))
+      dispatch(setFilter(filterData))
     },
     [dispatch]
   )

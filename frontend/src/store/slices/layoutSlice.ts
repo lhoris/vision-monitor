@@ -4,13 +4,27 @@
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
 import { layoutService } from '@/services/layoutService'
-import type { Layout, Tab, SubTab, GridConfig, LayoutState } from '@/types/layout'
+import type { Layout, Tab, SubTab, GridConfig, LayoutState, CameraPosition } from '@/types/layout'
 
 const initialState: LayoutState = {
   layout: null,
   loading: false,
   error: null,
   activeTab: '',
+}
+
+function getValidActiveTabId(layout: Layout): string {
+  const hasSavedActiveTab = layout.tabs.some((tab) => tab.id === layout.activeTab)
+  return hasSavedActiveTab ? layout.activeTab : layout.tabs[0]?.id || ''
+}
+
+function setLayoutAndActiveTab(state: LayoutState, layout: Layout): void {
+  const activeTab = getValidActiveTabId(layout)
+  state.layout = {
+    ...layout,
+    activeTab,
+  }
+  state.activeTab = activeTab
 }
 
 /**
@@ -52,6 +66,9 @@ const layoutSlice = createSlice({
      */
     setActiveTab: (state, action: PayloadAction<string>) => {
       state.activeTab = action.payload
+      if (state.layout) {
+        state.layout.activeTab = action.payload
+      }
     },
 
     /**
@@ -81,8 +98,10 @@ const layoutSlice = createSlice({
     removeTab: (state, action: PayloadAction<string>) => {
       if (state.layout) {
         state.layout.tabs = state.layout.tabs.filter(tab => tab.id !== action.payload)
-        if (state.activeTab === action.payload && state.layout.tabs.length > 0) {
-          state.activeTab = state.layout.tabs[0].id
+        if (state.activeTab === action.payload || state.layout.activeTab === action.payload) {
+          const nextActiveTab = state.layout.tabs[0]?.id || ''
+          state.activeTab = nextActiveTab
+          state.layout.activeTab = nextActiveTab
         }
       }
     },
@@ -121,8 +140,8 @@ const layoutSlice = createSlice({
         const tab = state.layout.tabs.find(t => t.id === action.payload.tabId)
         if (tab) {
           tab.subTabs = tab.subTabs.filter(st => st.id !== action.payload.subTabId)
-          if (tab.activeSubTab === action.payload.subTabId && tab.subTabs.length > 0) {
-            tab.activeSubTab = tab.subTabs[0].id
+          if (tab.activeSubTab === action.payload.subTabId) {
+            tab.activeSubTab = tab.subTabs[0]?.id || ''
           }
         }
       }
@@ -163,7 +182,7 @@ const layoutSlice = createSlice({
     /**
      * 카메라 위치 업데이트 (하위 탭 기준)
      */
-    updateCameraPositions: (state, action: PayloadAction<{ tabId: string; subTabId: string; positions: any[] }>) => {
+    updateCameraPositions: (state, action: PayloadAction<{ tabId: string; subTabId: string; positions: CameraPosition[] }>) => {
       if (state.layout) {
         const tab = state.layout.tabs.find(t => t.id === action.payload.tabId)
         if (tab) {
@@ -190,9 +209,8 @@ const layoutSlice = createSlice({
       })
       .addCase(fetchUserLayout.fulfilled, (state, action) => {
         state.loading = false
-        state.layout = action.payload
-        if (action.payload?.tabs.length) {
-          state.activeTab = action.payload.tabs[0].id
+        if (action.payload) {
+          setLayoutAndActiveTab(state, action.payload)
         }
       })
       .addCase(fetchUserLayout.rejected, (state, action) => {
@@ -205,7 +223,9 @@ const layoutSlice = createSlice({
       })
       .addCase(saveLayout.fulfilled, (state, action) => {
         state.loading = false
-        state.layout = action.payload
+        if (action.payload) {
+          setLayoutAndActiveTab(state, action.payload)
+        }
       })
       .addCase(saveLayout.rejected, (state, action) => {
         state.loading = false
@@ -217,7 +237,9 @@ const layoutSlice = createSlice({
       })
       .addCase(updateLayout.fulfilled, (state, action) => {
         state.loading = false
-        state.layout = action.payload
+        if (action.payload) {
+          setLayoutAndActiveTab(state, action.payload)
+        }
       })
       .addCase(updateLayout.rejected, (state, action) => {
         state.loading = false

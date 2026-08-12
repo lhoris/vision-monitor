@@ -1,6 +1,5 @@
 /**
  * Custom Hook for Layout Management
- * 개인화된 그리드 레이아웃 관리
  */
 
 import { useCallback } from 'react'
@@ -15,18 +14,21 @@ import {
   saveLayout,
   updateLayout,
 } from '@/store/slices/layoutSlice'
-import type { Tab, GridConfig } from '@/types/layout'
+import type { Tab, GridConfig, CameraPosition } from '@/types/layout'
+import {
+  addLayoutTab,
+  removeLayoutTab,
+  updateLayoutCameraPositions,
+  updateLayoutGridConfig,
+} from './layoutMutations'
 
-export function useLayout(userId?: number) {
+export function useLayout(_userId?: number) {
   const dispatch = useAppDispatch()
   const layout = useAppSelector((state) => state.layout.layout)
   const activeTab = useAppSelector((state) => state.layout.activeTab)
   const loading = useAppSelector((state) => state.layout.loading)
   const error = useAppSelector((state) => state.layout.error)
 
-  /**
-   * 사용자 레이아웃 불러오기
-   */
   const loadLayout = useCallback(
     (id: number) => {
       dispatch(fetchUserLayout(id))
@@ -34,9 +36,6 @@ export function useLayout(userId?: number) {
     [dispatch]
   )
 
-  /**
-   * 활성 탭 변경
-   */
   const onSetActiveTab = useCallback(
     (tabId: string) => {
       dispatch(setActiveTab(tabId))
@@ -44,53 +43,43 @@ export function useLayout(userId?: number) {
     [dispatch]
   )
 
-  /**
-   * 탭 추가
-   */
   const onAddTab = useCallback(
     (tab: Tab) => {
       dispatch(addTab(tab))
       if (layout) {
-        dispatch(saveLayout(layout))
+        dispatch(saveLayout(addLayoutTab(layout, tab)))
       }
     },
     [dispatch, layout]
   )
 
-  /**
-   * 탭 제거
-   */
   const onRemoveTab = useCallback(
     (tabId: string) => {
       dispatch(removeTab(tabId))
       if (layout) {
-        dispatch(saveLayout(layout))
+        dispatch(saveLayout(removeLayoutTab(layout, tabId)))
       }
     },
     [dispatch, layout]
   )
 
-  /**
-   * 그리드 설정 업데이트
-   */
   const onUpdateGridConfig = useCallback(
-    (tabId: string, config: GridConfig) => {
-      dispatch(updateGridConfig({ tabId, config }))
+    (tabId: string, subTabId: string, config: GridConfig) => {
+      dispatch(updateGridConfig({ tabId, subTabId, config }))
       if (layout) {
-        dispatch(updateLayout({ id: layout.id, layout }))
+        const nextLayout = updateLayoutGridConfig(layout, tabId, subTabId, config)
+        dispatch(updateLayout({ id: layout.id, layout: nextLayout }))
       }
     },
     [dispatch, layout]
   )
 
-  /**
-   * 카메라 위치 업데이트
-   */
   const onUpdateCameraPositions = useCallback(
-    (tabId: string, positions: any[]) => {
-      dispatch(updateCameraPositions({ tabId, positions }))
+    (tabId: string, subTabId: string, positions: CameraPosition[]) => {
+      dispatch(updateCameraPositions({ tabId, subTabId, positions }))
       if (layout) {
-        dispatch(updateLayout({ id: layout.id, layout }))
+        const nextLayout = updateLayoutCameraPositions(layout, tabId, subTabId, positions)
+        dispatch(updateLayout({ id: layout.id, layout: nextLayout }))
       }
     },
     [dispatch, layout]

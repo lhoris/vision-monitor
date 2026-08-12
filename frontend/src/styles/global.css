@@ -22,6 +22,145 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+html[data-theme='theme1'] header {
+  background: linear-gradient(90deg, #ffffff, #eff6ff) !important;
+  border-color: #bfdbfe !important;
+}
+
+html[data-theme='theme1'] .bg-gray-50 {
+  background-color: #eff6ff !important;
+}
+
+html[data-theme='theme1'] .bg-white {
+  background-color: #ffffff !important;
+}
+
+html[data-theme='theme1'] .border-gray-200,
+html[data-theme='theme1'] .border-gray-300 {
+  border-color: #bfdbfe !important;
+}
+
+html[data-theme='theme1'] .text-blue-600,
+html[data-theme='theme1'] .text-indigo-600 {
+  color: #0284c7 !important;
+}
+
+html[data-theme='theme1'] .bg-blue-50 {
+  background-color: #e0f2fe !important;
+}
+
+html[data-theme='theme1'] .bg-blue-600,
+html[data-theme='theme1'] .from-blue-500 {
+  background-color: #0284c7 !important;
+}
+
+html[data-theme='theme1'] .from-blue-500,
+html[data-theme='theme1'] .from-blue-600 {
+  --tw-gradient-from: #0ea5e9 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(14 165 233 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html[data-theme='theme1'] .to-indigo-600 {
+  --tw-gradient-to: #0284c7 var(--tw-gradient-to-position) !important;
+}
+
+html[data-theme='theme2'] header {
+  background: linear-gradient(90deg, #111827, #1e1b4b) !important;
+  border-color: #3730a3 !important;
+}
+
+html[data-theme='theme2'].dark .dark\:bg-gray-900 {
+  background-color: #0f172a !important;
+}
+
+html[data-theme='theme2'].dark .dark\:bg-gray-800 {
+  background-color: #1e1b4b !important;
+}
+
+html[data-theme='theme2'].dark .dark\:bg-gray-700 {
+  background-color: #312e81 !important;
+}
+
+html[data-theme='theme2'].dark .dark\:border-gray-700,
+html[data-theme='theme2'].dark .dark\:border-gray-600 {
+  border-color: #3730a3 !important;
+}
+
+html[data-theme='theme2'].dark .dark\:text-blue-400,
+html[data-theme='theme2'].dark .dark\:text-green-400 {
+  color: #818cf8 !important;
+}
+
+html[data-theme='theme2'].dark .dark\:bg-blue-900\/20 {
+  background-color: rgb(49 46 129 / 0.34) !important;
+}
+
+html[data-theme='theme2'] .bg-blue-600 {
+  background-color: #4f46e5 !important;
+}
+
+html[data-theme='theme2'] .from-blue-500,
+html[data-theme='theme2'] .from-blue-600,
+html[data-theme='theme2'].dark .dark\:from-blue-400 {
+  --tw-gradient-from: #6366f1 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(99 102 241 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html[data-theme='theme2'] .to-indigo-600,
+html[data-theme='theme2'].dark .dark\:to-indigo-400 {
+  --tw-gradient-to: #818cf8 var(--tw-gradient-to-position) !important;
+}
+
+html[data-theme='theme3'] header {
+  background: linear-gradient(90deg, #0b1714, #102a24) !important;
+  border-color: #1f4d42 !important;
+}
+
+html[data-theme='theme3'].dark .dark\:bg-gray-900 {
+  background-color: #07110f !important;
+}
+
+html[data-theme='theme3'].dark .dark\:bg-gray-800 {
+  background-color: #0d1f1b !important;
+}
+
+html[data-theme='theme3'].dark .dark\:bg-gray-700 {
+  background-color: #12352d !important;
+}
+
+html[data-theme='theme3'].dark .dark\:border-gray-700,
+html[data-theme='theme3'].dark .dark\:border-gray-600 {
+  border-color: #1f4d42 !important;
+}
+
+html[data-theme='theme3'].dark .dark\:text-blue-400,
+html[data-theme='theme3'].dark .dark\:text-green-400 {
+  color: #34d399 !important;
+}
+
+html[data-theme='theme3'].dark .dark\:bg-blue-900\/20 {
+  background-color: rgb(6 78 59 / 0.28) !important;
+}
+
+html[data-theme='theme3'] .bg-blue-600 {
+  background-color: #059669 !important;
+}
+
+html[data-theme='theme3'] .from-blue-500,
+html[data-theme='theme3'] .from-blue-600,
+html[data-theme='theme3'].dark .dark\:from-blue-400 {
+  --tw-gradient-from: #10b981 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(16 185 129 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+html[data-theme='theme3'] .to-indigo-600,
+html[data-theme='theme3'].dark .dark\:to-indigo-400 {
+  --tw-gradient-to: #34d399 var(--tw-gradient-to-position) !important;
+}
+
 #root {
   width: 100%;
   height: 100vh;

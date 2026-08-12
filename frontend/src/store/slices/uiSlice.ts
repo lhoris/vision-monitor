@@ -4,6 +4,8 @@
 
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
+export type ThemeMode = 'theme1' | 'theme2' | 'theme3'
+
 interface Notification {
   id: string
   message: string
@@ -13,7 +15,7 @@ interface Notification {
 
 interface UIState {
   sidebarOpen: boolean
-  themeMode: 'light' | 'dark'
+  themeMode: ThemeMode
   notifications: Notification[]
   modal: {
     isOpen: boolean
@@ -25,7 +27,7 @@ interface UIState {
 
 const initialState: UIState = {
   sidebarOpen: false,
-  themeMode: 'dark',
+  themeMode: 'theme2',
   notifications: [],
   modal: {
     isOpen: false,
@@ -44,7 +46,7 @@ const uiSlice = createSlice({
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload
     },
-    setThemeMode: (state, action: PayloadAction<'light' | 'dark'>) => {
+    setThemeMode: (state, action: PayloadAction<ThemeMode>) => {
       state.themeMode = action.payload
     },
     addNotification: (state, action: PayloadAction<Notification>) => {
@@ -72,7 +74,9 @@ const uiSlice = createSlice({
       }
     },
     toggleTheme: (state) => {
-      state.themeMode = state.themeMode === 'light' ? 'dark' : 'light'
+      const themeOrder: ThemeMode[] = ['theme1', 'theme2', 'theme3']
+      const currentIndex = themeOrder.indexOf(state.themeMode)
+      state.themeMode = themeOrder[(currentIndex + 1) % themeOrder.length]
     },
     clearNotifications: (state) => {
       state.notifications = []

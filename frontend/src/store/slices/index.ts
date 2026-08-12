@@ -3,6 +3,6 @@
  */
 
 export * from './cameraSlice'
-export * from './eventSlice'
-export * from './layoutSlice'
-export * from './uiSlice'
+export { default as eventReducer } from './eventSlice'
+export { default as layoutReducer } from './layoutSlice'
+export { default as uiReducer } from './uiSlice'

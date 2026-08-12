@@ -4,7 +4,6 @@
  */
 
 import type {
-  PlayerError,
   PlayerStats,
   ReconnectConfig,
   WebRTCConfig,
@@ -19,6 +18,8 @@ class WHEPClient {
   private whepUrl: string
   private resourceUrl: string | null = null
   private iceServers: RTCIceServer[]
+  private iceGatheringTimeout: ReturnType<typeof setTimeout> | null = null
+  private iceGatheringStateChangeHandler: (() => void) | null = null
 
   constructor(whepUrl: string, iceServers: RTCIceServer[] = []) {
     this.whepUrl = whepUrl
@@ -90,19 +91,35 @@ class WHEPClient {
    */
   private waitForIceCandidates(): Promise<void> {
     return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
+      const cleanup = () => {
+        if (this.iceGatheringTimeout) {
+          clearTimeout(this.iceGatheringTimeout)
+          this.iceGatheringTimeout = null
+        }
+        if (this.peerConnection && this.iceGatheringStateChangeHandler) {
+          this.peerConnection.removeEventListener(
+            'icegatheringstatechange',
+            this.iceGatheringStateChangeHandler
+          )
+        }
+        this.iceGatheringStateChangeHandler = null
+      }
+
+      this.iceGatheringTimeout = setTimeout(() => {
+        cleanup()
         resolve()
       }, 1000)
 
+      this.iceGatheringStateChangeHandler = () => {
+        if (this.peerConnection?.iceGatheringState === 'complete') {
+          cleanup()
+          resolve()
+        }
+      }
+
       this.peerConnection?.addEventListener(
         'icegatheringstatechange',
-        () => {
-          if (this.peerConnection?.iceGatheringState === 'complete') {
-            clearTimeout(timeout)
-            resolve()
-          }
-        },
-        { once: true }
+        this.iceGatheringStateChangeHandler
       )
     })
   }
@@ -120,9 +137,21 @@ class WHEPClient {
     }
 
     if (this.peerConnection) {
+      if (this.iceGatheringStateChangeHandler) {
+        this.peerConnection.removeEventListener(
+          'icegatheringstatechange',
+          this.iceGatheringStateChangeHandler
+        )
+      }
       this.peerConnection.close()
       this.peerConnection = null
     }
+
+    if (this.iceGatheringTimeout) {
+      clearTimeout(this.iceGatheringTimeout)
+      this.iceGatheringTimeout = null
+    }
+    this.iceGatheringStateChangeHandler = null
   }
 }
 
@@ -134,6 +163,49 @@ export class WebRTCPlayer extends StreamPlayer {
   private peerConnection: RTCPeerConnection | null = null
   private whepClient: WHEPClient | null = null
   private webrtcConfig: WebRTCConfig
+  private readonly handleVideoPlay = () => this.setState('playing')
+  private readonly handleVideoPause = () => this.setState('paused')
+  private readonly handleVideoTimeUpdate = () => {
+    if (!this.videoElement) return
+    this.emit('timeupdate', {
+      currentTime: this.videoElement.currentTime,
+      duration: this.videoElement.duration,
+    })
+  }
+  private readonly handleVideoError = (event: Event) => {
+    const mediaError = (event.target as HTMLMediaElement).error
+    if (mediaError) {
+      this.handleError({
+        type: 'NETWORK_ERROR',
+        message: `Media error: ${mediaError.message}`,
+        code: mediaError.code,
+      })
+    }
+  }
+  private readonly handlePeerTrack = (event: RTCTrackEvent) => {
+    if (this.videoElement && event.streams.length > 0) {
+      this.videoElement.srcObject = event.streams[0]
+    }
+  }
+  private readonly handlePeerConnectionStateChange = () => {
+    switch (this.peerConnection?.connectionState) {
+      case 'connected':
+        this.emit('reconnected', {})
+        break
+      case 'disconnected':
+        this.emit('reconnecting', { attempt: 1, delay: 1000 })
+        break
+      case 'failed':
+        this.handleError({
+          type: 'NETWORK_ERROR',
+          message: 'WebRTC connection failed',
+        })
+        break
+      case 'closed':
+        this.setState('idle')
+        break
+    }
+  }
 
   constructor(
     videoElement: HTMLVideoElement,
@@ -153,24 +225,19 @@ export class WebRTCPlayer extends StreamPlayer {
   private setupVideoElement(): void {
     if (!this.videoElement) return
 
-    this.videoElement.addEventListener('play', () => this.setState('playing'))
-    this.videoElement.addEventListener('pause', () => this.setState('paused'))
-    this.videoElement.addEventListener('timeupdate', () => {
-      this.emit('timeupdate', {
-        currentTime: this.videoElement!.currentTime,
-        duration: this.videoElement!.duration,
-      })
-    })
-    this.videoElement.addEventListener('error', (e) => {
-      const mediaError = (e.target as HTMLMediaElement).error
-      if (mediaError) {
-        this.handleError({
-          type: 'NETWORK_ERROR',
-          message: `Media error: ${mediaError.message}`,
-          code: mediaError.code,
-        })
-      }
-    })
+    this.videoElement.addEventListener('play', this.handleVideoPlay)
+    this.videoElement.addEventListener('pause', this.handleVideoPause)
+    this.videoElement.addEventListener('timeupdate', this.handleVideoTimeUpdate)
+    this.videoElement.addEventListener('error', this.handleVideoError)
+  }
+
+  private teardownVideoElement(): void {
+    if (!this.videoElement) return
+
+    this.videoElement.removeEventListener('play', this.handleVideoPlay)
+    this.videoElement.removeEventListener('pause', this.handleVideoPause)
+    this.videoElement.removeEventListener('timeupdate', this.handleVideoTimeUpdate)
+    this.videoElement.removeEventListener('error', this.handleVideoError)
   }
 
   /**
@@ -184,32 +251,13 @@ export class WebRTCPlayer extends StreamPlayer {
       this.peerConnection = await this.whepClient.connect()
 
       // 원격 스트림 받기
-      this.peerConnection.addEventListener('track', (event) => {
-        if (this.videoElement && event.streams.length > 0) {
-          this.videoElement.srcObject = event.streams[0]
-        }
-      })
+      this.peerConnection.addEventListener('track', this.handlePeerTrack)
 
       // 연결 상태 모니터링
-      this.peerConnection.addEventListener('connectionstatechange', () => {
-        switch (this.peerConnection?.connectionState) {
-          case 'connected':
-            this.emit('reconnected', {})
-            break
-          case 'disconnected':
-            this.emit('reconnecting', { attempt: 1, delay: 1000 })
-            break
-          case 'failed':
-            this.handleError({
-              type: 'NETWORK_ERROR',
-              message: 'WebRTC connection failed',
-            })
-            break
-          case 'closed':
-            this.setState('idle')
-            break
-        }
-      })
+      this.peerConnection.addEventListener(
+        'connectionstatechange',
+        this.handlePeerConnectionStateChange
+      )
 
       this.setState('loading')
       this.emit('loadend', {})
@@ -263,7 +311,7 @@ export class WebRTCPlayer extends StreamPlayer {
   /**
    * 시간 이동 (WebRTC는 라이브 스트림이므로 제한됨)
    */
-  seek(time: number): void {
+  seek(_time: number): void {
     // 라이브 스트림이므로 시간 이동 불가능
     console.warn('Seeking is not supported for WebRTC live streams')
   }
@@ -287,7 +335,7 @@ export class WebRTCPlayer extends StreamPlayer {
   /**
    * 재생 속도 설정 (라이브 스트림이므로 제한됨)
    */
-  setPlaybackRate(rate: number): void {
+  setPlaybackRate(_rate: number): void {
     // 라이브 스트림이므로 속도 조절 불가능
     console.warn('Playback rate adjustment is not supported for WebRTC live streams')
   }
@@ -361,6 +409,7 @@ export class WebRTCPlayer extends StreamPlayer {
     this.cancelReconnect()
 
     if (this.videoElement) {
+      this.teardownVideoElement()
       this.videoElement.srcObject = null
     }
 
@@ -370,6 +419,11 @@ export class WebRTCPlayer extends StreamPlayer {
     }
 
     if (this.peerConnection) {
+      this.peerConnection.removeEventListener('track', this.handlePeerTrack)
+      this.peerConnection.removeEventListener(
+        'connectionstatechange',
+        this.handlePeerConnectionStateChange
+      )
       this.peerConnection.close()
       this.peerConnection = null
     }

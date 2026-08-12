@@ -5,12 +5,10 @@
 
 import Hls from 'hls.js'
 import type {
-  PlayerState,
   PlayerError,
   PlayerStats,
   HLSQuality,
   ReconnectConfig,
-  PlayerErrorType,
 } from '@/types/streamPlayer'
 import { StreamPlayer } from './StreamPlayer'
 
@@ -24,6 +22,46 @@ export class HLSPlayer extends StreamPlayer {
   private currentQualityLevel: number = -1
   private manifestParsed: boolean = false
   private playPending: boolean = false
+  private readonly handleVideoPlay = () => this.setState('playing')
+  private readonly handleVideoPause = () => this.setState('paused')
+  private readonly handleVideoSeeking = () => this.setState('seeking')
+  private readonly handleVideoSeeked = () => {
+    if (this.state === 'seeking' && this.videoElement) {
+      this.emit('seek', { currentTime: this.videoElement.currentTime })
+    }
+  }
+  private readonly handleVideoEnded = () => {
+    this.setState('idle')
+    this.emit('ended', {})
+  }
+  private readonly handleVideoTimeUpdate = () => {
+    if (!this.videoElement) return
+    this.emit('timeupdate', {
+      currentTime: this.videoElement.currentTime,
+      duration: this.videoElement.duration,
+    })
+  }
+  private readonly handleVideoDurationChange = () => {
+    if (!this.videoElement) return
+    this.emit('durationchange', { duration: this.videoElement.duration })
+  }
+  private readonly handleVideoVolumeChange = () => {
+    if (!this.videoElement) return
+    this.emit('volumechange', {
+      volume: this.videoElement.volume,
+      muted: this.videoElement.muted,
+    })
+  }
+  private readonly handleVideoError = (event: Event) => {
+    const mediaError = (event.target as HTMLMediaElement).error
+    if (mediaError) {
+      this.handleError({
+        type: 'NETWORK_ERROR',
+        message: `Media error: ${mediaError.message}`,
+        code: mediaError.code,
+      })
+    }
+  }
 
   constructor(videoElement: HTMLVideoElement, url: string, reconnectConfig?: ReconnectConfig) {
     super(url, reconnectConfig)
@@ -41,43 +79,29 @@ export class HLSPlayer extends StreamPlayer {
     // 기본 controls 비활성화 (커스텀 PlayerControls 사용)
     this.videoElement.controls = false
 
-    this.videoElement.addEventListener('play', () => this.setState('playing'))
-    this.videoElement.addEventListener('pause', () => this.setState('paused'))
-    this.videoElement.addEventListener('seeking', () => this.setState('seeking'))
-    this.videoElement.addEventListener('seeked', () => {
-      if (this.state === 'seeking') {
-        this.emit('seek', { currentTime: this.videoElement!.currentTime })
-      }
-    })
-    this.videoElement.addEventListener('ended', () => {
-      this.setState('idle')
-      this.emit('ended', {})
-    })
-    this.videoElement.addEventListener('timeupdate', () => {
-      this.emit('timeupdate', {
-        currentTime: this.videoElement!.currentTime,
-        duration: this.videoElement!.duration,
-      })
-    })
-    this.videoElement.addEventListener('durationchange', () => {
-      this.emit('durationchange', { duration: this.videoElement!.duration })
-    })
-    this.videoElement.addEventListener('volumechange', () => {
-      this.emit('volumechange', {
-        volume: this.videoElement!.volume,
-        muted: this.videoElement!.muted,
-      })
-    })
-    this.videoElement.addEventListener('error', (e) => {
-      const mediaError = (e.target as HTMLMediaElement).error
-      if (mediaError) {
-        this.handleError({
-          type: 'NETWORK_ERROR',
-          message: `Media error: ${mediaError.message}`,
-          code: mediaError.code,
-        })
-      }
-    })
+    this.videoElement.addEventListener('play', this.handleVideoPlay)
+    this.videoElement.addEventListener('pause', this.handleVideoPause)
+    this.videoElement.addEventListener('seeking', this.handleVideoSeeking)
+    this.videoElement.addEventListener('seeked', this.handleVideoSeeked)
+    this.videoElement.addEventListener('ended', this.handleVideoEnded)
+    this.videoElement.addEventListener('timeupdate', this.handleVideoTimeUpdate)
+    this.videoElement.addEventListener('durationchange', this.handleVideoDurationChange)
+    this.videoElement.addEventListener('volumechange', this.handleVideoVolumeChange)
+    this.videoElement.addEventListener('error', this.handleVideoError)
+  }
+
+  private teardownVideoElement(): void {
+    if (!this.videoElement) return
+
+    this.videoElement.removeEventListener('play', this.handleVideoPlay)
+    this.videoElement.removeEventListener('pause', this.handleVideoPause)
+    this.videoElement.removeEventListener('seeking', this.handleVideoSeeking)
+    this.videoElement.removeEventListener('seeked', this.handleVideoSeeked)
+    this.videoElement.removeEventListener('ended', this.handleVideoEnded)
+    this.videoElement.removeEventListener('timeupdate', this.handleVideoTimeUpdate)
+    this.videoElement.removeEventListener('durationchange', this.handleVideoDurationChange)
+    this.videoElement.removeEventListener('volumechange', this.handleVideoVolumeChange)
+    this.videoElement.removeEventListener('error', this.handleVideoError)
   }
 
   /**
@@ -106,7 +130,7 @@ export class HLSPlayer extends StreamPlayer {
         }
       })
 
-      this.hlsInstance.on(Hls.Events.LEVEL_SWITCHING, (event, data) => {
+      this.hlsInstance.on(Hls.Events.LEVEL_SWITCHING, (_event, data) => {
         const quality = this.qualityLevels[data.level]
         if (quality) {
           this.currentQualityLevel = data.level
@@ -114,8 +138,7 @@ export class HLSPlayer extends StreamPlayer {
         }
       })
 
-      this.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-        const errorType = data.type as PlayerErrorType
+      this.hlsInstance.on(Hls.Events.ERROR, (_event, data) => {
         const message = data.details || 'Unknown HLS error'
 
         if (data.fatal) {
@@ -124,7 +147,7 @@ export class HLSPlayer extends StreamPlayer {
             playerError = {
               type: 'NETWORK_ERROR',
               message: `Network error: ${message}`,
-              code: data.response?.status,
+              code: Number(data.response?.code),
             }
           } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
             playerError = {
@@ -263,7 +286,7 @@ export class HLSPlayer extends StreamPlayer {
     if (!this.hlsInstance || levelIndex < 0 || levelIndex >= this.qualityLevels.length) {
       return
     }
-    this.hlsInstance.currentLevel = levelIndex
+      ;(this.hlsInstance as unknown as { currentLevel: number }).currentLevel = levelIndex
   }
 
   /**
@@ -272,7 +295,7 @@ export class HLSPlayer extends StreamPlayer {
   setAutoQuality(enabled: boolean): void {
     if (!this.hlsInstance) return
     if (enabled) {
-      this.hlsInstance.currentLevel = -1
+      ;(this.hlsInstance as unknown as { currentLevel: number }).currentLevel = -1
     }
   }
 
@@ -341,7 +364,8 @@ export class HLSPlayer extends StreamPlayer {
     this.playPending = false
 
     if (this.videoElement) {
-      this.videoElement.src = ''
+      this.teardownVideoElement()
+      this.videoElement.removeAttribute('src')
     }
 
     if (this.hlsInstance) {

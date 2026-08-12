@@ -23,7 +23,9 @@ function AppRoutes() {
   const themeMode = useAppSelector((state) => state.ui.themeMode)
 
   useEffect(() => {
-    if (themeMode === 'dark') {
+    document.documentElement.dataset.theme = themeMode
+
+    if (themeMode === 'theme2' || themeMode === 'theme3') {
       document.documentElement.classList.add('dark')
     } else {
       document.documentElement.classList.remove('dark')

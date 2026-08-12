@@ -1,9 +1,4 @@
-/**
- * useStreamPlayer - React Hook for StreamPlayer
- * 플레이어 생명주기 및 상태 관리
- */
-
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   StreamSource,
   PlayerState,
@@ -18,9 +13,15 @@ import { HLSPlayer } from './HLSPlayer'
 import { WebRTCPlayer } from './WebRTCPlayer'
 import { RTSPPlayer } from './RTSPPlayer'
 
-/**
- * useStreamPlayer Hook 반환 타입
- */
+const INITIAL_STATS: PlayerStats = {
+  currentTime: 0,
+  duration: 0,
+  buffered: { start: 0, end: 0 },
+  volume: 1,
+  muted: false,
+  playbackRate: 1,
+}
+
 export interface UseStreamPlayerReturn {
   state: PlayerState
   stats: PlayerStats
@@ -41,14 +42,9 @@ export interface UseStreamPlayerReturn {
   off: (event: PlayerEventType, callback: (data?: any) => void) => void
 }
 
-/**
- * 스트림 프로토콜 자동 감지
- */
 function detectProtocol(url: string): 'hls' | 'webrtc' | 'rtsp' | 'unknown' {
   if (url.includes('.m3u8')) return 'hls'
-
   if (url.includes('ws://') || url.includes('wss://')) return 'webrtc'
-
   if (url.includes('rtsp://')) return 'rtsp'
 
   if (url.includes('http://') || url.includes('https://')) {
@@ -56,13 +52,14 @@ function detectProtocol(url: string): 'hls' | 'webrtc' | 'rtsp' | 'unknown' {
     const pathname = urlObj.pathname.toLowerCase()
     const search = urlObj.search.toLowerCase()
 
-    // WHEP 관련 경로 패턴
-    if (pathname.includes('/whep') ||
-        pathname.includes('/webrtc') ||
-        pathname.includes('/rtp') ||
-        pathname.includes('/play') ||
-        search.includes('whep') ||
-        search.includes('webrtc')) {
+    if (
+      pathname.includes('/whep') ||
+      pathname.includes('/webrtc') ||
+      pathname.includes('/rtp') ||
+      pathname.includes('/play') ||
+      search.includes('whep') ||
+      search.includes('webrtc')
+    ) {
       return 'webrtc'
     }
 
@@ -72,27 +69,30 @@ function detectProtocol(url: string): 'hls' | 'webrtc' | 'rtsp' | 'unknown' {
   return 'unknown'
 }
 
-/**
- * StreamPlayer를 관리하는 React Hook
- */
+async function destroyPlayer(player: StreamPlayer): Promise<void> {
+  if (player instanceof WebRTCPlayer) {
+    await player.destroy()
+    return
+  }
+
+  player.destroy()
+}
+
 export function useStreamPlayer(
-  containerRef: React.RefObject<HTMLDivElement>,
+  containerRef: React.RefObject<HTMLDivElement | null>,
   source: StreamSource,
   config?: Partial<PlayerConfig>
 ): UseStreamPlayerReturn {
   const playerRef = useRef<StreamPlayer | null>(null)
   const videoElementRef = useRef<HTMLVideoElement | null>(null)
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
+  const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const lifecycleTokenRef = useRef(0)
+  const configRef = useRef<Partial<PlayerConfig> | undefined>(config)
 
   const [state, setState] = useState<PlayerState>('idle')
-  const [stats, setStats] = useState<PlayerStats>({
-    currentTime: 0,
-    duration: 0,
-    buffered: { start: 0, end: 0 },
-    volume: 1,
-    muted: false,
-    playbackRate: 1,
-  })
+  const [playerInstance, setPlayerInstance] = useState<StreamPlayer | null>(null)
+  const [stats, setStats] = useState<PlayerStats>(INITIAL_STATS)
   const [error, setError] = useState<PlayerError | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [qualityLevels, setQualityLevels] = useState<HLSQuality[]>([])
@@ -102,174 +102,204 @@ export function useStreamPlayer(
     ? detectProtocol(source.url)
     : source.protocol
 
-  /**
-   * 플레이어 생성 및 초기화
-   */
-  const initializePlayer = useCallback(async () => {
-    if (!containerRef.current) return
+  useEffect(() => {
+    configRef.current = config
+  }, [config])
 
-    try {
-      // 기존 플레이어 정리
-      if (playerRef.current) {
-        if (playerRef.current instanceof WebRTCPlayer) {
-          await (playerRef.current as WebRTCPlayer).destroy()
-        } else {
-          playerRef.current.destroy()
-        }
-        playerRef.current = null
-      }
+  const isCurrentLifecycle = useCallback((token: number) => (
+    lifecycleTokenRef.current === token
+  ), [])
 
-      // 프로토콜별 플레이어 생성
-      switch (protocol) {
-        case 'hls': {
-          if (!videoElementRef.current) {
-            videoElementRef.current = document.createElement('video')
-            videoElementRef.current.style.width = '100%'
-            videoElementRef.current.style.height = '100%'
-            videoElementRef.current.style.objectFit = 'contain'
-            containerRef.current.appendChild(videoElementRef.current)
-          }
-
-          playerRef.current = new HLSPlayer(
-            videoElementRef.current,
-            source.url,
-            config?.reconnect
-          )
-          break
-        }
-
-        case 'webrtc': {
-          if (!videoElementRef.current) {
-            videoElementRef.current = document.createElement('video')
-            videoElementRef.current.style.width = '100%'
-            videoElementRef.current.style.height = '100%'
-            videoElementRef.current.style.objectFit = 'contain'
-            videoElementRef.current.autoplay = true
-            videoElementRef.current.playsinline = true
-            containerRef.current.appendChild(videoElementRef.current)
-          }
-
-          playerRef.current = new WebRTCPlayer(
-            videoElementRef.current,
-            source.url,
-            config?.webrtc,
-            config?.reconnect
-          )
-          break
-        }
-
-        case 'rtsp': {
-          if (!canvasElementRef.current) {
-            canvasElementRef.current = document.createElement('canvas')
-            canvasElementRef.current.style.width = '100%'
-            canvasElementRef.current.style.height = '100%'
-            containerRef.current.appendChild(canvasElementRef.current)
-          }
-
-          playerRef.current = new RTSPPlayer(
-            canvasElementRef.current,
-            source.url,
-            config?.reconnect
-          )
-          break
-        }
-
-        default:
-          throw new Error(`Unsupported protocol: ${protocol}`)
-      }
-
-      // 플레이어 이벤트 등록
-      setupPlayerListeners()
-      setError(null)
-    } catch (err) {
-      const playerError = {
-        type: 'UNKNOWN_ERROR' as const,
-        message: err instanceof Error ? err.message : 'Failed to initialize player',
-        original: err instanceof Error ? err : undefined,
-      }
-      setError(playerError)
-      console.error('Player initialization error:', err)
+  const clearStatsInterval = useCallback(() => {
+    if (statsIntervalRef.current) {
+      clearInterval(statsIntervalRef.current)
+      statsIntervalRef.current = null
     }
-  }, [protocol, source.url, config, containerRef])
+  }, [])
 
-  /**
-   * 플레이어 이벤트 리스너 설정
-   */
-  const setupPlayerListeners = useCallback(() => {
-    if (!playerRef.current) return
+  const removeMediaElements = useCallback(() => {
+    videoElementRef.current?.remove()
+    canvasElementRef.current?.remove()
+    videoElementRef.current = null
+    canvasElementRef.current = null
+  }, [])
 
-    const player = playerRef.current
+  const setupPlayerListeners = useCallback((player: StreamPlayer, token: number) => {
+    clearStatsInterval()
 
-    // 상태 변경
-    player.on('loadstart', () => setIsLoading(true))
-    player.on('loadend', () => setIsLoading(false))
+    player.on('loadstart', () => {
+      if (isCurrentLifecycle(token)) setIsLoading(true)
+    })
+    player.on('loadend', () => {
+      if (isCurrentLifecycle(token)) setIsLoading(false)
+    })
     player.on('timeupdate', (data) => {
+      if (!isCurrentLifecycle(token) || playerRef.current !== player) return
       setState(data.state || player.getState())
       setStats(player.getStats())
     })
-    player.on('buffering', () => setIsLoading(true))
-    player.on('buffered', () => setIsLoading(false))
-
-    // 에러 처리
-    player.on('error', (error) => {
-      setError(error)
-      console.error('Player error:', error)
+    player.on('buffering', () => {
+      if (isCurrentLifecycle(token)) setIsLoading(true)
+    })
+    player.on('buffered', () => {
+      if (isCurrentLifecycle(token)) setIsLoading(false)
+    })
+    player.on('error', (playerError) => {
+      if (!isCurrentLifecycle(token)) return
+      setError(playerError)
+      console.error('Player error:', playerError)
     })
 
-    // HLS 품질 변경
-    if (playerRef.current instanceof HLSPlayer) {
-      const hlsPlayer = playerRef.current as HLSPlayer
+    if (player instanceof HLSPlayer) {
       player.on('durationchange', (data) => {
+        if (!isCurrentLifecycle(token)) return
         if (data.qualityLevels) {
           setQualityLevels(data.qualityLevels)
         }
       })
       player.on('qualitychange', (quality) => {
-        setCurrentQuality(quality)
+        if (isCurrentLifecycle(token)) setCurrentQuality(quality)
       })
     }
 
-    // 통계 업데이트
-    const statsInterval = setInterval(() => {
+    statsIntervalRef.current = setInterval(() => {
+      if (!isCurrentLifecycle(token) || playerRef.current !== player) return
       setStats(player.getStats())
     }, 1000)
+  }, [clearStatsInterval, isCurrentLifecycle])
 
-    return () => clearInterval(statsInterval)
-  }, [])
+  const createPlayer = useCallback((): StreamPlayer => {
+    if (!containerRef.current) {
+      throw new Error('Player container not initialized')
+    }
 
-  /**
-   * 초기화
-   */
+    switch (protocol) {
+      case 'hls': {
+        videoElementRef.current = document.createElement('video')
+        videoElementRef.current.style.width = '100%'
+        videoElementRef.current.style.height = '100%'
+        videoElementRef.current.style.objectFit = 'contain'
+        containerRef.current.appendChild(videoElementRef.current)
+
+        return new HLSPlayer(videoElementRef.current, source.url, configRef.current?.reconnect)
+      }
+
+      case 'webrtc': {
+        videoElementRef.current = document.createElement('video')
+        videoElementRef.current.style.width = '100%'
+        videoElementRef.current.style.height = '100%'
+        videoElementRef.current.style.objectFit = 'contain'
+        videoElementRef.current.autoplay = true
+        videoElementRef.current.playsInline = true
+        containerRef.current.appendChild(videoElementRef.current)
+
+        return new WebRTCPlayer(
+          videoElementRef.current,
+          source.url,
+          configRef.current?.webrtc,
+          configRef.current?.reconnect
+        )
+      }
+
+      case 'rtsp': {
+        canvasElementRef.current = document.createElement('canvas')
+        canvasElementRef.current.style.width = '100%'
+        canvasElementRef.current.style.height = '100%'
+        containerRef.current.appendChild(canvasElementRef.current)
+
+        return new RTSPPlayer(canvasElementRef.current, source.url, configRef.current?.reconnect)
+      }
+
+      default:
+        throw new Error(`Unsupported protocol: ${protocol}`)
+    }
+  }, [containerRef, protocol, source.url])
+
   useEffect(() => {
-    initializePlayer()
+    const token = lifecycleTokenRef.current + 1
+    lifecycleTokenRef.current = token
 
-    return () => {
-      if (playerRef.current) {
-        if (playerRef.current instanceof WebRTCPlayer) {
-          (playerRef.current as WebRTCPlayer).destroy()
-        } else {
-          playerRef.current.destroy()
+    setState('idle')
+    setStats(INITIAL_STATS)
+    setError(null)
+    setIsLoading(false)
+    setQualityLevels([])
+    setCurrentQuality(null)
+
+    const initializePlayer = async () => {
+      if (!containerRef.current) return
+
+      const previousPlayer = playerRef.current
+      playerRef.current = null
+      setPlayerInstance(null)
+      clearStatsInterval()
+      removeMediaElements()
+
+      if (previousPlayer) {
+        await destroyPlayer(previousPlayer)
+      }
+
+      if (!isCurrentLifecycle(token)) return
+
+      try {
+        const nextPlayer = createPlayer()
+        if (!isCurrentLifecycle(token)) {
+          await destroyPlayer(nextPlayer)
+          return
         }
+
+        playerRef.current = nextPlayer
+        setupPlayerListeners(nextPlayer, token)
+        setPlayerInstance(nextPlayer)
+      } catch (err) {
+        if (!isCurrentLifecycle(token)) return
+        const playerError = {
+          type: 'UNKNOWN_ERROR' as const,
+          message: err instanceof Error ? err.message : 'Failed to initialize player',
+          original: err instanceof Error ? err : undefined,
+        }
+        setError(playerError)
+        console.error('Player initialization error:', err)
       }
     }
-  }, [source.url])
 
-  /**
-   * 플레이어 메서드 래핑
-   */
+    void initializePlayer()
+
+    return () => {
+      lifecycleTokenRef.current += 1
+      const player = playerRef.current
+      playerRef.current = null
+      setPlayerInstance(null)
+      clearStatsInterval()
+      removeMediaElements()
+
+      if (player) {
+        void destroyPlayer(player).catch((err) => {
+          console.error('Failed to destroy player:', err)
+        })
+      }
+    }
+  }, [
+    clearStatsInterval,
+    containerRef,
+    createPlayer,
+    isCurrentLifecycle,
+    removeMediaElements,
+    setupPlayerListeners,
+    source.url,
+  ])
+
   const play = useCallback(async () => {
     if (!playerRef.current) throw new Error('Player not initialized')
     await playerRef.current.play()
   }, [])
 
   const pause = useCallback(() => {
-    if (!playerRef.current) return
-    playerRef.current.pause()
+    playerRef.current?.pause()
   }, [])
 
   const seek = useCallback((time: number) => {
-    if (!playerRef.current) return
-    playerRef.current.seek(time)
+    playerRef.current?.seek(time)
   }, [])
 
   const setVolume = useCallback((volume: number) => {
@@ -292,33 +322,30 @@ export function useStreamPlayer(
 
   const setQuality = useCallback((levelIndex: number) => {
     if (playerRef.current instanceof HLSPlayer) {
-      const hlsPlayer = playerRef.current as HLSPlayer
-      hlsPlayer.setQuality(levelIndex)
+      playerRef.current.setQuality(levelIndex)
     }
   }, [])
 
   const getWebRTCStats = useCallback(async () => {
     if (playerRef.current instanceof WebRTCPlayer) {
-      return await (playerRef.current as WebRTCPlayer).getWebRTCStats()
+      return await playerRef.current.getWebRTCStats()
     }
     return {}
   }, [])
 
   const on = useCallback((event: PlayerEventType, callback: (data?: any) => void) => {
-    if (!playerRef.current) return
-    playerRef.current.on(event, callback)
+    playerRef.current?.on(event, callback)
   }, [])
 
   const off = useCallback((event: PlayerEventType, callback: (data?: any) => void) => {
-    if (!playerRef.current) return
-    playerRef.current.off(event, callback)
+    playerRef.current?.off(event, callback)
   }, [])
 
   return {
     state,
     stats,
     error,
-    player: playerRef.current,
+    player: playerInstance,
     isLoading,
     qualityLevels,
     currentQuality,

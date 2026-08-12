@@ -4,6 +4,7 @@
  */
 
 export { StreamPlayerComponent as StreamPlayer } from './StreamPlayerComponent'
+export { LiveStreamPlayer } from './LiveStreamPlayer'
 export { useStreamPlayer } from './useStreamPlayer'
 export { StreamPlayer as StreamPlayerBase } from './StreamPlayer'
 export { HLSPlayer } from './HLSPlayer'

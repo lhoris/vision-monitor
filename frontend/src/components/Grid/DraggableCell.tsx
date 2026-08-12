@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react'
 import type { Camera } from '@/types/camera'
-import { StreamPlayerComponent } from '@/components/StreamPlayer/StreamPlayerComponent'
+import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
 
 interface DraggableCellProps {
   cellId: string
@@ -20,7 +20,7 @@ interface DraggableCellProps {
 }
 
 export const DraggableCell: React.FC<DraggableCellProps> = ({
-  cellId,
+  cellId: _cellId,
   index,
   camera,
   onAddCamera,
@@ -28,7 +28,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
-  isDragging = false,
+  isDragging: _isDragging = false,
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
@@ -104,15 +104,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       </div>
 
       {/* Video Stream Player */}
-      <StreamPlayerComponent
-        source={{
-          url: camera.streamUrl,
-          protocol: (camera.streamProtocol || 'unknown') as 'hls' | 'webrtc' | 'rtsp' | 'unknown'
-        }}
-        controls={true}
-        autoplay={false}
-        className="w-full h-full"
-      />
+      <LiveStreamPlayer camera={camera} className="w-full h-full" />
 
       {/* Camera Info Overlay - Bottom */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 z-10 pointer-events-none">

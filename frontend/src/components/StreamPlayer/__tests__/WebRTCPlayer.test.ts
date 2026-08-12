@@ -59,14 +59,14 @@ describe('WebRTCPlayer', () => {
   })
 
   it('should warn when seeking on live stream', () => {
-    const warnSpy = vi.spyOn(console, 'warn')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     player.seek(50)
     expect(warnSpy).toHaveBeenCalled()
     warnSpy.mockRestore()
   })
 
   it('should warn when changing playback rate on live stream', () => {
-    const warnSpy = vi.spyOn(console, 'warn')
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     player.setPlaybackRate(1.5)
     expect(warnSpy).toHaveBeenCalled()
     warnSpy.mockRestore()
@@ -88,29 +88,46 @@ describe('WebRTCPlayer', () => {
     expect(stats.playbackRate).toBe(1)
   })
 
-  it('should handle video element events', (done) => {
-    player.on('timeupdate', () => {
-      expect(true).toBe(true)
-      done()
-    })
+  it('should handle video element events', () => {
+    const callback = vi.fn()
+    player.on('timeupdate', callback)
 
     const timeUpdateEvent = new Event('timeupdate')
     videoElement.dispatchEvent(timeUpdateEvent)
+
+    expect(callback).toHaveBeenCalled()
   })
 
-  it('should handle error events', (done) => {
+  it('should handle error events', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const callback = vi.fn()
     player.on('error', (error) => {
       expect(error).toBeTruthy()
-      done()
+      callback()
+    })
+    Object.defineProperty(videoElement, 'error', {
+      configurable: true,
+      value: { message: 'Connection failed', code: 2 },
     })
 
     const errorEvent = new ErrorEvent('error')
     videoElement.dispatchEvent(errorEvent)
+
+    expect(callback).toHaveBeenCalled()
+    errorSpy.mockRestore()
   })
 
   it('should cleanup resources on destroy', async () => {
     await player.destroy()
     expect(player['listeners'].size).toBe(0)
+  })
+
+  it('should remove video event listeners on destroy', async () => {
+    await player.destroy()
+
+    videoElement.dispatchEvent(new Event('play'))
+
+    expect(player.getState()).toBe('idle')
   })
 
   it('should get WebRTC stats', async () => {
@@ -119,6 +136,7 @@ describe('WebRTCPlayer', () => {
   })
 
   it('should initialize player', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     // Note: 실제 WHEP 서버가 없으므로 에러가 발생합니다
     // 하지만 초기화 시도는 검증할 수 있습니다
     try {
@@ -127,5 +145,6 @@ describe('WebRTCPlayer', () => {
       // 예상된 에러
       expect(error).toBeTruthy()
     }
+    errorSpy.mockRestore()
   })
 })

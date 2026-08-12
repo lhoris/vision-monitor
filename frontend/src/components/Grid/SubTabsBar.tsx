@@ -25,20 +25,10 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   onReorderSubTabs,
   layoutSelector,
 }) => {
-  const [editingSubTabId, setEditingSubTabId] = useState<string | null>(null)
-  const [editingName, setEditingName] = useState('')
   const [showAddSubTabInput, setShowAddSubTabInput] = useState(false)
   const [newSubTabName, setNewSubTabName] = useState('')
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-
-  const handleRenameSubmit = (subTabId: string) => {
-    if (editingName.trim()) {
-      // SubTab rename logic would go here
-      setEditingSubTabId(null)
-      setEditingName('')
-    }
-  }
 
   const handleAddSubTabSubmit = () => {
     if (newSubTabName.trim()) {
@@ -113,7 +103,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
                 ${draggedFromIndex === index ? 'opacity-50' : ''}
               `}
             >
-              <span>{editingSubTabId === subTab.id ? 'Editing' : subTab.name}</span>
+              <span>{subTab.name}</span>
               {subTabs.length > 1 && (
                 <button
                   onClick={(e) => {

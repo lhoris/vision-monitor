@@ -9,9 +9,7 @@ import {
   CardBody,
   CardHeader,
   Button,
-  Input,
   Select,
-  Modal,
 } from '@/components/Common'
 import { useAppSelector, useAppDispatch } from '@/store'
 import { setFilter, acknowledgeEvent } from '@/store/slices/eventSlice'
@@ -61,7 +59,6 @@ export function Events() {
   const dispatch = useAppDispatch()
   const filter = useAppSelector((state) => state.event.filter)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
   const [events, setEvents] = useState<Event[]>(mockEvents)
 
   const cameras = useAppSelector((state) => state.camera.cameras)
@@ -285,7 +282,6 @@ export function Events() {
                           `}
                           onClick={() => {
                             setSelectedEvent(event)
-                            setIsDetailsOpen(true)
                           }}
                         >
                           <td className="px-4 py-3">
