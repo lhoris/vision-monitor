@@ -6,7 +6,7 @@ import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
 import { useCameraPlayback } from '@/hooks/useCameraPlayback'
 import { createMockCameras } from '@/mocks/liveMonitoring'
 import { focusApiService } from '@/services'
-import type { CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
+import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
 
 export default function CameraFocus() {
@@ -19,6 +19,7 @@ export default function CameraFocus() {
   const [liveLoading, setLiveLoading] = useState(false)
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
+  const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
   const cameraList = useMemo(() => {
     const allCameras = createMockCameras()
     const cameraIds = parseCameraIds(searchParams.get('cameraIds'))
@@ -43,6 +44,7 @@ export default function CameraFocus() {
     eventId: routeState.selectedEventId,
   })
   const { alerts } = useActiveCameraAlerts(routeState.cameraId)
+  const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
   const eventRange = useMemo(
     () => ({
       from: playbackSession?.availableFrom ?? '2026-08-15T08:00:00+09:00',
@@ -151,11 +153,30 @@ export default function CameraFocus() {
     setSearchParams(nextParams)
   }
 
+  function handleTriggerTestAlert(message: string) {
+    const currentCameraId = routeState.cameraId
+    if (!currentCameraId) {
+      return
+    }
+
+    const now = new Date().toISOString()
+    setManualAlerts((current) => [
+      buildManualTestAlert({
+        alertId: Date.now(),
+        cameraId: currentCameraId,
+        message,
+        location: camera?.location ?? 'Entry Zone',
+        startedAt: now,
+      }),
+      ...current,
+    ])
+  }
+
   if (!routeState.cameraId) {
     return (
       <section className="p-6" aria-labelledby="camera-focus-title">
         <h1 id="camera-focus-title" className="text-xl font-semibold text-gray-900 dark:text-white">
-          카메라 집중 보기
+          화면 확대 보기
         </h1>
         <p className="mt-4 text-sm text-red-600">유효하지 않은 카메라 ID입니다.</p>
       </section>
@@ -166,7 +187,7 @@ export default function CameraFocus() {
     <CameraFocusShell
       mode={routeState.mode}
       selectedEventId={routeState.selectedEventId}
-      alerts={alerts}
+      alerts={visibleAlerts}
       camera={camera}
       cameraList={cameraList}
       liveStream={liveStream}
@@ -182,8 +203,37 @@ export default function CameraFocus() {
       onModeChange={handleModeChange}
       onSelectCamera={handleSelectCamera}
       onSelectEvent={handleSelectEvent}
+      onTriggerTestAlert={handleTriggerTestAlert}
     />
   )
+}
+
+function buildManualTestAlert({
+  alertId,
+  cameraId,
+  message,
+  location,
+  startedAt,
+}: {
+  alertId: number
+  cameraId: number
+  message: string
+  location: string
+  startedAt: string
+}): ActiveAlertDto {
+  return {
+    alertId,
+    cameraId,
+    severity: 'warning',
+    message,
+    location,
+    startedAt,
+    status: 'active',
+    relatedEventId: null,
+    metadata: {
+      source: 'manual-test',
+    },
+  }
 }
 
 function parseCameraIds(value: string | null): number[] {

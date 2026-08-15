@@ -43,7 +43,7 @@ describe('CameraFocus page shell', () => {
   it('renders live focus view with the source grid camera list', async () => {
     renderRoute('/live/cameras/1?mode=live&cameraIds=1%2C2')
 
-    expect(screen.getByRole('heading', { name: '카메라 집중 보기' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '화면 확대 보기' })).toBeInTheDocument()
     expect(screen.getByRole('tablist', { name: '카메라 목록' })).toBeInTheDocument()
     expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Camera 1' })).toHaveAttribute('aria-selected', 'true')
@@ -51,6 +51,21 @@ describe('CameraFocus page shell', () => {
     expect(screen.queryByRole('tab', { name: 'Camera 7' })).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: '실시간' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'false')
+  })
+
+  it('shows a manual test alert toast using the entered message', async () => {
+    renderRoute('/live/cameras/2?mode=live&cameraIds=1%2C2')
+
+    fireEvent.click(screen.getByRole('button', { name: '테스트 알람' }))
+    expect(screen.getByRole('dialog', { name: '테스트 알람 메시지' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('경고 메시지'), {
+      target: { value: '[사용자 테스트] 냉각 구간 속도 이상' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '띄우기' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('[사용자 테스트] 냉각 구간 속도 이상')
+    expect(screen.queryByRole('dialog', { name: '테스트 알람 메시지' })).not.toBeInTheDocument()
   })
 
   it('changes the focused camera when a camera tab is selected', async () => {

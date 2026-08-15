@@ -206,3 +206,125 @@ html[data-theme='theme3'].dark .dark\:to-indigo-400 {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.focus-alert-toast {
+  --focus-alert-bg: #fee2e2;
+  --focus-alert-border: #dc2626;
+  --focus-alert-text: #7f1d1d;
+  --focus-alert-muted: #991b1b;
+  --focus-alert-badge-bg: #dc2626;
+  --focus-alert-badge-text: #ffffff;
+  --focus-alert-shadow: 0 22px 50px rgb(127 29 29 / 0.36);
+
+  background: var(--focus-alert-bg);
+  border: 3px solid var(--focus-alert-border);
+  border-left-width: 12px;
+  color: var(--focus-alert-text);
+  box-shadow: var(--focus-alert-shadow);
+  transform: translateX(-50%);
+  transform-origin: top center;
+}
+
+.focus-alert-toast__mark {
+  align-items: center;
+  background: var(--focus-alert-border);
+  color: var(--focus-alert-badge-text);
+  display: flex;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  font-weight: 900;
+  height: 2rem;
+  justify-content: center;
+  line-height: 1;
+  width: 2rem;
+}
+
+.focus-alert-toast__badge {
+  background: var(--focus-alert-badge-bg);
+  color: var(--focus-alert-badge-text);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.125rem 0.5rem;
+}
+
+.focus-alert-toast__message {
+  color: var(--focus-alert-text);
+}
+
+.focus-alert-toast dd,
+.focus-alert-toast dt {
+  color: var(--focus-alert-muted);
+}
+
+html[data-theme='theme1'] .focus-alert-toast {
+  --focus-alert-bg: #fee2e2;
+  --focus-alert-border: #dc2626;
+  --focus-alert-text: #7f1d1d;
+  --focus-alert-muted: #991b1b;
+  --focus-alert-badge-bg: #dc2626;
+  --focus-alert-badge-text: #ffffff;
+  --focus-alert-shadow: 0 22px 50px rgb(127 29 29 / 0.36);
+}
+
+html[data-theme='theme2'] .focus-alert-toast {
+  --focus-alert-bg: #2b1020;
+  --focus-alert-border: #fb7185;
+  --focus-alert-text: #ffe4e6;
+  --focus-alert-muted: #fecdd3;
+  --focus-alert-badge-bg: #fb7185;
+  --focus-alert-badge-text: #1f0712;
+  --focus-alert-shadow: 0 22px 54px rgb(251 113 133 / 0.28);
+}
+
+html[data-theme='theme3'] .focus-alert-toast {
+  --focus-alert-bg: #1f1805;
+  --focus-alert-border: #f59e0b;
+  --focus-alert-text: #fffbeb;
+  --focus-alert-muted: #fde68a;
+  --focus-alert-badge-bg: #f59e0b;
+  --focus-alert-badge-text: #1f1300;
+  --focus-alert-shadow: 0 22px 54px rgb(245 158 11 / 0.3);
+}
+
+.focus-alert-toast--enter {
+  animation: focus-alert-toast-in 260ms cubic-bezier(0.2, 1.4, 0.32, 1) both;
+}
+
+.focus-alert-toast--exit {
+  animation: focus-alert-toast-out 180ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+@keyframes focus-alert-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-18px) scale(0.94);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(4px) scale(1.025);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes focus-alert-toast-out {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(3px) scale(1.02);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-16px) scale(0.95);
+  }
+}
