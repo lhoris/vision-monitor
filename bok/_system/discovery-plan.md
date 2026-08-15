@@ -4,10 +4,10 @@
 - source: `.`  ·  heatmap: git-commits
 
 ## 우선순위 (열도순)
-1. frontend  (heat=130, 71 files)
+1. frontend  (heat=184, 92 files)
 2. backend  (heat=30, 30 files)
 3. _bmad  (heat=3, 3 files)
 4. scripts  (heat=2, 2 files)
 
-## 산출: 12 후보 KU (confidence=inferred, status=draft)
+## 산출: 0 후보 KU (confidence=inferred, status=draft)
 다음: `bok validate`로 grounding·owner 검증 → confidence 승격 (M3).
