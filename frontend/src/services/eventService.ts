@@ -3,7 +3,18 @@
  */
 
 import { apiClient } from './api'
+import { getActiveCameraAlertsMock } from './cameraAlertsMockAdapter'
+import { getCameraEventsMock } from './cameraEventsMockAdapter'
+import { acknowledgeEventMock, getEventDetailMock } from './eventDetailMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
+import type { ApiResponse } from '@/types/api'
+import type {
+  ActiveAlertDto,
+  AcknowledgeEventDto,
+  CameraEventListDto,
+  EventDetailDto,
+} from '@/types/cameraFocus'
+import type { CameraEventsRange } from '@/mocks/cameraEvents'
 import type { Event, AlertSetting, PaginatedResponse } from '@/types'
 
 interface EventQueryParams {
@@ -46,6 +57,25 @@ class EventService {
       null,
       'Failed to fetch camera events:'
     )
+  }
+
+  async getCameraFocusEvents(
+    cameraId: number,
+    range: CameraEventsRange
+  ): Promise<ApiResponse<CameraEventListDto>> {
+    return getCameraEventsMock(cameraId, range)
+  }
+
+  async getActiveCameraAlerts(cameraId: number): Promise<ApiResponse<ActiveAlertDto[]>> {
+    return getActiveCameraAlertsMock(cameraId)
+  }
+
+  async getFocusEventDetail(eventId: number): Promise<ApiResponse<EventDetailDto>> {
+    return getEventDetailMock(eventId)
+  }
+
+  async acknowledgeFocusEvent(eventId: number): Promise<ApiResponse<AcknowledgeEventDto>> {
+    return acknowledgeEventMock(eventId)
   }
 
   async acknowledgeEvent(eventId: number): Promise<Event | null> {

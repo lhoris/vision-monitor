@@ -9,6 +9,7 @@ import { useAppSelector } from '@/store'
 import { AppLayout } from '@/components/Layout'
 import Login from '@/pages/Login'
 import Live from '@/pages/Live'
+import CameraFocus from '@/pages/CameraFocus'
 import Playback from '@/pages/Playback'
 import Events from '@/pages/Events'
 import Settings from '@/pages/Settings'
@@ -56,6 +57,14 @@ function AppRoutes() {
         element={
           <AppLayout>
             <Live />
+          </AppLayout>
+        }
+      />
+      <Route
+        path="/live/cameras/:cameraId"
+        element={
+          <AppLayout>
+            <CameraFocus />
           </AppLayout>
         }
       />

@@ -3,8 +3,12 @@
  */
 
 import { apiClient } from './api'
+import { getCameraFocusMock } from './cameraFocusMockAdapter'
+import { getCameraLiveStreamMock } from './cameraLiveStreamMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
+import type { ApiResponse } from '@/types/api'
 import type { Camera, CameraDetail } from '@/types/camera'
+import type { CameraFocusDto, LiveStreamDto } from '@/types/cameraFocus'
 
 const OFFLINE_STATUS = 'offline'
 const OFFLINE_HEALTH = { online: false }
@@ -24,6 +28,14 @@ class CameraService {
       null,
       `Failed to fetch camera detail for ${cameraId}:`
     )
+  }
+
+  async getCameraFocus(cameraId: number): Promise<ApiResponse<CameraFocusDto>> {
+    return getCameraFocusMock(cameraId)
+  }
+
+  async getCameraLiveStream(cameraId: number): Promise<ApiResponse<LiveStreamDto>> {
+    return getCameraLiveStreamMock(cameraId)
   }
 
   async getCameraStatus(cameraId: number): Promise<string> {

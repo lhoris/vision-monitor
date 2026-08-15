@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
   setActiveTab,
@@ -39,6 +40,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   cameras = [],
 }) => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
   const layout = useAppSelector((state) => state.layout.layout)
   const activeTabId = useAppSelector((state) => state.layout.activeTab)
   const {
@@ -101,6 +103,23 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     updateActiveSubTabPositions(
       removeCameraPosition(activeSubTab.cameraPositions, cameraId)
     )
+  }
+
+  const handleFocusCamera = (cameraId: number) => {
+    const params = new URLSearchParams({ mode: 'live' })
+
+    if (activeTab && activeSubTab) {
+      params.set('tabId', activeTab.id)
+      params.set('subTabId', activeSubTab.id)
+      params.set(
+        'cameraIds',
+        activeSubTab.cameraPositions
+          .map((position) => position.cameraId)
+          .join(',')
+      )
+    }
+
+    navigate(`/live/cameras/${cameraId}?${params.toString()}`)
   }
 
   const handleSelectCamera = (camera: Camera) => {
@@ -254,6 +273,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
                   removeCamera(cell.camera.id)
                 }
               }}
+              onFocusCamera={handleFocusCamera}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
             />

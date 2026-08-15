@@ -62,4 +62,21 @@ describe('cameraService', () => {
 
     await expect(cameraService.deleteCamera(1)).resolves.toBe(false)
   })
+
+  it('returns focus metadata from the mock adapter boundary', async () => {
+    const response = await cameraService.getCameraFocus(1)
+
+    expect(response.success).toBe(true)
+    expect(response.data?.cameraId).toBe(1)
+    expect(mockedApiClient.get).not.toHaveBeenCalled()
+  })
+
+  it('returns live stream data from the mock adapter boundary', async () => {
+    const response = await cameraService.getCameraLiveStream(1)
+
+    expect(response.success).toBe(true)
+    expect(response.data?.cameraId).toBe(1)
+    expect(response.data?.streamUrl).toBe('http://220.81.187.50:1984/stream.html?src=video_high1')
+    expect(mockedApiClient.get).not.toHaveBeenCalled()
+  })
 })

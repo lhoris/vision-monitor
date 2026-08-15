@@ -13,6 +13,7 @@ interface DraggableCellProps {
   camera?: Camera
   onAddCamera: () => void
   onRemoveCamera: () => void
+  onFocusCamera?: (cameraId: number) => void
   onDragStart?: (cameraId: number) => void
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: (cellIndex: number) => void
@@ -25,6 +26,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   camera,
   onAddCamera,
   onRemoveCamera,
+  onFocusCamera,
   onDragStart,
   onDragOver,
   onDrop,
@@ -68,6 +70,13 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     setContextMenu(null)
   }
 
+  const handleFocusClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (camera && onFocusCamera) {
+      onFocusCamera(camera.id)
+    }
+  }
+
   return camera ? (
     <div
       onDragOver={handleDragOver}
@@ -105,6 +114,15 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
       {/* Video Stream Player */}
       <LiveStreamPlayer camera={camera} className="w-full h-full" />
+
+      <button
+        type="button"
+        onClick={handleFocusClick}
+        className="absolute right-2 top-8 z-20 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white opacity-0 transition-opacity hover:bg-black focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100"
+        aria-label={`${camera.name} 확대 보기`}
+      >
+        확대
+      </button>
 
       {/* Camera Info Overlay - Bottom */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 z-10 pointer-events-none">
