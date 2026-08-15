@@ -55,6 +55,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const [showCameraSelector, setShowCameraSelector] = useState(false)
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
+  const [cameraNameOverrides, setCameraNameOverrides] = useState<Record<number, string>>({})
 
   useEffect(() => {
     if (activeSubTab) {
@@ -105,18 +106,33 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
+  const handleRenameCamera = (cameraId: number, name: string) => {
+    setCameraNameOverrides((current) => ({
+      ...current,
+      [cameraId]: name,
+    }))
+  }
+
   const handleFocusCamera = (cameraId: number) => {
     const params = new URLSearchParams({ mode: 'live' })
 
     if (activeTab && activeSubTab) {
+      const currentCameraIds = activeSubTab.cameraPositions.map((position) => position.cameraId)
       params.set('tabId', activeTab.id)
       params.set('subTabId', activeSubTab.id)
-      params.set(
-        'cameraIds',
-        activeSubTab.cameraPositions
-          .map((position) => position.cameraId)
-          .join(',')
-      )
+      params.set('cameraIds', currentCameraIds.join(','))
+
+      const currentNameOverrides = currentCameraIds.reduce<Record<number, string>>((overrides, currentCameraId) => {
+        const override = cameraNameOverrides[currentCameraId]
+        if (override) {
+          overrides[currentCameraId] = override
+        }
+        return overrides
+      }, {})
+
+      if (Object.keys(currentNameOverrides).length > 0) {
+        params.set('cameraNames', JSON.stringify(currentNameOverrides))
+      }
     }
 
     navigate(`/live/cameras/${cameraId}?${params.toString()}`)
@@ -202,7 +218,12 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }
 
   const totalCells = activeSubTab.gridConfig.rows * activeSubTab.gridConfig.cols
-  const cameraMap = new Map(cameras.map((camera) => [camera.id, camera]))
+  const cameraMap = new Map(
+    cameras.map((camera) => [
+      camera.id,
+      cameraNameOverrides[camera.id] ? { ...camera, name: cameraNameOverrides[camera.id] } : camera,
+    ])
+  )
 
   const cellsData = Array.from({ length: totalCells }, (_, index) => {
     const col = index % activeSubTab.gridConfig.cols
@@ -257,7 +278,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
           className="grid gap-4 auto-fit"
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${activeSubTab.gridConfig.cols}, 1fr)`,
+            gridTemplateColumns: `repeat(${activeSubTab.gridConfig.cols}, minmax(0, 1fr))`,
             gap: `${activeSubTab.gridConfig.gapSize}px`,
           }}
         >
@@ -274,6 +295,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
                 }
               }}
               onFocusCamera={handleFocusCamera}
+              onRenameCamera={handleRenameCamera}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
             />

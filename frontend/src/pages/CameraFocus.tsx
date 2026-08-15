@@ -20,20 +20,36 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
+  const cameraNameOverrides = useMemo(
+    () => parseCameraNameOverrides(searchParams.get('cameraNames')),
+    [searchParams]
+  )
   const cameraList = useMemo(() => {
     const allCameras = createMockCameras()
     const cameraIds = parseCameraIds(searchParams.get('cameraIds'))
+    const applyNameOverride = (cameraItem: ReturnType<typeof createMockCameras>[number]) => {
+      const override = cameraNameOverrides[cameraItem.id]
+      return override ? { ...cameraItem, name: override } : cameraItem
+    }
 
     if (cameraIds.length === 0) {
-      return allCameras
+      return allCameras.map(applyNameOverride)
     }
 
     const cameraMap = new Map(allCameras.map((cameraItem) => [cameraItem.id, cameraItem]))
     return cameraIds.flatMap((id) => {
       const cameraItem = cameraMap.get(id)
-      return cameraItem ? [cameraItem] : []
+      return cameraItem ? [applyNameOverride(cameraItem)] : []
     })
-  }, [searchParams])
+  }, [cameraNameOverrides, searchParams])
+  const displayCamera = useMemo(() => {
+    if (!camera) {
+      return null
+    }
+
+    const override = cameraNameOverrides[camera.cameraId]
+    return override ? { ...camera, cameraName: override } : camera
+  }, [camera, cameraNameOverrides])
   const routeState = useMemo(
     () => parseCameraFocusRouteState(cameraId, searchParams),
     [cameraId, searchParams]
@@ -165,7 +181,7 @@ export default function CameraFocus() {
         alertId: Date.now(),
         cameraId: currentCameraId,
         message,
-        location: camera?.location ?? 'Entry Zone',
+        location: displayCamera?.location ?? 'Entry Zone',
         startedAt: now,
       }),
       ...current,
@@ -188,7 +204,7 @@ export default function CameraFocus() {
       mode={routeState.mode}
       selectedEventId={routeState.selectedEventId}
       alerts={visibleAlerts}
-      camera={camera}
+      camera={displayCamera}
       cameraList={cameraList}
       liveStream={liveStream}
       liveLoading={liveLoading}
@@ -245,4 +261,27 @@ function parseCameraIds(value: string | null): number[] {
     .split(',')
     .map((id) => Number(id.trim()))
     .filter((id) => Number.isInteger(id) && id > 0)
+}
+
+function parseCameraNameOverrides(value: string | null): Record<number, string> {
+  if (!value) {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return {}
+    }
+
+    return Object.entries(parsed).reduce<Record<number, string>>((overrides, [rawId, rawName]) => {
+      const id = Number(rawId)
+      if (Number.isInteger(id) && id > 0 && typeof rawName === 'string' && rawName.trim()) {
+        overrides[id] = rawName.trim()
+      }
+      return overrides
+    }, {})
+  } catch {
+    return {}
+  }
 }

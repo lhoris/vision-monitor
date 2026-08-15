@@ -207,6 +207,307 @@ html[data-theme='theme3'].dark .dark\:to-indigo-400 {
   overflow: hidden;
 }
 
+.camera-tile-header {
+  --camera-tile-header-bg: #f8fafc;
+  --camera-tile-header-border: #cbd5e1;
+  --camera-tile-header-title: #0f172a;
+
+  background: var(--camera-tile-header-bg);
+  border-color: var(--camera-tile-header-border);
+  color: var(--camera-tile-header-title);
+}
+
+.camera-tile-header__title {
+  color: var(--camera-tile-header-title);
+}
+
+html[data-theme='theme1'] .camera-tile-header {
+  --camera-tile-header-bg: #eff6ff;
+  --camera-tile-header-border: #93c5fd;
+  --camera-tile-header-title: #0f172a;
+}
+
+html[data-theme='theme2'] .camera-tile-header {
+  --camera-tile-header-bg: #111827;
+  --camera-tile-header-border: #3730a3;
+  --camera-tile-header-title: #f8fafc;
+}
+
+html[data-theme='theme3'] .camera-tile-header {
+  --camera-tile-header-bg: #0b1714;
+  --camera-tile-header-border: #1f4d42;
+  --camera-tile-header-title: #ecfdf5;
+}
+
+.camera-rename-dialog {
+  --camera-rename-bg: #ffffff;
+  --camera-rename-border: #cbd5e1;
+  --camera-rename-text: #0f172a;
+  --camera-rename-input-bg: #ffffff;
+  --camera-rename-input-border: #94a3b8;
+  --camera-rename-input-text: #0f172a;
+  --camera-rename-focus: #0ea5e9;
+  --camera-rename-cancel-bg: #f8fafc;
+  --camera-rename-cancel-hover: #e2e8f0;
+
+  background: var(--camera-rename-bg);
+  border-color: var(--camera-rename-border);
+  color: var(--camera-rename-text);
+}
+
+.camera-rename-dialog__input {
+  background: var(--camera-rename-input-bg);
+  border-color: var(--camera-rename-input-border);
+  color: var(--camera-rename-input-text);
+  caret-color: var(--camera-rename-input-text);
+}
+
+.camera-rename-dialog__input:focus {
+  border-color: var(--camera-rename-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--camera-rename-focus) 34%, transparent);
+}
+
+.camera-rename-dialog__cancel {
+  background: var(--camera-rename-cancel-bg);
+  border-color: var(--camera-rename-input-border);
+  color: var(--camera-rename-text);
+}
+
+.camera-rename-dialog__cancel:hover {
+  background: var(--camera-rename-cancel-hover);
+}
+
+html[data-theme='theme1'] .camera-rename-dialog {
+  --camera-rename-bg: #ffffff;
+  --camera-rename-border: #93c5fd;
+  --camera-rename-text: #0f172a;
+  --camera-rename-input-bg: #ffffff;
+  --camera-rename-input-border: #93c5fd;
+  --camera-rename-input-text: #0f172a;
+  --camera-rename-focus: #0284c7;
+  --camera-rename-cancel-bg: #eff6ff;
+  --camera-rename-cancel-hover: #dbeafe;
+}
+
+html[data-theme='theme2'] .camera-rename-dialog {
+  --camera-rename-bg: #1e1b4b;
+  --camera-rename-border: #6366f1;
+  --camera-rename-text: #f8fafc;
+  --camera-rename-input-bg: #0f172a;
+  --camera-rename-input-border: #6366f1;
+  --camera-rename-input-text: #f8fafc;
+  --camera-rename-focus: #818cf8;
+  --camera-rename-cancel-bg: #312e81;
+  --camera-rename-cancel-hover: #3730a3;
+}
+
+html[data-theme='theme3'] .camera-rename-dialog {
+  --camera-rename-bg: #0d1f1b;
+  --camera-rename-border: #1f4d42;
+  --camera-rename-text: #ecfdf5;
+  --camera-rename-input-bg: #07110f;
+  --camera-rename-input-border: #1f4d42;
+  --camera-rename-input-text: #ecfdf5;
+  --camera-rename-focus: #34d399;
+  --camera-rename-cancel-bg: #12352d;
+  --camera-rename-cancel-hover: #1f4d42;
+}
+
+.focus-shell {
+  --focus-bg: #0f172a;
+  --focus-panel-bg: #111827;
+  --focus-panel-border: #334155;
+  --focus-text: #f8fafc;
+  --focus-muted: #cbd5e1;
+  --focus-stage-bg: #020617;
+  --focus-control-bg: #1e293b;
+  --focus-control-bg-hover: #334155;
+  --focus-control-text: #e2e8f0;
+  --focus-selected-bg: #dbeafe;
+  --focus-selected-border: #38bdf8;
+  --focus-selected-text: #0f172a;
+  --focus-accent-bg: #fcd34d;
+  --focus-accent-hover: #fde68a;
+  --focus-accent-border: #f59e0b;
+  --focus-accent-text: #111827;
+  --focus-error-text: #fecaca;
+  --focus-event-marker: #f59e0b;
+  --focus-segment: #38bdf8;
+  --focus-gap: #64748b;
+
+  background: var(--focus-bg);
+  color: var(--focus-text);
+}
+
+.focus-shell__header,
+.focus-recording-panel,
+.focus-recording-message {
+  background: var(--focus-panel-bg);
+  border-color: var(--focus-panel-border);
+  color: var(--focus-text);
+}
+
+.focus-shell__title {
+  color: var(--focus-text);
+}
+
+.focus-camera-tab,
+.focus-mode-tab,
+.focus-action-button {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.focus-camera-tab--idle,
+.focus-mode-tab--idle {
+  background: var(--focus-control-bg);
+  border-color: var(--focus-panel-border);
+  color: var(--focus-control-text);
+}
+
+.focus-camera-tab--idle:hover,
+.focus-mode-tab--idle:hover {
+  background: var(--focus-control-bg-hover);
+  border-color: var(--focus-selected-border);
+}
+
+.focus-camera-tab--selected,
+.focus-mode-tab--selected {
+  background: var(--focus-selected-bg);
+  border-color: var(--focus-selected-border);
+  color: var(--focus-selected-text);
+}
+
+.focus-action-button {
+  background: var(--focus-accent-bg);
+  border-color: var(--focus-accent-border);
+  color: var(--focus-accent-text);
+}
+
+.focus-action-button:hover {
+  background: var(--focus-accent-hover);
+}
+
+.focus-shell__body {
+  background: var(--focus-bg);
+}
+
+.focus-video-stage {
+  background: var(--focus-stage-bg);
+  color: var(--focus-text);
+}
+
+.focus-video-stage__muted,
+.focus-recording-muted {
+  color: var(--focus-muted);
+}
+
+.focus-video-stage__error,
+.focus-recording-message--error {
+  color: var(--focus-error-text);
+}
+
+.focus-recording-timeline,
+.focus-recording-event--idle {
+  background: var(--focus-control-bg);
+}
+
+.focus-recording-event {
+  color: var(--focus-control-text);
+}
+
+.focus-recording-event--idle {
+  border-color: var(--focus-panel-border);
+}
+
+.focus-recording-event--selected {
+  background: var(--focus-selected-bg);
+  border-color: var(--focus-selected-border);
+  color: var(--focus-selected-text);
+}
+
+.focus-recording-event-marker {
+  background: var(--focus-event-marker);
+  --tw-ring-color: var(--focus-stage-bg);
+}
+
+.focus-recording-segment--available {
+  background: var(--focus-segment);
+}
+
+.focus-recording-segment--gap {
+  background: var(--focus-gap);
+  opacity: 0.78;
+}
+
+html[data-theme='theme1'] .focus-shell {
+  --focus-bg: #eaf4ff;
+  --focus-panel-bg: #ffffff;
+  --focus-panel-border: #93c5fd;
+  --focus-text: #0f172a;
+  --focus-muted: #475569;
+  --focus-stage-bg: #0f172a;
+  --focus-control-bg: #eff6ff;
+  --focus-control-bg-hover: #dbeafe;
+  --focus-control-text: #0f172a;
+  --focus-selected-bg: #bfdbfe;
+  --focus-selected-border: #0284c7;
+  --focus-selected-text: #082f49;
+  --focus-accent-bg: #fed7aa;
+  --focus-accent-hover: #ffedd5;
+  --focus-accent-border: #f97316;
+  --focus-accent-text: #431407;
+  --focus-error-text: #b91c1c;
+  --focus-event-marker: #ea580c;
+  --focus-segment: #0ea5e9;
+  --focus-gap: #94a3b8;
+}
+
+html[data-theme='theme2'] .focus-shell {
+  --focus-bg: #0f172a;
+  --focus-panel-bg: #1e1b4b;
+  --focus-panel-border: #6366f1;
+  --focus-text: #f8fafc;
+  --focus-muted: #c7d2fe;
+  --focus-stage-bg: #020617;
+  --focus-control-bg: #312e81;
+  --focus-control-bg-hover: #3730a3;
+  --focus-control-text: #eef2ff;
+  --focus-selected-bg: #c7d2fe;
+  --focus-selected-border: #a5b4fc;
+  --focus-selected-text: #111827;
+  --focus-accent-bg: #fbbf24;
+  --focus-accent-hover: #fde68a;
+  --focus-accent-border: #f59e0b;
+  --focus-accent-text: #1f1300;
+  --focus-error-text: #fecdd3;
+  --focus-event-marker: #fbbf24;
+  --focus-segment: #818cf8;
+  --focus-gap: #64748b;
+}
+
+html[data-theme='theme3'] .focus-shell {
+  --focus-bg: #07110f;
+  --focus-panel-bg: #0d1f1b;
+  --focus-panel-border: #1f4d42;
+  --focus-text: #ecfdf5;
+  --focus-muted: #a7f3d0;
+  --focus-stage-bg: #020806;
+  --focus-control-bg: #12352d;
+  --focus-control-bg-hover: #1f4d42;
+  --focus-control-text: #d1fae5;
+  --focus-selected-bg: #a7f3d0;
+  --focus-selected-border: #34d399;
+  --focus-selected-text: #022c22;
+  --focus-accent-bg: #f59e0b;
+  --focus-accent-hover: #fcd34d;
+  --focus-accent-border: #f59e0b;
+  --focus-accent-text: #1f1300;
+  --focus-error-text: #fecaca;
+  --focus-event-marker: #f59e0b;
+  --focus-segment: #10b981;
+  --focus-gap: #4b635c;
+}
+
 .focus-alert-toast {
   --focus-alert-bg: #fee2e2;
   --focus-alert-border: #dc2626;

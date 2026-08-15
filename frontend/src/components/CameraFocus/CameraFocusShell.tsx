@@ -70,9 +70,9 @@ export function CameraFocusShell({
   }
 
   return (
-    <section className="flex min-h-full flex-col bg-slate-900 text-gray-900 dark:text-gray-100" aria-labelledby="camera-focus-title">
-      <header className="border-b border-slate-700 bg-slate-800 px-5 py-4">
-        <h1 id="camera-focus-title" className="text-xl font-semibold text-white">
+    <section className="focus-shell flex min-h-full flex-col" aria-labelledby="camera-focus-title">
+      <header className="focus-shell__header border-b px-5 py-4">
+        <h1 id="camera-focus-title" className="focus-shell__title text-xl font-semibold">
           화면 확대 보기
         </h1>
         {cameraList.length > 0 ? (
@@ -87,10 +87,10 @@ export function CameraFocusShell({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => onSelectCamera?.(cameraItem.id)}
-                  className={`min-w-28 border px-4 py-2 text-sm font-semibold ${
+                  className={`focus-camera-tab min-w-28 border px-4 py-2 text-sm font-semibold ${
                     isSelected
-                      ? 'border-sky-300 bg-sky-100 text-slate-900'
-                      : 'border-slate-500 bg-slate-700 text-slate-200 hover:border-sky-300 hover:bg-slate-600'
+                      ? 'focus-camera-tab--selected'
+                      : 'focus-camera-tab--idle'
                   }`}
                 >
                   {cameraItem.name}
@@ -106,8 +106,8 @@ export function CameraFocusShell({
               role="tab"
               aria-selected={mode === 'live'}
               onClick={() => onModeChange?.('live')}
-              className={`border px-4 py-2 text-sm font-semibold ${
-                mode === 'live' ? 'border-red-500 bg-orange-200 text-slate-900' : 'border-slate-500 bg-slate-700 text-slate-200'
+              className={`focus-mode-tab border px-4 py-2 text-sm font-semibold ${
+                mode === 'live' ? 'focus-mode-tab--selected' : 'focus-mode-tab--idle'
               }`}
             >
               실시간
@@ -117,10 +117,10 @@ export function CameraFocusShell({
               role="tab"
               aria-selected={mode === 'recording'}
               onClick={() => onModeChange?.('recording')}
-              className={`border px-4 py-2 text-sm font-semibold ${
+              className={`focus-mode-tab border px-4 py-2 text-sm font-semibold ${
                 mode === 'recording'
-                  ? 'border-red-500 bg-orange-200 text-slate-900'
-                  : 'border-slate-500 bg-slate-700 text-slate-200'
+                  ? 'focus-mode-tab--selected'
+                  : 'focus-mode-tab--idle'
               }`}
             >
               녹화
@@ -129,14 +129,14 @@ export function CameraFocusShell({
           <button
             type="button"
             onClick={() => setIsTestAlertDialogOpen(true)}
-            className="border border-amber-500 bg-amber-300 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-200"
+            className="focus-action-button border px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2"
           >
             테스트 알람
           </button>
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
-      <div className="flex flex-1 flex-col gap-4 p-5 lg:flex-row">
+      <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row">
         <FocusVideoStage
           mode={mode}
           selectedEventId={selectedEventId}

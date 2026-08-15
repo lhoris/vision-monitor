@@ -8,11 +8,11 @@ interface RecordingEventListProps {
 
 export function RecordingEventList({ events, selectedEventId, onSelectEvent }: RecordingEventListProps) {
   if (events.length === 0) {
-    return <p className="border-t border-slate-700 bg-slate-900 px-4 py-3 text-xs text-slate-300">표시할 이벤트가 없습니다.</p>
+    return <p className="focus-recording-message border-t px-4 py-3 text-xs">표시할 이벤트가 없습니다.</p>
   }
 
   return (
-    <div className="border-t border-slate-700 bg-slate-900 px-4 py-3 text-white" aria-label="녹화 이벤트 목록">
+    <div className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 이벤트 목록">
       <div className="grid gap-2 md:grid-cols-2">
         {events.map((event) => (
           <button
@@ -27,10 +27,10 @@ export function RecordingEventList({ events, selectedEventId, onSelectEvent }: R
                 onSelectEvent(event.eventId)
               }
             }}
-            className={`border px-3 py-2 text-left text-xs ${
+            className={`focus-recording-event border px-3 py-2 text-left text-xs ${
               selectedEventId === event.eventId
-                ? 'border-amber-300 bg-amber-100 text-slate-950'
-                : 'border-slate-600 bg-slate-800 text-slate-100'
+                ? 'focus-recording-event--selected'
+                : 'focus-recording-event--idle'
             }`}
           >
             <span className="block font-semibold">{event.title}</span>

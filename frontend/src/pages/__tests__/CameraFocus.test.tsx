@@ -53,6 +53,15 @@ describe('CameraFocus page shell', () => {
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'false')
   })
 
+  it('applies renamed camera titles from the focus route query', async () => {
+    const cameraNames = encodeURIComponent(JSON.stringify({ 1: '공냉대 진입부' }))
+    renderRoute(`/live/cameras/1?mode=live&cameraIds=1%2C2&cameraNames=${cameraNames}`)
+
+    expect(await screen.findByRole('tab', { name: '공냉대 진입부' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Camera 2' })).toBeInTheDocument()
+    expect(screen.getAllByText('공냉대 진입부').length).toBeGreaterThanOrEqual(1)
+  })
+
   it('shows a manual test alert toast using the entered message', async () => {
     renderRoute('/live/cameras/2?mode=live&cameraIds=1%2C2')
 

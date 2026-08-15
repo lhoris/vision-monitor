@@ -10,13 +10,13 @@ export function RecordingTimeline({ playbackSession, events }: RecordingTimeline
   const hasEvents = events.length > 0
 
   return (
-    <div className="border-t border-slate-700 bg-slate-900 px-4 py-3 text-white" aria-label="녹화 타임라인">
-      <div className="mb-2 flex items-center justify-between text-xs text-slate-300">
+    <div className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 타임라인">
+      <div className="focus-recording-muted mb-2 flex items-center justify-between text-xs">
         <span>{playbackSession.availableFrom}</span>
         <span>{playbackSession.availableTo}</span>
       </div>
 
-      <div className="relative h-12 rounded bg-slate-800" role="group" aria-label="녹화 구간과 이벤트 marker">
+      <div className="focus-recording-timeline relative h-12 rounded" role="group" aria-label="녹화 구간과 이벤트 marker">
         {hasSegments ? (
           playbackSession.timelineSegments.map((segment) => (
             <TimelineSegment
@@ -26,7 +26,7 @@ export function RecordingTimeline({ playbackSession, events }: RecordingTimeline
             />
           ))
         ) : (
-          <p className="flex h-full items-center justify-center text-xs text-slate-300">표시할 녹화 구간이 없습니다.</p>
+          <p className="focus-recording-muted flex h-full items-center justify-center text-xs">표시할 녹화 구간이 없습니다.</p>
         )}
 
         {events.map((event) => (
@@ -34,13 +34,13 @@ export function RecordingTimeline({ playbackSession, events }: RecordingTimeline
             key={event.eventId}
             role="img"
             aria-label={`이벤트 marker ${event.occurredAt} ${event.title}`}
-            className="absolute top-1 h-10 w-1 rounded bg-amber-300 ring-2 ring-slate-950"
+            className="focus-recording-event-marker absolute top-1 h-10 w-1 rounded ring-2"
             style={{ left: `${formatPercent(toPercent(event.occurredAt, playbackSession))}%` }}
           />
         ))}
       </div>
 
-      {!hasEvents ? <p className="mt-2 text-xs text-slate-300">표시할 이벤트가 없습니다.</p> : null}
+      {!hasEvents ? <p className="focus-recording-muted mt-2 text-xs">표시할 이벤트가 없습니다.</p> : null}
     </div>
   )
 }
@@ -65,7 +65,7 @@ function TimelineSegment({
           ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가`
           : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`
       }
-      className={`absolute top-4 h-4 ${isGap ? 'bg-slate-500 opacity-70' : 'bg-sky-500'}`}
+      className={`absolute top-4 h-4 ${isGap ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`}
       style={{
         left: `${formatPercent(left)}%`,
         width: `${formatPercent(width)}%`,

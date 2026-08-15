@@ -55,7 +55,7 @@ export function FocusVideoStage({
 
   if (mode === 'live' && camera && liveStream) {
     return (
-      <section className="min-h-[420px] flex-1 bg-gray-950 text-white">
+      <section className="focus-video-stage min-h-[420px] flex-1">
         <LiveStreamPlayer camera={toPlayerCamera(camera, liveStream)} className="h-full min-h-[420px] w-full" />
       </section>
     )
@@ -74,7 +74,7 @@ export function FocusVideoStage({
     })
 
     return (
-      <section className="min-h-[420px] flex-1 bg-gray-950 text-white">
+      <section className="focus-video-stage min-h-[420px] flex-1">
         {playbackSession ? (
           <>
             <StreamPlayerComponent
@@ -92,13 +92,13 @@ export function FocusVideoStage({
           </>
         ) : (
           <div className="flex h-[360px] items-center justify-center">
-            <p className="text-sm text-red-200">
+            <p className="focus-video-stage__error text-sm">
               {playbackError === 'FORBIDDEN' ? '녹화 영상 접근 권한이 없습니다.' : '녹화 영상을 불러오지 못했습니다.'}
             </p>
           </div>
         )}
         {eventsError ? (
-          <p className="border-t border-slate-700 bg-slate-900 px-4 py-3 text-xs text-red-200">
+          <p className="focus-recording-message focus-recording-message--error border-t px-4 py-3 text-xs">
             이벤트 목록을 불러오지 못했습니다.
           </p>
         ) : (
@@ -114,7 +114,7 @@ export function FocusVideoStage({
   }
 
   return (
-    <section className="flex min-h-[420px] flex-1 flex-col justify-between bg-gray-950 text-white">
+    <section className="focus-video-stage flex min-h-[420px] flex-1 flex-col justify-between">
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold">{title}</h2>
@@ -156,9 +156,9 @@ function getSeekTarget({
 
 function VideoStateMessage({ tone, message }: { tone: 'neutral' | 'error'; message: string }) {
   return (
-    <section className="flex min-h-[420px] flex-1 flex-col justify-between bg-gray-950 text-white">
+    <section className="focus-video-stage flex min-h-[420px] flex-1 flex-col justify-between">
       <div className="flex flex-1 items-center justify-center">
-        <p className={`text-sm ${tone === 'error' ? 'text-red-200' : 'text-gray-300'}`}>{message}</p>
+        <p className={`text-sm ${tone === 'error' ? 'focus-video-stage__error' : 'focus-video-stage__muted'}`}>{message}</p>
       </div>
     </section>
   )
