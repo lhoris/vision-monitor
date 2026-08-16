@@ -1,6 +1,6 @@
 # 작업 목록: 화면 확대 보기
 
-**입력**: `specs/001-camera-focus-view/`의 설계 문서
+**입력**: `specs/003-camera-focus-view/`의 설계 문서
 
 **사전 조건**: spec.md, plan.md, research.md, data-model.md, contracts/, quickstart.md
 
@@ -16,8 +16,8 @@
 
 - [x] T001 BMAD source map을 작성한다: `docs/migration/bmad-to-speckit-source-map.md`
 - [x] T002 Spec Kit seed를 작성한다: `docs/migration/speckit-camera-focus-seed.md`
-- [x] T003 화면 확대 보기 feature spec 디렉터리를 생성한다: `specs/001-camera-focus-view/`
-- [x] T004 spec/plan/contracts/quickstart/tasks 산출물을 작성한다: `specs/001-camera-focus-view/`
+- [x] T003 화면 확대 보기 feature spec 디렉터리를 생성한다: `specs/003-camera-focus-view/`
+- [x] T004 spec/plan/contracts/quickstart/tasks 산출물을 작성한다: `specs/003-camera-focus-view/`
 
 ---
 
@@ -100,8 +100,8 @@
 
 ## Phase N: 다듬기 및 공통 검증
 
-- [ ] T029 quickstart 수동 검증을 실행하고 결과를 기록한다: `specs/001-camera-focus-view/quickstart.md`
-- [ ] T030 theme1/2/3 contrast 수동 검증 결과를 기록한다: `specs/001-camera-focus-view/quickstart.md`
+- [ ] T029 quickstart 수동 검증을 실행하고 결과를 기록한다: `specs/003-camera-focus-view/quickstart.md`
+- [ ] T030 theme1/2/3 contrast 수동 검증 결과를 기록한다: `specs/003-camera-focus-view/quickstart.md`
 - [ ] T031 keyboard/ARIA 검증을 보강한다: `frontend/src/components/CameraFocus/`
 - [x] T032 migration harness를 실행해 BMAD 삭제 가능 상태를 확인한다: `scripts/verify-speckit-migration.ps1`
 - [x] T033 BMAD 실행 폴더와 agent 파일을 삭제한다: `_bmad/`, `_bmad-output/`, `.agents/skills/bmad-*`, `.claude/skills/bmad-*`, `.github/agents/bmad-*.agent.md`

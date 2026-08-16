@@ -52,7 +52,7 @@ BMAD에서 옮겨야 할 프로젝트 원칙:
 7. UI는 운영 모니터링 화면이며 landing/marketing 페이지가 아니다.
 8. 테스트는 user-facing behavior, contract adapter, route state, partial failure, accessibility 중심으로 작성한다.
 
-### `specs/001-camera-focus-view/spec.md`
+### `specs/003-camera-focus-view/spec.md`
 
 Spec Kit specify 입력으로 옮길 핵심:
 
@@ -66,7 +66,7 @@ Spec Kit specify 입력으로 옮길 핵심:
 - Rename한 카메라 제목은 grid와 focus view에서 일관되게 보여야 한다.
 - 테마1/2/3에서 제목, dialog, recording UI 글자 대비가 유지되어야 한다.
 
-### `specs/001-camera-focus-view/plan.md`
+### `specs/003-camera-focus-view/plan.md`
 
 Plan에 옮길 기술 context:
 
@@ -84,7 +84,7 @@ Plan에 옮길 기술 context:
   - optional `POST /api/events/{eventId}/acknowledge`
 - Public contract decision: frontend mock-first, Spring Boot follow-on.
 
-### `specs/001-camera-focus-view/contracts/`
+### `specs/003-camera-focus-view/contracts/`
 
 Contract candidates:
 
@@ -104,7 +104,7 @@ Contract candidates:
   - independent loading/error state for camera, live stream, playback, events, alerts
   - alert dismiss state scoped to route session
 
-### `specs/001-camera-focus-view/data-model.md`
+### `specs/003-camera-focus-view/data-model.md`
 
 Data model candidates:
 
@@ -119,7 +119,7 @@ Data model candidates:
 - Camera title override
 - Route session dismiss state
 
-### `specs/001-camera-focus-view/tasks.md`
+### `specs/003-camera-focus-view/tasks.md`
 
 BMAD story state should not be copied blindly. Use this split:
 
@@ -190,7 +190,7 @@ Keep:
 1. Commit unrelated UI cursor fix.
 2. Create this source map and a normalized Spec Kit seed input.
 3. Update `.specify/memory/constitution.md`.
-4. Create `specs/001-camera-focus-view/spec.md` using the normalized seed.
+4. Create `specs/003-camera-focus-view/spec.md` using the normalized seed.
 5. Run Spec Kit plan/tasks flow.
 6. Compare generated `tasks.md` against BMAD sprint status.
 7. Delete BMAD folders and BMAD agent files.

@@ -11,7 +11,7 @@ BMAD Method 실행 체계를 제거하고, 화면 확대 보기 기능의 요구
 마이그레이션은 한 번에 삭제하지 않고 다음 루프를 반복한다.
 
 1. **수집**: BMAD 산출물, 현재 코드, 사용자 대화에서 유지할 지식을 수집한다.
-2. **승격**: 유지할 지식을 `specs/001-camera-focus-view/`의 Spec Kit artifact로 옮긴다.
+2. **승격**: 유지할 지식을 `specs/003-camera-focus-view/`의 Spec Kit artifact로 옮긴다.
 3. **검증**: `scripts/verify-speckit-migration.ps1`로 필수 파일, 참조 경로, 핵심 문구를 확인한다.
 4. **삭제**: 검증 통과 후 BMAD 실행 폴더와 agent 파일을 제거한다.
 5. **회귀 확인**: frontend 테스트와 build를 실행한다.
@@ -21,7 +21,7 @@ BMAD Method 실행 체계를 제거하고, 화면 확대 보기 기능의 요구
 
 `scripts/verify-speckit-migration.ps1`는 다음을 확인한다.
 
-- `.specify/feature.json`이 `specs/001-camera-focus-view`를 가리키는지
+- `.specify/feature.json`이 `specs/003-camera-focus-view`를 가리키는지
 - `spec.md`, `plan.md`, `tasks.md`, contracts, quickstart가 존재하는지
 - `spec.md`가 참고 이미지/기능 요구사항 중심 구조를 유지하는지
 - `plan.md`가 Mock-First MVP 원칙을 포함하는지
@@ -49,7 +49,7 @@ BMAD Method 실행 체계를 제거하고, 화면 확대 보기 기능의 요구
 ## 유지 대상
 
 - `.specify/`
-- `specs/001-camera-focus-view/`
+- `specs/003-camera-focus-view/`
 - `.agents/skills/speckit-*`
 - `.claude/skills/speckit-*`
 - `.github/agents/speckit.*.agent.md`

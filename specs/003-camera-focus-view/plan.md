@@ -1,8 +1,8 @@
 # 구현 계획: 화면 확대 보기
 
-**브랜치**: `001-camera-focus-view` | **일자**: 2026-08-16 | **명세**: [spec.md](spec.md)
+**브랜치**: `003-camera-focus-view` | **일자**: 2026-08-16 | **명세**: [spec.md](spec.md)
 
-**입력**: `/specs/001-camera-focus-view/spec.md`의 기능 명세
+**입력**: `/specs/003-camera-focus-view/spec.md`의 기능 명세
 
 **변경 추적**: 문서 변경 이력은 Git 커밋 이력을 기준으로 한다.
 
@@ -132,7 +132,7 @@
 ### 문서 구조(이번 기능)
 
 ```text
-specs/001-camera-focus-view/
+specs/003-camera-focus-view/
 ├── assets/
 ├── spec.md
 ├── plan.md
