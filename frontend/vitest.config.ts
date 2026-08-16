@@ -2,6 +2,8 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+const rootDir = import.meta.dirname
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -19,13 +21,13 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@components': path.resolve(__dirname, './src/components'),
-      '@pages': path.resolve(__dirname, './src/pages'),
-      '@services': path.resolve(__dirname, './src/services'),
-      '@types': path.resolve(__dirname, './src/types'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@store': path.resolve(__dirname, './src/store'),
+      '@': path.resolve(rootDir, './src'),
+      '@components': path.resolve(rootDir, './src/components'),
+      '@pages': path.resolve(rootDir, './src/pages'),
+      '@services': path.resolve(rootDir, './src/services'),
+      '@types': path.resolve(rootDir, './src/types'),
+      '@hooks': path.resolve(rootDir, './src/hooks'),
+      '@store': path.resolve(rootDir, './src/store'),
     },
   },
 })
