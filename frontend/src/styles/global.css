@@ -4,6 +4,7 @@
 
 @import './variables.css';
 @import './tailwind.css';
+@import './tabulator.css';
 
 * {
   margin: 0;
