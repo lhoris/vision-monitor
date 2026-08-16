@@ -1,113 +1,205 @@
-# Implementation Plan: [FEATURE]
+# 구현 계획: [기능]
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**브랜치**: `[###-feature-name]` | **일자**: [DATE] | **명세**: [link]
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**입력**: `/specs/[###-feature-name]/spec.md`의 기능 명세
 
-**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**변경 추적**: 문서 변경 이력은 Git 커밋 이력을 기준으로 한다.
 
-## Summary
+> 이 문서는 한국어로 작성한다. 기술 용어, API 이름, 파일 경로, 코드 식별자, 명령어는 원문 또는 영문 표기를 유지할 수 있다.
+> 구현 계획은 "어떻게 구현할 것인가"를 정의한다. 기능 경계는 spec.md를 기준으로 하며, plan.md에서 새 기능 요구사항을 추가하지 않는다.
 
-[Extract from feature spec: primary requirement + technical approach from research]
-
-## Technical Context
+## 1. 계획 요약
 
 <!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
+  목적:
+  spec.md의 기능 요구사항과 제외 범위를 바탕으로 구현 접근을 짧게 요약한다.
+
+  작성 원칙:
+  - 3~7문장으로 작성한다.
+  - 새 요구사항을 추가하지 않는다.
+  - frontend/backend/external system 책임 경계를 명확히 한다.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+[기능 요구사항을 만족하기 위한 구현 접근을 요약한다.]
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+## 2. 요구사항 추적
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+<!--
+  목적:
+  spec.md의 FR/UX/필요한 정보가 plan.md에서 어디에 반영되는지 추적한다.
+  모든 FR은 최소 하나 이상의 계획 항목 또는 제외/후속 범위와 연결되어야 한다.
+-->
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+| 명세 항목 | 계획 반영 위치 | 비고 |
+|-----------|----------------|------|
+| FR-001 | [관련 설계/구현 계획 섹션] | [구현 또는 제외 근거] |
+| UX-001 | [관련 설계/구현 계획 섹션] | [구현 또는 제외 근거] |
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+## 3. 기술 컨텍스트
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+<!--
+  작성 필요:
+  프로젝트의 실제 기술 정보를 반영한다. 불필요한 항목은 N/A로 표시한다.
+-->
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**언어/버전**: [예: TypeScript 5.x, Java 21 또는 NEEDS CLARIFICATION]
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+**주요 의존성**: [예: React, Vite, Spring Boot 또는 NEEDS CLARIFICATION]
 
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**저장소/상태 관리**: [예: 브라우저 상태, mock fixture, PostgreSQL 또는 N/A]
 
-## Constitution Check
+**테스트**: [예: Vitest, React Testing Library, Playwright 또는 NEEDS CLARIFICATION]
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+**대상 플랫폼**: [예: 웹 브라우저, Windows 운영 환경, Linux 서버 또는 NEEDS CLARIFICATION]
 
-[Gates determined based on constitution file]
+**프로젝트 유형**: [예: frontend, backend, full-stack web app 또는 NEEDS CLARIFICATION]
 
-## Project Structure
+**성능 목표**: [예: 60 fps, p95 200ms 이하 또는 NEEDS CLARIFICATION]
 
-### Documentation (this feature)
+**제약사항**: [예: mock-only MVP, 외부 VMS 직접 구현 제외, 기존 UI 구조 유지 또는 NEEDS CLARIFICATION]
+
+**규모/범위**: [예: 카메라 9개 그리드, 화면 3개, 이벤트 100건 또는 NEEDS CLARIFICATION]
+
+## 4. 구현 범위와 제외 범위
+
+<!--
+  목적:
+  이번 구현에서 실제로 변경할 범위와 명시적으로 하지 않을 범위를 구분한다.
+-->
+
+### 구현 범위
+
+- [이번 기능에서 실제 구현할 frontend/backend/service/UI 범위]
+- [mock service, fixture, DTO contract 등 필요한 계약 범위]
+- [기존 기능과 연결되는 범위]
+
+### 제외 범위
+
+- [spec.md의 제외 범위를 구현 관점에서 재확인한다.]
+- [후속 기능 또는 외부 시스템 책임으로 남길 항목]
+
+## 5. 설계 접근
+
+<!--
+  목적:
+  기능을 구현하기 위한 컴포넌트, 서비스, 상태, 데이터 흐름의 설계를 설명한다.
+  코드 수준으로 과도하게 상세하게 쓰기보다 tasks.md로 분해 가능한 수준까지 작성한다.
+-->
+
+### 화면/컴포넌트 구조
+
+- [관련 화면, 컴포넌트, 라우트, 레이아웃 구조]
+- [기존 컴포넌트 재사용 또는 신규 컴포넌트 필요성]
+
+### 상태 및 상호작용 흐름
+
+- [사용자 동작에 따른 상태 변화]
+- [로딩, 오류, 빈 상태, 권한/접근 불가 등 처리]
+
+### 서비스 및 데이터 흐름
+
+- [frontend service, mock adapter, fixture, API boundary]
+- [external system 또는 backend와의 책임 경계]
+
+## 6. 데이터 및 계약 계획
+
+<!--
+  목적:
+  spec.md의 "필요한 정보"를 구현 가능한 데이터 구조와 계약으로 변환한다.
+  상세 계약 파일이 필요하면 contracts/ 아래에 작성한다.
+-->
+
+### 필요한 데이터
+
+- [화면/기능이 필요로 하는 데이터]
+- [상태 판단에 필요한 데이터]
+
+### 계약
+
+- [API/mock contract 이름 또는 경로]
+- [DTO 또는 타입 이름]
+- [성공/오류 응답 경계]
+
+### Fixture/Mock 계획
+
+- [MVP에서 사용할 mock 데이터]
+- [오류, 빈 상태, 권한 제한 등 테스트 fixture]
+
+## 7. 테스트 및 검증 계획
+
+<!--
+  목적:
+  구현 완료 여부를 어떻게 검증할지 정의한다.
+  테스트는 위험도와 사용자 영향도에 맞게 선택한다.
+-->
+
+- **단위/컴포넌트 테스트**: [대상과 목적]
+- **통합 테스트**: [대상과 목적]
+- **E2E/수동 검증**: [사용자 흐름 검증 방법]
+- **빌드/정적 검증**: [lint, typecheck, build 등]
+- **회귀 확인**: [기존 기능에서 깨지면 안 되는 흐름]
+
+## 8. 프로젝트 구조
+
+### 문서 구조(이번 기능)
 
 ```text
 specs/[###-feature]/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+├── assets/         # 참고 이미지 및 원문 자료
+├── spec.md         # 기능 명세
+├── plan.md         # 구현 계획
+├── research.md     # 필요 시 리서치 결과
+├── data-model.md   # 필요 시 데이터 모델
+├── quickstart.md   # 필요 시 검증 절차
+├── contracts/      # 필요 시 API/mock contract
+└── tasks.md        # 작업 목록 (/speckit-tasks 산출물)
 ```
 
-### Source Code (repository root)
+### 소스 코드 구조
+
 <!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
+  작성 필요:
+  실제 변경 대상 경로만 남긴다. 사용하지 않는 예시는 삭제한다.
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
 frontend/
 ├── src/
 │   ├── components/
 │   ├── pages/
-│   └── services/
-└── tests/
+│   ├── services/
+│   └── test/
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+backend/
+└── [MVP에서 변경하지 않는 경우 N/A로 표시]
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**구조 결정**: [선택한 구조와 실제 디렉터리 근거를 기록한다.]
 
-## Complexity Tracking
+## 9. 헌법 체크
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+<!--
+  `.specify/memory/constitution.md` 기준으로 위반 여부를 점검한다.
+-->
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+- **한국어 우선 산출물**: [통과/위반 및 근거]
+- **기존 구조 존중**: [통과/위반 및 근거]
+- **Mock-First MVP**: [통과/위반 및 근거]
+- **계약 우선**: [통과/위반 및 근거]
+- **테스트 가능한 증분**: [통과/위반 및 근거]
+
+## 10. 위험 및 대응
+
+| 위험 | 영향 | 대응 |
+|------|------|------|
+| [예: 외부 시스템 계약 미정] | [구현/검증 영향] | [mock contract 또는 후속 범위로 분리] |
+| [예: 기존 UI 회귀 가능성] | [사용자 영향] | [검증 방법] |
+
+## 11. 복잡도 추적
+
+> 헌법 체크 위반이 있거나 복잡도가 증가하는 설계 결정을 했을 때만 작성한다.
+
+| 결정 | 필요한 이유 | 더 단순한 대안을 거부한 이유 |
+|------|-------------|-------------------------------|
+| [예: 신규 상태 관리 계층 도입] | [현재 필요한 이유] | [기존 방식으로 부족한 이유] |

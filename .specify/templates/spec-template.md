@@ -1,131 +1,216 @@
-# Feature Specification: [FEATURE NAME]
+# 기능 명세서: [기능 이름]
 
-**Feature Branch**: `[###-feature-name]`
+**기능 브랜치**: `[###-feature-name]`
 
-**Created**: [DATE]
+**작성일**: [DATE]
 
-**Status**: Draft
+**상태**: 초안
 
-**Input**: User description: "$ARGUMENTS"
+**변경 추적**: 문서 변경 이력은 Git 커밋 이력을 기준으로 한다.
 
-## User Scenarios & Testing *(mandatory)*
+**입력**: 사용자 설명: "$ARGUMENTS"
+
+> 이 문서는 한국어로 작성한다. 기술 용어, API 이름, 파일 경로, 코드 식별자는 원문 또는 영문 표기를 유지할 수 있다.
+> 기능 명세서는 "무엇을 제공해야 하는가"를 정의한다. 구현 방식, 컴포넌트 구조, DTO/API 세부사항, 파일 경로는 plan.md 또는 contracts/에서 다룬다.
+
+> **기능 개요 - Agent 요약**
+>
+> [Agent는 참고 이미지 및 원문 자료, 기능 요구사항, 제외 범위, UI/UX 요구사항, 필요한 정보를 바탕으로 이 기능이 제공하는 사용자 가치와 주요 경계를 3~5문장으로 요약한다. 새로운 요구사항은 추가하지 않는다.]
+
+## 1. 참고 이미지 및 원문 자료
 
 <!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+  목적:
+  현업/사용자가 제공한 PPT 캡처, 화면 스케치, 기존 화면 캡처, 회의 메모 등 원문 자료를 첨부한다.
+  이 섹션은 요구사항 해석의 근거가 된다.
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
+  작성 원칙:
+  - 이미지는 가능한 한 `specs/[###-feature-name]/assets/` 아래에 저장하고 상대 경로로 연결한다.
+  - 이미지에는 사용자가 이해할 수 있는 짧은 설명을 붙인다.
+  - Agent는 active 상태의 자료만 현재 요구사항 해석 근거로 사용한다.
+  - superseded/deprecated 상태의 자료는 변경 배경을 이해하는 이력으로만 참고한다.
+  - Agent는 자료에 없는 내용을 임의로 추가하지 않는다.
+  - 자료가 없으면 "제공된 원문 자료 없음"이라고 명시한다.
+
+  자료 상태:
+  - active: 현재 요구사항 해석에 사용한다.
+  - superseded: 더 최신 자료나 명세에 의해 대체되었으며 이력으로만 보관한다.
+  - deprecated: 더 이상 현재 요구사항 해석에 사용하지 않으며 이력으로만 보관한다.
 -->
 
-### User Story 1 - [Brief Title] (Priority: P1)
+| 상태 | 자료 | 설명 | 비고 |
+|------|------|------|------|
+| active | [이미지 1 설명](assets/[image-name].png) | [PPT 캡처, 화면 스케치, 기존 화면 캡처 등 자료 설명] | [현재 요구사항 해석에 사용하는 이유] |
+| deprecated | [이전 이미지 설명](assets/[old-image-name].png) | [초기안 또는 이전 자료 설명] | [더 이상 참조하지 않는 이유] |
+| active | 원문 메모 | [사용자가 제공한 원문 요구사항 또는 설명] | [요구사항 해석 참고 사항] |
 
-[Describe this user journey in plain language]
+## 2. 기능 요구사항 *(필수)*
 
-**Why this priority**: [Explain the value and why it has this priority level]
+<!--
+  목적:
+  현업/사용자가 기대하는 최소 기능 제공 경계선을 정의한다.
+  이 섹션은 간단하고 명확해야 하며, 상세 설계 문서처럼 작성하지 않는다.
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+  작성 원칙:
+  - 사용자가 기대하는 기능과 시스템의 외부 동작만 적는다.
+  - 구현 방법, 컴포넌트명, hook, DTO, API endpoint, 파일 경로는 쓰지 않는다.
+  - 한 항목에는 하나의 요구만 담는다.
+  - FR 항목은 우선순위 판단과 구현 범위 판단의 기준이 된다.
+-->
 
-**Acceptance Scenarios**:
+### 기능 요구사항
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+- **FR-001**: 시스템은 [사용자에게 제공해야 하는 구체 기능]을 제공해야 한다.
+- **FR-002**: 사용자는 [핵심 상호작용]을 수행할 수 있어야 한다.
+- **FR-003**: 시스템은 [중요한 상태/결과]를 표시해야 한다.
+- **FR-004**: 시스템은 [오류/예외/상태 변화]를 사용자가 이해할 수 있게 처리해야 한다.
+- **FR-005**: 시스템은 [기존 기능 또는 흐름]을 방해하지 않아야 한다.
+
+*불명확한 요구사항 표기 예시:*
+
+- **FR-006**: 시스템은 [NEEDS CLARIFICATION: 어떤 사용자 역할까지 허용할지 미정] 사용자가 이 기능을 사용할 수 있게 해야 한다.
+- **FR-007**: 시스템은 [NEEDS CLARIFICATION: 어느 화면/공정 범위까지 적용할지 미정] 범위에서 이 기능을 제공해야 한다.
+
+## 3. 제외 범위 *(필수)*
+
+<!--
+  목적:
+  이번 기능에서 하지 않는 일을 명확히 적어 범위 확장을 막는다.
+  제외 범위는 구현 중 "이것도 해야 하나?"를 판단하는 기준이다.
+-->
+
+- [이번 기능에서 제외하는 작업. 예: 실제 backend API 구현은 제외한다.]
+- [이번 기능에서 제외하는 외부 연동. 예: RTSP ingest, AI inference, Media Server 직접 구현은 제외한다.]
+- [이번 기능에서 제외하는 UI/운영 범위. 예: 모바일 최적화는 이번 범위에서 제외한다.]
+
+## 4. UI/UX 요구사항
+
+<!--
+  목적:
+  화면 배치, 상태 표시, 상호작용, 접근성, 테마/가독성 같은 사용자 경험 요구를 적는다.
+  컴포넌트명이나 CSS 구현 방식이 아니라 사용자가 경험해야 하는 결과를 적는다.
+-->
+
+- **UX-001**: [화면에서 사용자가 확인해야 하는 배치/상태/동작]
+- **UX-002**: [클릭, 호버, 팝업, 토스트, 탭 전환 등 상호작용 요구]
+- **UX-003**: [테마, 색상 대비, 텍스트 가독성, 반응형 등 시각 품질 요구]
+
+## 5. 필요한 정보
+
+<!--
+  목적:
+  사용자가 화면에서 확인해야 하는 정보와 시스템이 판단/표시해야 하는 상태를 정의한다.
+
+  작성 원칙:
+  - DTO, API endpoint, 필드명, fixture 구조는 쓰지 않는다.
+  - 사용자가 보거나 이해해야 하는 정보 단위로 적는다.
+  - 상세 데이터 계약은 plan.md 또는 contracts/에서 다룬다.
+-->
+
+- [사용자가 화면에서 확인해야 하는 정보. 예: 카메라명, 공정/설비명, 온라인 상태]
+- [시스템이 판단하거나 표시해야 하는 상태. 예: 알람 발생 여부, 재생 가능 여부]
+- [기능 검증에 필요한 업무 정보. 예: 이벤트 발생 시각, 관련 위치, 관련 카메라]
+
+## 6. 사용자 시나리오 및 테스트 *(필수)*
+
+<!--
+  중요:
+  사용자 시나리오는 기능 요구사항을 실제 사용 흐름으로 풀어낸 것이다.
+  각 사용자 스토리는 독립적으로 테스트 가능해야 한다.
+  즉, 해당 스토리 하나만 구현해도 사용자에게 검증 가능한 가치를 제공해야 한다.
+
+  우선순위는 P1, P2, P3 형식으로 표기한다. P1이 가장 중요하다.
+-->
+
+### 사용자 스토리 1 - [간단한 제목] (우선순위: P1)
+
+[이 사용자 여정을 평이한 한국어로 설명한다.]
+
+**관련 기능 요구사항**: [예: FR-001, FR-003]
+
+**이 우선순위인 이유**: [이 스토리가 제공하는 가치와 우선순위 근거를 설명한다.]
+
+**독립 테스트**: [이 스토리만 독립적으로 검증하는 방법을 설명한다. 예: "사용자가 [구체적 동작]을 수행하면 [구체적 가치]를 확인할 수 있다."]
+
+**수용 시나리오**:
+
+1. **Given** [초기 상태], **When** [사용자 동작], **Then** [기대 결과]
+2. **Given** [초기 상태], **When** [사용자 동작], **Then** [기대 결과]
 
 ---
 
-### User Story 2 - [Brief Title] (Priority: P2)
+### 사용자 스토리 2 - [간단한 제목] (우선순위: P2)
 
-[Describe this user journey in plain language]
+[이 사용자 여정을 평이한 한국어로 설명한다.]
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**관련 기능 요구사항**: [예: FR-002]
 
-**Independent Test**: [Describe how this can be tested independently]
+**이 우선순위인 이유**: [이 스토리가 제공하는 가치와 우선순위 근거를 설명한다.]
 
-**Acceptance Scenarios**:
+**독립 테스트**: [이 스토리만 독립적으로 검증하는 방법을 설명한다.]
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+**수용 시나리오**:
 
----
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** [초기 상태], **When** [사용자 동작], **Then** [기대 결과]
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
+### 사용자 스토리 3 - [간단한 제목] (우선순위: P3)
 
-### Edge Cases
+[이 사용자 여정을 평이한 한국어로 설명한다.]
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+**관련 기능 요구사항**: [예: FR-004]
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+**이 우선순위인 이유**: [이 스토리가 제공하는 가치와 우선순위 근거를 설명한다.]
 
-## Requirements *(mandatory)*
+**독립 테스트**: [이 스토리만 독립적으로 검증하는 방법을 설명한다.]
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
+**수용 시나리오**:
 
-### Functional Requirements
+1. **Given** [초기 상태], **When** [사용자 동작], **Then** [기대 결과]
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+---
 
-*Example of marking unclear requirements:*
+[필요한 만큼 사용자 스토리를 추가한다. 각 스토리에는 우선순위를 반드시 지정한다.]
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
-
-### Key Entities *(include if feature involves data)*
-
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
-
-## Success Criteria *(mandatory)*
+### 엣지 케이스
 
 <!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
+  작성 필요:
+  실제 기능에 맞는 경계 조건과 오류 상황을 적는다.
 -->
 
-### Measurable Outcomes
+- [경계 조건]에서는 어떤 일이 발생해야 하는가?
+- 시스템은 [오류 상황]을 어떻게 처리해야 하는가?
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Assumptions
+## 7. 성공 기준 *(필수)*
 
 <!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
+  작성 필요:
+  기술에 종속되지 않고 측정 가능한 성공 기준을 정의한다.
+  성공 기준은 사용자가 기능 완료를 확인하는 기준이어야 한다.
 -->
 
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+### 측정 가능한 결과
+
+- **SC-001**: [측정 가능한 결과. 예: "사용자는 2번 이하의 조작으로 대상 화면에 진입할 수 있다."]
+- **SC-002**: [사용자 검증 기준. 예: "사용자는 주요 상태를 별도 설명 없이 식별할 수 있다."]
+- **SC-003**: [품질 기준. 예: "테마 변경 후에도 주요 텍스트와 상태 표시가 명확하게 보인다."]
+- **SC-004**: [회귀 방지 기준. 예: "기존 [기능/화면]의 주요 흐름이 유지된다."]
+
+## 8. 가정 및 미정 사항
+
+<!--
+  작성 필요:
+  기능 설명에 명시되지 않은 부분에 대해 합리적으로 선택한 기본 가정과 아직 확인이 필요한 사항을 적는다.
+-->
+
+### 가정
+
+- [대상 사용자에 대한 가정. 예: "사용자는 운영 화면에서 이 기능을 사용한다."]
+- [범위 경계에 대한 가정. 예: "MVP에서는 mock 데이터를 사용한다."]
+- [기존 시스템/서비스 의존성. 예: "기존 카메라 그리드 화면을 유지한다."]
+
+### 미정 사항
+
+- [NEEDS CLARIFICATION: 확인이 필요한 정책/범위/동작]

@@ -8,10 +8,10 @@
     ".specify/scripts/powershell/create-new-feature.ps1": "6eb5f2680da6fb8931cc7e4b4564befc35128a91edf5eff490500ca67aa1afed",
     ".specify/scripts/powershell/setup-plan.ps1": "e82c86c961ea76f23d59f9e10a9c80ebc8c247ff87a5dbd9cf2b10190f3112a5",
     ".specify/scripts/powershell/setup-tasks.ps1": "441f3a6cfa1da236411ed6a68ebf754a391515662df0bb74dd6916106d8caf52",
-    ".specify/templates/checklist-template.md": "c37695297e5d3153d64f82c21223509940b13932046c7961c42d1d669516130c",
-    ".specify/templates/constitution-template.md": "ce7549540fa45543cca797a150201d868e64495fdff39dc38246fb17bd4024b3",
-    ".specify/templates/plan-template.md": "cc7f7979cf8d8836ec26492785affd80791d3422a2b745062ec695be8c985ef7",
-    ".specify/templates/spec-template.md": "3945437fc35cd30a5b2bf7beea680337c3516826d3efa5a6b92c4a7eca1ba28e",
-    ".specify/templates/tasks-template.md": "fc29a233f6f5a27ca31f1aa46b596af6500c627441c6e62b2bc4a1d721525842"
+    ".specify/templates/checklist-template.md": "472dc5fdbb88a69747cf00288813060fe7d7fc53d707d4f7580bd069e463dab8",
+    ".specify/templates/constitution-template.md": "fccbf645256f5d5bd3d52596639e215c283a68bf94ff2a8b03b52756b5345ecb",
+    ".specify/templates/plan-template.md": "64bd447aa6bd7d08633e5f0f25e4fbdd52cd2d99519f4ce4093a6808009ae971",
+    ".specify/templates/spec-template.md": "b5f1289d645fb5ce70a345c2e640a2958782d62bf9a0d1b2d74eedc2ca55bfad",
+    ".specify/templates/tasks-template.md": "c0e55fb5bc8c3fc9a616215b65f58bbe78283a8da6bfbfc5e7b3a02b72c864d0"
   }
 }
