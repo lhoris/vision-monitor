@@ -92,7 +92,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onSubTabChange(subTab.id)}
-              className={`relative px-4 py-2 rounded-lg cursor-move whitespace-nowrap
+              className={`relative px-4 py-2 rounded-lg cursor-pointer whitespace-nowrap
                 transition-all duration-200 flex items-center gap-2 font-medium
                 ${
                   activeSubTabId === subTab.id

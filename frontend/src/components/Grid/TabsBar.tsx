@@ -108,7 +108,7 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group px-4 py-3 rounded-t-lg cursor-move whitespace-nowrap
+              className={`relative group px-4 py-3 rounded-t-lg cursor-pointer whitespace-nowrap
                 transition-all duration-200 flex items-center gap-2 border-b-4
                 ${
                   activeTabId === tab.id
