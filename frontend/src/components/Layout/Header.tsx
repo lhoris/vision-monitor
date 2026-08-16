@@ -7,7 +7,7 @@ import {
   setThemeMode,
 } from '@/store/slices/uiSlice'
 import type { ThemeMode } from '@/store/slices/uiSlice'
-import { logout } from '@/store/slices/authSlice'
+import { logoutUser } from '@/store/slices/authSlice'
 
 const themeOptions: Array<{
   id: ThemeMode
@@ -74,7 +74,7 @@ export function Header() {
 
   const handleLogout = () => {
     setProfileMenuOpen(false)
-    dispatch(logout())
+    dispatch(logoutUser())
     navigate('/login')
   }
 

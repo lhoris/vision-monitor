@@ -4,17 +4,18 @@
 
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppDispatch } from '@/store'
-import { login } from '@/store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '@/store'
+import { loginUser } from '@/store/slices/authSlice'
 
 export const Login: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const loading = useAppSelector((state) => state.auth.loading)
   const [username, setUsername] = useState('tester')
   const [password, setPassword] = useState('tester123')
   const [error, setError] = useState('')
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -28,12 +29,11 @@ export const Login: React.FC = () => {
       return
     }
 
-    dispatch(login({ username, password }))
-
-    if (username === 'tester' && password === 'tester123') {
+    try {
+      await dispatch(loginUser({ username, password })).unwrap()
       navigate('/live')
-    } else {
-      setError('Invalid username or password')
+    } catch (loginError) {
+      setError(typeof loginError === 'string' ? loginError : 'Invalid username or password')
     }
   }
 
@@ -109,12 +109,14 @@ export const Login: React.FC = () => {
             {/* Login Button */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
                          text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                         dark:focus:ring-offset-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                         dark:focus:ring-offset-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
+                         disabled:cursor-not-allowed disabled:opacity-70 disabled:transform-none"
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
