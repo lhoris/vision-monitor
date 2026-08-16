@@ -18,7 +18,21 @@
     "live": "Live",
     "playback": "Playback",
     "settings": "Settings",
-    "events": "Events"
+    "events": "Events",
+    "admin": {
+      "title": "Admin Menu",
+      "communicationModel": "Communication & Model Management",
+      "monitoringCommunication": "Monitoring Communication Status",
+      "controlCommunication": "Control Integration Communication Status",
+      "externalAddresses": "External Address Settings",
+      "modelRestart": "Restart Model",
+      "videoModelCreate": "Add Video Model",
+      "accessManagement": "Access Permission Management",
+      "users": "User Management",
+      "roles": "Role Management",
+      "permissionPolicies": "Permission Policy Management",
+      "menuAccess": "Menu Access Management"
+    }
   },
   "live": {
     "title": "Live Monitoring",

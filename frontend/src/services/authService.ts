@@ -43,6 +43,8 @@ class AuthService {
         user: {
           id: 1,
           username: credentials.username,
+          role: 'admin',
+          permissions: ['admin:access'],
         },
         token: 'mock-tester-token',
       }
@@ -67,4 +69,3 @@ class AuthService {
 }
 
 export const authService = new AuthService()
-

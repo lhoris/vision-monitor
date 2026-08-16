@@ -8,6 +8,8 @@ import { authService, type LoginCredentials } from '@/services/authService'
 export interface User {
   id: number
   username: string
+  role?: 'admin' | 'operator'
+  permissions?: string[]
 }
 
 interface AuthState {

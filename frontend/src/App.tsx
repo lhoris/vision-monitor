@@ -13,6 +13,7 @@ import CameraFocus from '@/pages/CameraFocus'
 import Playback from '@/pages/Playback'
 import Events from '@/pages/Events'
 import Settings from '@/pages/Settings'
+import AdminPlaceholder from '@/pages/AdminPlaceholder'
 import { store } from '@/store'
 import { useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
@@ -21,7 +22,9 @@ import '@/styles/global.css'
 
 function AppRoutes() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
+  const user = useAppSelector((state) => state.auth.user)
   const themeMode = useAppSelector((state) => state.ui.themeMode)
+  const canAccessAdminRoutes = user?.role === 'admin' || Boolean(user?.permissions?.includes('admin:access'))
 
   useEffect(() => {
     document.documentElement.dataset.theme = themeMode
@@ -91,6 +94,16 @@ function AppRoutes() {
             <Settings />
           </AppLayout>
         }
+      />
+      <Route
+        path="/admin/*"
+        element={canAccessAdminRoutes ? (
+          <AppLayout>
+            <AdminPlaceholder />
+          </AppLayout>
+        ) : (
+          <Navigate to="/live" replace />
+        )}
       />
       <Route path="*" element={<Navigate to="/live" replace />} />
     </Routes>

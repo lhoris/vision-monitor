@@ -87,6 +87,7 @@
 ### 서비스 및 데이터 흐름
 
 - `authService.login`은 tester credential이면 mock `LoginResult`를 반환한다.
+- tester mock user는 관리자 메뉴 검증을 위해 admin role 또는 `admin:access` 권한을 가진다.
 - username이 `tester`지만 password가 다르면 API를 호출하지 않고 실패한다.
 - username이 `tester`가 아니면 `POST /auth/login`을 호출한다.
 - API 응답에 `user` 또는 `token`이 없으면 실패로 처리한다.
@@ -175,4 +176,3 @@ backend/
 |------|-------------|-----------------------|
 | authService 추가 | tester mock과 실제 API 호출 경계를 분리해야 함 | page와 reducer의 조건문을 줄이고 실제 API 교체가 쉬움 |
 | loginUser async thunk 사용 | loading/success/failure 상태가 필요함 | Redux Toolkit 기존 패턴 사용, 새 상태 관리 도입 없음 |
-

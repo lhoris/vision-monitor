@@ -23,6 +23,8 @@ describe('authService', () => {
       user: {
         id: 1,
         username: 'tester',
+        role: 'admin',
+        permissions: ['admin:access'],
       },
       token: 'mock-tester-token',
     })
@@ -70,4 +72,3 @@ describe('authService', () => {
     })
   })
 })
-
