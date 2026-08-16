@@ -62,6 +62,5 @@ BMAD Method 실행 체계를 제거하고, 화면 확대 보기 기능의 요구
 - Spec Kit workflow/templates 한국어 튜닝: 완료
 - 화면 확대 보기 Spec Kit artifact 생성: 완료
 - Migration harness 작성: 완료
-- BMAD 삭제: 대기
-- frontend test/build: 대기
-
+- BMAD 삭제: 완료
+- frontend test/build: 완료

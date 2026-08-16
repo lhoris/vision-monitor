@@ -103,9 +103,9 @@
 - [ ] T029 quickstart 수동 검증을 실행하고 결과를 기록한다: `specs/001-camera-focus-view/quickstart.md`
 - [ ] T030 theme1/2/3 contrast 수동 검증 결과를 기록한다: `specs/001-camera-focus-view/quickstart.md`
 - [ ] T031 keyboard/ARIA 검증을 보강한다: `frontend/src/components/CameraFocus/`
-- [ ] T032 migration harness를 실행해 BMAD 삭제 가능 상태를 확인한다: `scripts/verify-speckit-migration.ps1`
-- [ ] T033 BMAD 실행 폴더와 agent 파일을 삭제한다: `_bmad/`, `_bmad-output/`, `.agents/skills/bmad-*`, `.claude/skills/bmad-*`, `.github/agents/bmad-*.agent.md`
-- [ ] T034 frontend 테스트와 build를 실행한다: `frontend/`
+- [x] T032 migration harness를 실행해 BMAD 삭제 가능 상태를 확인한다: `scripts/verify-speckit-migration.ps1`
+- [x] T033 BMAD 실행 폴더와 agent 파일을 삭제한다: `_bmad/`, `_bmad-output/`, `.agents/skills/bmad-*`, `.claude/skills/bmad-*`, `.github/agents/bmad-*.agent.md`
+- [x] T034 frontend 테스트와 build를 실행한다: `frontend/`
 
 ## 의존성 및 실행 순서
 
@@ -121,4 +121,3 @@
 2. migration harness로 필수 Spec Kit artifact와 BMAD 잔여 참조를 확인한다.
 3. 검증 가능한 pending task만 남기고 BMAD 실행 체계를 제거한다.
 4. frontend test/build로 회귀를 확인한다.
-
