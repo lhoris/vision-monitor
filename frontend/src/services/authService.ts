@@ -18,18 +18,29 @@ interface LoginApiResponse {
   token: string
 }
 
-const TESTER_USERNAME = 'tester'
-const TESTER_PASSWORD = 'tester123'
+const ADMIN_TESTER_USERNAME = 'tester'
+const OPERATOR_TESTER_USERNAME = 'tester1'
+const MOCK_TESTER_PASSWORD = 'tester123'
 
-function isTesterCredentials(credentials: LoginCredentials): boolean {
+function isAdminTesterCredentials(credentials: LoginCredentials): boolean {
   return (
-    credentials.username === TESTER_USERNAME &&
-    credentials.password === TESTER_PASSWORD
+    credentials.username === ADMIN_TESTER_USERNAME &&
+    credentials.password === MOCK_TESTER_PASSWORD
   )
 }
 
-function isTesterUsername(credentials: LoginCredentials): boolean {
-  return credentials.username === TESTER_USERNAME
+function isOperatorTesterCredentials(credentials: LoginCredentials): boolean {
+  return (
+    credentials.username === OPERATOR_TESTER_USERNAME &&
+    credentials.password === MOCK_TESTER_PASSWORD
+  )
+}
+
+function isMockTesterUsername(credentials: LoginCredentials): boolean {
+  return (
+    credentials.username === ADMIN_TESTER_USERNAME ||
+    credentials.username === OPERATOR_TESTER_USERNAME
+  )
 }
 
 function createAuthError(message: string, code = 'AUTH_FAILED'): ApiError {
@@ -38,7 +49,7 @@ function createAuthError(message: string, code = 'AUTH_FAILED'): ApiError {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<LoginResult> {
-    if (isTesterCredentials(credentials)) {
+    if (isAdminTesterCredentials(credentials)) {
       return {
         user: {
           id: 1,
@@ -50,7 +61,19 @@ class AuthService {
       }
     }
 
-    if (isTesterUsername(credentials)) {
+    if (isOperatorTesterCredentials(credentials)) {
+      return {
+        user: {
+          id: 2,
+          username: credentials.username,
+          role: 'operator',
+          permissions: [],
+        },
+        token: 'mock-tester1-token',
+      }
+    }
+
+    if (isMockTesterUsername(credentials)) {
       throw createAuthError('Invalid username or password')
     }
 

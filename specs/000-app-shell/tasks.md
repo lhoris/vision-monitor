@@ -69,7 +69,7 @@
 - [X] T021 [US3] `frontend/src/components/Layout/Sidebar.tsx`에서 접속 권한 관리 그룹과 사용자/역할/권한/메뉴 접근 하위 메뉴를 추가한다.
 - [X] T022 [US3] `frontend/src/App.tsx`에서 관리자 메뉴 route placeholder 또는 fallback 정책을 확인한다.
 - [X] T023 [US3] `frontend/src/i18n` 관련 translation 리소스에 관리자 메뉴 label key를 추가한다.
-- [X] T024 [US3] `frontend/src/components/Layout/Sidebar.tsx`에서 관리자 권한이 없는 사용자에게 관리자 메뉴와 하위 메뉴가 렌더링되지 않도록 처리한다.
+- [X] T024 [US3] `frontend/src/components/Layout/Sidebar.tsx`에서 `tester1` 같은 관리자 권한이 없는 사용자에게 관리자 메뉴와 하위 메뉴가 렌더링되지 않도록 처리한다.
 
 ---
 

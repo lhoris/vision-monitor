@@ -65,20 +65,20 @@ describe('Sidebar admin navigation', () => {
     expect(screen.queryByText('화면 배치 수정')).not.toBeInTheDocument()
   })
 
-  it('hides admin menu groups for non-admin users', () => {
+  it('hides admin menu groups for the tester1 non-admin account', () => {
     store.dispatch(
       loginUser.fulfilled(
         {
           user: {
             id: 2,
-            username: 'operator',
+            username: 'tester1',
             role: 'operator',
             permissions: [],
           },
-          token: 'operator-token',
+          token: 'mock-tester1-token',
         },
         'request-id',
-        { username: 'operator', password: 'secret' }
+        { username: 'tester1', password: 'tester123' }
       )
     )
 
@@ -93,4 +93,3 @@ describe('Sidebar admin navigation', () => {
     expect(screen.queryByText('사용자 관리')).not.toBeInTheDocument()
   })
 })
-

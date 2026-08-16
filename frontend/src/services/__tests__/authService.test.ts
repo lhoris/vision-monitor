@@ -43,7 +43,34 @@ describe('authService', () => {
     expect(mockedApiClient.post).not.toHaveBeenCalled()
   })
 
-  it('calls the login API for non-tester accounts', async () => {
+  it('keeps tester1 login as a non-admin frontend mock without calling the login API', async () => {
+    await expect(
+      authService.login({ username: 'tester1', password: 'tester123' })
+    ).resolves.toEqual({
+      user: {
+        id: 2,
+        username: 'tester1',
+        role: 'operator',
+        permissions: [],
+      },
+      token: 'mock-tester1-token',
+    })
+
+    expect(mockedApiClient.post).not.toHaveBeenCalled()
+  })
+
+  it('does not call the login API for an invalid tester1 password', async () => {
+    await expect(
+      authService.login({ username: 'tester1', password: 'wrong' })
+    ).rejects.toMatchObject({
+      code: 'AUTH_FAILED',
+      message: 'Invalid username or password',
+    })
+
+    expect(mockedApiClient.post).not.toHaveBeenCalled()
+  })
+
+  it('calls the login API for non-mock accounts', async () => {
     mockedApiClient.post.mockResolvedValue({
       success: true,
       data: {

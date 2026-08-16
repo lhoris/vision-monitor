@@ -8,7 +8,7 @@
 
 ## Phase 1: 준비
 
-- [ ] T001 `specs/001-login/spec.md`와 `specs/001-login/plan.md`의 tester mock 및 non-tester API 호출 경계를 확인한다.
+- [ ] T001 `specs/001-login/spec.md`와 `specs/001-login/plan.md`의 tester/tester1 mock 및 non-mock API 호출 경계를 확인한다.
 - [ ] T002 [P] `specs/001-login/contracts/login-api-contract.md`와 `frontend/src/services/authService.ts`의 endpoint와 response shape를 확인한다.
 - [ ] T003 `frontend/package.json`의 test/build 명령과 `specs/001-login/quickstart.md`의 검증 명령을 일치시킨다.
 
@@ -16,7 +16,7 @@
 
 ## Phase 2: 기반 작업
 
-- [ ] T004 [P] `frontend/src/services/authService.ts`에 tester mock success, invalid tester failure, non-tester API call을 구현한다.
+- [ ] T004 [P] `frontend/src/services/authService.ts`에 tester admin mock success, tester1 non-admin mock success, invalid tester 계열 failure, non-mock API call을 구현한다.
 - [ ] T005 [P] `frontend/src/store/slices/authSlice.ts`에 async login pending/fulfilled/rejected 상태를 구현한다.
 - [ ] T006 `frontend/src/pages/Login.tsx`에서 form submit이 async login action을 사용하도록 연결한다.
 
@@ -28,7 +28,7 @@
 
 **관련 요구사항**: FR-001, FR-002, FR-003, FR-004, FR-007, FR-010
 
-**독립 테스트**: `tester / tester123` 로그인은 API 호출 없이 성공한다.
+**독립 테스트**: `tester / tester123`과 `tester1 / tester123` 로그인은 API 호출 없이 성공하며 tester1은 관리자 권한이 없다.
 
 - [ ] T007 [P] [US1] `frontend/src/services/__tests__/authService.test.ts`에서 tester mock login이 API를 호출하지 않는지 검증한다.
 - [ ] T008 [US1] `frontend/src/pages/Login.tsx`에서 tester login 성공 시 `/live`로 이동하는지 확인한다.
@@ -37,15 +37,15 @@
 
 ---
 
-## Phase 4: 사용자 스토리 2 - 비-tester 계정으로 로그인 API 호출 (우선순위: P2)
+## Phase 4: 사용자 스토리 2 - non-mock 계정으로 로그인 API 호출 (우선순위: P2)
 
-**목표**: tester가 아닌 계정은 backend 준비 여부와 관계없이 로그인 API를 호출한다.
+**목표**: tester 계열 mock이 아닌 계정은 backend 준비 여부와 관계없이 로그인 API를 호출한다.
 
 **관련 요구사항**: FR-006, FR-007, FR-008, FR-009
 
-**독립 테스트**: non-tester login은 `/auth/login`을 호출하고 성공/실패 상태를 처리한다.
+**독립 테스트**: non-mock login은 `/auth/login`을 호출하고 성공/실패 상태를 처리한다.
 
-- [ ] T011 [P] [US2] `frontend/src/services/__tests__/authService.test.ts`에서 non-tester 계정이 `/auth/login`을 호출하는지 검증한다.
+- [ ] T011 [P] [US2] `frontend/src/services/__tests__/authService.test.ts`에서 non-mock 계정이 `/auth/login`을 호출하는지 검증한다.
 - [ ] T012 [US2] `frontend/src/store/slices/authSlice.ts`에서 pending/fulfilled/rejected 상태 전환을 확인한다.
 - [ ] T013 [US2] `frontend/src/pages/Login.tsx`에서 loading 중 버튼 disabled와 오류 표시를 확인한다.
 - [ ] T014 [US2] `cd frontend; npm test -- --run authService`를 실행해 US2 회귀를 확인한다.
@@ -87,14 +87,13 @@ Task: "T005 authSlice async 상태 구현"
 
 ```text
 Task: "T007 tester mock service test"
-Task: "T011 non-tester API service test"
+Task: "T011 non-mock API service test"
 Task: "T015 invalid tester service test"
 ```
 
 ## 구현 전략
 
 1. tester mock login을 먼저 보존한다.
-2. non-tester API 호출 경계를 추가한다.
+2. non-mock API 호출 경계를 추가한다.
 3. Login page를 async action에 연결한다.
 4. service test와 전체 test/build로 회귀를 확인한다.
-
