@@ -36,7 +36,39 @@
   },
   "live": {
     "title": "Live Monitoring",
-    "subtitle": "Real-time camera feeds"
+    "subtitle": "Real-time camera feeds",
+    "addCameraDialog": {
+      "title": "Add Video",
+      "subtitle": "Choose a camera from the catalog or enter a video URL.",
+      "modeLabel": "Video source mode",
+      "catalogMode": "Camera Catalog",
+      "directMode": "Enter Video URL",
+      "searchPlaceholder": "Search cameras",
+      "searchLabel": "Search cameras",
+      "noResults": "No search results.",
+      "alreadyAdded": "Already added",
+      "protocolLabel": "Protocol",
+      "urlLabel": "Video URL",
+      "displayNameLabel": "Display title",
+      "displayNamePlaceholder": "Example: External equipment monitor",
+      "optional": "(Optional)",
+      "addSource": "Add Video",
+      "updateSource": "Update URL",
+      "protocols": {
+        "webrtc": "WebRTC",
+        "rtsp": "RTSP",
+        "hls": "HLS",
+        "webrtcDefault": "WebRTC video",
+        "rtspDefault": "RTSP video",
+        "hlsDefault": "HLS video"
+      },
+      "errors": {
+        "required": "Enter a video URL.",
+        "invalidUrl": "Enter a valid video URL.",
+        "invalidProtocol": "{{protocol}} requires a {{schemes}} URL.",
+        "duplicateUrl": "This video URL has already been added to the current equipment tab."
+      }
+    }
   },
   "settings": {
     "title": "Settings",

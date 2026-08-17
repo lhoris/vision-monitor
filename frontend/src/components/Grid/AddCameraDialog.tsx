@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Camera } from '@/types/camera'
 import type { TemporaryVideoSource, StreamProtocol } from '@/types/streamPlayer'
 
@@ -15,25 +16,19 @@ interface AddCameraDialogProps {
   onClose: () => void
 }
 
-const protocolLabels: Record<DirectProtocol, string> = {
-  webrtc: 'WebRTC',
-  rtsp: 'RTSP',
-  hls: 'HLS',
-}
-
 function validateUrl(value: string, protocol: DirectProtocol): string | null {
-  if (!value.trim()) return '영상 주소를 입력하세요.'
+  if (!value.trim()) return 'required'
 
   let parsed: URL
   try {
     parsed = new URL(value.trim())
   } catch {
-    return '올바른 영상 주소를 입력하세요.'
+    return 'invalid'
   }
 
   const allowedSchemes = protocol === 'rtsp' ? ['rtsp:'] : ['http:', 'https:']
   if (!allowedSchemes.includes(parsed.protocol)) {
-    return `${protocolLabels[protocol]}는 ${allowedSchemes.join(', ')} 주소를 사용해야 합니다.`
+    return `protocol:${protocol}`
   }
 
   return null
@@ -49,6 +44,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   onAddDirectSource,
   onClose,
 }) => {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<'catalog' | 'direct'>(initialSource ? 'direct' : 'catalog')
   const [searchTerm, setSearchTerm] = useState('')
   const [protocol, setProtocol] = useState<DirectProtocol>(initialSource?.protocol ?? 'webrtc')
@@ -81,13 +77,23 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     const normalizedUrl = url.trim()
     const validationError = validateUrl(normalizedUrl, protocol)
     if (validationError) {
-      setError(validationError)
+      if (validationError === 'required') {
+        setError(t('live.addCameraDialog.errors.required'))
+      } else if (validationError === 'invalid') {
+        setError(t('live.addCameraDialog.errors.invalidUrl'))
+      } else {
+        const [, invalidProtocol] = validationError.split(':')
+        setError(t('live.addCameraDialog.errors.invalidProtocol', {
+          protocol: t(`live.addCameraDialog.protocols.${invalidProtocol}`),
+          schemes: invalidProtocol === 'rtsp' ? 'rtsp:' : 'http:, https:',
+        }))
+      }
       return
     }
 
     const duplicate = existingTemporaryUrls.some((existingUrl) => existingUrl.trim() === normalizedUrl && existingUrl !== initialSource?.url)
     if (duplicate) {
-      setError('같은 영상 주소가 현재 세부공정에 이미 추가되어 있습니다.')
+      setError(t('live.addCameraDialog.errors.duplicateUrl'))
       return
     }
 
@@ -95,7 +101,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
       id: initialSource?.id ?? `temporary-${Date.now()}`,
       url: normalizedUrl,
       protocol,
-      displayName: displayName.trim() || `${protocolLabels[protocol]} 영상`,
+      displayName: displayName.trim() || t(`live.addCameraDialog.protocols.${protocol}Default`),
       playbackStatus: initialSource?.playbackStatus ?? 'idle',
     })
     onClose()
@@ -107,32 +113,32 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
         <header className="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-700">
           <div>
             <h2 id="add-camera-dialog-title" className="text-xl font-bold text-gray-900 dark:text-white">
-              영상 추가
+              {t('live.addCameraDialog.title')}
             </h2>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">카메라 목록 또는 임의 영상 주소를 선택하세요.</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('live.addCameraDialog.subtitle')}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="닫기">
+          <button type="button" onClick={onClose} className="rounded p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700" aria-label={t('common.close')}>
             ×
           </button>
         </header>
 
-        <div className="flex border-b border-gray-200 p-4 dark:border-gray-700" role="tablist" aria-label="영상 추가 방식">
+        <div className="flex border-b border-gray-200 p-4 dark:border-gray-700" role="tablist" aria-label={t('live.addCameraDialog.modeLabel')}>
           <button type="button" role="tab" aria-selected={mode === 'catalog'} onClick={() => { setMode('catalog'); setError(null) }} className={`flex-1 rounded-l border px-4 py-2 text-sm font-semibold ${mode === 'catalog' ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200'}`}>
-            카메라 목록
+            {t('live.addCameraDialog.catalogMode')}
           </button>
           <button type="button" role="tab" aria-selected={mode === 'direct'} onClick={() => { setMode('direct'); setError(null) }} className={`flex-1 rounded-r border border-l-0 px-4 py-2 text-sm font-semibold ${mode === 'direct' ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-200'}`}>
-            영상 주소 직접 입력
+            {t('live.addCameraDialog.directMode')}
           </button>
         </div>
 
         {mode === 'catalog' ? (
           <>
             <div className="p-4">
-              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="카메라 검색" className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label="카메라 검색" />
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
             </div>
             <div className="max-h-80 overflow-y-auto border-t border-gray-100 dark:border-gray-700">
               {filteredCameras.length === 0 ? (
-                <p className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">검색 결과가 없습니다.</p>
+                <p className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{t('live.addCameraDialog.noResults')}</p>
               ) : filteredCameras.map((camera) => (
                 <button
                   key={camera.id}
@@ -146,7 +152,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                     <span className="block text-xs text-gray-500 dark:text-gray-400">{camera.location} · {camera.zone}</span>
                   </span>
                   <span className={`ml-3 shrink-0 text-xs font-semibold ${usedCameraIds.includes(camera.id) ? 'text-gray-500' : camera.status === 'online' ? 'text-green-600' : 'text-red-500'}`}>
-                    {usedCameraIds.includes(camera.id) ? '이미 추가됨' : camera.status}
+                    {usedCameraIds.includes(camera.id) ? t('live.addCameraDialog.alreadyAdded') : t(`common.${camera.status}`, { defaultValue: camera.status })}
                   </span>
                 </button>
               ))}
@@ -155,23 +161,23 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
         ) : (
           <form onSubmit={handleDirectSubmit} className="space-y-4 p-5">
             <div>
-              <label htmlFor="direct-video-protocol" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">프로토콜</label>
+              <label htmlFor="direct-video-protocol" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.protocolLabel')}</label>
               <select id="direct-video-protocol" value={protocol} onChange={(event) => { setProtocol(event.target.value as DirectProtocol); setError(null) }} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                {(Object.keys(protocolLabels) as DirectProtocol[]).map((key) => <option key={key} value={key}>{protocolLabels[key]}</option>)}
+                {(Object.keys({ webrtc: true, rtsp: true, hls: true }) as DirectProtocol[]).map((key) => <option key={key} value={key}>{t(`live.addCameraDialog.protocols.${key}`)}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="direct-video-url" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">영상 주소</label>
+              <label htmlFor="direct-video-url" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.urlLabel')}</label>
               <input id="direct-video-url" value={url} onChange={(event) => { setUrl(event.target.value); setError(null) }} placeholder={protocol === 'rtsp' ? 'rtsp://...' : 'https://...'} className="w-full cursor-text rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 caret-blue-600 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:caret-blue-300 dark:placeholder:text-gray-400" autoFocus />
             </div>
             <div>
-              <label htmlFor="direct-video-name" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">표시 제목 <span className="font-normal text-gray-400">(선택)</span></label>
-              <input id="direct-video-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="예: 외부 설비 모니터링" className="w-full cursor-text rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 caret-blue-600 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:caret-blue-300 dark:placeholder:text-gray-400" />
+              <label htmlFor="direct-video-name" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.displayNameLabel')} <span className="font-normal text-gray-400">{t('live.addCameraDialog.optional')}</span></label>
+              <input id="direct-video-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder={t('live.addCameraDialog.displayNamePlaceholder')} className="w-full cursor-text rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 caret-blue-600 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:caret-blue-300 dark:placeholder:text-gray-400" />
             </div>
             {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
             <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={onClose} className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-600 dark:text-gray-200">취소</button>
-              <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">{initialSource ? '주소 수정' : '영상 추가'}</button>
+              <button type="button" onClick={onClose} className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-gray-600 dark:text-gray-200">{t('common.cancel')}</button>
+              <button type="submit" className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">{initialSource ? t('live.addCameraDialog.updateSource') : t('live.addCameraDialog.addSource')}</button>
             </div>
           </form>
         )}

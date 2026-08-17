@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { I18nextProvider } from 'react-i18next'
+import i18n from '@/i18n'
 import { AddCameraDialog } from '../AddCameraDialog'
 import type { Camera } from '@/types/camera'
 
@@ -18,20 +20,20 @@ describe('AddCameraDialog', () => {
     const onAddDirectSource = vi.fn()
 
     render(
-      <AddCameraDialog
+      <I18nextProvider i18n={i18n}><AddCameraDialog
         isOpen
         cameras={cameras}
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
         onClose={vi.fn()}
-      />
+      /></I18nextProvider>
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: '영상 주소 직접 입력' }))
-    fireEvent.change(screen.getByLabelText('영상 주소'), { target: { value: 'https://media.test/live.m3u8' } })
-    fireEvent.change(screen.getByLabelText(/표시 제목/), { target: { value: '외부 설비' } })
-    fireEvent.click(screen.getByRole('button', { name: '영상 추가' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Enter Video URL' }))
+    fireEvent.change(screen.getByLabelText('Video URL'), { target: { value: 'https://media.test/live.m3u8' } })
+    fireEvent.change(screen.getByLabelText(/Display title/), { target: { value: '외부 설비' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add Video' }))
 
     expect(onAddDirectSource).toHaveBeenCalledWith(expect.objectContaining({
       url: 'https://media.test/live.m3u8',
@@ -45,20 +47,20 @@ describe('AddCameraDialog', () => {
     const onAddDirectSource = vi.fn()
 
     render(
-      <AddCameraDialog
+      <I18nextProvider i18n={i18n}><AddCameraDialog
         isOpen
         cameras={cameras}
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
         onClose={vi.fn()}
-      />
+      /></I18nextProvider>
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: '영상 주소 직접 입력' }))
-    fireEvent.change(screen.getByLabelText('프로토콜'), { target: { value: 'rtsp' } })
-    fireEvent.change(screen.getByLabelText('영상 주소'), { target: { value: 'https://media.test/live' } })
-    fireEvent.click(screen.getByRole('button', { name: '영상 추가' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Enter Video URL' }))
+    fireEvent.change(screen.getByLabelText('Protocol'), { target: { value: 'rtsp' } })
+    fireEvent.change(screen.getByLabelText('Video URL'), { target: { value: 'https://media.test/live' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add Video' }))
 
     expect(screen.getByRole('alert')).toHaveTextContent('RTSP')
     expect(onAddDirectSource).not.toHaveBeenCalled()
@@ -68,7 +70,7 @@ describe('AddCameraDialog', () => {
     const onAddDirectSource = vi.fn()
 
     render(
-      <AddCameraDialog
+      <I18nextProvider i18n={i18n}><AddCameraDialog
         isOpen
         cameras={cameras}
         usedCameraIds={[]}
@@ -76,31 +78,31 @@ describe('AddCameraDialog', () => {
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
         onClose={vi.fn()}
-      />
+      /></I18nextProvider>
     )
 
-    fireEvent.click(screen.getByRole('tab', { name: '영상 주소 직접 입력' }))
-    fireEvent.change(screen.getByLabelText('영상 주소'), { target: { value: 'https://media.test/live.m3u8' } })
-    fireEvent.click(screen.getByRole('button', { name: '영상 추가' }))
+    fireEvent.click(screen.getByRole('tab', { name: 'Enter Video URL' }))
+    fireEvent.change(screen.getByLabelText('Video URL'), { target: { value: 'https://media.test/live.m3u8' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add Video' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('이미 추가')
+    expect(screen.getByRole('alert')).toHaveTextContent('already been added')
     expect(onAddDirectSource).not.toHaveBeenCalled()
   })
 
   it('shows an already placed catalog camera but disables duplicate placement', () => {
     render(
-      <AddCameraDialog
+      <I18nextProvider i18n={i18n}><AddCameraDialog
         isOpen
         cameras={cameras}
         usedCameraIds={[1]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={vi.fn()}
         onClose={vi.fn()}
-      />
+      /></I18nextProvider>
     )
 
     const cameraButton = screen.getByRole('button', { name: /Camera 1/ })
     expect(cameraButton).toBeDisabled()
-    expect(cameraButton).toHaveTextContent('이미 추가됨')
+    expect(cameraButton).toHaveTextContent('Already added')
   })
 })
