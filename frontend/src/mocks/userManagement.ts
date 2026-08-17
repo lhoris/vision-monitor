@@ -1,0 +1,113 @@
+import type { RoleSummary, UserAccount } from '@/types/userManagement'
+
+export const userManagementRoles: RoleSummary[] = [
+  { id: 'admin', name: '관리자', description: '관리자 메뉴와 사용자관리 접근' },
+  { id: 'operator', name: '운영자', description: '모니터링과 이벤트 운영' },
+  { id: 'viewer', name: '조회자', description: '허용된 화면 조회' },
+]
+
+const roleMap = new Map(userManagementRoles.map((role) => [role.id, role]))
+
+function rolesFor(roleIds: string[]): RoleSummary[] {
+  return roleIds.flatMap((roleId) => {
+    const role = roleMap.get(roleId)
+    return role ? [role] : []
+  })
+}
+
+export const userManagementFixture: UserAccount[] = [
+  {
+    id: 1,
+    username: 'tester',
+    name: '관리자 테스트',
+    displayName: '테스터 관리자',
+    department: '통합관제팀',
+    position: '팀장',
+    email: 'tester@example.com',
+    phone: '010-0000-0001',
+    roleIds: ['admin'],
+    roles: rolesFor(['admin']),
+    accountStatus: 'active',
+    employmentStatus: 'employed',
+    lastLoginAt: '2026-08-17T09:00:00+09:00',
+    createdAt: '2026-01-01T09:00:00+09:00',
+    updatedAt: '2026-08-17T09:00:00+09:00',
+    updatedBy: 'tester',
+    personalization: { hasSettings: true, cameraGridCount: 2, lastUpdatedAt: '2026-08-16T10:00:00+09:00' },
+  },
+  {
+    id: 2,
+    username: 'tester1',
+    name: '운영 테스트',
+    displayName: '테스터 운영자',
+    department: '생산운영팀',
+    position: '사원',
+    email: 'tester1@example.com',
+    phone: '010-0000-0002',
+    roleIds: ['operator'],
+    roles: rolesFor(['operator']),
+    accountStatus: 'active',
+    employmentStatus: 'employed',
+    lastLoginAt: '2026-08-17T08:30:00+09:00',
+    createdAt: '2026-01-02T09:00:00+09:00',
+    updatedAt: '2026-08-17T08:30:00+09:00',
+    updatedBy: 'tester',
+    personalization: { hasSettings: false, cameraGridCount: 0 },
+  },
+  {
+    id: 3,
+    username: 'operator01',
+    name: '김현장',
+    displayName: '김현장',
+    department: '생산운영팀',
+    position: '주임',
+    email: 'operator01@example.com',
+    phone: '010-0000-0003',
+    roleIds: ['operator'],
+    roles: rolesFor(['operator']),
+    accountStatus: 'locked',
+    employmentStatus: 'employed',
+    lastLoginAt: '2026-08-16T18:20:00+09:00',
+    createdAt: '2026-02-01T09:00:00+09:00',
+    updatedAt: '2026-08-16T18:20:00+09:00',
+    updatedBy: 'tester',
+    personalization: { hasSettings: true, cameraGridCount: 1 },
+  },
+  {
+    id: 4,
+    username: 'viewer01',
+    name: '박조회',
+    displayName: '박조회',
+    department: '품질관리팀',
+    position: '대리',
+    email: 'viewer01@example.com',
+    phone: '010-0000-0004',
+    roleIds: ['viewer'],
+    roles: rolesFor(['viewer']),
+    accountStatus: 'disabled',
+    employmentStatus: 'leave',
+    lastLoginAt: '2026-07-31T17:00:00+09:00',
+    createdAt: '2026-02-10T09:00:00+09:00',
+    updatedAt: '2026-08-01T09:00:00+09:00',
+    updatedBy: 'tester',
+    personalization: { hasSettings: true, cameraGridCount: 3 },
+  },
+  {
+    id: 5,
+    username: 'retired01',
+    name: '이퇴사',
+    displayName: '이퇴사',
+    department: '설비기술팀',
+    position: '과장',
+    email: 'retired01@example.com',
+    phone: '010-0000-0005',
+    roleIds: ['viewer'],
+    roles: rolesFor(['viewer']),
+    accountStatus: 'disabled',
+    employmentStatus: 'retired',
+    createdAt: '2026-02-15T09:00:00+09:00',
+    updatedAt: '2026-08-10T09:00:00+09:00',
+    updatedBy: 'tester',
+    personalization: { hasSettings: false, cameraGridCount: 0 },
+  },
+]

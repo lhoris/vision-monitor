@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import UserManagement from './UserManagement'
 
 const adminPageLabels: Record<string, string> = {
   '/admin/monitoring-communication': '모니터링 통신 현황',
@@ -14,6 +15,7 @@ const adminPageLabels: Record<string, string> = {
 
 export function AdminPlaceholder() {
   const location = useLocation()
+  if (location.pathname === '/admin/users') return <UserManagement />
   const title = adminPageLabels[location.pathname] ?? '관리자 메뉴'
 
   return (

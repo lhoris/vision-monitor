@@ -1,6 +1,11 @@
 @import 'tabulator-tables/dist/css/tabulator_modern.min.css';
 
 .vm-tabulator {
+  --tabulator-header-text: #0f172a;
+  --tabulator-cell-text: #1e293b;
+  --tabulator-header-bg: #e0f2fe;
+  --tabulator-cell-bg: #ffffff;
+  --tabulator-cell-alt-bg: #f8fafc;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -9,16 +14,26 @@
 
 .vm-tabulator .tabulator {
   border-color: var(--color-border);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--tabulator-cell-bg);
+  color: var(--tabulator-cell-text);
   font-size: var(--font-sm);
 }
 
 .vm-tabulator .tabulator-header {
   padding-left: 0 !important;
   border-color: var(--color-border);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
+  background: var(--tabulator-header-bg);
+  color: var(--tabulator-header-text);
+}
+
+.vm-tabulator .tabulator-header .tabulator-col {
+  background: var(--tabulator-header-bg) !important;
+  color: var(--tabulator-header-text) !important;
+}
+
+.vm-tabulator .tabulator-header .tabulator-col-title {
+  color: var(--tabulator-header-text) !important;
+  font-weight: 700;
 }
 
 .vm-tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-left {
@@ -31,17 +46,28 @@
 
 .vm-tabulator .tabulator-row {
   border-color: var(--color-border-light);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background: var(--tabulator-cell-bg);
+  color: var(--tabulator-cell-text);
 }
 
 .vm-tabulator .tabulator-row.tabulator-row-even {
-  background: var(--color-bg-secondary);
+  background: var(--tabulator-cell-alt-bg);
 }
 
 .vm-tabulator .tabulator-row.tabulator-selectable:hover,
 .vm-tabulator .tabulator-cell:hover {
   background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg-primary)) !important;
+  cursor: pointer;
+}
+
+.vm-tabulator .tabulator-row.tabulator-selected {
+  background: color-mix(in srgb, var(--color-primary) 22%, var(--color-bg-primary)) !important;
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.vm-tabulator .tabulator-row.tabulator-selected .tabulator-cell {
+  background: color-mix(in srgb, var(--color-primary) 22%, var(--tabulator-cell-bg)) !important;
+  color: var(--tabulator-cell-text) !important;
 }
 
 .vm-tabulator .tabulator-cell,
@@ -49,13 +75,66 @@
   border-color: var(--color-border-light);
 }
 
+.vm-tabulator .tabulator-cell,
+.vm-tabulator .tabulator-col-title,
+.vm-tabulator .tabulator-footer,
+.vm-tabulator .tabulator-page {
+  color: var(--tabulator-cell-text) !important;
+}
+
+.vm-tabulator .tabulator-header .tabulator-col-title {
+  color: var(--tabulator-header-text) !important;
+}
+
+.vm-tabulator .tabulator-footer {
+  background: var(--color-bg-tertiary) !important;
+  border-color: var(--color-border) !important;
+}
+
+.vm-tabulator .tabulator-page {
+  background: var(--color-bg-primary) !important;
+  border-color: var(--color-border) !important;
+}
+
+.vm-tabulator .tabulator-row .tabulator-cell {
+  background: var(--tabulator-cell-bg) !important;
+  color: var(--tabulator-cell-text) !important;
+}
+
+.vm-tabulator .tabulator-row.tabulator-row-even .tabulator-cell {
+  background: var(--tabulator-cell-alt-bg) !important;
+}
+
+.vm-tabulator .tabulator-page.active,
+.vm-tabulator .tabulator-page:hover {
+  background: var(--color-primary) !important;
+  color: #ffffff !important;
+}
+
 .vm-tabulator .tabulator-cell.tabulator-frozen,
 .vm-tabulator .tabulator-col.tabulator-frozen {
-  background-color: var(--color-bg-primary);
+  background-color: var(--tabulator-cell-bg);
 }
 
 .vm-tabulator .tabulator-col.tabulator-frozen {
-  background-color: var(--color-bg-tertiary);
+  background-color: var(--tabulator-header-bg);
+}
+
+:root[data-theme='theme2'] .vm-tabulator,
+:root[data-theme='dark'] .vm-tabulator {
+  --tabulator-header-text: #ffffff;
+  --tabulator-cell-text: #ffffff;
+  --tabulator-header-bg: #3730a3;
+  --tabulator-cell-bg: #111827;
+  --tabulator-cell-alt-bg: #1e293b;
+}
+
+:root[data-theme='theme3'] .vm-tabulator {
+  --tabulator-header-text: #ffffff;
+  --tabulator-cell-text: #ffffff;
+  --tabulator-header-bg: #047857;
+  --tabulator-cell-bg: #07110f;
+  --tabulator-cell-alt-bg: #0d1f1b;
 }
 
 .vm-tabulator .tabulator-cell.vm-tabulator-cell-selected {

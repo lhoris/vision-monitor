@@ -29,9 +29,10 @@ const initialState: AuthState = {
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: LoginCredentials, { rejectWithValue }) => {
-    try {
+      try {
       const result = await authService.login(credentials)
       localStorage.setItem('authToken', result.token)
+      localStorage.setItem('authUsername', result.user.username)
       return result
     } catch (error) {
       localStorage.removeItem('authToken')
@@ -46,6 +47,7 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
   localStorage.removeItem('authToken')
+  localStorage.removeItem('authUsername')
 })
 
 const authSlice = createSlice({
@@ -56,6 +58,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.error = null
+      localStorage.removeItem('authUsername')
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload
