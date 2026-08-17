@@ -1,5 +1,5 @@
 import type { Camera } from '@/types/camera'
-import type { StreamProtocol } from '@/types/streamPlayer'
+import type { PlayerError, PlayerState, StreamProtocol } from '@/types/streamPlayer'
 import { usePageResumeToken } from '@/hooks/usePageResumeToken'
 import { isStreamPageUrl } from '@/streaming/config'
 import { StreamPlayerComponent } from './StreamPlayerComponent'
@@ -7,9 +7,11 @@ import { StreamPlayerComponent } from './StreamPlayerComponent'
 interface LiveStreamPlayerProps {
   camera: Camera
   className?: string
+  onStateChange?: (state: PlayerState) => void
+  onError?: (error: PlayerError) => void
 }
 
-export function LiveStreamPlayer({ camera, className = '' }: LiveStreamPlayerProps) {
+export function LiveStreamPlayer({ camera, className = '', onStateChange, onError }: LiveStreamPlayerProps) {
   const resumeToken = usePageResumeToken()
 
   if (isStreamPageUrl(camera.streamUrl)) {
@@ -35,6 +37,8 @@ export function LiveStreamPlayer({ camera, className = '' }: LiveStreamPlayerPro
       controls={true}
       autoplay={false}
       className={className}
+      onStateChange={onStateChange}
+      onError={onError}
     />
   )
 }

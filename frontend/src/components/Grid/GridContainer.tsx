@@ -2,7 +2,7 @@
  * Grid Container Component
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
@@ -20,7 +20,7 @@ import TabsBar from './TabsBar'
 import SubTabsBar from './SubTabsBar'
 import LayoutSelector from './LayoutSelector'
 import DraggableCell from './DraggableCell'
-import CameraSelector from './CameraSelector'
+import AddCameraDialog from './AddCameraDialog'
 import { useGridLayout } from './useGridLayout'
 import {
   moveCameraPosition,
@@ -29,6 +29,7 @@ import {
 } from './useGridDnd'
 import type { CameraPosition, Tab, SubTab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
+import type { PlayerState, TemporaryVideoSource } from '@/types/streamPlayer'
 
 interface GridContainerProps {
   userId?: number
@@ -56,6 +57,9 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
   const [cameraNameOverrides, setCameraNameOverrides] = useState<Record<number, string>>({})
+  const [temporarySources, setTemporarySources] = useState<Record<number, TemporaryVideoSource>>({})
+  const [editingTemporaryId, setEditingTemporaryId] = useState<number | null>(null)
+  const temporaryIdRef = useRef(-1)
 
   useEffect(() => {
     if (activeSubTab) {
@@ -104,6 +108,14 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     updateActiveSubTabPositions(
       removeCameraPosition(activeSubTab.cameraPositions, cameraId)
     )
+
+    if (temporarySources[cameraId]) {
+      setTemporarySources((current) => {
+        const next = { ...current }
+        delete next[cameraId]
+        return next
+      })
+    }
   }
 
   const handleRenameCamera = (cameraId: number, name: string) => {
@@ -153,6 +165,48 @@ export const GridContainer: React.FC<GridContainerProps> = ({
 
     setShowCameraSelector(false)
     setSelectedCellId(null)
+  }
+
+  const handleAddDirectSource = (source: TemporaryVideoSource) => {
+    if (!selectedCellId || !activeSubTab) return
+
+    if (editingTemporaryId !== null) {
+      setTemporarySources((current) => ({
+        ...current,
+        [editingTemporaryId]: source,
+      }))
+      setEditingTemporaryId(null)
+      setSelectedCellId(null)
+      return
+    }
+
+    const temporaryId = temporaryIdRef.current
+    temporaryIdRef.current -= 1
+    setTemporarySources((current) => ({ ...current, [temporaryId]: source }))
+    const cellIndex = parseInt(selectedCellId.split('-')[1])
+    updateActiveSubTabPositions(
+      placeCameraAtCell(
+        activeSubTab.cameraPositions,
+        temporaryId,
+        cellIndex,
+        activeSubTab.gridConfig.cols
+      )
+    )
+    setSelectedCellId(null)
+  }
+
+  const handleEditTemporarySource = (cameraId: number) => {
+    setEditingTemporaryId(cameraId)
+    setSelectedCellId(null)
+    setShowCameraSelector(true)
+  }
+
+  const handleTemporaryStatusChange = (cameraId: number, status: PlayerState) => {
+    setTemporarySources((current) => {
+      const source = current[cameraId]
+      if (!source || source.playbackStatus === status) return current
+      return { ...current, [cameraId]: { ...source, playbackStatus: status } }
+    })
   }
 
   const handleAddTab = (tab: Tab) => {
@@ -232,13 +286,16 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       (cameraPosition) => cameraPosition.row === row && cameraPosition.col === col
     )
     const camera = position ? cameraMap.get(position.cameraId) : undefined
+    const temporarySource = position ? temporarySources[position.cameraId] : undefined
 
     return {
       id: `cell-${index}`,
       index,
       row,
       col,
+      positionId: position?.cameraId,
       camera,
+      temporarySource,
     }
   })
 
@@ -287,15 +344,21 @@ export const GridContainer: React.FC<GridContainerProps> = ({
               key={cell.id}
               cellId={cell.id}
               index={cell.index}
+              positionId={cell.positionId}
               camera={cell.camera}
+              temporarySource={cell.temporarySource}
               onAddCamera={() => handleAddCamera(cell.id)}
               onRemoveCamera={() => {
-                if (cell.camera) {
-                  removeCamera(cell.camera.id)
+                if (cell.camera || cell.temporarySource) {
+                  const cameraId = cell.camera?.id ?? cell.positionId
+                  if (cameraId === undefined) return
+                  removeCamera(cameraId)
                 }
               }}
-              onFocusCamera={handleFocusCamera}
+              onFocusCamera={cell.temporarySource ? undefined : handleFocusCamera}
               onRenameCamera={handleRenameCamera}
+              onEditTemporarySource={cell.temporarySource && cell.positionId !== undefined ? () => handleEditTemporarySource(cell.positionId as number) : undefined}
+              onTemporaryStatusChange={cell.temporarySource && cell.positionId !== undefined ? (status) => handleTemporaryStatusChange(cell.positionId as number, status) : undefined}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
             />
@@ -303,14 +366,20 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         </div>
       </div>
 
-      <CameraSelector
+      <AddCameraDialog
         isOpen={showCameraSelector}
         cameras={cameras}
         usedCameraIds={usedCameraIds}
-        onSelect={handleSelectCamera}
+        existingTemporaryUrls={activeSubTab.cameraPositions
+          .map((position) => temporarySources[position.cameraId]?.url)
+          .filter((url): url is string => Boolean(url))}
+        initialSource={editingTemporaryId !== null ? temporarySources[editingTemporaryId] : undefined}
+        onSelectCamera={handleSelectCamera}
+        onAddDirectSource={handleAddDirectSource}
         onClose={() => {
           setShowCameraSelector(false)
           setSelectedCellId(null)
+          setEditingTemporaryId(null)
         }}
       />
     </div>

@@ -84,7 +84,35 @@
 
 ---
 
-## Phase 5: 사용자 스토리 3 - 탭과 카메라 타일 관리 (우선순위: P3)
+## Phase 5: 사용자 스토리 3 - 직접 영상 주소로 임시 영상 추가 (우선순위: P2)
+
+**목표**: 사용자가 카메라 목록에 등록되지 않은 영상도 주소 유형과 URL을 직접 입력해 현재 세부공정탭에서 확인한다.
+
+**관련 요구사항**: FR-017~FR-025
+
+**독립 테스트**: Add Camera 모드를 직접 영상 주소 입력으로 전환하고 WebRTC·RTSP·HLS 유형, URL 검증, 임시 타일 추가, 중복 차단, 재생 실패 상태를 확인한다.
+
+### 사용자 스토리 3 테스트
+
+- [X] T025 [P] [US3] `frontend/src/components/Grid/__tests__/AddCameraDialog.test.tsx`에서 목록 선택 모드와 직접 주소 입력 모드 전환을 검증한다.
+- [X] T026 [P] [US3] `frontend/src/components/Grid/__tests__/AddCameraDialog.test.tsx`에서 WebRTC·RTSP·HLS URL validation과 빈 값 오류를 검증한다.
+- [X] T027 [P] [US3] `frontend/src/components/Grid/__tests__/TemporaryVideoTile.test.tsx`에서 연결 중·재생 중·재생 실패 상태와 수정·제거 동작을 검증한다.
+
+### 사용자 스토리 3 구현
+
+- [X] T028 [US3] `frontend/src/components/Grid/AddCameraDialog.tsx`에서 카메라 목록 모드와 직접 영상 주소 모드 토글을 구현한다.
+- [X] T029 [US3] `frontend/src/components/Grid/AddCameraDialog.tsx`에서 WebRTC·RTSP·HLS 유형, URL, 선택적 표시 제목 입력과 형식 오류를 처리한다.
+- [X] T030 [US3] `frontend/src/types/layout.ts` 또는 `frontend/src/types/streamPlayer.ts`에 temporary source와 playback status 타입을 추가한다.
+- [X] T031 [US3] `frontend/src/components/Grid/GridContainer.tsx`에서 카메라 목록 source와 temporary source를 같은 빈 셀 배치 흐름으로 연결한다.
+- [X] T032 [US3] `frontend/src/components/StreamPlayer/LiveStreamPlayer.tsx`에서 protocol별 연결 중·재생·실패 상태와 URL 수정/타일 제거 진입을 연결한다.
+- [X] T033 [US3] `frontend/src/components/Grid/GridContainer.tsx`에서 현재 세부공정탭 기준 동일 URL 중복 추가를 차단한다.
+- [X] T034 [US3] `cd frontend; npm test -- --run AddCameraDialog TemporaryVideoTile`을 실행해 US3 회귀를 확인한다.
+
+**체크포인트**: 사용자는 카메라 목록에 등록되지 않은 영상도 현재 세부공정탭에서 임시 타일로 확인할 수 있다.
+
+---
+
+## Phase 6: 사용자 스토리 4 - 탭과 카메라 타일 관리 (우선순위: P3)
 
 **목표**: 사용자가 탭 구조와 카메라 타일 표시명을 운영 현장에 맞게 조정한다.
 
@@ -92,24 +120,24 @@
 
 **독립 테스트**: 탭 추가/삭제/정렬, 카메라 Remove, Rename dialog와 제목 반영을 확인한다.
 
-### 사용자 스토리 3 테스트
+### 사용자 스토리 4 테스트
 
-- [ ] T025 [P] [US3] `frontend/src/components/Grid/__tests__/DraggableCell.test.tsx`에서 Rename dialog, Save, 빈 제목 방지, Remove 메뉴를 검증한다.
-- [ ] T026 [P] [US3] 필요 시 `frontend/src/components/Grid/__tests__/TabsBar.test.tsx`와 `frontend/src/components/Grid/__tests__/SubTabsBar.test.tsx`를 추가해 탭 추가/삭제/정렬을 검증한다.
+- [ ] T035 [P] [US4] `frontend/src/components/Grid/__tests__/DraggableCell.test.tsx`에서 Rename dialog, Save, 빈 제목 방지, Remove 메뉴를 검증한다.
+- [ ] T036 [P] [US4] 필요 시 `frontend/src/components/Grid/__tests__/TabsBar.test.tsx`와 `frontend/src/components/Grid/__tests__/SubTabsBar.test.tsx`를 추가해 탭 추가/삭제/정렬을 검증한다.
 
-### 사용자 스토리 3 구현
+### 사용자 스토리 4 구현
 
-- [ ] T027 [US3] `frontend/src/components/Grid/TabsBar.tsx`에서 공정탭 추가/삭제/정렬 interaction과 마지막 탭 삭제 방지 흐름을 확인한다.
-- [ ] T028 [US3] `frontend/src/components/Grid/SubTabsBar.tsx`에서 세부공정탭 추가/삭제/정렬 interaction과 마지막 세부탭 삭제 방지 흐름을 확인한다.
-- [ ] T029 [US3] `frontend/src/components/Grid/DraggableCell.tsx`에서 context menu의 Rename/Remove 동작과 theme-aware dialog 스타일을 확인한다.
-- [ ] T030 [US3] `frontend/src/components/Grid/GridContainer.tsx`에서 Rename override가 현재 카메라 표시명에 반영되는지 확인한다.
-- [ ] T031 [US3] `cd frontend; npm test -- --run DraggableCell layoutSlice`를 실행해 US3 회귀를 확인한다.
+- [ ] T037 [US4] `frontend/src/components/Grid/TabsBar.tsx`에서 공정탭 추가/삭제/정렬 interaction과 마지막 탭 삭제 방지 흐름을 확인한다.
+- [ ] T038 [US4] `frontend/src/components/Grid/SubTabsBar.tsx`에서 세부공정탭 추가/삭제/정렬 interaction과 마지막 세부탭 삭제 방지 흐름을 확인한다.
+- [ ] T039 [US4] `frontend/src/components/Grid/DraggableCell.tsx`에서 context menu의 Rename/Remove 동작과 theme-aware dialog 스타일을 확인한다.
+- [ ] T040 [US4] `frontend/src/components/Grid/GridContainer.tsx`에서 Rename override가 현재 카메라 표시명에 반영되는지 확인한다.
+- [ ] T041 [US4] `cd frontend; npm test -- --run DraggableCell layoutSlice`를 실행해 US4 회귀를 확인한다.
 
 **체크포인트**: 사용자는 라이브 메인 화면의 탭과 카메라 타일을 업무 용어에 맞게 관리할 수 있다.
 
 ---
 
-## Phase 6: 사용자 스토리 4 - 화면 확대 보기로 연결 (우선순위: P3)
+## Phase 7: 사용자 스토리 5 - 화면 확대 보기로 연결 (우선순위: P3)
 
 **목표**: 사용자가 현재 그리드 맥락을 유지한 채 특정 카메라를 003 화면 확대 보기로 연다.
 
@@ -117,28 +145,28 @@
 
 **독립 테스트**: 확대 버튼 실행 시 현재 세부공정탭의 camera ids와 Rename title override가 route query에 포함되는지 확인한다.
 
-### 사용자 스토리 4 테스트
+### 사용자 스토리 5 테스트
 
-- [ ] T032 [P] [US4] `frontend/src/components/Grid/__tests__/GridContainer.focus.test.tsx`에서 현재 세부공정탭의 camera ids만 전달되는지 검증한다.
-- [ ] T033 [P] [US4] `frontend/src/components/Grid/__tests__/GridContainer.focus.test.tsx`에서 Rename title override가 focus route query에 포함되는지 검증한다.
+- [ ] T042 [P] [US5] `frontend/src/components/Grid/__tests__/GridContainer.focus.test.tsx`에서 현재 세부공정탭의 camera ids만 전달되는지 검증한다.
+- [ ] T043 [P] [US5] `frontend/src/components/Grid/__tests__/GridContainer.focus.test.tsx`에서 Rename title override가 focus route query에 포함되는지 검증한다.
 
-### 사용자 스토리 4 구현
+### 사용자 스토리 5 구현
 
-- [ ] T034 [US4] `frontend/src/components/Grid/DraggableCell.tsx`에서 확대 버튼이 hover/focus 상태에서 드러나고 accessible name을 제공하는지 확인한다.
-- [ ] T035 [US4] `frontend/src/components/Grid/GridContainer.tsx`에서 `mode`, `tabId`, `subTabId`, `cameraIds`, `cameraNames` query 생성이 `contracts/focus-entry-contract.md`와 일치하는지 확인한다.
-- [ ] T036 [US4] `cd frontend; npm test -- --run GridContainer.focus`를 실행해 US4 회귀를 확인한다.
+- [ ] T044 [US5] `frontend/src/components/Grid/DraggableCell.tsx`에서 확대 버튼이 hover/focus 상태에서 드러나고 accessible name을 제공하는지 확인한다.
+- [ ] T045 [US5] `frontend/src/components/Grid/GridContainer.tsx`에서 `mode`, `tabId`, `subTabId`, `cameraIds`, `cameraNames` query 생성이 `contracts/focus-entry-contract.md`와 일치하는지 확인한다.
+- [ ] T046 [US5] `cd frontend; npm test -- --run GridContainer.focus`를 실행해 US4 회귀를 확인한다.
 
 **체크포인트**: 002에서 003으로 이동할 때 현재 그리드 맥락이 누락되거나 과포함되지 않는다.
 
 ---
 
-## Phase 7: 마무리 및 공통 검증
+## Phase 8: 마무리 및 공통 검증
 
-- [ ] T037 [P] `specs/002-live-main-view/quickstart.md`의 수동 검증 절차가 실제 화면과 일치하는지 확인한다.
-- [ ] T038 [P] `specs/002-live-main-view/contracts/`의 계약이 spec.md와 plan.md 요구사항을 모두 추적하는지 확인한다.
-- [ ] T039 theme1, theme2, theme3에서 공정탭, 세부공정탭, 타일 header, Rename dialog, Add Camera 셀의 대비를 수동 확인한다.
-- [ ] T040 `cd frontend; npm test -- --run`을 실행해 전체 frontend test를 확인한다.
-- [ ] T041 `cd frontend; npm run build`를 실행해 production build를 확인한다.
+- [ ] T047 [P] `specs/002-live-main-view/quickstart.md`의 수동 검증 절차가 실제 화면과 일치하는지 확인한다.
+- [ ] T048 [P] `specs/002-live-main-view/contracts/`의 계약이 spec.md와 plan.md 요구사항을 모두 추적하는지 확인한다.
+- [ ] T049 theme1, theme2, theme3에서 공정탭, 세부공정탭, 타일 header, Rename dialog, Add Camera 셀의 대비를 수동 확인한다.
+- [ ] T050 `cd frontend; npm test -- --run`을 실행해 전체 frontend test를 확인한다.
+- [ ] T051 `cd frontend; npm run build`를 실행해 production build를 확인한다.
 
 ## 의존성 및 실행 순서
 
@@ -148,16 +176,18 @@
 - **Phase 2 기반 작업**: Phase 1 이후 시작
 - **US1**: Phase 2 이후 시작, MVP
 - **US2**: Phase 2 이후 시작 가능하나 US1의 기본 그리드 구조 확인 후 진행 권장
-- **US3**: Phase 2 이후 시작 가능
-- **US4**: US1과 003 route 계약 확인 후 진행
+- **US3(P2)**: US2의 Add Camera 빈 셀 흐름 위에서 진행
+- **US4(P3)**: Phase 2 이후 시작 가능
+- **US5(P3)**: US1과 003 route 계약 확인 후 진행
 - **마무리**: 모든 사용자 스토리 확인 후 진행
 
 ### 사용자 스토리 의존성
 
 - **US1(P1)**: 기본 라이브 메인 화면으로 MVP 범위
 - **US2(P2)**: US1의 그리드 표시 구조 위에서 편집 기능 검증
-- **US3(P3)**: US1/US2와 독립적으로 일부 병렬 가능
-- **US4(P3)**: 003 화면 확대 보기 계약과 연결
+- **US3(P2)**: US2의 빈 셀과 영상 타일 구조에 의존
+- **US4(P3)**: US1/US2와 독립적으로 일부 병렬 가능
+- **US5(P3)**: 003 화면 확대 보기 계약과 연결
 
 ## 병렬 실행 예시
 
@@ -186,13 +216,13 @@ Task: "T019 CameraSelector test 필요 여부 확인"
 
 1. US1: 기본 라이브 그리드 보기
 2. US2: 그리드 구성과 카메라 배치 편집
-3. US3: 탭/타일 관리와 Rename
-4. US4: 003 화면 확대 보기 진입 계약
-5. 공통 theme/build/test 검증
+3. US3: 직접 영상 주소 임시 타일 추가
+4. US4: 탭/타일 관리와 Rename
+5. US5: 003 화면 확대 보기 진입 계약
+6. 공통 theme/build/test 검증
 
 ### Mock-First 전략
 
 1. 실제 backend 저장 구현 전까지 mock layout과 fallback service를 기준으로 검증한다.
 2. route와 layout 계약은 후속 backend 연동이 가능하도록 문서로 고정한다.
 3. backend/API/DB 작업은 이 tasks.md에서 직접 구현하지 않는다.
-

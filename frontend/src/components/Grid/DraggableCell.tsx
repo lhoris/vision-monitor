@@ -4,16 +4,21 @@
 
 import React, { useEffect, useState } from 'react'
 import type { Camera } from '@/types/camera'
+import type { PlayerState, TemporaryVideoSource } from '@/types/streamPlayer'
 import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
 
 interface DraggableCellProps {
   cellId: string
   index: number
   camera?: Camera
+  temporarySource?: TemporaryVideoSource
+  positionId?: number
   onAddCamera: () => void
   onRemoveCamera: () => void
   onFocusCamera?: (cameraId: number) => void
   onRenameCamera?: (cameraId: number, name: string) => void
+  onEditTemporarySource?: () => void
+  onTemporaryStatusChange?: (status: PlayerState) => void
   onDragStart?: (cameraId: number) => void
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: (cellIndex: number) => void
@@ -24,10 +29,14 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   cellId: _cellId,
   index,
   camera,
+  temporarySource,
+  positionId,
   onAddCamera,
   onRemoveCamera,
   onFocusCamera,
   onRenameCamera,
+  onEditTemporarySource,
+  onTemporaryStatusChange,
   onDragStart,
   onDragOver,
   onDrop,
@@ -35,22 +44,33 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 }) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
-  const [displayName, setDisplayName] = useState(camera?.name ?? '')
-  const [renameDraft, setRenameDraft] = useState(camera?.name ?? '')
+  const [displayName, setDisplayName] = useState(camera?.name ?? temporarySource?.displayName ?? '')
+  const [renameDraft, setRenameDraft] = useState(camera?.name ?? temporarySource?.displayName ?? '')
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
 
   useEffect(() => {
-    setDisplayName(camera?.name ?? '')
-    setRenameDraft(camera?.name ?? '')
+    setDisplayName(camera?.name ?? temporarySource?.displayName ?? '')
+    setRenameDraft(camera?.name ?? temporarySource?.displayName ?? '')
     setIsRenameDialogOpen(false)
     setContextMenu(null)
-  }, [camera?.id, camera?.name])
+  }, [camera?.id, camera?.name, temporarySource?.id, temporarySource?.displayName])
+
+  const isTemporary = Boolean(temporarySource)
+  const effectiveCamera = camera ?? (temporarySource ? {
+    id: positionId ?? -1,
+    name: temporarySource.displayName,
+    location: '현재 세부공정 임시 영상',
+    zone: temporarySource.protocol.toUpperCase(),
+    streamUrl: temporarySource.url,
+    streamProtocol: temporarySource.protocol,
+    status: temporarySource.playbackStatus === 'error' ? 'error' : 'online',
+  } satisfies Camera : undefined)
 
   const handleDragStart = (e: React.DragEvent) => {
-    if (camera && onDragStart) {
+    if (effectiveCamera && onDragStart) {
       e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('text/plain', camera.id.toString())
-      onDragStart(camera.id)
+      e.dataTransfer.setData('text/plain', effectiveCamera.id.toString())
+      onDragStart(effectiveCamera.id)
     }
   }
 
@@ -87,6 +107,11 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     setContextMenu(null)
   }
 
+  const handleEditSourceClick = () => {
+    onEditTemporarySource?.()
+    setContextMenu(null)
+  }
+
   const handleRenameSubmit = () => {
     const nextName = renameDraft.trim()
     if (!nextName) {
@@ -107,7 +132,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     }
   }
 
-  return camera ? (
+  return effectiveCamera ? (
     <article
       data-testid="camera-tile"
       onDragOver={handleDragOver}
@@ -123,14 +148,14 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       <div
         draggable
         onDragStart={handleDragStart}
-        className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
+            className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
         title="Drag to move camera"
       >
         <div className="flex min-w-0 items-center gap-2">
           <span
-            className={`h-3 w-3 shrink-0 rounded-full ${getStatusDotClass(camera.status)}`}
-            aria-label={`Status: ${camera.status}`}
-            title={camera.status}
+            className={`h-3 w-3 shrink-0 rounded-full ${getStatusDotClass(effectiveCamera.status)}`}
+            aria-label={`Status: ${effectiveCamera.status}`}
+            title={effectiveCamera.status}
           />
           <div className="min-w-0">
             <h3 className="camera-tile-header__title truncate text-sm font-semibold leading-none">{displayName}</h3>
@@ -139,6 +164,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <button
           type="button"
           onClick={handleFocusClick}
+          style={{ visibility: isTemporary ? 'hidden' : undefined }}
           className="shrink-0 border border-sky-400 bg-sky-100 px-2 py-1 text-xs font-semibold leading-none text-slate-950 opacity-0 transition hover:bg-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100"
           aria-label={`${displayName} 확대 보기`}
         >
@@ -147,7 +173,12 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       </div>
 
       <div className="min-h-0 flex-1 bg-black" data-testid="camera-tile-video">
-        <LiveStreamPlayer camera={{ ...camera, name: displayName }} className="h-full w-full" />
+        <LiveStreamPlayer
+          camera={{ ...effectiveCamera, name: displayName }}
+          className="h-full w-full"
+          onStateChange={isTemporary ? onTemporaryStatusChange : undefined}
+          onError={isTemporary ? (() => onTemporaryStatusChange?.('error')) : undefined}
+        />
       </div>
 
       {contextMenu && (
@@ -163,12 +194,19 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
               left: `${contextMenu.x}px`,
             }}
           >
-            <button
+            {isTemporary ? (
+              <button
+                onClick={handleEditSourceClick}
+                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+              >
+                주소 수정
+              </button>
+            ) : <button
               onClick={handleRenameClick}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
             >
               Rename
-            </button>
+            </button>}
             <button
               onClick={handleDeleteClick}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 hover:bg-opacity-50 dark:text-red-400 dark:hover:bg-red-900"

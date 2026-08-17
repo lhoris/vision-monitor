@@ -19,6 +19,18 @@ export interface StreamSource {
 }
 
 /**
+ * 라이브 대시보드에서 카메라 목록에 등록하지 않고 추가한 임시 영상 소스.
+ * Redux 레이아웃에는 저장하지 않고 현재 화면 세션에서만 유지한다.
+ */
+export interface TemporaryVideoSource {
+  id: string
+  url: string
+  protocol: Exclude<StreamProtocol, 'unknown'>
+  displayName: string
+  playbackStatus: PlayerState
+}
+
+/**
  * 플레이어 상태
  */
 export type PlayerState = 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'seeking'
