@@ -22,6 +22,8 @@ export interface UserAccount {
   position: string
   email: string
   phone: string
+  orgUnitId?: number
+  orgUnitName?: string
   roleIds: string[]
   roles: RoleSummary[]
   accountStatus: AccountStatus
@@ -48,6 +50,7 @@ export interface UserMutationRequest {
   position: string
   email: string
   phone: string
+  orgUnitId?: number
   roleIds: string[]
   accountStatus: AccountStatus
   employmentStatus: EmploymentStatus
@@ -59,4 +62,7 @@ export interface UserListResponse {
   items: UserAccount[]
   total: number
   roles: RoleSummary[]
+  page?: number
+  pageSize?: number
+  summary?: Record<string, number>
 }

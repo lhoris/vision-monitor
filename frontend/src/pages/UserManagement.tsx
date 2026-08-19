@@ -21,12 +21,18 @@ export function UserManagement() {
   const loadUsers = useCallback(async (selectId?: number) => {
     setLoading(true); setError('')
     try {
-      const result: UserListResponse = await userManagementService.listUsers()
+      const result: UserListResponse = await userManagementService.listUsers({
+        query: filters.query,
+        roleId: filters.roleId,
+        accountStatus: filters.accountStatus,
+        employmentStatus: filters.employmentStatus,
+        pageSize: 100,
+      })
       setUsers(result.items); setRoles(result.roles)
       const nextSelected = selectId ? result.items.find((user) => user.id === selectId) : result.items[0]
       setSelectedUser(nextSelected ?? null)
     } catch (loadError) { setError(loadError instanceof Error ? loadError.message : '사용자 목록을 불러오지 못했습니다.') } finally { setLoading(false) }
-  }, [])
+  }, [filters])
 
   useEffect(() => { void loadUsers() }, [loadUsers])
 

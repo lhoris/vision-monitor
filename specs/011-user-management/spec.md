@@ -58,7 +58,7 @@
 
 ## 3. 제외 범위 *(필수)*
 
-- 실제 인증 저장소, DB, Spring Boot API 구현은 MVP 범위에서 제외한다.
+- 초기 frontend mock MVP에서는 실제 인증 저장소, DB, Spring Boot API 구현을 제외한다. 실제 backend 확장 범위는 `backend-database-design.md`와 `backend-api.md`에서 정의한다.
 - 실제 비밀번호 변경, 비밀번호 초기화, MFA, SSO, 사번/인사 시스템 연동은 제외한다.
 - 상세 감사 로그, 결재/승인 워크플로우, 계정 잠금 정책 자동화는 제외한다.
 - 사용자별 세부 권한 정책 편집은 013 권한 정책 관리 범위로 분리한다.

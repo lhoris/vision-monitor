@@ -113,3 +113,23 @@ leave -> retired
 - 현재 로그인한 관리자 자기 계정은 비활성화, 삭제 요청, 관리자 역할 제거 전에 경고 또는 차단한다.
 - 변경 후 관리자 역할을 가진 활성 사용자가 0명이 되면 저장을 차단한다.
 - 퇴사 또는 삭제 요청 대상에게 개인화 설정이 있으면 유지/초기화 선택을 표시한다.
+
+## OrganizationUnit
+
+사용자의 소속, 부서, 섹션을 표현하는 계층형 조직 단위다. 실제 DB 설계는 [backend-database-design.md](backend-database-design.md)를 따른다.
+
+| 필드 | 설명 | 검증/규칙 |
+|------|------|-----------|
+| `id` | 조직 식별자 | 필수 |
+| `parentId` | 상위 조직 식별자 | 최상위 조직은 null |
+| `unitType` | `SITE`, `DEPARTMENT`, `SECTION` | 현재 3단계 |
+| `code` | 조직 코드 | 전역 중복 불가 |
+| `name` | 조직명 | 필수 |
+| `active` | 사용 여부 | 비활성 조직은 신규 지정 불가 |
+| `sortOrder` | 표시 순서 | 동일 부모 내 정렬 |
+
+## UserAccount 조직 필드
+
+1차 backend 범위에서는 사용자당 주 소속 조직 하나를 `orgUnitId`로 연결한다. `department` 문자열은 호환 기간 동안 표시용으로만 유지할 수 있지만 신규 API의 기준값은 `orgUnitId`다.
+
+DB 외래키는 사용하지 않으며, 조직 존재 여부와 활성 여부는 backend service에서 검증한다.

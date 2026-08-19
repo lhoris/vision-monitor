@@ -59,12 +59,12 @@
 - 역할 관리와 권한 정책 관리의 데이터는 상세 구현 없이 사용자 역할 선택/영향 안내에 필요한 mock 참조 데이터로만 연결한다.
 - 사용자의 개인화 설정 보유 여부와 유지/초기화 선택을 mock 상태로 표현한다.
 
-### 제외 범위
+### 초기 mock MVP 제외 범위
 
-- 실제 Spring Boot controller/service/repository/entity 구현
-- 실제 DB migration과 사용자 영구 저장
+- 실제 Spring Boot controller/service/repository/entity 구현은 초기 mock MVP에서 제외하고 Phase 9에서 진행한다.
+- 실제 DB migration과 사용자 영구 저장은 초기 mock MVP에서 제외하고 Phase 9에서 진행한다.
 - 실제 비밀번호 초기화, MFA, SSO, 인사 시스템 연동
-- 실제 backend 권한 검증과 감사 로그
+- 실제 backend 권한 검증과 감사 로그는 초기 mock MVP에서 제외하고 Phase 9 이후 진행한다.
 - 역할 자체의 CRUD 구현
 - 권한 정책 자체의 CRUD 구현
 - 메뉴 접근 권한 상세 관리 구현
@@ -183,7 +183,7 @@ frontend/src/
     └── userManagement.ts
 ```
 
-**구조 결정**: 기존 `pages`, `components`, `services`, `mocks`, `types` 패턴을 따른다. Tabulator는 `frontend/src/lib/tabulator`의 공통 wrapper를 재사용한다. backend는 MVP에서 변경하지 않는다.
+**구조 결정**: 기존 `pages`, `components`, `services`, `mocks`, `types` 패턴을 따른다. Tabulator는 `frontend/src/lib/tabulator`의 공통 wrapper를 재사용한다. frontend mock MVP와 실제 backend 확장 구조를 분리한다.
 
 ## 9. 헌법 체크
 
@@ -209,3 +209,36 @@ frontend/src/
 |------|-------------|-------------------------------|
 | 계정 상태와 재직 상태 분리 | 잠금/비활성은 계정 접근 상태이고 퇴사는 인사/운영 상태이므로 의미가 다름 | 단일 status로 합치면 퇴사지만 이력 참조가 필요한 계정 처리와 로그인 가능 여부가 혼동됨 |
 | 삭제 요청을 별도 흐름으로 분리 | 삭제는 권한/개인화/이력 참조에 영향을 주는 위험 작업 | 단순 삭제 버튼은 운영 업무시스템에서 이력 보존과 감사 정책을 훼손할 수 있음 |
+
+## 12. 실제 backend 확장 계획
+
+기존 Phase 1~8은 frontend mock MVP를 대상으로 한다. 실제 DB/API 구현은 다음 문서를 기준으로 별도 backend phase에서 진행한다.
+
+- [backend-database-design.md](backend-database-design.md)
+- [backend-api.md](backend-api.md)
+- [data-model.md](data-model.md)
+
+### backend 구현 범위
+
+- Flyway `V003__add_organization_units.sql` 적용 확인
+- `org_units` 조회 API와 조직 계층 검증
+- `users` Entity, Repository, Service, Controller 구현
+- 사용자 목록의 검색·조직 필터·상태 필터·페이지 처리
+- 사용자 등록·수정·잠금·해제·비활성화·퇴사·삭제 요청 API
+- 관리자 권한의 backend 검증
+- 자기 계정 및 마지막 관리자 보호
+- frontend mock contract와 실제 API 응답의 일치 검증
+
+### backend에서 제외하는 항목
+
+- 역할 자체 CRUD와 세부 권한 정책 CRUD
+- SSO/MFA 및 인사 시스템 연동
+- 초기 비밀번호 발급 정책이 확정되기 전의 비밀번호 운영 화면
+- 물리 외래키 생성
+
+### 설계 결정을 기다리는 항목
+
+- 사용자 다중 조직 소속 허용 여부
+- 조직 코드 변경 및 조직 삭제 정책
+- 초기 비밀번호 발급 방식
+- JWT/session 방식과 로그인 실패 잠금 정책

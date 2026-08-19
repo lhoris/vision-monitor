@@ -16,8 +16,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiResponse<Object>> handleApiException(ApiException ex) {
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(resolveStatus(ex.getCode()))
                 .body(ApiResponse.error(ex.getCode(), ex.getMessage(), ex.getDetails()));
+    }
+
+    private HttpStatus resolveStatus(String code) {
+        return switch (code) {
+            case "UNAUTHENTICATED" -> HttpStatus.UNAUTHORIZED;
+            case "FORBIDDEN" -> HttpStatus.FORBIDDEN;
+            case "USER_NOT_FOUND", "ORG_UNIT_NOT_FOUND" -> HttpStatus.NOT_FOUND;
+            case "DUPLICATE_USERNAME", "LAST_ADMIN_RISK", "SELF_LOCKOUT_RISK", "VERSION_CONFLICT", "USERNAME_IMMUTABLE" -> HttpStatus.CONFLICT;
+            case "VALIDATION_ERROR", "ORG_UNIT_INACTIVE", "CONFIRMATION_REQUIRED" -> HttpStatus.UNPROCESSABLE_ENTITY;
+            default -> HttpStatus.BAD_REQUEST;
+        };
     }
 
     @ExceptionHandler(Exception.class)

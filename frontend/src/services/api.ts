@@ -32,6 +32,10 @@ class ApiClient {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
+        const actorUsername = localStorage.getItem('authUsername')
+        if (actorUsername) {
+          config.headers['X-Actor-Username'] = actorUsername
+        }
         return config
       },
       (error) => Promise.reject(error)
@@ -88,9 +92,9 @@ class ApiClient {
 
   private handleError(error: unknown): ApiError {
     if (axios.isAxiosError(error)) {
-      const response = error.response?.data as ApiError | undefined
+      const response = error.response?.data as (ApiError & { error?: string }) | undefined
       return {
-        code: response?.code || 'UNKNOWN_ERROR',
+        code: response?.code || response?.error || 'UNKNOWN_ERROR',
         message: response?.message || error.message,
         details: response?.details,
       }
