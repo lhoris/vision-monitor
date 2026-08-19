@@ -90,13 +90,15 @@
 
 아래 작업은 frontend mock MVP 완료 후 진행하는 후속 backend phase다.
 
-- [ ] T051 `backend-database-design.md` 기준으로 `users` 확장 필드와 `org_units` migration을 검토한다: `backend/src/main/resources/db/migration/`
-- [ ] T052 `org_units` Entity와 Repository를 구현한다. DB 외래키 없이 부모 조직과 활성 상태를 service에서 검증한다: `backend/src/main/java/com/vision/entity/OrgUnit.java`, `backend/src/main/java/com/vision/repository/OrgUnitRepository.java`
-- [ ] T053 `User` Entity와 Repository를 기존 `users` 테이블에 맞춰 구현한다: `backend/src/main/java/com/vision/entity/User.java`, `backend/src/main/java/com/vision/repository/UserRepository.java`
-- [ ] T054 조직 목록과 사용자 목록·상세 조회 API를 구현한다: `backend/src/main/java/com/vision/controller/UserManagementController.java`
-- [ ] T055 사용자 등록·수정 API와 입력 validation을 구현한다.
-- [ ] T056 잠금·해제·비활성화·퇴사·삭제 요청 API와 상태 전이 검증을 구현한다.
-- [ ] T057 관리자 권한, 자기 계정 보호, 마지막 관리자 보호를 backend service에서 구현한다.
-- [ ] T058 `orgUnitId` 존재·활성·계층 규칙을 검증하는 service 테스트를 작성한다.
+- [X] T051 `backend-database-design.md` 기준으로 `users` 확장 필드와 `org_units` migration을 검토한다: `backend/src/main/resources/db/migration/`
+- [X] T052 `org_units` Entity와 Repository를 구현한다. DB 외래키 없이 부모 조직과 활성 상태를 service에서 검증한다: `backend/src/main/java/com/vision/entity/OrgUnit.java`, `backend/src/main/java/com/vision/repository/OrgUnitRepository.java`
+- [X] T053 `UserAccount` Entity와 Repository를 기존 `users` 테이블에 맞춰 구현한다: `backend/src/main/java/com/vision/entity/UserAccount.java`, `backend/src/main/java/com/vision/repository/UserAccountRepository.java`
+- [X] T054 조직 목록과 사용자 목록·상세 조회 API를 구현한다: `backend/src/main/java/com/vision/controller/UserManagementController.java`
+- [X] T055 사용자 등록·수정 API와 입력 validation을 구현한다.
+- [X] T056 잠금·해제·비활성화·퇴사·삭제 요청 API와 상태 전이 검증을 구현한다.
+- [X] T057 관리자 권한, 자기 계정 보호, 마지막 관리자 보호를 backend service에서 구현한다.
+- [X] T058 `orgUnitId` 존재·활성·계층 규칙을 검증하는 service 테스트를 작성한다.
 - [ ] T059 사용자관리 API의 controller/service/repository 통합 테스트와 migration 검증을 추가한다.
-- [ ] T060 frontend 실제 API adapter를 backend 응답 계약에 맞춰 전환하고 mock 회귀를 확인한다.
+- [X] T060 frontend 실제 API adapter를 backend 응답 계약에 맞춰 전환하고 mock 회귀를 확인한다.
+
+> T059는 실제 MariaDB에 연결해 Flyway `V003`, `V004`를 적용하는 환경 검증이 필요하므로 미완료로 남긴다. 현재 backend 컴파일과 service 단위 테스트는 통과했다.
