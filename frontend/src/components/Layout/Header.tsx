@@ -23,7 +23,7 @@ const themeOptions: Array<{
   },
   {
     id: 'theme3',
-    swatch: 'bg-emerald-500',
+    swatch: 'bg-cyan-500',
   },
 ]
 
@@ -43,8 +43,8 @@ const getThemeDescription = (theme: ThemeMode, language: string): string => {
       ko: '기본 다크 VMS',
     },
     theme3: {
-      en: 'Mint command center',
-      ko: '민트 관제 센터',
+      en: 'Cyan command center',
+      ko: '사이언 관제 센터',
     },
   }
 
@@ -106,7 +106,7 @@ export function Header() {
 
   return (
     <header className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
-      <div className="flex items-center justify-between h-16 px-6">
+      <div className="flex items-center justify-between h-14 px-6">
         {/* Left */}
         <div className="flex items-center gap-4">
           <button
@@ -128,14 +128,14 @@ export function Header() {
               />
             </svg>
           </button>
-          <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 pl-5 border-l border-gray-200 dark:border-gray-700">
             <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
+              <h1 className="text-xl font-medium custom-title-text pt-1.5">
                 AI Vision Monitor
               </h1>
               <p className="text-xs text-gray-500 dark:text-gray-500">Intelligent VMS</p>

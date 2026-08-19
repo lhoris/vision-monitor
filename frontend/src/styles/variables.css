@@ -78,8 +78,68 @@
   }
 }
 
+
 /* Explicitly set theme via data attribute */
+/* Theme 1: 소프트 블루 & 쿨그레이 (깔끔하고 신뢰감을 주는 라이트 테마) */
 :root[data-theme='theme1'],
+:root[data-theme='light'] {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-light: #60a5fa;
+
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-tertiary: #e2e8f0;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-tertiary: #64748b;
+
+  --color-border: #cbd5e1;
+  --color-border-light: #e2e8f0;
+}
+
+/* Theme 2: 딥 네이비 & 차콜 (눈이 편안한 고급스러운 다크 테마) */
+:root[data-theme='theme2'],
+:root[data-theme='dark'] {
+  --color-primary: #38bdf8;
+  --color-primary-dark: #0284c7;
+  --color-primary-light: #7dd3fc;
+
+  --color-bg-primary: #0b0f19;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #1f2937;
+
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border: #374151;
+  --color-border-light: #1f2937;
+}
+
+/* Theme 3: 디프 에메랄드 (포인트가 되는 우아한 어두운 테마) */
+:root[data-theme='theme3'] {
+  --color-primary: #10b981;
+  --color-primary-dark: #047857;
+  --color-primary-light: #6ee7b7;
+
+  --color-bg-primary: #061913;
+  --color-bg-secondary: #0c2820;
+  --color-bg-tertiary: #143d32;
+
+  --color-text-primary: #f0fdf4;
+  --color-text-secondary: #bbf7d0;
+  --color-text-tertiary: #86efac;
+
+  --color-border: #1a4d3e;
+  --color-border-light: #0e3026;
+}
+
+
+
+/* Explicitly set theme via data attribute */
+/* :root[data-theme='theme1'],
 :root[data-theme='light'] {
   --color-primary: #0ea5e9;
   --color-primary-dark: #0284c7;
@@ -130,4 +190,4 @@
 
   --color-border: #1f4d42;
   --color-border-light: #102a24;
-}
+} */

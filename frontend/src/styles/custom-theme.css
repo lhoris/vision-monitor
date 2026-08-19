@@ -1,0 +1,145 @@
+/**
+ * Custom Theme
+ */
+
+
+/* Spoqa Han Sans Neo */
+@font-face {
+    font-family: 'Spoqa Han Sans Neo';
+    font-weight: 300;
+    src: local('SpoqaHanSansNeo-Light'),
+    url('../assets/fonts/SpoqaHanSansNeo-Light.woff2') format('woff2'),
+    url('../assets/fonts/SpoqaHanSansNeo-Light.woff') format('woff'),
+    url('../assets/fonts/SpoqaHanSansNeo-Light.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Spoqa Han Sans Neo';
+    font-weight: 400;
+    src: local('SpoqaHanSansNeo-Regular'),
+    url('../assets/fonts/SpoqaHanSansNeo-Regular.woff2') format('woff2'),
+    url('../assets/fonts/SpoqaHanSansNeo-Regular.woff') format('woff'),
+    url('../assets/fonts/SpoqaHanSansNeo-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Spoqa Han Sans Neo';
+    font-weight: 500;
+    src: local('SpoqaHanSansNeo-Medium'),
+    url('../assets/fonts/SpoqaHanSansNeo-Medium.woff2') format('woff2'),
+    url('../assets/fonts/SpoqaHanSansNeo-Medium.woff') format('woff'),
+    url('../assets/fonts/SpoqaHanSansNeo-Medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Spoqa Han Sans Neo';
+    font-weight: 700;
+    src: local('SpoqaHanSansNeo-Bold'),
+    url('../assets/fonts/SpoqaHanSansNeo-Bold.woff2') format('woff2'),
+    url('../assets/fonts/SpoqaHanSansNeo-Bold.woff') format('woff'),
+    url('../assets/fonts/SpoqaHanSansNeo-Bold.ttf') format('truetype');
+}
+
+/*title-text*/
+/* 기본 스타일 (Theme 1: 라이트 모드) - 블루그레이 */
+html[data-theme='theme1'] .custom-title-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #334155 !important; /* 어두운 블루그레이 (slate-700급) */
+}
+
+/* Theme 2 (다크 모드) - 단색 흰색 */
+html[data-theme='theme2'] .custom-title-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #ffffff !important;
+}
+
+/* Theme 3 (다크 모드) - 단색 흰색 */
+html[data-theme='theme3'] .custom-title-text {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  color: #ffffff !important;
+}
+
+/*logo-svg*/
+.logo-svg {
+  color: #ffffff !important;
+}
+
+
+/* ========================================================
+   서브탭(SubTabs) 3개 테마 맞춤형 스타일
+   ======================================================== */
+
+/* [Theme 1: 스카이 블루 & 모던 쿨그레이 (라이트)] */
+html[data-theme='theme1'] .subtab-container {
+  border-bottom-color: #bfdbfe !important; /* 테마 1 연한 블루 테두리 */
+}
+html[data-theme='theme1'] .subtab-active {
+  background-color: #e0f2fe !important;    /* bg-blue-50 매칭 (#e0f2fe) */
+  color: #0284c7 !important;               /* 포인트 스카이블루 (#0284c7) */
+  border-bottom-color: #0284c7 !important;
+}
+html[data-theme='theme1'] .subtab-inactive {
+  color: #64748b !important;
+}
+html[data-theme='theme1'] .subtab-inactive:hover {
+  color: #0f172a !important;
+}
+html[data-theme='theme1'] .subtab-add-btn {
+  border-color: #bfdbfe !important;
+  color: #0284c7 !important;
+}
+html[data-theme='theme1'] .subtab-add-btn:hover {
+  background-color: #eff6ff !important;
+}
+
+/* [Theme 2: 리치 인디고 & 일렉트릭 블루 (다크)] */
+html[data-theme='theme2'] .subtab-container {
+  border-bottom-color: #2b3577 !important; /* 인디고 경계선 */
+}
+html[data-theme='theme2'] .subtab-active {
+  background-color: #1c2352 !important;    /* 딥 인디고 호버/입력창 톤 (#1c2352) */
+  color: #7084ff !important;               /* 맑은 인디고 하이라이트 (#7084ff) */
+  border-bottom-color: #2563eb !important; /* 리치 인디고 바 (#2563eb) */
+}
+html[data-theme='theme2'] .subtab-inactive {
+  color: #8b99cf !important;
+}
+html[data-theme='theme2'] .subtab-inactive:hover {
+  color: #ffffff !important;
+}
+html[data-theme='theme2'] .subtab-add-btn {
+  border-color: #2b3577 !important;
+  color: #7084ff !important;
+}
+html[data-theme='theme2'] .subtab-add-btn:hover {
+  background-color: #1c2352 !important;
+}
+
+/* [Theme 3: 딥 틸 & 브라이트 사이언 (다크)] */
+html[data-theme='theme3'] .subtab-container {
+  border-bottom-color: #0e4e5b !important; /* 세련된 틸/사이언 테두리 */
+}
+html[data-theme='theme3'] .subtab-active {
+  background-color: #0c2b33 !important;    /* 다크 틸 호버/입력창 톤 (#0c2b33) */
+  color: #22d3ee !important;               /* 브라이트 사이언 (#22d3ee) */
+  border-bottom-color: #06b6d4 !important; /* 비비드 사이언 바 (#06b6d4) */
+}
+html[data-theme='theme3'] .subtab-inactive {
+  color: #6da2ac !important;
+}
+html[data-theme='theme3'] .subtab-inactive:hover {
+  color: #ffffff !important;
+}
+html[data-theme='theme3'] .subtab-add-btn {
+  border-color: #0e4e5b !important;
+  color: #22d3ee !important;
+}
+html[data-theme='theme3'] .subtab-add-btn:hover {
+  background-color: #0c2b33 !important;
+}

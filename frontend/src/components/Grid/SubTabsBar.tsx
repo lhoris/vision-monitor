@@ -77,11 +77,11 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-3">
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container">
+      <div className="px-6 pt-3">
         <div className="flex items-center gap-2 justify-between">
           {/* Sub Tabs Container */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-1 pb-2">
+          <div className="flex items-center gap-2 overflow-x-auto flex-1 -mb-[2px]">
             {/* Sub Tabs */}
             {subTabs.map((subTab, index) => (
             <div
@@ -92,14 +92,14 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onSubTabChange(subTab.id)}
-              className={`relative px-4 py-2 rounded-lg cursor-pointer whitespace-nowrap
-                transition-all duration-200 flex items-center gap-2 font-medium
+              className={`relative px-6 py-2.5 rounded-t-lg cursor-pointer whitespace-nowrap text-base select-none
+                transition-all duration-200 flex items-center gap-2 border-b-4 border-transparent
                 ${
                   activeSubTabId === subTab.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
+                    ? 'subtab-active font-bold'
+                    : 'subtab-inactive font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-white/5'
                 }
-                ${dragOverIndex === index && draggedFromIndex !== index ? 'border-l-4 border-l-blue-400' : ''}
+                ${dragOverIndex === index && draggedFromIndex !== index ? 'ring-2 ring-blue-400' : ''}
                 ${draggedFromIndex === index ? 'opacity-50' : ''}
               `}
             >
@@ -165,7 +165,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
           ) : (
             <button
               onClick={() => setShowAddSubTabInput(true)}
-              className="px-3 py-2 rounded-md text-gray-600 dark:text-gray-400
+              className="subtab-add-btn px-3 py-2 rounded-md text-gray-600 dark:text-gray-400
                          hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600
                          transition-colors text-sm"
               title="Add new equipment"
@@ -179,7 +179,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
 
           {/* Layout Selector */}
           {layoutSelector && (
-            <div className="flex-shrink-0 ml-4">
+            <div className="flex-shrink-0 ml-4 -mt-[13px]">
               {layoutSelector}
             </div>
           )}

@@ -19,6 +19,7 @@ import { useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import '@/styles/global.css'
+import '@/styles/custom-theme.css'
 
 function AppRoutes() {
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)

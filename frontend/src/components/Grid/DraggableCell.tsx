@@ -158,17 +158,30 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             title={effectiveCamera.status}
           />
           <div className="min-w-0">
-            <h3 className="camera-tile-header__title truncate text-sm font-semibold leading-none">{displayName}</h3>
+            <h3 className="camera-tile-header__title truncate text-base font-medium leading-none">{displayName}</h3>
           </div>
         </div>
         <button
           type="button"
           onClick={handleFocusClick}
           style={{ visibility: isTemporary ? 'hidden' : undefined }}
-          className="shrink-0 border border-sky-400 bg-sky-100 px-2 py-1 text-xs font-semibold leading-none text-slate-950 opacity-0 transition hover:bg-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100"
+          className="shrink-0 flex items-center justify-center p-1.5 rounded border border-sky-400 bg-sky-100 text-slate-950 opacity-0 transition-all duration-150 hover:bg-white hover:border-sky-500 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:bg-sky-950/40 dark:border-sky-500/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
           aria-label={`${displayName} 확대 보기`}
+          title="확대 보기"
         >
-          확대
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-3.5 w-3.5"
+          >
+            <circle cx="8.5" cy="8.5" r="5.5" />
+            <line x1="13" y1="13" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
 
@@ -290,12 +303,12 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
 function getStatusDotClass(status: Camera['status']): string {
   if (status === 'online') {
-    return 'bg-green-500'
+    return 'bg-green-500 relative before:content-[""] before:block before:absolute before:w-[20px] before:h-[20px] before:-left-[4px] before:-top-[4px] before:rounded-full before:bg-[#36a047]/40 before:animate-pulse'
   }
   if (status === 'offline') {
-    return 'bg-gray-400'
+    return 'bg-gray-400 opacity-60'
   }
-  return 'bg-red-500'
+  return 'bg-red-500 relative before:content-[""] before:block before:absolute before:w-[20px] before:h-[20px] before:-left-[4px] before:-top-[4px] before:rounded-full before:bg-red-500/40 before:animate-pulse'
 }
 
 export default DraggableCell

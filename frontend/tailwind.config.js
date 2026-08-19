@@ -1,11 +1,17 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
+      // Spoqa Han Sans Neo 폰트 설정 추가
+      fontFamily: {
+        sans: ['"Spoqa Han Sans Neo"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        spoqa: ['"Spoqa Han Sans Neo"', 'sans-serif'],
+      },
       colors: {
         primary: {
           50: '#f0f9ff',

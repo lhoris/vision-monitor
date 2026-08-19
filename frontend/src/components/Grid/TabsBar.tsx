@@ -95,9 +95,9 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+    <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-6 py-3">
+        <div className="flex items-center gap-2 overflow-x-auto">
           {/* Tabs */}
           {tabs.map((tab, index) => (
             <div
@@ -108,15 +108,15 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group px-4 py-3 rounded-t-lg cursor-pointer whitespace-nowrap
-                transition-all duration-200 flex items-center gap-2 border-b-4
+              className={`relative group px-14 py-2.5 rounded-full cursor-pointer whitespace-nowrap text-xl font-medium
+                transition-all duration-200 flex items-center justify-center gap-2
                 ${
                   activeTabId === tab.id
-                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-600 font-semibold'
-                    : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-black/40 border-transparent'
+                    : 'bg-gray-100 hover:bg-gray-200/80 text-gray-600 hover:text-gray-900 border border-gray-200/80 dark:bg-white/5 dark:hover:bg-white/10 dark:text-gray-400 dark:hover:text-gray-100 dark:border-white/10 dark:hover:border-white/20'
                 }
-                ${dragOverIndex === index && draggedFromIndex !== index ? 'border-l-4 border-l-blue-400' : ''}
-                ${draggedFromIndex === index ? 'opacity-50' : ''}
+                ${dragOverIndex === index && draggedFromIndex !== index ? 'ring-2 ring-blue-400' : ''}
+                ${draggedFromIndex === index ? 'opacity-40' : ''}
               `}
             >
               {editingTabId === tab.id ? (
