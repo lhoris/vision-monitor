@@ -8,7 +8,6 @@ The current project is split into:
 - `backend/`: Spring Boot, Maven, REST controllers, application services, repositories.
 - `docs/`: architecture, API, implementation, and planning documents.
 - `scripts/`: project helper scripts.
-- `bok/`: generated brownfield codebase analysis output.
 
 The frontend live monitoring flow is currently:
 
