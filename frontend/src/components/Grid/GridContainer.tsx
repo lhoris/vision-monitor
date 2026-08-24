@@ -37,7 +37,7 @@ interface GridContainerProps {
 }
 
 export const GridContainer: React.FC<GridContainerProps> = ({
-  userId: _userId = 1,
+  userId: _userId,
   cameras = [],
 }) => {
   const dispatch = useAppDispatch()
@@ -56,16 +56,25 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const [showCameraSelector, setShowCameraSelector] = useState(false)
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
-  const [cameraNameOverrides, setCameraNameOverrides] = useState<Record<number, string>>({})
-  const [temporarySources, setTemporarySources] = useState<Record<number, TemporaryVideoSource>>({})
   const [editingTemporaryId, setEditingTemporaryId] = useState<number | null>(null)
   const temporaryIdRef = useRef(-1)
 
   useEffect(() => {
     if (activeSubTab) {
-      setUsedCameraIds(activeSubTab.cameraPositions.map((position) => position.cameraId))
+      setUsedCameraIds(activeSubTab.cameraPositions
+        .filter((position) => !position.source && position.cameraId > 0)
+        .map((position) => position.cameraId))
     }
   }, [activeSubTab])
+
+  useEffect(() => {
+    if (!layout) return
+    const minCameraId = layout.tabs
+      .flatMap((tab) => tab.subTabs)
+      .flatMap((subTab) => subTab.cameraPositions)
+      .reduce((min, position) => Math.min(min, position.cameraId), 0)
+    temporaryIdRef.current = Math.min(-1, minCameraId - 1)
+  }, [layout])
 
   const updateActiveSubTabPositions = (positions: CameraPosition[]) => {
     if (!activeTab || !activeSubTab) return
@@ -108,21 +117,22 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     updateActiveSubTabPositions(
       removeCameraPosition(activeSubTab.cameraPositions, cameraId)
     )
-
-    if (temporarySources[cameraId]) {
-      setTemporarySources((current) => {
-        const next = { ...current }
-        delete next[cameraId]
-        return next
-      })
-    }
   }
 
   const handleRenameCamera = (cameraId: number, name: string) => {
-    setCameraNameOverrides((current) => ({
-      ...current,
-      [cameraId]: name,
-    }))
+    if (!activeSubTab) return
+
+    updateActiveSubTabPositions(
+      activeSubTab.cameraPositions.map((position) =>
+        position.cameraId === cameraId
+          ? {
+              ...position,
+              displayName: name,
+              source: position.source ? { ...position.source, displayName: name } : position.source,
+            }
+          : position
+      )
+    )
   }
 
   const handleFocusCamera = (cameraId: number) => {
@@ -134,10 +144,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       params.set('subTabId', activeSubTab.id)
       params.set('cameraIds', currentCameraIds.join(','))
 
-      const currentNameOverrides = currentCameraIds.reduce<Record<number, string>>((overrides, currentCameraId) => {
-        const override = cameraNameOverrides[currentCameraId]
+      const currentNameOverrides = activeSubTab.cameraPositions.reduce<Record<number, string>>((overrides, position) => {
+        const override = position.displayName
         if (override) {
-          overrides[currentCameraId] = override
+          overrides[position.cameraId] = override
         }
         return overrides
       }, {})
@@ -171,10 +181,18 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     if (!selectedCellId || !activeSubTab) return
 
     if (editingTemporaryId !== null) {
-      setTemporarySources((current) => ({
-        ...current,
-        [editingTemporaryId]: source,
-      }))
+      updateActiveSubTabPositions(
+        activeSubTab.cameraPositions.map((position) =>
+          position.cameraId === editingTemporaryId
+            ? {
+                ...position,
+                displayName: source.displayName,
+                temporarySourceId: source.id,
+                source,
+              }
+            : position
+        )
+      )
       setEditingTemporaryId(null)
       setSelectedCellId(null)
       return
@@ -182,16 +200,23 @@ export const GridContainer: React.FC<GridContainerProps> = ({
 
     const temporaryId = temporaryIdRef.current
     temporaryIdRef.current -= 1
-    setTemporarySources((current) => ({ ...current, [temporaryId]: source }))
     const cellIndex = parseInt(selectedCellId.split('-')[1])
-    updateActiveSubTabPositions(
-      placeCameraAtCell(
-        activeSubTab.cameraPositions,
-        temporaryId,
-        cellIndex,
-        activeSubTab.gridConfig.cols
-      )
+    const positions = placeCameraAtCell(
+      activeSubTab.cameraPositions,
+      temporaryId,
+      cellIndex,
+      activeSubTab.gridConfig.cols
+    ).map((position) =>
+      position.cameraId === temporaryId
+        ? {
+            ...position,
+            displayName: source.displayName,
+            temporarySourceId: source.id,
+            source,
+          }
+        : position
     )
+    updateActiveSubTabPositions(positions)
     setSelectedCellId(null)
   }
 
@@ -202,11 +227,14 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }
 
   const handleTemporaryStatusChange = (cameraId: number, status: PlayerState) => {
-    setTemporarySources((current) => {
-      const source = current[cameraId]
-      if (!source || source.playbackStatus === status) return current
-      return { ...current, [cameraId]: { ...source, playbackStatus: status } }
-    })
+    if (!activeSubTab) return
+    updateActiveSubTabPositions(
+      activeSubTab.cameraPositions.map((position) =>
+        position.cameraId === cameraId && position.source && position.source.playbackStatus !== status
+          ? { ...position, source: { ...position.source, playbackStatus: status } }
+          : position
+      )
+    )
   }
 
   const handleAddTab = (tab: Tab) => {
@@ -275,7 +303,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const cameraMap = new Map(
     cameras.map((camera) => [
       camera.id,
-      cameraNameOverrides[camera.id] ? { ...camera, name: cameraNameOverrides[camera.id] } : camera,
+      camera,
     ])
   )
 
@@ -285,8 +313,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     const position = activeSubTab.cameraPositions.find(
       (cameraPosition) => cameraPosition.row === row && cameraPosition.col === col
     )
-    const camera = position ? cameraMap.get(position.cameraId) : undefined
-    const temporarySource = position ? temporarySources[position.cameraId] : undefined
+    const baseCamera = position ? cameraMap.get(position.cameraId) : undefined
+    const camera = baseCamera && position?.displayName
+      ? { ...baseCamera, name: position.displayName }
+      : baseCamera
+    const temporarySource = position?.source
 
     return {
       id: `cell-${index}`,
@@ -371,9 +402,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         cameras={cameras}
         usedCameraIds={usedCameraIds}
         existingTemporaryUrls={activeSubTab.cameraPositions
-          .map((position) => temporarySources[position.cameraId]?.url)
+          .map((position) => position.source?.url)
           .filter((url): url is string => Boolean(url))}
-        initialSource={editingTemporaryId !== null ? temporarySources[editingTemporaryId] : undefined}
+        initialSource={editingTemporaryId !== null
+          ? activeSubTab.cameraPositions.find((position) => position.cameraId === editingTemporaryId)?.source
+          : undefined}
         onSelectCamera={handleSelectCamera}
         onAddDirectSource={handleAddDirectSource}
         onClose={() => {

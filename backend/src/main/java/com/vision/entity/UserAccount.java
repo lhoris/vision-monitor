@@ -34,6 +34,9 @@ public class UserAccount {
     @Column(nullable = false, unique = true, length = 255)
     private String username;
 
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
     @Column(length = 255)
     private String name;
 

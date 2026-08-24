@@ -1,5 +1,7 @@
 package com.vision.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vision.entity.Layout;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,24 +19,29 @@ import java.time.LocalDateTime;
 @Builder
 public class LayoutDto {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private Long id;
     private Long userId;
     private String tabName;
-    private String gridConfig;
-    private String cameraPositions;
-    private String tabs;
+    private JsonNode gridConfig;
+    private JsonNode cameraPositions;
+    private JsonNode tabs;
     private String activeTab;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public static LayoutDto fromEntity(Layout layout) {
+        if (layout == null) {
+            return null;
+        }
         return LayoutDto.builder()
                 .id(layout.getId())
                 .userId(layout.getUserId())
                 .tabName(layout.getTabName())
-                .gridConfig(layout.getGridConfig())
-                .cameraPositions(layout.getCameraPositions())
-                .tabs(layout.getTabs())
+                .gridConfig(readJson(layout.getGridConfig()))
+                .cameraPositions(readJson(layout.getCameraPositions()))
+                .tabs(readJson(layout.getTabs()))
                 .activeTab(layout.getActiveTab())
                 .createdAt(layout.getCreatedAt())
                 .updatedAt(layout.getUpdatedAt())
@@ -46,13 +53,35 @@ public class LayoutDto {
                 .id(this.id)
                 .userId(this.userId)
                 .tabName(this.tabName)
-                .gridConfig(this.gridConfig)
-                .cameraPositions(this.cameraPositions)
-                .tabs(this.tabs)
+                .gridConfig(writeJson(this.gridConfig))
+                .cameraPositions(writeJson(this.cameraPositions))
+                .tabs(writeJson(this.tabs))
                 .activeTab(this.activeTab)
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .build();
+    }
+
+    private static JsonNode readJson(String json) {
+        if (json == null || json.isBlank()) {
+            return null;
+        }
+        try {
+            return MAPPER.readTree(json);
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private static String writeJson(JsonNode json) {
+        if (json == null || json.isNull()) {
+            return null;
+        }
+        try {
+            return MAPPER.writeValueAsString(json);
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Invalid layout JSON", exception);
+        }
     }
 
 }

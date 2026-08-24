@@ -5,20 +5,24 @@
 import { useEffect } from 'react'
 import { GridContainer } from '@/components/Grid'
 import { useAppSelector, useAppDispatch } from '@/store'
-import { fetchUserLayout } from '@/store/slices/layoutSlice'
-import { createMockCameras, createMockLayout } from '@/mocks/liveMonitoring'
+import { fetchMyLayout } from '@/store/slices/layoutSlice'
+import { createMockCameras } from '@/mocks/liveMonitoring'
+import { usePersistLayout } from '@/hooks/usePersistLayout'
+import LayoutPersistStatus from '@/components/Grid/LayoutPersistStatus'
 
 export function Live() {
   const dispatch = useAppDispatch()
-  const layout = useAppSelector((state) => state.layout.layout)
+  const username = useAppSelector((state) => state.auth.user?.username)
+  const restoredForUser = useAppSelector((state) => state.layout.restoredForUser)
   const loading = useAppSelector((state) => state.layout.loading)
   const mockCameras = createMockCameras()
+  usePersistLayout()
 
   useEffect(() => {
-    if (!layout) {
-      dispatch(fetchUserLayout.fulfilled(createMockLayout(), '', 1))
+    if (username && restoredForUser !== username) {
+      dispatch(fetchMyLayout(username))
     }
-  }, [dispatch, layout])
+  }, [dispatch, restoredForUser, username])
 
   if (loading) {
     return (
@@ -32,8 +36,9 @@ export function Live() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
-      <GridContainer userId={1} cameras={mockCameras} />
+    <div className="relative flex-1 flex flex-col h-screen">
+      <LayoutPersistStatus />
+      <GridContainer cameras={mockCameras} />
     </div>
   )
 }

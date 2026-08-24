@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import reducer, {
+  fetchMyLayout,
   fetchUserLayout,
+  normalizeLayout,
   removeSubTab,
   removeTab,
+  resetLayoutState,
+  saveMyLayout,
   setActiveTab,
 } from '../layoutSlice'
 import type { Layout, LayoutState } from '@/types/layout'
@@ -64,6 +68,9 @@ const stateWithLayout = (layout = createLayout()): LayoutState => ({
   loading: false,
   error: null,
   activeTab: layout.activeTab,
+  persistStatus: 'idle',
+  persistError: null,
+  restoredForUser: null,
 })
 
 describe('layoutSlice', () => {
@@ -104,5 +111,40 @@ describe('layoutSlice', () => {
 
     expect(state.layout?.tabs[0].activeSubTab).toBe('subtab-2')
     expect(state.layout?.tabs[0].subTabs.map((subTab) => subTab.id)).toEqual(['subtab-2'])
+  })
+
+  it('normalizes invalid active tab and subtab values', () => {
+    const layout = createLayout('missing-tab')
+    layout.tabs[0].activeSubTab = 'missing-subtab'
+
+    const normalized = normalizeLayout(layout)
+
+    expect(normalized.activeTab).toBe('tab-1')
+    expect(normalized.tabs[0].activeSubTab).toBe('subtab-1')
+  })
+
+  it('stores restored user when current user layout is fetched', () => {
+    const state = reducer(undefined, fetchMyLayout.fulfilled({ layout: createLayout(), username: 'admin' }, '', 'admin'))
+
+    expect(state.restoredForUser).toBe('admin')
+    expect(state.persistStatus).toBe('saved')
+    expect(state.layout?.activeTab).toBe('tab-2')
+  })
+
+  it('marks save failures without clearing layout state', () => {
+    const state = reducer(
+      stateWithLayout(),
+      saveMyLayout.rejected(new Error('Save failed'), '', createLayout())
+    )
+
+    expect(state.layout).not.toBeNull()
+    expect(state.persistStatus).toBe('saveFailed')
+  })
+
+  it('resets layout state on logout', () => {
+    const state = reducer(stateWithLayout(), resetLayoutState())
+
+    expect(state.layout).toBeNull()
+    expect(state.persistStatus).toBe('idle')
   })
 })

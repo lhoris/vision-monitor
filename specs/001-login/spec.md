@@ -17,6 +17,16 @@
 >
 > 로그인 기능은 사용자가 Vision Monitor에 접근하기 전에 계정과 비밀번호를 입력해 인증 상태를 만드는 진입 화면이다. MVP에서는 디자이너와의 frontend 중심 작업을 유지하기 위해 `tester / tester123` 계정은 backend 의존 없이 mock 로그인으로 통과시킨다. `tester1 / tester123` 계정도 backend 없이 로그인되지만 관리자 권한이 없는 비관리자 mock 계정으로 처리한다. 단, tester 계열 mock 계정이 아닌 계정은 아직 backend/DB가 완성되지 않았더라도 로그인 API를 실제 호출해야 하며, 실패 시 사용자가 이해할 수 있는 오류를 표시해야 한다. 인증 성공 후 사용자는 라이브 메인 화면으로 이동하고, 인증되지 않은 사용자는 보호된 화면 대신 로그인 화면으로 이동해야 한다.
 
+## Clarifications
+
+### Session 2026-08-24
+
+- Q: 실제 backend 로그인에서 비밀번호는 어떻게 저장하고 검증할까? -> A: `users.password_hash` 컬럼에 BCrypt hash를 저장하고 backend에서 BCrypt로 검증한다.
+- Q: 실제 backend 로그인 성공 응답에는 어떤 사용자 권한 정보를 포함할까? -> A: `user` 응답에 `id`, `username`, `role`, `permissions`를 포함한다.
+- Q: 실제 backend 로그인 성공 시 token과 API 사용자 식별은 어떻게 처리할까? -> A: 개발용 opaque token을 발급하고 기존 `X-Actor-Username` 헤더로 API actor를 전달한다.
+- Q: `admin/admin` 초기 계정은 어떻게 생성하고 관리할까? -> A: Flyway seed migration으로 `admin` 계정과 BCrypt password hash를 넣는다.
+- Q: 실제 backend 로그인에서 비활성, 잠금, 퇴사 계정은 어떻게 처리할까? -> A: `active + employed + enabled=true` 계정만 로그인 허용하고 그 외 상태는 동일한 로그인 실패 메시지를 표시한다.
+
 ## 1. 참고 이미지 및 원문 자료
 
 | 상태 | 자료 | 설명 | 비고 |
@@ -41,12 +51,18 @@
 - **FR-009**: 로그인 요청 중에는 사용자가 중복 제출을 인지할 수 있도록 진행 상태를 표시해야 한다.
 - **FR-010**: 인증되지 않은 사용자가 보호된 화면에 접근하면 로그인 화면으로 이동해야 한다.
 - **FR-011**: 사용자가 로그아웃하면 인증 상태가 해제되고 로그인 화면으로 이동해야 한다.
+- **FR-012**: 실제 backend 로그인은 `users.password_hash`에 저장된 BCrypt hash로 비밀번호를 검증해야 하며 plain text 비밀번호를 저장하거나 응답에 포함하지 않아야 한다.
+- **FR-013**: 실제 backend 로그인 성공 응답의 `user` 객체는 `id`, `username`, `role`, `permissions`를 포함해야 하며 frontend는 이 값을 기준으로 관리자 메뉴와 보호 route 접근을 판단해야 한다.
+- **FR-014**: 실제 backend 로그인 성공 응답은 개발용 opaque token을 포함해야 하며, 후속 JWT/session 전환 전까지 API 요청의 행위자 식별은 기존 `X-Actor-Username` 헤더를 사용한다.
+- **FR-015**: 실제 backend 로그인 범위는 Flyway seed migration으로 `admin` 초기 계정을 생성해야 하며, 초기 비밀번호 `admin`은 BCrypt hash로만 저장해야 한다.
+- **FR-016**: 실제 backend 로그인은 `account_status=active`, `employment_status=employed`, `enabled=true`인 계정만 허용해야 하며, 그 외 상태의 계정은 계정 존재 여부나 상태를 노출하지 않는 동일한 로그인 실패 메시지로 처리해야 한다.
 
 ## 3. 제외 범위 *(필수)*
 
-- MVP에서는 실제 사용자 DB 설계와 DB migration을 제외한다.
-- MVP에서는 실제 Spring Boot 인증 controller/service/repository 구현을 제외한다.
+- frontend mock 로그인에서는 실제 사용자 DB 설계와 DB migration을 제외하지만, 실제 backend 로그인 범위에서는 `users.password_hash` migration을 포함한다.
+- frontend mock 로그인에서는 실제 Spring Boot 인증 controller/service/repository 구현을 제외하지만, 실제 backend 로그인 범위에서는 `POST /api/auth/login` 구현을 포함한다.
 - MVP에서는 refresh token, session 만료 연장, 비밀번호 재설정, 계정 잠금 정책을 제외한다.
+- JWT 발급, session 저장소, token claim 기반 backend 권한 검증은 후속 보안 범위로 분리한다.
 - MVP에서는 로그인 결과에 역할/권한 정보를 싣는 것까지만 포함하고, 상세 권한 CRUD는 제외한다.
 - 002 라이브 메인 화면과 003 화면 확대 보기의 세부 기능은 로그인 성공 이후 화면으로만 연결한다.
 
@@ -63,7 +79,11 @@
 - 사용자는 계정명과 비밀번호를 입력한다.
 - 시스템은 tester 계열 mock 계정 여부와 관리자 권한 여부를 판단해야 한다.
 - 시스템은 tester 계열 mock이 아닌 계정의 로그인 API 성공/실패 결과를 판단해야 한다.
-- 시스템은 인증된 사용자 id, username, 인증 token을 보관해야 한다.
+- 시스템은 실제 backend 로그인에서 `users.password_hash`의 BCrypt hash로 비밀번호를 검증해야 한다.
+- 시스템은 Flyway migration으로 생성된 `admin` 초기 계정을 실제 backend 로그인 검증 기준 데이터로 사용할 수 있어야 한다.
+- 시스템은 실제 backend 로그인에서 비활성, 잠금, 퇴사 계정의 상태를 로그인 화면에 구체적으로 노출하지 않아야 한다.
+- 시스템은 인증된 사용자 id, username, role, permissions, 인증 token을 보관해야 한다.
+- 시스템은 후속 JWT/session 전환 전까지 API 요청에 `X-Actor-Username` 헤더를 함께 전달해야 한다.
 - 시스템은 인증 상태에 따라 로그인 화면과 보호 화면 접근을 분기해야 한다.
 
 ## 6. 사용자 시나리오 및 테스트 *(필수)*

@@ -8,7 +8,7 @@ import { authService, type LoginCredentials } from '@/services/authService'
 export interface User {
   id: number
   username: string
-  role?: 'admin' | 'operator'
+  role?: 'admin' | 'operator' | 'user'
   permissions?: string[]
 }
 
@@ -58,6 +58,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.error = null
+      localStorage.removeItem('authToken')
       localStorage.removeItem('authUsername')
     },
     setLoading: (state, action: PayloadAction<boolean>) => {

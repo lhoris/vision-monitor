@@ -47,6 +47,7 @@ const createTab = (): Tab => createLayout().tabs[0]
 describe('layoutService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
   })
 
@@ -80,10 +81,55 @@ describe('layoutService', () => {
     expect(layout?.activeTab).toBe('tab-default')
   })
 
+  it('returns current user layout from getMyLayout', async () => {
+    const layout = createLayout()
+    localStorage.setItem('authUsername', 'admin')
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: layout,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
+    await expect(layoutService.getMyLayout()).resolves.toBe(layout)
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/layouts/me')
+    expect(localStorage.getItem('layout:personalization:admin')).toContain('"activeTab":"tab-1"')
+  })
+
+  it('uses local layout for mock users without calling backend', async () => {
+    const layout = createLayout()
+    localStorage.setItem('authUsername', 'tester')
+    localStorage.setItem('layout:personalization:tester', JSON.stringify(layout))
+
+    await expect(layoutService.getMyLayout()).resolves.toEqual(layout)
+    expect(mockedApiClient.get).not.toHaveBeenCalled()
+  })
+
   it('returns null when saveLayout fails', async () => {
     mockedApiClient.post.mockRejectedValue(new Error('Save failed'))
 
     await expect(layoutService.saveLayout(createLayout())).resolves.toBeNull()
+  })
+
+  it('saves current user layout through /layouts/me', async () => {
+    const layout = createLayout()
+    localStorage.setItem('authUsername', 'admin')
+    mockedApiClient.put.mockResolvedValue({
+      success: true,
+      data: layout,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
+    await expect(layoutService.saveMyLayout(layout)).resolves.toBe(layout)
+    expect(mockedApiClient.put).toHaveBeenCalledWith('/layouts/me', layout)
+  })
+
+  it('saves mock user layout locally without calling backend', async () => {
+    const layout = createLayout()
+    localStorage.setItem('authUsername', 'tester1')
+
+    await expect(layoutService.saveMyLayout(layout)).resolves.toEqual(layout)
+    expect(mockedApiClient.put).not.toHaveBeenCalled()
+    expect(localStorage.getItem('layout:personalization:tester1')).toContain('"activeTab":"tab-1"')
   })
 
   it('returns null when updateLayout fails', async () => {

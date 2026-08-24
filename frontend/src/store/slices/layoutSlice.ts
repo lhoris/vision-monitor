@@ -11,6 +11,33 @@ const initialState: LayoutState = {
   loading: false,
   error: null,
   activeTab: '',
+  persistStatus: 'idle',
+  persistError: null,
+  restoredForUser: null,
+}
+
+export function normalizeLayout(layout: Layout): Layout {
+  const tabs = layout.tabs?.length ? layout.tabs : []
+  const activeTab = tabs.some((tab) => tab.id === layout.activeTab)
+    ? layout.activeTab
+    : tabs[0]?.id || ''
+
+  return {
+    ...layout,
+    tabs: tabs.map((tab) => {
+      const subTabs = tab.subTabs?.length ? tab.subTabs : []
+      const activeSubTab = subTabs.some((subTab) => subTab.id === tab.activeSubTab)
+        ? tab.activeSubTab
+        : subTabs[0]?.id || ''
+
+      return {
+        ...tab,
+        activeSubTab,
+        subTabs,
+      }
+    }),
+    activeTab,
+  }
 }
 
 function getValidActiveTabId(layout: Layout): string {
@@ -19,9 +46,10 @@ function getValidActiveTabId(layout: Layout): string {
 }
 
 function setLayoutAndActiveTab(state: LayoutState, layout: Layout): void {
-  const activeTab = getValidActiveTabId(layout)
+  const normalizedLayout = normalizeLayout(layout)
+  const activeTab = getValidActiveTabId(normalizedLayout)
   state.layout = {
-    ...layout,
+    ...normalizedLayout,
     activeTab,
   }
   state.activeTab = activeTab
@@ -38,10 +66,30 @@ export const fetchUserLayout = createAsyncThunk(
   }
 )
 
+export const fetchMyLayout = createAsyncThunk(
+  'layout/fetchMyLayout',
+  async (username: string | undefined) => {
+    const layout = await layoutService.getMyLayout()
+    return { layout, username: username || null }
+  }
+)
+
 export const saveLayout = createAsyncThunk(
   'layout/saveLayout',
   async (layout: Layout) => {
     const savedLayout = await layoutService.saveLayout(layout)
+    return savedLayout
+  }
+)
+
+export const saveMyLayout = createAsyncThunk(
+  'layout/saveMyLayout',
+  async (layout: Layout) => {
+    const savedLayout = await layoutService.saveMyLayout(layout)
+    if (!savedLayout) {
+      layoutService.saveLocalLayout(layout)
+      throw new Error('Failed to save layout')
+    }
     return savedLayout
   }
 )
@@ -199,6 +247,12 @@ const layoutSlice = createSlice({
      */
     clearError: (state) => {
       state.error = null
+      state.persistError = null
+    },
+    resetLayoutState: () => initialState,
+    markLayoutSavedLocally: (state) => {
+      state.persistStatus = 'saved'
+      state.persistError = null
     },
   },
   extraReducers: (builder) => {
@@ -217,6 +271,30 @@ const layoutSlice = createSlice({
         state.loading = false
         state.error = action.error.message || 'Failed to fetch layout'
       })
+      .addCase(fetchMyLayout.pending, (state) => {
+        state.loading = true
+        state.error = null
+        state.persistStatus = 'loading'
+        state.persistError = null
+      })
+      .addCase(fetchMyLayout.fulfilled, (state, action) => {
+        state.loading = false
+        state.restoredForUser = action.payload.username
+        if (action.payload.layout) {
+          setLayoutAndActiveTab(state, action.payload.layout)
+          state.persistStatus = 'saved'
+          state.persistError = null
+        } else {
+          state.persistStatus = 'restoreFailed'
+          state.persistError = 'Layout was not restored'
+        }
+      })
+      .addCase(fetchMyLayout.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.error.message || 'Failed to fetch current user layout'
+        state.persistStatus = 'restoreFailed'
+        state.persistError = state.error
+      })
       .addCase(saveLayout.pending, (state) => {
         state.loading = true
         state.error = null
@@ -230,6 +308,18 @@ const layoutSlice = createSlice({
       .addCase(saveLayout.rejected, (state, action) => {
         state.loading = false
         state.error = action.error.message || 'Failed to save layout'
+      })
+      .addCase(saveMyLayout.pending, (state) => {
+        state.persistStatus = 'saving'
+        state.persistError = null
+      })
+      .addCase(saveMyLayout.fulfilled, (state) => {
+        state.persistStatus = 'saved'
+        state.persistError = null
+      })
+      .addCase(saveMyLayout.rejected, (state, action) => {
+        state.persistStatus = 'saveFailed'
+        state.persistError = action.error.message || 'Failed to save layout'
       })
       .addCase(updateLayout.pending, (state) => {
         state.loading = true
@@ -245,6 +335,10 @@ const layoutSlice = createSlice({
         state.loading = false
         state.error = action.error.message || 'Failed to update layout'
       })
+      .addMatcher(
+        (action) => action.type === 'auth/logout' || action.type === 'auth/logoutUser/fulfilled',
+        () => initialState
+      )
   },
 })
 
@@ -260,6 +354,8 @@ export const {
   updateGridConfig,
   updateCameraPositions,
   clearError,
+  resetLayoutState,
+  markLayoutSavedLocally,
 } = layoutSlice.actions
 
 export default layoutSlice.reducer

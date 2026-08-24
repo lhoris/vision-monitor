@@ -70,32 +70,36 @@ describe('authService', () => {
     expect(mockedApiClient.post).not.toHaveBeenCalled()
   })
 
-  it('calls the login API for non-mock accounts', async () => {
+  it('calls the login API for non-mock accounts and preserves authorization fields', async () => {
     mockedApiClient.post.mockResolvedValue({
       success: true,
       data: {
         user: {
-          id: 12,
-          username: 'operator',
+          id: 1,
+          username: 'admin',
+          role: 'admin',
+          permissions: ['admin:access'],
         },
-        token: 'real-api-token',
+        token: 'dev-auth-token-admin',
       },
-      timestamp: '2026-08-16T00:00:00.000Z',
+      timestamp: '2026-08-24T21:30:00',
     })
 
     await expect(
-      authService.login({ username: 'operator', password: 'secret' })
+      authService.login({ username: 'admin', password: 'admin' })
     ).resolves.toEqual({
       user: {
-        id: 12,
-        username: 'operator',
+        id: 1,
+        username: 'admin',
+        role: 'admin',
+        permissions: ['admin:access'],
       },
-      token: 'real-api-token',
+      token: 'dev-auth-token-admin',
     })
 
     expect(mockedApiClient.post).toHaveBeenCalledWith('/auth/login', {
-      username: 'operator',
-      password: 'secret',
+      username: 'admin',
+      password: 'admin',
     })
   })
 })

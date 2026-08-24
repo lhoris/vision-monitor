@@ -16,6 +16,15 @@ export interface CameraPosition {
   col: number
   rowSpan: number
   colSpan: number
+  displayName?: string
+  temporarySourceId?: string
+  source?: {
+    id: string
+    url: string
+    protocol: 'hls' | 'webrtc' | 'rtsp'
+    displayName: string
+    playbackStatus: 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'seeking'
+  }
 }
 
 export interface SubTab {
@@ -50,4 +59,15 @@ export interface LayoutState {
   loading: boolean
   error: string | null
   activeTab: string
+  persistStatus: LayoutPersistStatus
+  persistError: string | null
+  restoredForUser: string | null
 }
+
+export type LayoutPersistStatus =
+  | 'idle'
+  | 'loading'
+  | 'saving'
+  | 'saved'
+  | 'saveFailed'
+  | 'restoreFailed'

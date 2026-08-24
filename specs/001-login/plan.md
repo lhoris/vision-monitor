@@ -1,184 +1,124 @@
 # 구현 계획: 로그인
-
-**브랜치**: `001-login` | **일자**: 2026-08-16 | **명세**: [spec.md](spec.md)
-
-**입력**: `/specs/001-login/spec.md`의 기능 명세
-
-**변경 추적**: 문서 변경 이력은 Git 커밋 이력을 기준으로 한다.
-
-> 이 문서는 한국어로 작성한다. 기술 용어, API 이름, 파일 경로, 코드 식별자, 명령어는 원문 또는 영문 표기를 유지할 수 있다.
-> 구현 계획은 "어떻게 구현할 것인가"를 정의한다. 기능 경계는 spec.md를 기준으로 하며, plan.md에서 새 기능 요구사항을 추가하지 않는다.
+**브랜치**: `001-login` | **일자**: 2026-08-24 | **명세**: [spec.md](spec.md)
 
 ## 1. 계획 요약
 
-로그인은 기존 React frontend의 `Login` page와 `authSlice`를 유지하되, 인증 판단을 service/thunk 경계로 분리한다. `tester / tester123`은 관리자 권한을 가진 frontend mock 인증으로 즉시 성공 처리하고, `tester1 / tester123`은 관리자 권한이 없는 frontend mock 인증으로 즉시 성공 처리한다. tester 계열 mock 계정이 아닌 계정은 backend가 아직 준비되지 않았더라도 `/auth/login` API를 호출한다. 로그인 성공 시 사용자 정보와 token을 인증 상태에 반영하고 `/live`로 이동한다. 실패 시 인증 상태를 만들지 않고 form 근처에 오류를 표시한다.
+로그인 기능은 기존 frontend mock 로그인 흐름을 유지하면서 실제 backend 로그인 API를 추가하는 방식으로 확장한다. `tester / tester123`과 `tester1 / tester123`은 계속 frontend mock으로 처리하고 backend API를 호출하지 않는다. 그 외 계정은 `POST /api/auth/login`을 호출한다.
 
-## 2. 요구사항 추적
+실제 backend 로그인은 MariaDB `users` 테이블의 `password_hash`를 BCrypt로 검증한다. 초기 개발 계정은 `admin / admin`이며, Flyway seed migration으로 `admin` 계정과 BCrypt hash를 생성한다. 로그인 성공 응답은 frontend route guard가 바로 사용할 수 있도록 `id`, `username`, `role`, `permissions`, 개발용 opaque token을 포함한다. JWT/session 기반 인증은 후속 보안 범위로 분리하고, 이번 범위에서는 기존 사용자관리 API와 맞춰 `X-Actor-Username` 헤더를 actor 식별에 사용한다.
 
-| 명세 항목 | 계획 반영 위치 | 비고 |
-|-----------|----------------|------|
-| FR-001 | 5. 화면/컴포넌트 구조 | username/password 입력 |
-| FR-002 | 5. 상태 및 상호작용 흐름 | username 필수값 |
-| FR-003 | 5. 상태 및 상호작용 흐름 | password 필수값 |
-| FR-004 | 5. 서비스 및 데이터 흐름, tasks US1 | tester mock bypass |
-| FR-004a | 5. 서비스 및 데이터 흐름, 000 app shell | tester admin permission |
-| FR-004b | 5. 서비스 및 데이터 흐름, 000 app shell | tester1 non-admin permission |
-| FR-005 | 5. 서비스 및 데이터 흐름, tasks US3 | invalid tester no API |
-| FR-006 | 6. 계약, tasks US2 | non-mock API call |
-| FR-007 | 5. 상태 및 상호작용 흐름 | success auth state |
-| FR-008 | 5. 상태 및 상호작용 흐름 | failure error |
-| FR-009 | 5. 화면/컴포넌트 구조 | loading button |
-| FR-010 | 5. 상태 및 상호작용 흐름 | protected route redirect |
-| FR-011 | 5. 상태 및 상호작용 흐름 | logout |
+## 2. 기술 컨텍스트
 
-## 3. 기술 컨텍스트
+**언어/버전**: Java 21, TypeScript, React 19
 
-**언어/버전**: TypeScript, React 19, Vite 8
+**Backend**: Spring Boot 3.2, Spring Web, Spring Data JPA, Flyway, MariaDB
 
-**주요 의존성**: React Router, Redux Toolkit, Axios, Vitest, React Testing Library
+**Frontend**: Vite, React Router, Redux Toolkit, Axios, Vitest, React Testing Library
 
-**저장소/상태 관리**: Redux auth slice, browser localStorage token
+**DB**: MariaDB `jdbc:mariadb://192.168.0.11:3306/vms`
 
-**테스트**: Vitest, React Testing Library, production build
+**인증 방식**: 이번 범위는 BCrypt password 검증 + 개발용 opaque token 반환. API actor 식별은 `X-Actor-Username` 유지.
 
-**대상 플랫폼**: 웹 브라우저
+**제약사항**:
+- tester/tester1 mock 로그인은 backend 호출 없이 유지한다.
+- plain text password는 DB에 저장하지 않는다.
+- JWT, refresh token, session 저장소, 비밀번호 재설정, 계정 잠금 정책은 제외한다.
+- 실제 backend 권한 검증은 현재 사용자관리 API의 `X-Actor-Username` 기반 임시 방식과 호환되어야 한다.
 
-**프로젝트 유형**: frontend 중심 web app, backend skeleton은 MVP에서 변경하지 않음
+## 3. 헌법 체크
 
-**성능 목표**: tester mock 로그인은 즉시 완료되고, API 로그인은 요청 중 상태를 표시한다.
+- **사용자 가치 우선**: 실제 `admin/admin` 로그인으로 사용자가 사용자관리 실제 API 흐름에 진입할 수 있게 한다.
+- **한국어 우선 산출물**: spec, plan, tasks, quickstart, contract 문서는 한국어로 유지한다.
+- **기존 구조 존중**: 기존 `authService`, `authSlice`, `apiClient`, Spring controller/service/repository 패턴을 따른다.
+- **Mock-First MVP 유지**: tester/tester1 mock 경로는 유지하고 실제 backend 로그인은 non-mock 계정 경로에 추가한다.
+- **계약 우선**: `contracts/login-api-contract.md`를 실제 backend 응답 shape 기준으로 갱신한다.
+- **테스트 가능한 증분**: backend service/controller 테스트와 frontend authService 테스트로 독립 검증한다.
 
-**제약사항**: tester/tester1 mock 유지, tester 계열 mock 외 API 호출, 실제 DB/auth backend 구현 제외
+## 4. 구현 범위
 
-**규모/범위**: login page, auth service, auth slice, protected route, logout
+### 포함
 
-## 4. 구현 범위와 제외 범위
+- `users.password_hash` migration
+- `admin / admin` 초기 계정 seed migration
+- `AuthController`의 `POST /api/auth/login`
+- `AuthService`의 username/password 검증
+- BCrypt password hashing/verification 구성
+- 로그인 성공 DTO와 실패 오류 처리
+- frontend `authService`의 실제 API 성공 응답 shape 검증
+- backend unit/controller 수준 테스트
+- quickstart 실제 로그인 시나리오 갱신
 
-### 구현 범위
+### 제외
 
-- `frontend/src/pages/Login.tsx` form validation, loading, success/failure 처리
-- `frontend/src/services/authService.ts` tester/tester1 mock과 non-mock API 호출 경계
-- `frontend/src/store/slices/authSlice.ts` async login state
-- `frontend/src/App.tsx` 인증 상태 기반 route 보호
-- `frontend/src/components/Layout/Header.tsx` logout 연결
-- 관련 service/slice/page tests
-
-### 제외 범위
-
-- 실제 Spring Boot auth API 구현
-- 사용자 DB 설계와 migration
-- refresh token과 session 만료 연장
-- 상세 권한 CRUD와 실제 권한 API
-- 비밀번호 재설정과 계정 잠금 정책
+- JWT 발급과 검증
+- refresh token
+- session persistence
+- password reset
+- 계정 잠금 횟수/만료 정책
+- SSO/MFA
+- 상세 권한 정책 CRUD
 
 ## 5. 설계 접근
 
-### 화면/컴포넌트 구조
+### Backend
 
-- `Login` page는 username/password 입력과 demo credential 안내를 유지한다.
-- submit 시 필수값을 먼저 검증하고, 검증 통과 후 `loginUser` async action을 dispatch한다.
-- loading 중에는 버튼 text를 진행 상태로 바꾸고 disabled 처리한다.
-- 오류는 form 하단 alert 영역에 표시한다.
+- `UserAccount` entity에 `passwordHash` 필드를 추가한다.
+- Flyway `V006`에서 `users.password_hash` 컬럼을 nullable로 추가한다. 기존 mock/seed 없는 계정과의 호환을 위해 nullable로 시작한다.
+- Flyway `V007`에서 `admin` 계정의 BCrypt hash를 넣거나 갱신한다.
+- `AuthController`는 `/api/auth/login`을 제공한다.
+- `AuthService`는 username으로 사용자를 조회하고 다음 조건을 모두 만족할 때만 로그인 성공 처리한다.
+  - BCrypt password match
+  - `enabled = true`
+  - `account_status = active`
+  - `employment_status = employed`
+- 실패 시 username 존재 여부, 상태, 비밀번호 오류를 구분해 노출하지 않고 동일한 오류를 반환한다.
+- token은 개발용 opaque token 문자열로 생성한다. 서버 저장 검증은 이번 범위에 포함하지 않는다.
 
-### 상태 및 상호작용 흐름
+### Frontend
 
-- 인증 전 사용자가 보호 route에 접근하면 `/login`으로 이동한다.
-- 로그인 성공 시 `isAuthenticated=true`, `user` 저장, token 저장 후 `/live`로 이동한다.
-- 로그인 실패 시 `isAuthenticated=false`, `user=null`, token 제거, 오류 메시지를 표시한다.
-- logout 시 인증 상태를 해제하고 `/login`으로 이동한다.
+- tester/tester1 mock 로그인 조건은 기존대로 유지한다.
+- tester/tester1 외 계정은 `/api/auth/login`을 호출한다.
+- 성공 응답의 `user.id`, `user.username`, `user.role`, `user.permissions`, `token`을 auth state와 localStorage에 저장한다.
+- 실패 응답이나 invalid response는 기존 로그인 실패 흐름으로 처리한다.
+- API 요청 interceptor는 localStorage의 `authUsername`을 `X-Actor-Username`으로 계속 전달한다.
 
-### 서비스 및 데이터 흐름
+## 6. 데이터 및 계약 산출물
 
-- `authService.login`은 `tester / tester123`이면 관리자 mock `LoginResult`를 반환한다.
-- `tester` mock user는 관리자 메뉴 검증을 위해 admin role 또는 `admin:access` 권한을 가진다.
-- `authService.login`은 `tester1 / tester123`이면 비관리자 mock `LoginResult`를 반환한다.
-- `tester1` mock user는 관리자 메뉴가 보이지 않도록 operator role과 빈 permissions를 가진다.
-- username이 `tester` 또는 `tester1`이지만 password가 다르면 API를 호출하지 않고 실패한다.
-- username이 `tester` 또는 `tester1`이 아니면 `POST /auth/login`을 호출한다.
-- API 응답에 `user` 또는 `token`이 없으면 실패로 처리한다.
-
-## 6. 데이터 및 계약 계획
-
-### 필요한 데이터
-
-- LoginCredentials
-- User
-- LoginResult
-- AuthState
-- Login API response
-
-### 계약
-
-- [contracts/login-api-contract.md](contracts/login-api-contract.md)
-
-### Fixture/Mock 계획
-
-- tester success fixture
-- tester1 non-admin success fixture
-- invalid tester failure
-- invalid tester1 failure
-- non-mock API success
-- non-mock API failure
-- invalid API response
+- [data-model.md](data-model.md): LoginCredentials, AuthenticatedUser, LoginResult, UserAccount password/auth fields
+- [contracts/login-api-contract.md](contracts/login-api-contract.md): `POST /api/auth/login` request/response/error
+- [quickstart.md](quickstart.md): mock 로그인, 실제 `admin/admin` 로그인, 사용자관리 API 연계 검증
 
 ## 7. 테스트 및 검증 계획
 
-- **단위/서비스 테스트**: `authService` tester bypass, tester1 non-admin bypass, invalid tester 계열 no API, non-mock API call
-- **상태 테스트**: `authSlice` pending/fulfilled/rejected 상태 전환
-- **컴포넌트 테스트**: `Login` required validation, loading, success navigation, failure message
-- **E2E/수동 검증**: quickstart.md의 tester login, tester1 non-admin login, non-mock API call, protected route redirect
-- **빌드/정적 검증**: `npm test -- --run`, `npm run build` in `frontend/`
-- **회귀 확인**: 로그인 후 `/live`, 로그아웃 후 `/login`
+- Backend
+  - `AuthServiceTest`: 성공, 잘못된 비밀번호, 비활성/잠금/퇴사 계정 실패, password_hash 없음 실패
+  - `AuthControllerTest` 또는 MVC 통합 테스트: `/api/auth/login` 성공/실패 응답 shape
+  - `mvn test`
+- Frontend
+  - `authService.test.ts`: tester/tester1 mock no API, invalid tester no API, `admin/admin` API success shape
+  - `authSlice` 상태 전환 확인
+  - `npm test -- --run`
+  - `npm run build`
+- Manual
+  - backend 실행 후 `admin/admin` 로그인
+  - 로그인 후 `/admin/users` 진입 및 `X-Actor-Username: admin` 기반 사용자관리 API 동작 확인
 
-## 8. 프로젝트 구조
-
-### 문서 구조(이번 기능)
-
-```text
-specs/001-login/
-├── assets/
-├── spec.md
-├── plan.md
-├── quickstart.md
-├── contracts/
-└── tasks.md
-```
-
-### 소스 코드 구조
-
-```text
-frontend/
-├── src/
-│   ├── pages/Login.tsx
-│   ├── services/authService.ts
-│   ├── store/slices/authSlice.ts
-│   ├── App.tsx
-│   └── components/Layout/Header.tsx
-
-backend/
-└── MVP에서 변경하지 않음
-```
-
-**구조 결정**: 인증 판단을 page reducer에 두지 않고 service/thunk 경계로 분리해 실제 API 연동으로 교체하기 쉽게 한다.
-
-## 9. 헌법 체크
-
-- **한국어 우선 산출물**: 통과. 산출물을 한국어로 작성한다.
-- **기존 구조 존중**: 통과. 기존 Login/Auth/App route 구조를 유지한다.
-- **Mock-First MVP**: 통과. tester mock은 유지하고 backend 구현은 제외한다.
-- **계약 우선**: 통과. `/auth/login` 계약을 별도 문서로 둔다.
-- **테스트 가능한 증분**: 통과. tester/tester1 mock과 non-mock API 호출을 독립 테스트로 고정한다.
-
-## 10. 위험 및 대응
+## 8. 위험 및 대응
 
 | 위험 | 영향 | 대응 |
 |------|------|------|
-| backend 로그인 응답 shape 미확정 | 실제 연동 시 수정 필요 | `login-api-contract.md`를 임시 계약으로 고정 |
-| tester 계열 mock과 실제 API 경계 혼동 | 개발 중 API 호출 여부 오해 | service test로 tester/tester1은 no API, non-mock은 API 호출을 검증 |
-| reducer side effect 증가 | 상태 예측 가능성 저하 | token 저장/삭제 책임을 명확히 분리하는 후속 개선 task 유지 |
+| 개발용 opaque token을 실제 보안 token으로 오해 | backend API 보호 수준 착각 | 문서와 코드 주석에 JWT/session 전환 전 임시 token임을 명시 |
+| tester mock과 실제 admin 로그인 경로 혼동 | API 호출 여부 테스트 실패 | `authService` 테스트에서 tester 계열 no API, non-mock API 호출을 고정 |
+| seed migration에 plain password 저장 | 보안 부채 | BCrypt hash만 저장하고 plain password는 quickstart에만 개발용 credential로 기록 |
+| 계정 상태별 실패 메시지 노출 | 계정 enumeration 위험 | 모든 인증 실패를 동일 메시지로 처리 |
 
-## 11. 복잡도 추적
+## 9. 구조 결정
 
-| 결정 | 필요한 이유 | 단순성을 유지할 근거 |
-|------|-------------|-----------------------|
-| authService 추가 | tester mock과 실제 API 호출 경계를 분리해야 함 | page와 reducer의 조건문을 줄이고 실제 API 교체가 쉬움 |
-| loginUser async thunk 사용 | loading/success/failure 상태가 필요함 | Redux Toolkit 기존 패턴 사용, 새 상태 관리 도입 없음 |
+기존 frontend auth 구조와 backend service/controller/repository 구조를 유지한다. 새 추상화는 실제 중복이 발생하는 지점에만 추가한다. BCrypt는 Spring Security 전체 도입 없이 `spring-security-crypto`의 `BCryptPasswordEncoder` 또는 동등한 검증 유틸을 사용한다.
+
+## 10. 사후 헌법 체크
+
+- 사용자-facing 동작은 `admin/admin` 실제 로그인과 mock tester 흐름으로 검증 가능하다.
+- DB/API 경계는 contract에 명시된다.
+- 기존 mock-first 원칙은 유지된다.
+- 실제 보안 토큰은 후속 범위로 분리되어 범위가 과도하게 커지지 않는다.

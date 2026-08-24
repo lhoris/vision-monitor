@@ -11,16 +11,8 @@ import {
   updateGridConfig,
   updateCameraPositions,
   fetchUserLayout,
-  saveLayout,
-  updateLayout,
 } from '@/store/slices/layoutSlice'
 import type { Tab, GridConfig, CameraPosition } from '@/types/layout'
-import {
-  addLayoutTab,
-  removeLayoutTab,
-  updateLayoutCameraPositions,
-  updateLayoutGridConfig,
-} from './layoutMutations'
 
 export function useLayout(_userId?: number) {
   const dispatch = useAppDispatch()
@@ -46,43 +38,29 @@ export function useLayout(_userId?: number) {
   const onAddTab = useCallback(
     (tab: Tab) => {
       dispatch(addTab(tab))
-      if (layout) {
-        dispatch(saveLayout(addLayoutTab(layout, tab)))
-      }
     },
-    [dispatch, layout]
+    [dispatch]
   )
 
   const onRemoveTab = useCallback(
     (tabId: string) => {
       dispatch(removeTab(tabId))
-      if (layout) {
-        dispatch(saveLayout(removeLayoutTab(layout, tabId)))
-      }
     },
-    [dispatch, layout]
+    [dispatch]
   )
 
   const onUpdateGridConfig = useCallback(
     (tabId: string, subTabId: string, config: GridConfig) => {
       dispatch(updateGridConfig({ tabId, subTabId, config }))
-      if (layout) {
-        const nextLayout = updateLayoutGridConfig(layout, tabId, subTabId, config)
-        dispatch(updateLayout({ id: layout.id, layout: nextLayout }))
-      }
     },
-    [dispatch, layout]
+    [dispatch]
   )
 
   const onUpdateCameraPositions = useCallback(
     (tabId: string, subTabId: string, positions: CameraPosition[]) => {
       dispatch(updateCameraPositions({ tabId, subTabId, positions }))
-      if (layout) {
-        const nextLayout = updateLayoutCameraPositions(layout, tabId, subTabId, positions)
-        dispatch(updateLayout({ id: layout.id, layout: nextLayout }))
-      }
     },
-    [dispatch, layout]
+    [dispatch]
   )
 
   return {
