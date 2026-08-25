@@ -3,10 +3,12 @@ spring:
     name: vision-monitor
 
   datasource:
-    url: ${DB_URL:jdbc:mariadb://192.168.0.11:3306/vms}
+    # Company DB: jdbc:mariadb://172.18.86.78:3306/POSWIRE
+    # Home DB: jdbc:mariadb://192.168.0.11:3306/POSWIRE
+    url: ${DB_URL:jdbc:mariadb://172.18.86.78:3306/POSWIRE}
     driver-class-name: org.mariadb.jdbc.Driver
-    username: ${DB_USERNAME:vmsuser}
-    password: ${DB_PASSWORD:mariadb}
+    username: ${DB_USERNAME:poswiredb}
+    password: ${DB_PASSWORD:poswiredb123#$}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5

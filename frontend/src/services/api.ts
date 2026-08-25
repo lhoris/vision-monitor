@@ -6,7 +6,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { ApiResponse, ApiError } from '@/types'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 const REQUEST_TIMEOUT = 30000
 
 class ApiClient {
