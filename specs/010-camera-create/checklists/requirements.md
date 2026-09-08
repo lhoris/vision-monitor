@@ -1,7 +1,7 @@
-# Specification Quality Checklist: 영상 모델 추가
+# Specification Quality Checklist: 카메라 목록 관리
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-08-17
+**Created**: 2026-08-26
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -32,4 +32,5 @@
 ## Notes
 
 - 검증 결과: PASS
-- 기능명세서 작성만 수행했으며 구현 테스트는 실행하지 않았다.
+- 기능 범위를 별도 폼 기반 카메라 추가가 아니라 그리드 기반 카메라 목록 관리로 보정했다.
+- DB 테이블의 구체 컬럼, 제약, migration 방향은 planning 단계에서 확정한다.

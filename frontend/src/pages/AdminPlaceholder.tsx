@@ -6,7 +6,7 @@ const adminPageLabels: Record<string, string> = {
   '/admin/control-communication': '제어 연동 통신 현황',
   '/admin/external-addresses': '기타 주소 설정 현황',
   '/admin/model-restart': '모델 재가동',
-  '/admin/video-models/new': '영상 모델 추가',
+  '/admin/cameras/new': '카메라 추가',
   '/admin/users': '사용자 관리',
   '/admin/roles': '역할 관리',
   '/admin/permission-policies': '권한 정책 관리',

@@ -26,7 +26,7 @@
       "controlCommunication": "제어 연동 통신 현황",
       "externalAddresses": "기타 주소 설정 현황",
       "modelRestart": "모델 재가동",
-      "videoModelCreate": "영상 모델 추가",
+      "cameraCreate": "카메라 추가",
       "accessManagement": "접속 권한 관리",
       "users": "사용자 관리",
       "roles": "역할 관리",

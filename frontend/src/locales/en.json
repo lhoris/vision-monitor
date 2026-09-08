@@ -26,7 +26,7 @@
       "controlCommunication": "Control Integration Communication Status",
       "externalAddresses": "External Address Settings",
       "modelRestart": "Restart Model",
-      "videoModelCreate": "Add Video Model",
+      "cameraCreate": "Add Camera",
       "accessManagement": "Access Permission Management",
       "users": "User Management",
       "roles": "Role Management",

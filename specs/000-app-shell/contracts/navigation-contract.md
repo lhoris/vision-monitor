@@ -22,7 +22,7 @@
 | `/admin/control-communication` | `navigation.admin.controlCommunication` | 제어 연동 통신 현황 |
 | `/admin/external-addresses` | `navigation.admin.externalAddresses` | 기타 주소 설정 현황 |
 | `/admin/model-restart` | `navigation.admin.modelRestart` | 모델 재가동 |
-| `/admin/video-models/new` | `navigation.admin.videoModelCreate` | 영상 모델 추가 |
+| `/admin/cameras/new` | `navigation.admin.cameraCreate` | 카메라 추가 |
 
 ### 접속 권한 관리
 
