@@ -10,22 +10,22 @@
 -- Narrow this to the app server's specific IP instead of '%' if possible.
 
 -- Create database
-CREATE DATABASE IF NOT EXISTS POSWIRE
+CREATE DATABASE IF NOT EXISTS PPWIRE
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
 -- Create user (CREATE OR REPLACE forces password-based auth even if the
 -- account already exists with a different authentication plugin, e.g. gssapi)
-CREATE OR REPLACE USER 'poswiredb'@'%' IDENTIFIED BY 'poswiredb123#$';
+CREATE OR REPLACE USER 'ppwiredb'@'%' IDENTIFIED BY 'ppwiredb123#$';
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON POSWIRE.* TO 'poswiredb'@'%';
+GRANT ALL PRIVILEGES ON PPWIRE.* TO 'ppwiredb'@'%';
 
 -- Apply privileges
 FLUSH PRIVILEGES;
 
 -- Switch to database
-USE POSWIRE;
+USE PPWIRE;
 
 -- Verify database is created
-SELECT 'Database POSWIRE created successfully' AS status;
+SELECT 'Database PPWIRE created successfully' AS status;
