@@ -16,10 +16,10 @@ COLLATE utf8mb4_unicode_ci;
 
 -- Create user (CREATE OR REPLACE forces password-based auth even if the
 -- account already exists with a different authentication plugin, e.g. gssapi)
-CREATE OR REPLACE USER 'ppwiredb'@'%' IDENTIFIED BY 'ppwiredb123#$';
+CREATE OR REPLACE USER 'ppwiredb1'@'%' IDENTIFIED BY 'ppwiredb123#$';
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON PPWIRE.* TO 'ppwiredb'@'%';
+GRANT ALL PRIVILEGES ON PPWIRE.* TO 'ppwiredb1'@'%';
 
 -- Apply privileges
 FLUSH PRIVILEGES;
