@@ -34,7 +34,6 @@ hs_err_pid*
 .attach_pid*
 
 # Spring Boot
-application-local.yml
 application-dev.yml
 logs/
 
