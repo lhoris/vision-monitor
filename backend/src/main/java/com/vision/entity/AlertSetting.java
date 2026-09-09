@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
  * Alert Setting Entity
  */
 @Entity
-@Table(name = "alert_settings", indexes = {
-    @Index(name = "idx_camera_id", columnList = "camera_id")
+@Table(name = "TB_M26_ALERT_SETTINGS", indexes = {
+    @Index(name = "idx_tb_m26_alert_setting_camera_id", columnList = "camera_id")
 })
 @Data
 @NoArgsConstructor

@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "org_units", indexes = {
-    @Index(name = "idx_org_units_parent_id", columnList = "parent_id"),
-    @Index(name = "idx_org_units_type", columnList = "unit_type"),
-    @Index(name = "idx_org_units_active", columnList = "active")
+@Table(name = "TB_M26_ORG_UNITS", indexes = {
+    @Index(name = "idx_tb_m26_org_unit_parent_id", columnList = "parent_id"),
+    @Index(name = "idx_tb_m26_org_unit_type", columnList = "unit_type"),
+    @Index(name = "idx_tb_m26_org_unit_active", columnList = "active")
 })
 @Data
 @NoArgsConstructor

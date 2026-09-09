@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
  * Layout Entity - 사용자 맞춤 카메라 그리드 레이아웃
  */
 @Entity
-@Table(name = "layouts", indexes = {
-    @Index(name = "idx_user_id", columnList = "user_id")
+@Table(name = "TB_M26_LAYOUTS", indexes = {
+    @Index(name = "idx_tb_m26_layout_user_id", columnList = "user_id")
 })
 @Data
 @NoArgsConstructor

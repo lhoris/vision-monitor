@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
  * Stream Entity
  */
 @Entity
-@Table(name = "streams", indexes = {
-    @Index(name = "idx_camera_id", columnList = "camera_id")
+@Table(name = "TB_M26_STREAMS", indexes = {
+    @Index(name = "idx_tb_m26_stream_camera_id", columnList = "camera_id")
 })
 @Data
 @NoArgsConstructor

@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
  * Event Entity
  */
 @Entity
-@Table(name = "events", indexes = {
-    @Index(name = "idx_camera_id", columnList = "camera_id"),
-    @Index(name = "idx_severity", columnList = "severity"),
-    @Index(name = "idx_timestamp", columnList = "event_time")
+@Table(name = "TB_M26_EVENTS", indexes = {
+    @Index(name = "idx_tb_m26_event_camera_id", columnList = "camera_id"),
+    @Index(name = "idx_tb_m26_event_severity", columnList = "severity"),
+    @Index(name = "idx_tb_m26_event_time", columnList = "event_time")
 })
 @Data
 @NoArgsConstructor

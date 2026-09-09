@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
  * Camera Entity
  */
 @Entity
-@Table(name = "cameras", indexes = {
-    @Index(name = "idx_zone", columnList = "zone"),
-    @Index(name = "idx_status", columnList = "status")
+@Table(name = "TB_M26_CAMERAS", indexes = {
+    @Index(name = "idx_tb_m26_camera_zone", columnList = "zone"),
+    @Index(name = "idx_tb_m26_camera_status", columnList = "status")
 })
 @Data
 @NoArgsConstructor
