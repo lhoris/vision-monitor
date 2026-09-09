@@ -38,11 +38,7 @@ function actualApiService(): UserManagementService {
       return getResponseData(await apiClient.put<UserAccount>(`/admin/users/${userId}`, input), null as never)
     },
     async dangerAction(userId, action, keepPersonalization) {
-      const endpoint = action === 'disable'
-        ? `/admin/users/${userId}/disable`
-        : action === 'retire'
-          ? `/admin/users/${userId}/retire`
-          : `/admin/users/${userId}/delete-request`
+      const endpoint = `/admin/users/${userId}/${action}`
       const body = action === 'retire'
         ? { personalizationAction: keepPersonalization ? 'keep' : 'reset' }
         : action === 'delete-request'

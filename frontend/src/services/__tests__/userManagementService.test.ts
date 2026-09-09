@@ -19,7 +19,7 @@ const newUser = {
   username: 'new-user',
   name: '신규 사용자',
   displayName: '신규 사용자',
-  department: '품질관리팀',
+  department: '안전관리팀',
   position: '사원',
   email: 'new-user@example.com',
   phone: '010-0000-0000',
@@ -54,11 +54,23 @@ describe('userManagementService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/admin/users')
   })
 
-  it('blocks duplicate IDs and protects the last administrator', async () => {
+  it('blocks duplicate IDs, self actions, and last administrator removal', async () => {
     localStorage.setItem('authUsername', 'tester')
 
     await expect(userManagementService.createUser({ ...newUser, username: 'tester' })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })
     await expect(userManagementService.dangerAction(1, 'disable', true)).rejects.toMatchObject({ code: 'SELF_LOCKOUT_RISK' })
+    await expect(userManagementService.dangerAction(1, 'retire', true)).rejects.toMatchObject({ code: 'SELF_LOCKOUT_RISK' })
     expect(canPerformDangerAction('delete-request', userManagementFixture[0], 'operator01', userManagementFixture)).toBe('마지막 활성 관리자 계정은 변경하거나 삭제할 수 없습니다.')
+  })
+
+  it('supports lock and unlock status actions through the API boundary', async () => {
+    localStorage.setItem('authUsername', 'real-admin')
+    mockedApiClient.post.mockResolvedValue({ success: true, data: userManagementFixture[1] })
+
+    await userManagementService.dangerAction(2, 'lock', true)
+    await userManagementService.dangerAction(2, 'unlock', true)
+
+    expect(mockedApiClient.post).toHaveBeenNthCalledWith(1, '/admin/users/2/lock', { keepPersonalization: true })
+    expect(mockedApiClient.post).toHaveBeenNthCalledWith(2, '/admin/users/2/unlock', { keepPersonalization: true })
   })
 })

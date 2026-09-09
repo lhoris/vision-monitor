@@ -199,3 +199,58 @@
 | `SELF_LOCKOUT_RISK` | 자기 계정 잠금 위험 |
 | `LAST_ADMIN_RISK` | 마지막 관리자 제거 위험 |
 | `MOCK_NOT_ALLOWED` | tester/tester1 외 계정에서 mock 사용 시도 |
+
+## Grid Editing Contract
+
+사용자 관리 화면의 기본 편집 단위는 상세 패널이 아니라 그리드 행이다. frontend mock adapter와 실제 API adapter는 동일한 사용자 mutation contract를 유지하되, 화면은 여러 행의 변경분을 모아 저장하거나 선택 행 상태 변경으로 전달할 수 있어야 한다.
+
+### Grid row state
+
+```json
+{
+  "rowId": "draft-1",
+  "userId": 10,
+  "state": "dirty",
+  "fieldErrors": {
+    "email": "이메일 형식이 올바르지 않습니다."
+  }
+}
+```
+
+`state` 값:
+
+| 값 | 의미 |
+|----|------|
+| `clean` | 원본 데이터와 동일한 행 |
+| `new` | 아직 저장되지 않은 신규 행 |
+| `dirty` | 수정 후 저장되지 않은 행 |
+| `discardRequested` | 폐기 요청 대상 행 |
+| `invalid` | 저장 전 검증 오류가 있는 행 |
+| `saving` | 저장 또는 상태 변경 처리 중인 행 |
+
+### Batch action request
+
+```json
+{
+  "userIds": [3, 4, 5],
+  "action": "disable",
+  "reason": "운영 제외 대상",
+  "confirmedImpact": true
+}
+```
+
+`action` 값:
+
+| 값 | 의미 |
+|----|------|
+| `lock` | 선택 사용자 잠금 |
+| `unlock` | 선택 사용자 잠금 해제 |
+| `disable` | 선택 사용자 비활성화 |
+| `retire` | 선택 사용자 퇴사 처리 |
+| `discard` | 선택 사용자 폐기 요청 |
+
+자기 자신에 대한 `lock`, `disable`, `retire`, `discard`는 허용하지 않는다. 실제 backend가 batch endpoint를 제공하지 않는 동안에는 기존 단건 endpoint를 순차 호출할 수 있다.
+
+### Detail policy
+
+상세 조회 API는 유지하지만, 기본 사용자 관리 화면은 상세 패널을 상시 표시하지 않는다. 상세 조회는 행 더블클릭, 확장 행, 또는 상세 보기 modal에서만 사용한다.

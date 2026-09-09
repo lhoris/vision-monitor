@@ -56,6 +56,17 @@ class UserManagementServiceTest {
         assertEquals("LAST_ADMIN_RISK", exception.getCode());
     }
 
+    @Test
+    void blocksSelfLockoutStatusChanges() {
+        UserAccount admin = user(1L, "admin", "ADMIN");
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.changeStatus("admin", 1L, "retire", null));
+
+        assertEquals("SELF_LOCKOUT_RISK", exception.getCode());
+    }
+
     private UserAccount user(Long id, String username, String role) {
         return UserAccount.builder()
                 .id(id)

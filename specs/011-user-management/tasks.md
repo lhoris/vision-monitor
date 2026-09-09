@@ -102,3 +102,23 @@
 - [X] T060 frontend 실제 API adapter를 backend 응답 계약에 맞춰 전환하고 mock 회귀를 확인한다.
 
 > T059는 실제 MariaDB에 연결해 Flyway `V003`, `V004`를 적용하는 환경 검증이 필요하므로 미완료로 남긴다. 현재 backend 컴파일과 service 단위 테스트는 통과했다.
+
+## Phase 10: 그리드 중심 사용자 관리 재설계
+
+> Phase 10은 기존 상세 패널/dialog 중심 구현을 대체하는 개정 작업이다. 이전 완료 작업은 구현 이력으로 유지하되, 이후 수용 기준은 전체 폭 그리드 중심 업무 완료이다.
+
+- [X] T061 [US1] `frontend/src/pages/UserManagement.tsx`에서 우측 상세 패널을 기본 레이아웃에서 제거하고 전체 폭 그리드 화면으로 전환한다.
+- [X] T062 [US1] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에 다중 선택, 선택 행 batch action toolbar, 저장, 변경 취소, 새로고침 진입점을 추가한다.
+- [X] T063 [US2] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에 신규 사용자 행 추가와 임시 row id 생성 흐름을 구현한다.
+- [X] T064 [US2] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에서 신규 사용자 필수값을 셀 단위로 입력하고 저장할 수 있게 한다.
+- [X] T065 [US3] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에서 이름, 표시명, 이메일, 부서, 직책, 전화번호, 조직, 권한, 계정 상태, 재직 상태 셀 인라인 편집을 지원한다.
+- [X] T066 [P] [US1] `frontend/src/types/userManagement.ts`에 신규 행, 수정 행, 폐기 요청 행, 검증 실패 행을 표현하는 grid draft 상태 타입을 추가한다.
+- [X] T067 [US2] `frontend/src/services/userManagementValidation.ts`를 신규 사용자 행/셀 단위 validation 결과를 반환하도록 확장한다.
+- [X] T068 [US3] `frontend/src/services/userManagementValidation.ts`를 기존 사용자 수정 행/셀 단위 validation 결과를 반환하도록 확장한다.
+- [X] T069 [US1] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에 신규 행, 수정 행, 폐기 요청 행, 오류 행의 시각 상태와 셀 오류 표시를 구현한다.
+- [X] T070 [US4] `frontend/src/components/UserManagement/UserManagementGrid.tsx`에 그리드 선택 행 batch action 확인 흐름을 구현한다.
+- [X] T071 [US4] `frontend/src/services/userManagementValidation.ts`와 `backend/src/main/java/com/vision/service/UserManagementService.java`에서 자기 자신에 대한 삭제, 폐기, 비활성화, 잠금 작업을 차단하는지 확인한다.
+- [X] T072 [US3] `frontend/src/components/UserManagement/UserDetailPanel.tsx` 의존을 제거하거나 `UserDetailDialog`/확장 행 보조 흐름으로 축소한다.
+- [X] T073 [P] [US1] `frontend/src/components/UserManagement/__tests__/UserManagementGrid.test.tsx`에 행 추가, 인라인 편집, batch action, 변경 취소, 셀 오류 테스트를 추가한다.
+- [X] T074 [US1] `frontend/src/pages/UserManagement.test.tsx` 또는 기존 사용자관리 page 테스트에 우측 상세 패널 없이 주요 업무가 완료되는 회귀 테스트를 추가한다.
+- [X] T075 `specs/011-user-management/quickstart.md`의 그리드 중심 검증 시나리오와 실제 구현 흐름이 일치하는지 확인한다.

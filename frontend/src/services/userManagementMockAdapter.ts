@@ -70,7 +70,7 @@ export const userManagementMockAdapter = {
     const now = new Date().toISOString()
     const updated: UserAccount = {
       ...target,
-      accountStatus: action === 'delete-request' ? 'disabled' : target.accountStatus,
+      accountStatus: action === 'lock' ? 'locked' : action === 'unlock' ? 'active' : action === 'disable' || action === 'delete-request' ? 'disabled' : target.accountStatus,
       employmentStatus: action === 'retire' ? 'retired' : target.employmentStatus,
       personalization: keepPersonalization ? target.personalization : { hasSettings: false, cameraGridCount: 0 },
       updatedAt: now,

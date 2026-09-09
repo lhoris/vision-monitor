@@ -56,7 +56,14 @@ export interface UserMutationRequest {
   employmentStatus: EmploymentStatus
 }
 
-export type UserDangerAction = 'disable' | 'retire' | 'delete-request'
+export type UserDangerAction = 'lock' | 'unlock' | 'disable' | 'retire' | 'delete-request'
+export type UserGridRowState = 'clean' | 'new' | 'dirty' | 'discardRequested' | 'invalid' | 'saving'
+
+export interface UserGridSaveRequest {
+  rowId: string
+  userId?: number
+  input: UserMutationRequest
+}
 
 export interface UserListResponse {
   items: UserAccount[]
