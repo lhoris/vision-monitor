@@ -83,7 +83,7 @@ chmod +x scripts/develop.sh
 터미널 1 - Backend:
 ```bash
 cd backend
-mvn spring-boot:run
+mvn clean spring-boot:run
 ```
 
 터미널 2 - Frontend:
@@ -190,7 +190,7 @@ npm run test         # 테스트
 
 ```bash
 cd backend
-mvn spring-boot:run  # 개발 서버
+mvn clean spring-boot:run  # 개발 서버
 mvn clean package    # 프로덕션 빌드
 mvn test             # 테스트
 ```

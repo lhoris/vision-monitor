@@ -18,7 +18,7 @@ mvn clean install
 ## 개발 서버 실행
 
 ```bash
-mvn spring-boot:run
+mvn clean spring-boot:run
 ```
 
 서버는 `http://localhost:8080`에서 실행됩니다.

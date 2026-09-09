@@ -1,10 +1,7 @@
--- Vision Monitor - Master Data Seeding
--- Initial data for TB_M26_* tables
+-- Initial data for TB_M26_* master tables.
+-- The development admin account is seeded in V005/V007/V008 into TB_M26_USERS.
 
--- =====================================================
--- 1. Seed TB_M26_USER (사용자)
--- =====================================================
-INSERT INTO TB_M26_USER (
+INSERT INTO TB_M26_AUTH (
     created_object_type,
     created_object_id,
     created_program_id,
@@ -13,12 +10,12 @@ INSERT INTO TB_M26_USER (
     last_updated_object_id,
     last_updated_program_id,
     last_updated_timestamp,
-    USER_EMP_NO,
-    USER_NAME,
-    ENCRYPTED_FOUNDATION_PASSWORD,
+    AUTH_CODE,
+    AUTH_NAME,
+    AUTH_TYPE,
+    AUTH_DESCRIPTION,
     REMARKS
 ) VALUES
--- Admin User
 (
     'S',
     'SYSTEM',
@@ -28,12 +25,12 @@ INSERT INTO TB_M26_USER (
     'SYSTEM',
     'V011_SEED',
     CURRENT_TIMESTAMP,
-    'admin',
+    'ADMIN',
     'Administrator',
-    '$2b$10$.UdMNAaF21hGMvxpoEZGt.olmXNrzp57nSsLuttI9zaXSYYA3GqW.',
-    'Initial admin account'
+    'SYSTEM',
+    'Administrator role',
+    'Initial administrator role'
 ),
--- POSCO User
 (
     'S',
     'SYSTEM',
@@ -43,13 +40,15 @@ INSERT INTO TB_M26_USER (
     'SYSTEM',
     'V011_SEED',
     CURRENT_TIMESTAMP,
-    'pd0a5661',
-    'Park Dong Hyun',
-    '$2b$10$q8XfmaLZ1pNv4Q.3tZwJeO7BdufoW17mKMwGgmeuGmdk4ky4WW7Zy',
-    'POSCO User'
+    'USER',
+    'User',
+    'SYSTEM',
+    'Default user role',
+    'Initial user role'
 )
 ON DUPLICATE KEY UPDATE
-    USER_NAME = VALUES(USER_NAME),
-    ENCRYPTED_FOUNDATION_PASSWORD = VALUES(ENCRYPTED_FOUNDATION_PASSWORD),
+    AUTH_NAME = VALUES(AUTH_NAME),
+    AUTH_TYPE = VALUES(AUTH_TYPE),
+    AUTH_DESCRIPTION = VALUES(AUTH_DESCRIPTION),
     REMARKS = VALUES(REMARKS),
     last_updated_timestamp = CURRENT_TIMESTAMP;
