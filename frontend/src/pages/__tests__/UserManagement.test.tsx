@@ -15,7 +15,7 @@ describe('UserManagement page', () => {
 
     await waitFor(() => expect(screen.getByRole('button', { name: '행 추가' })).toBeInTheDocument())
     expect(screen.getByRole('button', { name: '저장' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '폐기 요청' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '삭제' })).toBeInTheDocument()
     expect(screen.queryByText(/계정 상태 관리/)).not.toBeInTheDocument()
   })
 })

@@ -1,5 +1,7 @@
 # 사용자 관리 backend 데이터베이스 설계
 
+> 공통 M26 테이블 설계 규칙은 [DATABASE_DESIGN_RULES.md](../../docs/DATABASE_DESIGN_RULES.md)를 따른다. 기존 migration의 `TB_M26_USERS` 및 `users` 기반 구조는 폐기 대상이며, 최종 사용자/권한 모델은 `TB_M26_CODE`, `TB_M26_CODE_DETAIL`, `TB_M26_USER`, `TB_M26_AUTH`, `TB_M26_USER_AUTH`, `TB_M26_USER_PERSONAL`을 기준으로 별도 migration을 작성한다.
+
 ## 1. 목적
 
 사용자관리 화면의 mock 계약을 실제 MariaDB 저장 구조와 backend API로 확장하기 위한 데이터베이스 설계다.

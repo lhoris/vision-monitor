@@ -1,5 +1,5 @@
--- Organization hierarchy for user affiliation, department, and section.
-
+-- Organization support remains for existing camera/user-management API compatibility.
+-- It is not part of the M26 user master model.
 CREATE TABLE IF NOT EXISTS TB_M26_ORG_UNITS (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     parent_id BIGINT NULL,
@@ -10,12 +10,7 @@ CREATE TABLE IF NOT EXISTS TB_M26_ORG_UNITS (
     sort_order INT NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT uq_tb_m26_org_units_code UNIQUE (code),
     INDEX idx_tb_m26_org_units_parent_id (parent_id),
     INDEX idx_tb_m26_org_units_type (unit_type),
     INDEX idx_tb_m26_org_units_active (active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-ALTER TABLE TB_M26_USERS
-    ADD COLUMN org_unit_id BIGINT NULL AFTER role,
-    ADD INDEX idx_tb_m26_users_org_unit_id (org_unit_id);

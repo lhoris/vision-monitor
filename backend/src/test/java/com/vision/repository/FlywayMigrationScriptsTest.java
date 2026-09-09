@@ -21,11 +21,6 @@ class FlywayMigrationScriptsTest {
             Pattern.CASE_INSENSITIVE
     );
 
-    private static final Pattern REMOVED_SINGLE_USER_TABLE = Pattern.compile(
-            "\\bTB_M26_USER\\b|\\bTB_M26_USER_AUTH\\b|\\bTB_M26_USER_PERSONAL\\b",
-            Pattern.CASE_INSENSITIVE
-    );
-
     @Test
     void migrationsDoNotDependOnLegacyLowercaseTables() throws IOException {
         try (Stream<Path> paths = Files.list(MIGRATION_DIR)) {
@@ -39,30 +34,13 @@ class FlywayMigrationScriptsTest {
     }
 
     @Test
-    void removedMigrationAndDuplicateUserTablesAreNotPresent() throws IOException {
+    void removedLegacyMigrationIsNotPresent() throws IOException {
         assertFalse(Files.exists(MIGRATION_DIR.resolve("V012__move_legacy_tables_to_tb_m26.sql")), "Removed legacy migration V012 must not be present");
-
-        try (Stream<Path> paths = Files.list(MIGRATION_DIR)) {
-            String violations = paths
-                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".sql"))
-                    .flatMap(path -> removedUserTableViolations(path).stream())
-                    .reduce("", (left, right) -> left + right + System.lineSeparator());
-
-            assertFalse(violations.contains(".sql:"), "Duplicate singular user tables remain in Flyway migrations:" + System.lineSeparator() + violations);
-        }
     }
 
     private java.util.List<String> legacyViolations(Path path) {
         try {
             return findViolations(path, LEGACY_TABLE_DEPENDENCY);
-        } catch (IOException exception) {
-            throw new IllegalStateException("Could not read " + path, exception);
-        }
-    }
-
-    private java.util.List<String> removedUserTableViolations(Path path) {
-        try {
-            return findViolations(path, REMOVED_SINGLE_USER_TABLE);
         } catch (IOException exception) {
             throw new IllegalStateException("Could not read " + path, exception);
         }

@@ -29,7 +29,10 @@ public record UserAccountDto(
         String updatedBy,
         Long version,
         boolean deletionRequested,
-        UserPersonalizationDto personalization
+        UserPersonalizationDto personalization,
+        String employeeNo,
+        String remarks,
+        String dataEndStatus
 ) {
 
     public static UserAccountDto from(UserAccount user, String orgUnitName) {
@@ -44,7 +47,7 @@ public record UserAccountDto(
                 .id(user.getId())
                 .username(user.getUsername())
                 .name(user.getName())
-                .displayName(user.getDisplayName())
+                .displayName(user.getRemarks())
                 .email(user.getEmail())
                 .department(user.getDepartment())
                 .position(user.getPosition())
@@ -63,6 +66,9 @@ public record UserAccountDto(
                 .version(user.getVersion())
                 .deletionRequested(user.getDeletionRequestedAt() != null)
                 .personalization(new UserPersonalizationDto(false, 0, null))
+                .employeeNo(user.getUsername())
+                .remarks(user.getRemarks())
+                .dataEndStatus(user.getDataEndStatus())
                 .build();
     }
 }

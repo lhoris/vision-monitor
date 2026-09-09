@@ -12,5 +12,8 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
 
     boolean existsByUsernameIgnoreCase(String username);
 
-    long countByRoleIgnoreCaseAndAccountStatusAndEmploymentStatus(String role, String accountStatus, String employmentStatus);
+    /** Transitional compatibility method; authorization counts are resolved from TB_M26_USER_AUTH. */
+    default long countByRoleIgnoreCaseAndAccountStatusAndEmploymentStatus(String role, String accountStatus, String employmentStatus) {
+        return 0L;
+    }
 }

@@ -11,11 +11,13 @@ export interface LoginCredentials {
 export interface LoginResult {
   user: User
   token: string
+  passwordChangeRequired?: boolean
 }
 
 interface LoginApiResponse {
   user: User
   token: string
+  passwordChangeRequired?: boolean
 }
 
 const ADMIN_TESTER_USERNAME = 'tester'
@@ -87,7 +89,12 @@ class AuthService {
     return {
       user: data.user,
       token: data.token,
+      passwordChangeRequired: data.passwordChangeRequired,
     }
+  }
+
+  async changePassword(newPassword: string): Promise<void> {
+    await apiClient.post('/auth/password', { newPassword })
   }
 }
 

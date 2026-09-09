@@ -33,6 +33,9 @@ export interface UserAccount {
   updatedAt: string
   updatedBy: string
   personalization: UserPersonalizationSummary
+  employeeNo?: string
+  remarks?: string
+  dataEndStatus?: 'N' | 'Y'
 }
 
 export interface UserManagementFilters {
@@ -54,6 +57,7 @@ export interface UserMutationRequest {
   roleIds: string[]
   accountStatus: AccountStatus
   employmentStatus: EmploymentStatus
+  resetPassword?: boolean
 }
 
 export type UserDangerAction = 'lock' | 'unlock' | 'disable' | 'retire' | 'delete-request'

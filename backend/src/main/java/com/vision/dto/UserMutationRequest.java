@@ -13,6 +13,7 @@ public record UserMutationRequest(
         Long orgUnitId,
         List<String> roleIds,
         String accountStatus,
-        String employmentStatus
+        String employmentStatus,
+        Boolean resetPassword
 ) {
 }

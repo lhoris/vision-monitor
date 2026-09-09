@@ -6,6 +6,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { loginUser } from '@/store/slices/authSlice'
+import { authService } from '@/services/authService'
 
 export const Login: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -14,6 +15,9 @@ export const Login: React.FC = () => {
   const [username, setUsername] = useState('tester')
   const [password, setPassword] = useState('tester123')
   const [error, setError] = useState('')
+  const [passwordChangeRequired, setPasswordChangeRequired] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,16 +28,34 @@ export const Login: React.FC = () => {
       return
     }
 
-    if (!password) {
-      setError('Password is required')
-      return
-    }
-
     try {
-      await dispatch(loginUser({ username, password })).unwrap()
-      navigate('/live')
+      const result = await dispatch(loginUser({ username, password })).unwrap()
+      if (result.passwordChangeRequired) {
+        setPasswordChangeRequired(true)
+      } else {
+        navigate('/live')
+      }
     } catch (loginError) {
       setError(typeof loginError === 'string' ? loginError : 'Invalid username or password')
+    }
+  }
+
+  const handlePasswordChange = async () => {
+    setError('')
+    if (newPassword.length < 8) {
+      setError('새 비밀번호는 8자 이상이어야 합니다.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setError('새 비밀번호가 일치하지 않습니다.')
+      return
+    }
+    try {
+      await authService.changePassword(newPassword)
+      setPasswordChangeRequired(false)
+      navigate('/live')
+    } catch (changeError) {
+      setError(changeError instanceof Error ? changeError.message : '비밀번호 변경에 실패했습니다.')
     }
   }
 
@@ -44,6 +66,17 @@ export const Login: React.FC = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
+      {passwordChangeRequired && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl dark:bg-slate-800">
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">비밀번호 변경</h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정하세요.</p>
+            <input aria-label="새 비밀번호" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="mt-4 w-full rounded border px-3 py-2" placeholder="새 비밀번호" />
+            <input aria-label="새 비밀번호 확인" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-3 w-full rounded border px-3 py-2" placeholder="새 비밀번호 확인" />
+            <button type="button" onClick={() => void handlePasswordChange()} className="mt-4 w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white">비밀번호 저장</button>
+          </div>
+        </div>
+      )}
 
       <div className="w-full max-w-md relative z-10">
         <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/20">

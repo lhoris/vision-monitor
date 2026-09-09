@@ -2,6 +2,7 @@ package com.vision.dto;
 
 public record LoginResponse(
         AuthenticatedUserDto user,
-        String token
+        String token,
+        boolean passwordChangeRequired
 ) {
 }

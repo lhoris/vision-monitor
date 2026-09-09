@@ -17,6 +17,7 @@
   background: var(--tabulator-cell-bg);
   color: var(--tabulator-cell-text);
   font-size: var(--font-sm);
+  line-height: 1.45;
 }
 
 .vm-tabulator .tabulator-header {
@@ -73,6 +74,19 @@
 .vm-tabulator .tabulator-cell,
 .vm-tabulator .tabulator-col {
   border-color: var(--color-border-light);
+}
+
+.vm-tabulator .tabulator-row {
+  min-height: 36px;
+}
+
+.vm-tabulator .tabulator-row .tabulator-cell {
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.vm-tabulator .tabulator-col .tabulator-col-content {
+  padding: 8px 10px;
 }
 
 .vm-tabulator .tabulator-cell,
@@ -141,6 +155,14 @@
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
   z-index: 2;
+}
+
+.vm-tabulator .tabulator-range {
+  border-color: var(--color-primary) !important;
+}
+
+.vm-tabulator .tabulator-range .tabulator-cell {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--tabulator-cell-bg)) !important;
 }
 
 .vm-tabulator-checkbox {

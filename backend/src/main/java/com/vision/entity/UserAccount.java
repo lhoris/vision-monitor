@@ -5,9 +5,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.Transient;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,12 +16,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/** M26 사용자 마스터 TB_M26_USER 매핑. */
 @Entity
-@Table(name = "TB_M26_USERS", indexes = {
-    @Index(name = "idx_tb_m26_user_org_unit_id", columnList = "org_unit_id"),
-    @Index(name = "idx_tb_m26_user_account_status", columnList = "account_status"),
-    @Index(name = "idx_tb_m26_user_employment_status", columnList = "employment_status")
-})
+@Table(name = "TB_M26_USER")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,79 +27,54 @@ public class UserAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JdbcTypeCode(SqlTypes.INTEGER)
+    @Column(name = "USER_ID")
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(name = "USER_EMP_NO", nullable = false, length = 20)
     private String username;
 
-    @Column(name = "password_hash", length = 255)
+    @Column(name = "ENCRYPTED_FOUNDATION_PASSWORD", length = 100)
     private String passwordHash;
 
-    @Column(length = 255)
+    @Column(name = "USER_NAME", length = 100)
     private String name;
 
-    @Column(name = "display_name", length = 255)
-    private String displayName;
+    @Column(name = "REMARKS", length = 4000)
+    private String remarks;
 
-    @Column(length = 255)
-    private String email;
-
-    @Column(length = 255)
-    private String department;
-
-    @Column(length = 255)
-    private String position;
-
-    @Column(length = 50)
-    private String phone;
-
-    @Column(name = "org_unit_id")
-    private Long orgUnitId;
-
-    @Column(nullable = false, length = 50)
+    @Column(name = "DATA_END_STATUS", length = 1)
     @Builder.Default
-    private String role = "USER";
+    private String dataEndStatus = "N";
 
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean enabled = true;
+    @Column(name = "CREATED_TIMESTAMP")
+    private LocalDateTime createdTimestamp;
 
-    @Column(name = "account_status", nullable = false, length = 20)
-    @Builder.Default
-    private String accountStatus = "active";
-
-    @Column(name = "employment_status", nullable = false, length = 20)
-    @Builder.Default
-    private String employmentStatus = "employed";
-
-    @Column(name = "last_login_at")
-    private LocalDateTime lastLoginAt;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "created_by", length = 255)
+    @Column(name = "CREATED_OBJECT_ID", length = 22)
     private String createdBy;
 
-    @Column(name = "updated_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(name = "LAST_UPDATED_TIMESTAMP")
+    private LocalDateTime updatedTimestamp;
 
-    @Column(name = "updated_by", length = 255)
+    @Column(name = "LAST_UPDATED_OBJECT_ID", length = 22)
     private String updatedBy;
 
-    @Version
-    @Column(nullable = false)
-    @Builder.Default
-    private Long version = 0L;
-
-    @Column(name = "deletion_requested_at")
-    private LocalDateTime deletionRequestedAt;
-
-    @Column(name = "deletion_requested_by", length = 255)
-    private String deletionRequestedBy;
-
-    @Column(name = "deletion_reason", length = 500)
-    private String deletionReason;
+    // Transitional API fields are intentionally not persisted in the new master table.
+    @Transient private String displayName;
+    @Transient private String email;
+    @Transient private String department;
+    @Transient private String position;
+    @Transient private String phone;
+    @Transient private Long orgUnitId;
+    @Transient @Builder.Default private String role = "USER";
+    @Transient @Builder.Default private Boolean enabled = true;
+    @Transient @Builder.Default private String accountStatus = "active";
+    @Transient @Builder.Default private String employmentStatus = "employed";
+    @Transient private LocalDateTime lastLoginAt;
+    @Transient private LocalDateTime createdAt;
+    @Transient private LocalDateTime updatedAt;
+    @Transient private Long version;
+    @Transient private LocalDateTime deletionRequestedAt;
+    @Transient private String deletionRequestedBy;
+    @Transient private String deletionReason;
 }

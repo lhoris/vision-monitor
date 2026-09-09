@@ -1,18 +1,20 @@
 package com.vision.service;
 
-import com.vision.dto.OrgUnitDto;
 import com.vision.dto.RoleSummaryDto;
 import com.vision.dto.UserAccountDto;
 import com.vision.dto.UserDangerActionRequest;
 import com.vision.dto.UserListResponse;
 import com.vision.dto.UserMutationRequest;
-import com.vision.entity.OrgUnit;
+import com.vision.dto.OrgUnitDto;
 import com.vision.entity.UserAccount;
+import com.vision.entity.OrgUnit;
 import com.vision.exception.ApiException;
-import com.vision.repository.OrgUnitRepository;
 import com.vision.repository.UserAccountRepository;
+import com.vision.repository.OrgUnitRepository;
+import com.vision.repository.AuthorizationRepository;
+import com.vision.repository.UserAuthorizationRepository;
 import jakarta.persistence.criteria.Predicate;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -29,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class UserManagementService {
 
     private static final String ACTIVE = "active";
@@ -38,10 +39,29 @@ public class UserManagementService {
     private static final String EMPLOYED = "employed";
     private static final String LEAVE = "leave";
     private static final String RETIRED = "retired";
+    private static final String DEFAULT_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
 
     private final UserAccountRepository userRepository;
     private final OrgUnitRepository orgUnitRepository;
+    private final AuthorizationRepository authorizationRepository;
+    private final UserAuthorizationRepository userAuthorizationRepository;
 
+    @Autowired
+    public UserManagementService(
+            UserAccountRepository userRepository,
+            OrgUnitRepository orgUnitRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository
+    ) {
+        this.userRepository = userRepository;
+        this.orgUnitRepository = orgUnitRepository;
+        this.authorizationRepository = authorizationRepository;
+        this.userAuthorizationRepository = userAuthorizationRepository;
+    }
+
+    public UserManagementService(UserAccountRepository userRepository, OrgUnitRepository orgUnitRepository) {
+        this(userRepository, orgUnitRepository, null, null);
+    }
     @Transactional(readOnly = true)
     public List<OrgUnitDto> listOrgUnits(String actorUsername, Long parentId, String unitType, boolean activeOnly) {
         requireAdmin(actorUsername);
@@ -94,8 +114,9 @@ public class UserManagementService {
         }
         UserAccount user = UserAccount.builder()
                 .username(request.username().trim())
+                .passwordHash(DEFAULT_FOUNDATION_PASSWORD_HASH)
                 .name(request.name().trim())
-                .displayName(valueOrNull(request.displayName()))
+                .remarks(valueOrNull(request.displayName()))
                 .email(valueOrNull(request.email()))
                 .department(valueOrNull(request.department()))
                 .position(valueOrNull(request.position()))
@@ -108,6 +129,9 @@ public class UserManagementService {
                 .createdBy(actor.getUsername())
                 .updatedBy(actor.getUsername())
                 .build();
+        if (Boolean.TRUE.equals(request.resetPassword())) {
+            user.setPasswordHash(DEFAULT_FOUNDATION_PASSWORD_HASH);
+        }
         return toDto(userRepository.save(user));
     }
 
@@ -124,7 +148,10 @@ public class UserManagementService {
         String nextEmploymentStatus = normalizeEmploymentStatus(request.employmentStatus());
         protectAdminRemoval(actor, user, nextRole, nextAccountStatus, nextEmploymentStatus);
         user.setName(request.name().trim());
-        user.setDisplayName(valueOrNull(request.displayName()));
+        user.setRemarks(valueOrNull(request.displayName()));
+        if (Boolean.TRUE.equals(request.resetPassword())) {
+            user.setPasswordHash(DEFAULT_FOUNDATION_PASSWORD_HASH);
+        }
         user.setEmail(valueOrNull(request.email()));
         user.setDepartment(valueOrNull(request.department()));
         user.setPosition(valueOrNull(request.position()));
@@ -135,7 +162,20 @@ public class UserManagementService {
         user.setEmploymentStatus(nextEmploymentStatus);
         user.setEnabled(isEnabled(nextAccountStatus, nextEmploymentStatus));
         user.setUpdatedBy(actor.getUsername());
+        user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
+        return toDto(userRepository.save(user));
+    }
+
+    @Transactional
+    public UserAccountDto resetPassword(String actorUsername, Long userId) {
+        UserAccount actor = requireAdmin(actorUsername);
+        UserAccount user = findUser(userId);
+        if (actor.getId().equals(user.getId())) {
+            throw new ApiException("SELF_PASSWORD_RESET", "현재 로그인한 계정의 비밀번호는 초기화할 수 없습니다.");
+        }
+        user.setPasswordHash(null);
+        user.setUpdatedBy(actor.getUsername());
         return toDto(userRepository.save(user));
     }
 
@@ -151,18 +191,22 @@ public class UserManagementService {
             protectAdminRemoval(actor, user, user.getRole(), DISABLED, user.getEmploymentStatus());
             user.setAccountStatus(DISABLED);
             user.setEnabled(false);
+            user.setDataEndStatus("Y");
         } else if ("lock".equals(normalizedAction)) {
             protectAdminRemoval(actor, user, user.getRole(), LOCKED, user.getEmploymentStatus());
             user.setAccountStatus(LOCKED);
             user.setEnabled(false);
+            user.setDataEndStatus("Y");
         } else if ("unlock".equals(normalizedAction)) {
             user.setAccountStatus(ACTIVE);
             user.setEnabled(EMPLOYED.equalsIgnoreCase(user.getEmploymentStatus()));
+            user.setDataEndStatus("N");
         } else if ("retire".equals(normalizedAction)) {
             protectAdminRemoval(actor, user, user.getRole(), DISABLED, RETIRED);
             user.setEmploymentStatus(RETIRED);
             user.setAccountStatus(DISABLED);
             user.setEnabled(false);
+            user.setDataEndStatus("Y");
         } else if ("delete-request".equals(normalizedAction)) {
             protectAdminRemoval(actor, user, user.getRole(), user.getAccountStatus(), user.getEmploymentStatus());
             if (!Boolean.TRUE.equals(safeRequest.confirmedImpact())) {
@@ -171,30 +215,24 @@ public class UserManagementService {
             user.setDeletionRequestedAt(LocalDateTime.now());
             user.setDeletionRequestedBy(actor.getUsername());
             user.setDeletionReason(valueOrNull(safeRequest.reason()));
+            user.setDataEndStatus("Y");
         } else {
             throw new ApiException("VALIDATION_ERROR", "지원하지 않는 사용자 상태 변경입니다.");
         }
         user.setUpdatedBy(actor.getUsername());
+        user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         return toDto(userRepository.save(user));
     }
 
     private Specification<UserAccount> buildSpecification(String query, Long orgUnitId, String roleId, String accountStatus, String employmentStatus) {
         return (root, criteriaQuery, builder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (query != null && !query.isBlank()) {
-                String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
-                predicates.add(builder.or(
-                        builder.like(builder.lower(root.get("username")), pattern),
-                        builder.like(builder.lower(root.get("name")), pattern),
-                        builder.like(builder.lower(root.get("displayName")), pattern)
-                ));
-            }
-            if (orgUnitId != null) predicates.add(builder.equal(root.get("orgUnitId"), orgUnitId));
-            if (roleId != null && !roleId.isBlank() && !"all".equalsIgnoreCase(roleId)) predicates.add(builder.equal(builder.lower(root.get("role")), roleId.toLowerCase(Locale.ROOT)));
-            if (accountStatus != null && !accountStatus.isBlank()) predicates.add(builder.equal(root.get("accountStatus"), accountStatus.toLowerCase(Locale.ROOT)));
-            if (employmentStatus != null && !employmentStatus.isBlank()) predicates.add(builder.equal(root.get("employmentStatus"), employmentStatus.toLowerCase(Locale.ROOT)));
-            return builder.and(predicates.toArray(Predicate[]::new));
+            if (query == null || query.isBlank()) return builder.conjunction();
+            String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
+            return builder.or(
+                    builder.like(builder.lower(root.get("username")), pattern),
+                    builder.like(builder.lower(root.get("name")), pattern)
+            );
         };
     }
 
@@ -202,7 +240,7 @@ public class UserManagementService {
         if (sort == null || sort.isBlank()) return Sort.by(Sort.Direction.ASC, "username");
         String[] parts = sort.split(",", 2);
         String property = switch (parts[0]) {
-            case "username", "name", "displayName", "createdAt", "updatedAt", "accountStatus", "employmentStatus" -> parts[0];
+            case "username", "name" -> parts[0];
             default -> "username";
         };
         Sort.Direction direction = parts.length > 1 && "desc".equalsIgnoreCase(parts[1]) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -228,6 +266,9 @@ public class UserManagementService {
     }
 
     private UserAccountDto toDto(UserAccount user) {
+        user.setRole(isAdministrator(user) ? "ADMIN" : "USER");
+        user.setAccountStatus("Y".equalsIgnoreCase(user.getDataEndStatus()) ? DISABLED : ACTIVE);
+        user.setEnabled(!"Y".equalsIgnoreCase(user.getDataEndStatus()));
         String orgUnitName = user.getOrgUnitId() == null
                 ? null
                 : orgUnitRepository.findById(user.getOrgUnitId()).map(OrgUnit::getName).orElse(null);
@@ -245,10 +286,18 @@ public class UserManagementService {
         }
         UserAccount actor = userRepository.findByUsernameIgnoreCase(actorUsername.trim())
                 .orElseThrow(() -> new ApiException("UNAUTHENTICATED", "인증된 사용자를 찾을 수 없습니다."));
-        if (!"ADMIN".equalsIgnoreCase(actor.getRole()) || !ACTIVE.equalsIgnoreCase(actor.getAccountStatus()) || !EMPLOYED.equalsIgnoreCase(actor.getEmploymentStatus())) {
+        if (!isAdministrator(actor) || !ACTIVE.equalsIgnoreCase(actor.getAccountStatus()) || !EMPLOYED.equalsIgnoreCase(actor.getEmploymentStatus())) {
             throw new ApiException("FORBIDDEN", "사용자관리 관리자 권한이 필요합니다.");
         }
         return actor;
+    }
+
+    private boolean isAdministrator(UserAccount user) {
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) return true;
+        if (authorizationRepository == null || userAuthorizationRepository == null) return false;
+        return userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
+                .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
+                .anyMatch(auth -> auth != null && "ADMIN".equalsIgnoreCase(auth.getCode()) && "N".equalsIgnoreCase(auth.getDataEndStatus()));
     }
 
     private void validateMutation(UserMutationRequest request, boolean update) {

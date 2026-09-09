@@ -64,12 +64,13 @@ class AuthServiceTest {
     }
 
     @Test
-    void rejectsAccountWithoutPasswordHash() {
+    void allowsAccountWithoutPasswordHashAndRequiresChange() {
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user("admin", "ADMIN")));
 
-        ApiException exception = assertThrows(ApiException.class, () -> service.login(new LoginRequest("admin", "admin")));
+        LoginResponse response = service.login(new LoginRequest("admin", ""));
 
-        assertEquals("AUTH_FAILED", exception.getCode());
+        assertEquals("admin", response.user().username());
+        assertEquals(true, response.passwordChangeRequired());
     }
 
     @Test

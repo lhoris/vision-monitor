@@ -1,5 +1,18 @@
 # Vision Monitor VMS
 
+## 로컬 실행 가이드
+
+frontend/backend 실행, `C:\JDK` 하위 JDK 21 자동 탐색, nvm 기반 Node.js 24 사용, DB 초기화 방법은 [docs/RUNNING.md](docs/RUNNING.md)를 기준으로 따른다.
+`scripts\develop.bat`는 backend를 Maven으로 빌드한 뒤, `8080`/`3000` 포트의 기존 프로세스를 종료하고 backend/frontend를 다시 실행한다.
+
+Windows 권장 실행:
+
+```bat
+nvm install 24
+nvm use 24
+scripts\develop.bat
+```
+
 제조 공정 CCTV 모니터링 시스템 (Manufacturing AI Monitoring Dashboard)
 
 ## 🎯 프로젝트 개요
@@ -17,7 +30,7 @@ Vision Monitor VMS는 다중 카메라 실시간 모니터링, 개인화된 그�
 ### 필수 소프트웨어
 
 - **Java 21**
-- **Node.js 18+** (npm 9+ 또는 yarn 4+)
+- **Node.js 24.x** (nvm 사용 권장)
 - **MariaDB 10.6+**
 - **Maven 3.8+**
 - **Git**

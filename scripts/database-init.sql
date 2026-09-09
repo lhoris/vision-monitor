@@ -9,6 +9,8 @@
 -- the user is created with host '%' (any host) rather than 'localhost'.
 -- Narrow this to the app server's specific IP instead of '%' if possible.
 
+DROP DATABASE IF EXISTS PPWIRE;
+
 -- Create database
 CREATE DATABASE IF NOT EXISTS PPWIRE
 CHARACTER SET utf8mb4

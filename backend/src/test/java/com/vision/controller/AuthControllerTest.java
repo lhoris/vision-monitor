@@ -35,7 +35,8 @@ class AuthControllerTest {
     void returnsLoginSuccessShape() throws Exception {
         when(authService.login(any())).thenReturn(new LoginResponse(
                 new AuthenticatedUserDto(1L, "admin", "admin", List.of("admin:access")),
-                "dev-auth-token"
+                "dev-auth-token",
+                false
         ));
 
         mockMvc.perform(post("/api/auth/login")

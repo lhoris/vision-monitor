@@ -8,6 +8,7 @@ export interface UserManagementService {
   getUser(userId: number): Promise<UserAccount>
   createUser(input: UserMutationRequest): Promise<UserAccount>
   updateUser(userId: number, input: UserMutationRequest): Promise<UserAccount>
+  resetPassword(userId: number): Promise<UserAccount>
   dangerAction(userId: number, action: UserDangerAction, keepPersonalization: boolean): Promise<UserAccount>
 }
 
@@ -37,6 +38,9 @@ function actualApiService(): UserManagementService {
     async updateUser(userId, input) {
       return getResponseData(await apiClient.put<UserAccount>(`/admin/users/${userId}`, input), null as never)
     },
+    async resetPassword(userId) {
+      return getResponseData(await apiClient.post<UserAccount>(`/admin/users/${userId}/reset-password`), null as never)
+    },
     async dangerAction(userId, action, keepPersonalization) {
       const endpoint = `/admin/users/${userId}/${action}`
       const body = action === 'retire'
@@ -60,6 +64,7 @@ export const userManagementService: UserManagementService = {
   getUser: (userId) => isMockAdmin() ? userManagementMockAdapter.getUser(userId).then((result) => result.data) : selectedService().getUser(userId),
   createUser: (input) => isMockAdmin() ? userManagementMockAdapter.createUser(input, currentUsername()).then((result) => result.data) : selectedService().createUser(input),
   updateUser: (userId, input) => isMockAdmin() ? userManagementMockAdapter.updateUser(userId, input, currentUsername()).then((result) => result.data) : selectedService().updateUser(userId, input),
+  resetPassword: (userId) => selectedService().resetPassword(userId),
   dangerAction: (userId, action, keepPersonalization) => isMockAdmin() ? userManagementMockAdapter.dangerAction(userId, action, currentUsername(), keepPersonalization).then((result) => result.data) : selectedService().dangerAction(userId, action, keepPersonalization),
 }
 

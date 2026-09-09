@@ -77,6 +77,14 @@ public class UserManagementController {
         return ApiResponse.success(userManagementService.updateUser(actorUsername, userId, request));
     }
 
+    @PostMapping("/users/{userId}/reset-password")
+    public ApiResponse<UserAccountDto> resetPassword(
+            @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
+            @PathVariable Long userId
+    ) {
+        return ApiResponse.success(userManagementService.resetPassword(actorUsername, userId));
+    }
+
     @PostMapping("/users/{userId}/lock")
     public ApiResponse<UserAccountDto> lockUser(
             @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
