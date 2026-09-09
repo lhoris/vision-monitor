@@ -2,7 +2,7 @@
 -- Authentication is not implemented yet, so this account is used as an actor
 -- through the X-Actor-Username request header.
 
-INSERT INTO users (
+INSERT INTO TB_M26_USERS (
     username,
     name,
     display_name,

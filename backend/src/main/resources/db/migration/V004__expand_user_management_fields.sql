@@ -1,6 +1,6 @@
 -- User management fields used by the backend API.
 
-ALTER TABLE users
+ALTER TABLE TB_M26_USERS
     MODIFY COLUMN email VARCHAR(255) NULL,
     ADD COLUMN name VARCHAR(255) NULL AFTER username,
     ADD COLUMN display_name VARCHAR(255) NULL AFTER name,
@@ -17,5 +17,5 @@ ALTER TABLE users
     ADD COLUMN deletion_requested_by VARCHAR(255) NULL AFTER deletion_requested_at,
     ADD COLUMN deletion_reason VARCHAR(500) NULL AFTER deletion_requested_by;
 
-UPDATE users
+UPDATE TB_M26_USERS
 SET account_status = CASE WHEN enabled = TRUE THEN 'active' ELSE 'disabled' END;

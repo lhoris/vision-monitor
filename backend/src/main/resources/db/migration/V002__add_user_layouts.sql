@@ -1,6 +1,6 @@
 -- Add Layouts Table for Personalized Grid (Phase 3)
 
-CREATE TABLE IF NOT EXISTS layouts (
+CREATE TABLE IF NOT EXISTS TB_M26_LAYOUTS (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     tab_name VARCHAR(255),

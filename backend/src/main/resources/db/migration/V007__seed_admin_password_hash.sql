@@ -1,7 +1,7 @@
 -- Seed the development administrator password as a BCrypt hash.
 -- Plain password for local development: admin
 
-INSERT INTO users (
+INSERT INTO TB_M26_USERS (
     username,
     password_hash,
     name,
