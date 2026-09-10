@@ -13,6 +13,7 @@
 - [X] T006 `frontend/src/services/videoSourceService.ts`와 `frontend/src/types/videoSource.ts`를 추가한다.
 - [X] T007 `frontend/src/pages/VideoManagement.tsx`에 사용자관리와 일관된 표·입력·수정·삭제 흐름을 구현한다.
 - [X] T008 `frontend/src/pages/AdminPlaceholder.tsx`에서 영상 관리 라우트를 실제 화면에 연결한다.
+- [X] T011 `frontend/src/pages/VideoManagement.tsx`에 모달 입력과 사용자관리 수준의 검색·필터·선택·페이지·일괄 작업 그리드를 구현한다.
 
 ## Phase 3: 검증
 
