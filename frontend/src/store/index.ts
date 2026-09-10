@@ -11,6 +11,7 @@ import cameraReducer from './slices/cameraSlice'
 import eventReducer from './slices/eventSlice'
 import uiReducer from './slices/uiSlice'
 import authReducer from './slices/authSlice'
+import commonCodeReducer from './slices/commonCodeSlice'
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     event: eventReducer,
     ui: uiReducer,
     auth: authReducer,
+    commonCode: commonCodeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

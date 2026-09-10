@@ -4,6 +4,7 @@
 
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import { authService, type LoginCredentials } from '@/services/authService'
+import { fetchCommonCodes } from './commonCodeSlice'
 
 export interface User {
   id: number
@@ -28,11 +29,12 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: LoginCredentials, { rejectWithValue }) => {
+  async (credentials: LoginCredentials, { rejectWithValue, dispatch }) => {
       try {
       const result = await authService.login(credentials)
       localStorage.setItem('authToken', result.token)
       localStorage.setItem('authUsername', result.user.username)
+      void dispatch(fetchCommonCodes())
       return result
     } catch (error) {
       localStorage.removeItem('authToken')

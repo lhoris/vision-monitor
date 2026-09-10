@@ -74,6 +74,10 @@ function PolicyIcon() {
   )
 }
 
+function SettingsIcon() {
+  return <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.5 4a6.5 6.5 0 01-.1 1.1l1.1.9-2 3.4-1.3-.5a7 7 0 01-1.9 1.1L16 19.5h-4l-.3-1.5a7 7 0 01-1.9-1.1l-1.3.5-2-3.4 1.1-.9A6.5 6.5 0 017.5 12c0-.4 0-.8.1-1.1l-1.1-.9 2-3.4 1.3.5a7 7 0 011.9-1.1L12 4.5h4l.3 1.5a7 7 0 011.9 1.1l1.3-.5 2 3.4-1.1.9c.1.4.1.7.1 1.1z" /></svg>
+}
+
 const generalNavItems: NavItem[] = [
   { path: '/live', labelKey: 'navigation.live', icon: <CameraIcon /> },
   { path: '/playback', labelKey: 'navigation.playback', icon: <PlaybackIcon /> },
@@ -108,6 +112,11 @@ const adminNavGroups: NavGroup[] = [
         path: '/admin/videos',
         labelKey: '영상 관리',
         icon: <CameraIcon />,
+      },
+      {
+        path: '/admin/common-codes',
+        labelKey: '공통코드 관리',
+        icon: <SettingsIcon />,
       },
     ],
   },
