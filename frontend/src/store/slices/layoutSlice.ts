@@ -3,7 +3,8 @@
  */
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
-import { layoutService } from '@/services/layoutService'
+import { createDefaultLayout, layoutService } from '@/services/layoutService'
+import { setThemeMode, type ThemeMode } from './uiSlice'
 import type { Layout, Tab, SubTab, GridConfig, LayoutState, CameraPosition } from '@/types/layout'
 
 const initialState: LayoutState = {
@@ -55,6 +56,20 @@ function setLayoutAndActiveTab(state: LayoutState, layout: Layout): void {
   state.activeTab = activeTab
 }
 
+function isThemeMode(value: unknown): value is ThemeMode {
+  return value === 'theme1' || value === 'theme2' || value === 'theme3'
+}
+
+function withTheme(layout: Layout, themeMode: ThemeMode): Layout {
+  return {
+    ...layout,
+    version: layout.version ?? 1,
+    theme: {
+      mode: themeMode,
+    },
+  }
+}
+
 /**
  * Async Thunks
  */
@@ -68,8 +83,12 @@ export const fetchUserLayout = createAsyncThunk(
 
 export const fetchMyLayout = createAsyncThunk(
   'layout/fetchMyLayout',
-  async (username: string | undefined) => {
+  async (username: string | undefined, { dispatch }) => {
     const layout = await layoutService.getMyLayout()
+    const savedThemeMode = layout?.theme?.mode
+    if (isThemeMode(savedThemeMode)) {
+      dispatch(setThemeMode(savedThemeMode))
+    }
     return { layout, username: username || null }
   }
 )
@@ -84,11 +103,28 @@ export const saveLayout = createAsyncThunk(
 
 export const saveMyLayout = createAsyncThunk(
   'layout/saveMyLayout',
-  async (layout: Layout) => {
-    const savedLayout = await layoutService.saveMyLayout(layout)
+  async (layout: Layout, { getState }) => {
+    const state = getState() as { ui?: { themeMode?: ThemeMode } }
+    const themedLayout = withTheme(layout, state.ui?.themeMode ?? layout.theme?.mode ?? 'theme2')
+    const savedLayout = await layoutService.saveMyLayout(themedLayout)
     if (!savedLayout) {
-      layoutService.saveLocalLayout(layout)
+      layoutService.saveLocalLayout(themedLayout)
       throw new Error('Failed to save layout')
+    }
+    return savedLayout
+  }
+)
+
+export const saveThemePreference = createAsyncThunk(
+  'layout/saveThemePreference',
+  async (themeMode: ThemeMode, { getState }) => {
+    const state = getState() as { layout?: { layout?: Layout | null } }
+    const restoredLayout = state.layout?.layout ?? (await layoutService.getMyLayout())
+    const baseLayout = restoredLayout ?? createDefaultLayout(1)
+    const savedLayout = await layoutService.saveMyLayout(withTheme(baseLayout, themeMode))
+    if (!savedLayout) {
+      layoutService.saveLocalLayout(withTheme(baseLayout, themeMode))
+      throw new Error('Failed to save theme')
     }
     return savedLayout
   }
@@ -320,6 +356,21 @@ const layoutSlice = createSlice({
       .addCase(saveMyLayout.rejected, (state, action) => {
         state.persistStatus = 'saveFailed'
         state.persistError = action.error.message || 'Failed to save layout'
+      })
+      .addCase(saveThemePreference.pending, (state) => {
+        state.persistStatus = 'saving'
+        state.persistError = null
+      })
+      .addCase(saveThemePreference.fulfilled, (state, action) => {
+        if (action.payload) {
+          setLayoutAndActiveTab(state, action.payload)
+        }
+        state.persistStatus = 'saved'
+        state.persistError = null
+      })
+      .addCase(saveThemePreference.rejected, (state, action) => {
+        state.persistStatus = 'saveFailed'
+        state.persistError = action.error.message || 'Failed to save theme'
       })
       .addCase(updateLayout.pending, (state) => {
         state.loading = true

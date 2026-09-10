@@ -105,8 +105,8 @@ const adminNavGroups: NavGroup[] = [
         icon: <ModelIcon />,
       },
       {
-        path: '/admin/cameras/new',
-        labelKey: 'navigation.admin.cameraCreate',
+        path: '/admin/videos',
+        labelKey: '영상 관리',
         icon: <CameraIcon />,
       },
     ],

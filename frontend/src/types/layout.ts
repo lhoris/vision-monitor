@@ -3,6 +3,8 @@
  * 개인화된 그리드 레이아웃 관련 타입
  */
 
+import type { ThemeMode } from '@/store/slices/uiSlice'
+
 export interface GridConfig {
   rows: number
   cols: number
@@ -48,6 +50,10 @@ export interface Tab {
 export interface Layout {
   id: number
   userId: number
+  version?: number
+  theme?: {
+    mode: ThemeMode
+  }
   tabs: Tab[]
   activeTab: string
   createdAt: string

@@ -70,6 +70,10 @@ export function createDefaultLayout(userId: number): Layout {
   return {
     id: 1,
     userId,
+    version: 1,
+    theme: {
+      mode: 'theme2',
+    },
     tabs: [defaultTab],
     activeTab: defaultTab.id,
     createdAt: now,

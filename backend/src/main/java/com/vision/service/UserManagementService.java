@@ -5,15 +5,11 @@ import com.vision.dto.UserAccountDto;
 import com.vision.dto.UserDangerActionRequest;
 import com.vision.dto.UserListResponse;
 import com.vision.dto.UserMutationRequest;
-import com.vision.dto.OrgUnitDto;
 import com.vision.entity.UserAccount;
-import com.vision.entity.OrgUnit;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
-import com.vision.repository.OrgUnitRepository;
 import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.UserAuthorizationRepository;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,45 +36,28 @@ public class UserManagementService {
     private static final String DEFAULT_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
 
     private final UserAccountRepository userRepository;
-    private final OrgUnitRepository orgUnitRepository;
     private final AuthorizationRepository authorizationRepository;
     private final UserAuthorizationRepository userAuthorizationRepository;
 
     @Autowired
     public UserManagementService(
             UserAccountRepository userRepository,
-            OrgUnitRepository orgUnitRepository,
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository
     ) {
         this.userRepository = userRepository;
-        this.orgUnitRepository = orgUnitRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
     }
 
-    public UserManagementService(UserAccountRepository userRepository, OrgUnitRepository orgUnitRepository) {
-        this(userRepository, orgUnitRepository, null, null);
-    }
-    @Transactional(readOnly = true)
-    public List<OrgUnitDto> listOrgUnits(String actorUsername, Long parentId, String unitType, boolean activeOnly) {
-        requireAdmin(actorUsername);
-        List<OrgUnit> units = activeOnly
-                ? (parentId == null
-                    ? orgUnitRepository.findAllByActiveTrueOrderByParentIdAscSortOrderAscNameAsc()
-                    : orgUnitRepository.findAllByParentIdAndActiveTrueOrderBySortOrderAscNameAsc(parentId))
-                : orgUnitRepository.findAll(Sort.by("parentId", "sortOrder", "name"));
-        return units.stream()
-                .filter(unit -> unitType == null || unitType.isBlank() || unit.getUnitType().equalsIgnoreCase(unitType))
-                .map(OrgUnitDto::from)
-                .toList();
+    public UserManagementService(UserAccountRepository userRepository) {
+        this(userRepository, null, null);
     }
 
     @Transactional(readOnly = true)
     public UserListResponse listUsers(
             String actorUsername,
             String query,
-            Long orgUnitId,
             String roleId,
             String accountStatus,
             String employmentStatus,
@@ -92,7 +69,7 @@ public class UserManagementService {
         int safePage = Math.max(page, 1);
         int safePageSize = Math.min(Math.max(pageSize, 1), 100);
         Page<UserAccount> result = userRepository.findAll(
-                buildSpecification(query, orgUnitId, roleId, accountStatus, employmentStatus),
+                buildSpecification(query, roleId, accountStatus, employmentStatus),
                 PageRequest.of(safePage - 1, safePageSize, resolveSort(sort))
         );
         List<UserAccountDto> items = result.getContent().stream().map(this::toDto).toList();
@@ -121,7 +98,6 @@ public class UserManagementService {
                 .department(valueOrNull(request.department()))
                 .position(valueOrNull(request.position()))
                 .phone(valueOrNull(request.phone()))
-                .orgUnitId(validateOrgUnit(request.orgUnitId()))
                 .role(resolveRole(request))
                 .accountStatus(normalizeAccountStatus(request.accountStatus()))
                 .employmentStatus(normalizeEmploymentStatus(request.employmentStatus()))
@@ -156,7 +132,6 @@ public class UserManagementService {
         user.setDepartment(valueOrNull(request.department()));
         user.setPosition(valueOrNull(request.position()));
         user.setPhone(valueOrNull(request.phone()));
-        user.setOrgUnitId(validateOrgUnit(request.orgUnitId()));
         user.setRole(nextRole);
         user.setAccountStatus(nextAccountStatus);
         user.setEmploymentStatus(nextEmploymentStatus);
@@ -225,7 +200,7 @@ public class UserManagementService {
         return toDto(userRepository.save(user));
     }
 
-    private Specification<UserAccount> buildSpecification(String query, Long orgUnitId, String roleId, String accountStatus, String employmentStatus) {
+    private Specification<UserAccount> buildSpecification(String query, String roleId, String accountStatus, String employmentStatus) {
         return (root, criteriaQuery, builder) -> {
             if (query == null || query.isBlank()) return builder.conjunction();
             String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
@@ -269,10 +244,7 @@ public class UserManagementService {
         user.setRole(isAdministrator(user) ? "ADMIN" : "USER");
         user.setAccountStatus("Y".equalsIgnoreCase(user.getDataEndStatus()) ? DISABLED : ACTIVE);
         user.setEnabled(!"Y".equalsIgnoreCase(user.getDataEndStatus()));
-        String orgUnitName = user.getOrgUnitId() == null
-                ? null
-                : orgUnitRepository.findById(user.getOrgUnitId()).map(OrgUnit::getName).orElse(null);
-        return UserAccountDto.from(user, orgUnitName);
+        return UserAccountDto.from(user);
     }
 
     private UserAccount findUser(Long userId) {
@@ -306,14 +278,6 @@ public class UserManagementService {
         if (!update && request.username().trim().length() < 2) throw new ApiException("VALIDATION_ERROR", "사용자 ID는 2자 이상이어야 합니다.");
         normalizeAccountStatus(request.accountStatus());
         normalizeEmploymentStatus(request.employmentStatus());
-    }
-
-    private Long validateOrgUnit(Long orgUnitId) {
-        if (orgUnitId == null) return null;
-        OrgUnit unit = orgUnitRepository.findById(orgUnitId)
-                .orElseThrow(() -> new ApiException("ORG_UNIT_NOT_FOUND", "조직을 찾을 수 없습니다."));
-        if (!Boolean.TRUE.equals(unit.getActive())) throw new ApiException("ORG_UNIT_INACTIVE", "비활성 조직은 지정할 수 없습니다.");
-        return orgUnitId;
     }
 
     private String resolveRole(UserMutationRequest request) {

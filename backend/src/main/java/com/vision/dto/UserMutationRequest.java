@@ -10,7 +10,6 @@ public record UserMutationRequest(
         String department,
         String position,
         String phone,
-        Long orgUnitId,
         List<String> roleIds,
         String accountStatus,
         String employmentStatus,

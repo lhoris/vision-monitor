@@ -65,7 +65,7 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
 cd backend
 mvn clean package -DskipTests
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+mvn spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 local 프로필의 기본 DB 접속값:
@@ -103,6 +103,10 @@ Vite 개발 서버는 기본적으로 `http://localhost:3000`에서 실행된다
 ```powershell
 mysql -u root -p < scripts\database-init.sql
 ```
+
+`V001__init.sql`은 더 이상 임시 monitoring 테이블을 만들지 않는 baseline marker다.
+기존 로컬 DB에 예전 `V001`이 이미 적용되어 있으면 Flyway checksum이 달라지므로
+`scripts\database-init.sql`로 `PPWIRE` DB를 재생성한 뒤 backend를 시작한다.
 
 Spring Boot 시작 시 Flyway가 `backend/src/main/resources/db/migration`의 migration을 자동 적용한다.
 
@@ -166,5 +170,5 @@ Backend:
 
 ```powershell
 cd backend
-mvn spring-boot:run -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments="--server.port=8081"
+mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```

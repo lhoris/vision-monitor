@@ -1,37 +1,36 @@
-# Vision Monitor VMS - Backend
+﻿# Vision Monitor VMS - Backend
 
-Spring Boot 3.x + Java 21로 구성된 REST API 서버
+Spring Boot 3.x + Java 21濡?援ъ꽦??REST API ?쒕쾭
 
-## 사전 요구사항
+## ?ъ쟾 ?붽뎄?ы빆
 
 - Java 21
 - MariaDB 10.6+
 - Maven 3.8+
 
-## 설치
+## ?ㅼ튂
 
 ```bash
 cd backend
 mvn clean install
 ```
 
-## 개발 서버 실행
+## 媛쒕컻 ?쒕쾭 ?ㅽ뻾
 
 ```bash
-mvn clean spring-boot:run
+mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-서버는 `http://localhost:8080`에서 실행됩니다.
+?쒕쾭??`http://localhost:8080`?먯꽌 ?ㅽ뻾?⑸땲??
 
-## 데이터베이스 설정
+## ?곗씠?곕쿋?댁뒪 ?ㅼ젙
 
-### MariaDB 초기화
-
+### MariaDB 珥덇린??
 ```bash
-# 데이터베이스 및 사용자 생성
+# ?곗씠?곕쿋?댁뒪 諛??ъ슜???앹꽦
 mysql -u root -p < scripts/database-init.sql
 
-# 또는 수동 설정
+# ?먮뒗 ?섎룞 ?ㅼ젙
 mysql -u root -p
 CREATE DATABASE vision_monitor CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'vision'@'localhost' IDENTIFIED BY 'password';
@@ -39,146 +38,141 @@ GRANT ALL PRIVILEGES ON vision_monitor.* TO 'vision'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-### 마이그레이션
+### 留덉씠洹몃젅?댁뀡
 
-Flyway가 자동으로 마이그레이션을 실행합니다:
-- `V001__init.sql` - 초기 스키마 (7개 테이블)
-- `V002__add_user_layouts.sql` - Layout 테이블 추가
+Flyway媛 ?먮룞?쇰줈 留덉씠洹몃젅?댁뀡???ㅽ뻾?⑸땲??
+- `V001__init.sql` - baseline marker
+- `V002__create_m26_user_master_tables.sql` - ?ъ슜??沅뚰븳/怨듯넻肄붾뱶/媛쒖씤???뚯씠釉?- `V003__seed_m26_master_data.sql` - 媛쒕컻???ъ슜??沅뚰븳 seed
+- `V005__allow_null_foundation_password.sql` - password reset support
+湲곗〈 濡쒖뺄 DB???덉쟾 `V001`???대? ?곸슜?섏뼱 ?덉쑝硫?Flyway checksum???щ씪吏묐땲??
+媛쒕컻 ?섍꼍?먯꽌??`scripts/database-init.sql`濡?`PPWIRE` DB瑜??ъ깮?깊븳 ???쒖옉?섏꽭??
 
-## 프로젝트 구조
+## ?꾨줈?앺듃 援ъ“
 
 ```
 src/main/java/com/vision/
-├── VisionMonitorApplication.java  # 메인 클래스
-├── entity/                        # JPA Entities
-│   ├── Camera.java
-│   ├── Stream.java
-│   ├── Event.java
-│   ├── Recording.java
-│   ├── AlertSetting.java
-│   └── Layout.java               # 개인화 그리드 레이아웃
-├── repository/                    # Spring Data JPA Repositories
-│   ├── CameraRepository.java
-│   ├── StreamRepository.java
-│   ├── EventRepository.java
-│   ├── RecordingRepository.java
-│   ├── AlertSettingRepository.java
-│   └── LayoutRepository.java
-├── controller/                    # REST Controllers
-│   ├── CameraController.java
-│   ├── StreamController.java
-│   ├── EventController.java
-│   ├── RecordingController.java
-│   ├── AlertSettingController.java
-│   └── LayoutController.java
-├── service/                       # Business Logic
-│   ├── CameraService.java
-│   ├── EventService.java
-│   ├── RecordingService.java
-│   └── LayoutService.java
-├── dto/                           # Data Transfer Objects
-│   ├── CameraDto.java
-│   └── LayoutDto.java
-├── config/                        # Configuration
-│   ├── DatabaseConfig.java
-│   ├── WebConfig.java
-│   └── SecurityConfig.java (선택사항)
-├── exception/                     # Exception Handling
-│   ├── ApiException.java
-│   └── GlobalExceptionHandler.java
-└── util/                          # Utility Classes
-    └── ApiResponse.java
+?쒋?? VisionMonitorApplication.java  # 硫붿씤 ?대옒???쒋?? entity/                        # JPA Entities
+??  ?쒋?? UserAccount.java
+??  ?쒋?? Authorization.java
+??  ?쒋?? UserAuthorization.java
+??  ?쒋?? UserPersonal.java
+??  ?붴?? Layout.java               # 媛쒖씤??洹몃━???덉씠?꾩썐
+?쒋?? repository/                    # Spring Data JPA Repositories
+??  ?쒋?? UserAccountRepository.java
+??  ?쒋?? AuthorizationRepository.java
+??  ?쒋?? UserAuthorizationRepository.java
+??  ?쒋?? UserPersonalRepository.java
+??  ?붴?? LayoutRepository.java
+?쒋?? controller/                    # REST Controllers
+??  ?쒋?? CameraController.java
+??  ?쒋?? StreamController.java
+??  ?쒋?? EventController.java
+??  ?쒋?? RecordingController.java
+??  ?쒋?? AlertSettingController.java
+??  ?붴?? LayoutController.java
+?쒋?? service/                       # Business Logic
+??  ?쒋?? AuthService.java
+??  ?쒋?? UserManagementService.java
+??  ?붴?? LayoutService.java
+?쒋?? dto/                           # Data Transfer Objects
+??  ?쒋?? CameraDto.java
+??  ?붴?? LayoutDto.java
+?쒋?? config/                        # Configuration
+??  ?쒋?? DatabaseConfig.java
+??  ?쒋?? WebConfig.java
+??  ?붴?? SecurityConfig.java (?좏깮?ы빆)
+?쒋?? exception/                     # Exception Handling
+??  ?쒋?? ApiException.java
+??  ?붴?? GlobalExceptionHandler.java
+?붴?? util/                          # Utility Classes
+    ?붴?? ApiResponse.java
 
 src/main/resources/
-├── application.yml               # Spring Boot 설정
-├── db/migration/
-│   ├── V001__init.sql            # 초기 스키마
-│   └── V002__add_user_layouts.sql # Layout 테이블
-└── logback-spring.xml            # 로깅 설정
+?쒋?? application.yml               # Spring Boot ?ㅼ젙
+?쒋?? db/migration/
+??  ?쒋?? V001__init.sql            # baseline marker
+??  ?쒋?? V002__create_m26_user_master_tables.sql
+??  ?쒋?? V003__seed_m26_master_data.sql
+??  ?붴?? V005__allow_null_foundation_password.sql
+?붴?? logback-spring.xml            # 濡쒓퉭 ?ㅼ젙
 ```
 
-## API 문서
+## API 臾몄꽌
 
 ### Swagger/OpenAPI UI
 
-서버 실행 후 다음 주소에서 API 문서를 확인할 수 있습니다:
+?쒕쾭 ?ㅽ뻾 ???ㅼ쓬 二쇱냼?먯꽌 API 臾몄꽌瑜??뺤씤?????덉뒿?덈떎:
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-## 주요 기술 스택
+## 二쇱슂 湲곗닠 ?ㅽ깮
 
-- **Spring Boot 3.2** - 웹 프레임워크
-- **Spring Data JPA** - ORM
-- **MariaDB** - 관계형 데이터베이스
-- **Flyway** - 데이터베이스 마이그레이션
-- **Lombok** - 보일러플레이트 코드 제거
-- **SpringDoc OpenAPI** - Swagger/OpenAPI 문서 자동 생성
-- **JUnit 5** - 단위 테스트
-- **Mockito** - Mock 객체 라이브러리
-
-## 테스트
-
-### 단위 테스트 실행
+- **Spring Boot 3.2** - ???꾨젅?꾩썙??- **Spring Data JPA** - ORM
+- **MariaDB** - 愿怨꾪삎 ?곗씠?곕쿋?댁뒪
+- **Flyway** - ?곗씠?곕쿋?댁뒪 留덉씠洹몃젅?댁뀡
+- **Lombok** - 蹂댁씪?ы뵆?덉씠??肄붾뱶 ?쒓굅
+- **SpringDoc OpenAPI** - Swagger/OpenAPI 臾몄꽌 ?먮룞 ?앹꽦
+- **JUnit 5** - ?⑥쐞 ?뚯뒪??- **Mockito** - Mock 媛앹껜 ?쇱씠釉뚮윭由?
+## ?뚯뒪??
+### ?⑥쐞 ?뚯뒪???ㅽ뻾
 
 ```bash
 mvn test
 ```
 
-### 특정 테스트 클래스만 실행
+### ?뱀젙 ?뚯뒪???대옒?ㅻ쭔 ?ㅽ뻾
 
 ```bash
 mvn test -Dtest=CameraRepositoryTest
 ```
 
-## 빌드 및 배포
+## 鍮뚮뱶 諛?諛고룷
 
-### 프로덕션 빌드
+### ?꾨줈?뺤뀡 鍮뚮뱶
 
 ```bash
 mvn clean package
 ```
 
-JAR 파일이 `target/` 디렉토리에 생성됩니다.
+JAR ?뚯씪??`target/` ?붾젆?좊━???앹꽦?⑸땲??
 
-### 실행
+### ?ㅽ뻾
 
 ```bash
 java -jar target/vision-monitor-0.0.1-SNAPSHOT.jar
 ```
 
-## 개발 가이드
+## 媛쒕컻 媛?대뱶
 
-### 새로운 Entity 추가
+### ?덈줈??Entity 異붽?
 
-1. `entity/` 디렉토리에 Entity 클래스 생성
-2. `repository/` 디렉토리에 Repository 인터페이스 생성
-3. 마이그레이션 파일 추가 (`src/main/resources/db/migration/`)
+1. `entity/` ?붾젆?좊━??Entity ?대옒???앹꽦
+2. `repository/` ?붾젆?좊━??Repository ?명꽣?섏씠???앹꽦
+3. 留덉씠洹몃젅?댁뀡 ?뚯씪 異붽? (`src/main/resources/db/migration/`)
 
-### 새로운 API Endpoint 추가
+### ?덈줈??API Endpoint 異붽?
 
-1. `dto/` 디렉토리에 DTO 클래스 생성 (필요시)
-2. `service/` 디렉토리에 Service 클래스 생성
-3. `controller/` 디렉토리에 Controller 클래스 생성
+1. `dto/` ?붾젆?좊━??DTO ?대옒???앹꽦 (?꾩슂??
+2. ?ㅼ젣 backend 梨낆엫 踰붿쐞?쇰㈃ `service/` ?붾젆?좊━??Service ?대옒???앹꽦
+3. `controller/` ?붾젆?좊━??Controller ?대옒???앹꽦
+4. 移대찓???ㅽ듃由??대깽???뱁솕/?뚮┝? MVP?먯꽌 frontend mock-first 踰붿쐞?대?濡??ㅼ젣 ?뚯씠釉붽낵 JPA 怨꾩링??癒쇱? 留뚮뱾吏 ?딅뒗??
 
-예:
+??
 ```java
 @RestController
 @RequestMapping("/api/cameras")
 public class CameraController {
-    
-    @Autowired
-    private CameraService cameraService;
-    
+
     @GetMapping
     public ApiResponse<List<CameraDto>> getAllCameras() {
-        return ApiResponse.success(cameraService.getAllCameras());
+        return ApiResponse.success(List.of());
     }
 }
 ```
 
-### 에러 처리
+### ?먮윭 泥섎━
 
-모든 API 응답은 표준 `ApiResponse` 형식을 사용합니다:
+紐⑤뱺 API ?묐떟? ?쒖? `ApiResponse` ?뺤떇???ъ슜?⑸땲??
 
 ```json
 {
@@ -189,7 +183,7 @@ public class CameraController {
 }
 ```
 
-에러 응답:
+?먮윭 ?묐떟:
 
 ```json
 {
@@ -200,11 +194,10 @@ public class CameraController {
 }
 ```
 
-## 환경 변수
+## ?섍꼍 蹂??
+### MariaDB ?곌껐 ?ㅼ젙
 
-### MariaDB 연결 설정
-
-`application.yml` 또는 환경 변수에서 설정:
+`application.yml` ?먮뒗 ?섍꼍 蹂?섏뿉???ㅼ젙:
 
 ```yaml
 spring:
@@ -214,48 +207,44 @@ spring:
     password: password
 ```
 
-## 트러블슈팅
-
-### MariaDB 연결 실패
+## ?몃윭釉붿뒋??
+### MariaDB ?곌껐 ?ㅽ뙣
 
 ```bash
-# MariaDB 서버 상태 확인 (Linux/Mac)
+# MariaDB ?쒕쾭 ?곹깭 ?뺤씤 (Linux/Mac)
 systemctl status mariadb
 
-# MariaDB 시작 (Linux)
+# MariaDB ?쒖옉 (Linux)
 sudo systemctl start mariadb
 
-# MariaDB 시작 (Mac - Homebrew)
+# MariaDB ?쒖옉 (Mac - Homebrew)
 brew services start mariadb
 ```
 
-### 포트 8080 이미 사용 중
-
+### ?ы듃 8080 ?대? ?ъ슜 以?
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
-### 데이터베이스 마이그레이션 오류
+### ?곗씠?곕쿋?댁뒪 留덉씠洹몃젅?댁뀡 ?ㅻ쪟
 
 ```bash
-# Flyway 히스토리 초기화 (개발 환경만)
+# Flyway ?덉뒪?좊━ 珥덇린??(媛쒕컻 ?섍꼍留?
 mvn flyway:clean
 mvn flyway:migrate
 ```
 
-## Phase 3 구현 예정
+## Phase 3 援ы쁽 ?덉젙
 
-- [ ] 카메라 관리 API
-- [ ] 실시간 이벤트 처리
-- [ ] 녹화 데이터 관리
-- [ ] 사용자 인증 및 권한 관리
-- [ ] 개인화 그리드 레이아웃 API
-- [ ] WebSocket 기반 실시간 스트리밍
-- [ ] 알림 시스템 (이메일, SMS, 인앱)
+- [ ] 移대찓??愿由?API
+- [ ] ?ㅼ떆媛??대깽??泥섎━
+- [ ] ?뱁솕 ?곗씠??愿由?- [ ] ?ъ슜???몄쬆 諛?沅뚰븳 愿由?- [ ] 媛쒖씤??洹몃━???덉씠?꾩썐 API
+- [ ] WebSocket 湲곕컲 ?ㅼ떆媛??ㅽ듃由щ컢
+- [ ] ?뚮┝ ?쒖뒪??(?대찓?? SMS, ?몄빋)
 
-## 자세한 내용
+## ?먯꽭???댁슜
 
-- [Spring Boot 문서](https://spring.io/projects/spring-boot)
-- [Spring Data JPA 문서](https://spring.io/projects/spring-data-jpa)
-- [Flyway 문서](https://flywaydb.org/)
+- [Spring Boot 臾몄꽌](https://spring.io/projects/spring-boot)
+- [Spring Data JPA 臾몄꽌](https://spring.io/projects/spring-data-jpa)
+- [Flyway 臾몄꽌](https://flywaydb.org/)
 - [Swagger/OpenAPI](https://swagger.io/)

@@ -7,6 +7,7 @@ import {
   setThemeMode,
 } from '@/store/slices/uiSlice'
 import type { ThemeMode } from '@/store/slices/uiSlice'
+import { saveThemePreference } from '@/store/slices/layoutSlice'
 import { logoutUser } from '@/store/slices/authSlice'
 
 const themeOptions: Array<{
@@ -69,6 +70,7 @@ export function Header() {
 
   const handleThemeChange = (theme: ThemeMode) => {
     dispatch(setThemeMode(theme))
+    dispatch(saveThemePreference(theme))
     setThemeMenuOpen(false)
   }
 

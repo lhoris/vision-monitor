@@ -39,6 +39,7 @@ class LayoutControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(10))
                 .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.theme.mode").value("theme3"))
                 .andExpect(jsonPath("$.data.activeTab").value("tab-1"))
                 .andExpect(jsonPath("$.data.tabs", hasSize(1)));
     }
@@ -65,6 +66,7 @@ class LayoutControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.theme.mode").value("theme3"))
                 .andExpect(jsonPath("$.data.tabs", hasSize(1)));
     }
 
@@ -86,6 +88,7 @@ class LayoutControllerTest {
         return LayoutDto.builder()
                 .id(10L)
                 .userId(1L)
+                .theme(LayoutDto.ThemeDto.builder().mode("theme3").build())
                 .activeTab("tab-1")
                 .tabs(objectMapper.readTree("""
                         [

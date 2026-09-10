@@ -24,9 +24,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return switch (code) {
             case "UNAUTHENTICATED", "AUTH_FAILED", "AUTH_REQUIRED" -> HttpStatus.UNAUTHORIZED;
             case "FORBIDDEN" -> HttpStatus.FORBIDDEN;
-            case "USER_NOT_FOUND", "ORG_UNIT_NOT_FOUND", "LAYOUT_NOT_FOUND" -> HttpStatus.NOT_FOUND;
+            case "USER_NOT_FOUND", "LAYOUT_NOT_FOUND" -> HttpStatus.NOT_FOUND;
             case "DUPLICATE_USERNAME", "LAST_ADMIN_RISK", "SELF_LOCKOUT_RISK", "VERSION_CONFLICT", "USERNAME_IMMUTABLE" -> HttpStatus.CONFLICT;
-            case "VALIDATION_ERROR", "ORG_UNIT_INACTIVE", "CONFIRMATION_REQUIRED", "INVALID_LAYOUT" -> HttpStatus.UNPROCESSABLE_ENTITY;
+            case "VALIDATION_ERROR", "CONFIRMATION_REQUIRED", "INVALID_LAYOUT" -> HttpStatus.UNPROCESSABLE_ENTITY;
             case "LAYOUT_SAVE_FAILED" -> HttpStatus.INTERNAL_SERVER_ERROR;
             default -> HttpStatus.BAD_REQUEST;
         };

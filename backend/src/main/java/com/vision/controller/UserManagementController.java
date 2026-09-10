@@ -1,6 +1,5 @@
 package com.vision.controller;
 
-import com.vision.dto.OrgUnitDto;
 import com.vision.dto.UserAccountDto;
 import com.vision.dto.UserDangerActionRequest;
 import com.vision.dto.UserListResponse;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -27,21 +24,10 @@ public class UserManagementController {
 
     private final UserManagementService userManagementService;
 
-    @GetMapping("/org-units")
-    public ApiResponse<List<OrgUnitDto>> listOrgUnits(
-            @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
-            @RequestParam(required = false) Long parentId,
-            @RequestParam(required = false) String unitType,
-            @RequestParam(defaultValue = "true") boolean activeOnly
-    ) {
-        return ApiResponse.success(userManagementService.listOrgUnits(actorUsername, parentId, unitType, activeOnly));
-    }
-
     @GetMapping("/users")
     public ApiResponse<UserListResponse> listUsers(
             @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
             @RequestParam(required = false) String query,
-            @RequestParam(required = false) Long orgUnitId,
             @RequestParam(required = false) String roleId,
             @RequestParam(required = false) String accountStatus,
             @RequestParam(required = false) String employmentStatus,
@@ -49,7 +35,7 @@ public class UserManagementController {
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(defaultValue = "username,asc") String sort
     ) {
-        return ApiResponse.success(userManagementService.listUsers(actorUsername, query, orgUnitId, roleId, accountStatus, employmentStatus, page, pageSize, sort));
+        return ApiResponse.success(userManagementService.listUsers(actorUsername, query, roleId, accountStatus, employmentStatus, page, pageSize, sort));
     }
 
     @GetMapping("/users/{userId}")

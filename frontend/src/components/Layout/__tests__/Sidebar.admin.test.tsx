@@ -53,7 +53,7 @@ describe('Sidebar admin navigation', () => {
     expect(screen.getByText('제어 연동 통신 현황')).toBeInTheDocument()
     expect(screen.getByText('기타 주소 설정 현황')).toBeInTheDocument()
     expect(screen.getByText('모델 재가동')).toBeInTheDocument()
-    expect(screen.getByText('카메라 추가')).toBeInTheDocument()
+    expect(screen.getByText('영상 관리')).toBeInTheDocument()
     expect(screen.getByText('접속 권한 관리')).toBeInTheDocument()
     expect(screen.getByText('사용자 관리')).toBeInTheDocument()
     expect(screen.getByText('역할 관리')).toBeInTheDocument()

@@ -4,7 +4,7 @@ import { userManagementMockAdapter } from './userManagementMockAdapter'
 import type { UserAccount, UserDangerAction, UserListResponse, UserMutationRequest } from '@/types/userManagement'
 
 export interface UserManagementService {
-  listUsers(filters?: { query?: string; orgUnitId?: number; roleId?: string; accountStatus?: string; employmentStatus?: string; page?: number; pageSize?: number; sort?: string }): Promise<UserListResponse>
+  listUsers(filters?: { query?: string; roleId?: string; accountStatus?: string; employmentStatus?: string; page?: number; pageSize?: number; sort?: string }): Promise<UserListResponse>
   getUser(userId: number): Promise<UserAccount>
   createUser(input: UserMutationRequest): Promise<UserAccount>
   updateUser(userId: number, input: UserMutationRequest): Promise<UserAccount>

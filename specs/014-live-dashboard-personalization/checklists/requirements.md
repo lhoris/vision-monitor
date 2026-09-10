@@ -1,12 +1,12 @@
 # Specification Quality Checklist: 라이브 대시보드 개인화
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-08-25
+**Created**: 2026-09-10
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
-- [X] No implementation details (languages, frameworks, APIs)
+- [X] No implementation details beyond accepted identifiers and source references
 - [X] Focused on user value and business needs
 - [X] Written for non-technical stakeholders
 - [X] All mandatory sections completed
@@ -16,7 +16,7 @@
 - [X] No [NEEDS CLARIFICATION] markers remain
 - [X] Requirements are testable and unambiguous
 - [X] Success criteria are measurable
-- [X] Success criteria are technology-agnostic (no implementation details)
+- [X] Success criteria are technology-agnostic
 - [X] All acceptance scenarios are defined
 - [X] Edge cases are identified
 - [X] Scope is clearly bounded
@@ -31,5 +31,6 @@
 
 ## Notes
 
-- 명세는 002 라이브 메인 화면의 기존 layout 편집 범위를 사용자별 저장/복원 기능으로 확장한다.
-- 구현 방식, 저장소, API 계약, migration 여부는 plan 단계에서 결정한다.
+- 명세는 theme와 layout을 하나의 사용자 개인화 범위로 확정한다.
+- 기존 layout 중심 contract, data-model, tasks는 plan/tasks 단계에서 통합 개인화 구조로 갱신해야 한다.
+- 저장 방식과 API 세부 형태는 spec이 아니라 plan.md 및 contracts/에서 확정한다.

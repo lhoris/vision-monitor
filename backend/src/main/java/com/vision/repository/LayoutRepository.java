@@ -17,8 +17,12 @@ public interface LayoutRepository extends JpaRepository<Layout, Long> {
 
     Optional<Layout> findFirstByUserIdOrderByIdAsc(Long userId);
 
+    Optional<Layout> findFirstByUserIdAndTabNameOrderByIdAsc(Long userId, String tabName);
+
     List<Layout> findAllByUserId(Long userId);
 
     void deleteByUserIdAndIdNot(Long userId, Long id);
+
+    void deleteByUserIdAndTabNameAndIdNot(Long userId, String tabName, Long id);
 
 }

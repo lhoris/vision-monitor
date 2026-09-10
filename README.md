@@ -58,6 +58,8 @@ mysql -u root -p < scripts/database-init.sql
 ```
 
 마이그레이션은 Spring Boot 시작 시 Flyway가 자동으로 실행합니다.
+기존 로컬 DB에 예전 `V001` migration이 이미 적용되어 있으면 baseline이 바뀌어
+checksum이 달라지므로 `scripts/database-init.sql`로 `PPWIRE` DB를 재생성한 뒤 시작하세요.
 
 ### 3. 환경 설정
 
@@ -96,7 +98,7 @@ chmod +x scripts/develop.sh
 터미널 1 - Backend:
 ```bash
 cd backend
-mvn clean spring-boot:run
+mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 터미널 2 - Frontend:
@@ -203,7 +205,7 @@ npm run test         # 테스트
 
 ```bash
 cd backend
-mvn clean spring-boot:run  # 개발 서버
+mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"  # 개발 서버
 mvn clean package    # 프로덕션 빌드
 mvn test             # 테스트
 ```
@@ -294,7 +296,7 @@ npm run dev -- --port 3001
 
 # 포트 8080 이미 사용 중인 경우
 cd backend
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
 ### 마이그레이션 오류

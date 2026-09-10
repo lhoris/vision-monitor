@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Layout Service - 개인화 그리드 레이아웃
@@ -18,6 +20,9 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class LayoutService {
+
+    private static final String DASHBOARD_PERSONAL_NAME = "dashboard";
+    private static final Set<String> ALLOWED_THEME_MODES = Set.of("theme1", "theme2", "theme3");
 
     private final LayoutRepository layoutRepository;
     private final UserAccountRepository userRepository;
@@ -27,7 +32,7 @@ public class LayoutService {
      */
     @Transactional(readOnly = true)
     public LayoutDto getUserLayout(Long userId) {
-        return layoutRepository.findFirstByUserIdOrderByIdAsc(userId)
+        return findDashboardLayout(userId)
                 .map(LayoutDto::fromEntity)
                 .orElse(null);
     }
@@ -45,6 +50,7 @@ public class LayoutService {
     public LayoutDto saveLayout(LayoutDto layoutDto) {
         validateLayout(layoutDto);
         Layout layout = layoutDto.toEntity();
+        layout.setTabName(DASHBOARD_PERSONAL_NAME);
         layout.setCreatedAt(layout.getCreatedAt() == null ? LocalDateTime.now() : layout.getCreatedAt());
         layout.setUpdatedAt(LocalDateTime.now());
         return LayoutDto.fromEntity(layoutRepository.save(layout));
@@ -55,7 +61,7 @@ public class LayoutService {
         UserAccount actor = resolveActor(actorUsername);
         validateLayout(layoutDto);
 
-        Layout existing = layoutRepository.findFirstByUserIdOrderByIdAsc(actor.getId()).orElse(null);
+        Layout existing = findDashboardLayout(actor.getId()).orElse(null);
         Layout layout = layoutDto.toEntity();
         if (existing != null) {
             layout.setId(existing.getId());
@@ -65,10 +71,11 @@ public class LayoutService {
             layout.setCreatedAt(LocalDateTime.now());
         }
         layout.setUserId(actor.getId());
+        layout.setTabName(DASHBOARD_PERSONAL_NAME);
         layout.setUpdatedAt(LocalDateTime.now());
 
         Layout saved = layoutRepository.save(layout);
-        layoutRepository.deleteByUserIdAndIdNot(actor.getId(), saved.getId());
+        layoutRepository.deleteByUserIdAndTabNameAndIdNot(actor.getId(), DASHBOARD_PERSONAL_NAME, saved.getId());
         return LayoutDto.fromEntity(saved);
     }
 
@@ -83,6 +90,7 @@ public class LayoutService {
         Layout updated = layoutDto.toEntity();
         updated.setId(existing.getId());
         updated.setUserId(existing.getUserId());
+        updated.setTabName(DASHBOARD_PERSONAL_NAME);
         updated.setCreatedAt(existing.getCreatedAt());
         updated.setUpdatedAt(LocalDateTime.now());
         return LayoutDto.fromEntity(layoutRepository.save(updated));
@@ -108,12 +116,21 @@ public class LayoutService {
         return actor;
     }
 
+    private Optional<Layout> findDashboardLayout(Long userId) {
+        return layoutRepository.findFirstByUserIdAndTabNameOrderByIdAsc(userId, DASHBOARD_PERSONAL_NAME)
+                .or(() -> layoutRepository.findFirstByUserIdOrderByIdAsc(userId));
+    }
+
     private void validateLayout(LayoutDto layoutDto) {
         if (layoutDto == null || layoutDto.getTabs() == null || !layoutDto.getTabs().isArray() || layoutDto.getTabs().isEmpty()) {
             throw new ApiException("INVALID_LAYOUT", "Layout payload is invalid", new InvalidLayoutDetail("tabs", "At least one tab is required"));
         }
         if (layoutDto.getActiveTab() == null || layoutDto.getActiveTab().isBlank()) {
             throw new ApiException("INVALID_LAYOUT", "Layout payload is invalid", new InvalidLayoutDetail("activeTab", "Active tab is required"));
+        }
+        String themeMode = layoutDto.getTheme() == null ? null : layoutDto.getTheme().getMode();
+        if (themeMode != null && !themeMode.isBlank() && !ALLOWED_THEME_MODES.contains(themeMode)) {
+            throw new ApiException("INVALID_LAYOUT", "Layout payload is invalid", new InvalidLayoutDetail("theme.mode", "Theme mode is invalid"));
         }
     }
 

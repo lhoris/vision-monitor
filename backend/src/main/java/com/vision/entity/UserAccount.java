@@ -65,7 +65,6 @@ public class UserAccount {
     @Transient private String department;
     @Transient private String position;
     @Transient private String phone;
-    @Transient private Long orgUnitId;
     @Transient @Builder.Default private String role = "USER";
     @Transient @Builder.Default private Boolean enabled = true;
     @Transient @Builder.Default private String accountStatus = "active";

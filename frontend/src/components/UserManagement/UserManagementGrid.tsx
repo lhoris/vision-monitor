@@ -116,7 +116,6 @@ function toGridRow(user: UserAccount): UserGridRow {
     position: user.position,
     email: user.email,
     phone: user.phone,
-    orgUnitId: user.orgUnitId,
     roleIds: user.roleIds,
     roles: user.roles,
     accountStatus: user.dataEndStatus === 'Y' ? 'disabled' : user.accountStatus,
@@ -139,7 +138,6 @@ function toMutationRequest(row: UserGridRow): UserMutationRequest {
     position: row.position,
     email: row.email,
     phone: row.phone,
-    orgUnitId: row.orgUnitId,
     roleIds: row.roleIds,
     accountStatus: row.accountStatus,
     employmentStatus: row.employmentStatus,
@@ -207,6 +205,11 @@ function getColumnFilterValue(row: UserGridRow, key: UserColumnFilterKey): strin
 function getCellDisplayValue(row: UserGridRow, field: SelectableCellField): string {
   if (field === 'role') return row.roles.map((role) => role.name).join(', ')
   return getColumnFilterValue(row, field)
+}
+
+function roleDisplayValue(roleIds: string[], roles: RoleSummary[]): string {
+  const roleMap = new Map(roles.map((role) => [role.id, role.name]))
+  return roleIds.map((roleId) => roleMap.get(roleId) ?? roleId).join(', ')
 }
 
 export function UserManagementGrid({
@@ -441,7 +444,6 @@ export function UserManagementGrid({
         department: row.department,
         position: row.position,
         phone: row.phone,
-        orgUnitId: row.orgUnitId,
         roleIds: [...row.roleIds],
         roles: [...row.roles],
         accountStatus: row.accountStatus,
@@ -756,12 +758,12 @@ export function UserManagementGrid({
 
   const renderSelectCell = (
     row: UserGridRow,
-    field: 'roleIds' | 'accountStatus' | 'employmentStatus',
+    field: 'accountStatus' | 'employmentStatus',
     label: string,
     value: string,
     options: { value: string; label: string }[],
   ) => {
-    const selectionField: SelectableCellField = field === 'roleIds' ? 'role' : field
+    const selectionField: SelectableCellField = field
 
     if (isEditing(row.rowId, field)) {
       return (
@@ -772,7 +774,6 @@ export function UserManagementGrid({
           onBlur={() => setEditingCell(null)}
           onChange={(event) => {
             const nextValue = event.target.value
-            if (field === 'roleIds') updateRow(row.rowId, field, nextValue ? [nextValue] : [])
             if (field === 'accountStatus') updateRow(row.rowId, field, nextValue as AccountStatus)
             if (field === 'employmentStatus') updateRow(row.rowId, field, nextValue as EmploymentStatus)
           }}
@@ -795,6 +796,62 @@ export function UserManagementGrid({
       >
         {options.find((option) => option.value === value)?.label ?? ''}
       </button>
+    )
+  }
+
+  const renderRoleSelectCell = (row: UserGridRow) => {
+    const roleText = roleDisplayValue(row.roleIds, roles)
+
+    return (
+      <div className="relative h-9">
+        <button
+          type="button"
+          aria-label="권한 셀"
+          {...selectableCellProps(row.rowId, 'role')}
+          onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'roleIds' })}
+          onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'roleIds')}
+          className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'role')}`}
+        >
+          {roleText}
+        </button>
+        {isEditing(row.rowId, 'roleIds') && (
+        <div
+          role="listbox"
+          aria-label="권한"
+          aria-multiselectable="true"
+          tabIndex={0}
+          autoFocus
+          onKeyDown={closeEditorFromKeyboard}
+          className="absolute left-0 top-full z-30 mt-0.5 min-h-20 w-full min-w-40 border border-[#6ab6e8] bg-white py-1 text-sm text-slate-900 shadow-lg outline-none dark:border-sky-500 dark:bg-slate-900 dark:text-slate-100"
+        >
+          {roles.map((role) => {
+            const checked = row.roleIds.includes(role.id)
+            return (
+              <label
+                key={role.id}
+                role="option"
+                aria-selected={checked}
+                className="flex h-7 cursor-pointer items-center gap-2 px-2 hover:bg-[#eef8ff] dark:hover:bg-slate-700"
+              >
+                <input
+                  type="checkbox"
+                  aria-label={`${role.name} 권한`}
+                  checked={checked}
+                  onChange={(event) => {
+                    const nextRoleIds = event.target.checked
+                      ? [...row.roleIds, role.id]
+                      : row.roleIds.filter((roleId) => roleId !== role.id)
+                    updateRow(row.rowId, 'roleIds', nextRoleIds)
+                  }}
+                  className="h-4 w-4"
+                />
+                <span>{role.name}</span>
+              </label>
+            )
+          })}
+        </div>
+        )}
+      </div>
     )
   }
 
@@ -881,7 +938,7 @@ export function UserManagementGrid({
                     초기화
                   </button>
                 </td>
-                <td className={bodyCellClass}>{renderSelectCell(row, 'roleIds', '권한', row.roleIds[0] ?? '', [{ value: '', label: '선택' }, ...roles.map((role) => ({ value: role.id, label: role.name }))])}{renderError(row, 'roleIds')}</td>
+                <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', '표시명')}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
@@ -945,13 +1002,7 @@ export function UserManagementGrid({
                   {renderTextCell(row, 'phone', '연락처')}
                 </td>
                 <td className={bodyCellClass}>
-                  {renderSelectCell(
-                    row,
-                    'roleIds',
-                    '역할',
-                    row.roleIds[0] ?? '',
-                    [{ value: '', label: '선택' }, ...roles.map((role) => ({ value: role.id, label: role.name }))],
-                  )}
+                  {renderRoleSelectCell(row)}
                   {renderError(row, 'roleIds')}
                 </td>
                 <td className={bodyCellClass}>

@@ -2,7 +2,6 @@ package com.vision.service;
 
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
-import com.vision.repository.OrgUnitRepository;
 import com.vision.repository.UserAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,21 +22,18 @@ class UserManagementServiceTest {
     @Mock
     private UserAccountRepository userRepository;
 
-    @Mock
-    private OrgUnitRepository orgUnitRepository;
-
     private UserManagementService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserManagementService(userRepository, orgUnitRepository);
+        service = new UserManagementService(userRepository);
     }
 
     @Test
     void rejectsUnknownOrNonAdminActor() {
         when(userRepository.findByUsernameIgnoreCase(anyString())).thenReturn(Optional.empty());
 
-        ApiException exception = assertThrows(ApiException.class, () -> service.listUsers("unknown", null, null, null, null, null, 1, 20, "username,asc"));
+        ApiException exception = assertThrows(ApiException.class, () -> service.listUsers("unknown", null, null, null, null, 1, 20, "username,asc"));
 
         assertEquals("UNAUTHENTICATED", exception.getCode());
     }

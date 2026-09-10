@@ -16,8 +16,6 @@ public record UserAccountDto(
         String department,
         String position,
         String phone,
-        Long orgUnitId,
-        String orgUnitName,
         List<String> roleIds,
         List<RoleSummaryDto> roles,
         String accountStatus,
@@ -35,7 +33,7 @@ public record UserAccountDto(
         String dataEndStatus
 ) {
 
-    public static UserAccountDto from(UserAccount user, String orgUnitName) {
+    public static UserAccountDto from(UserAccount user) {
         String role = user.getRole() == null ? "USER" : user.getRole();
         RoleSummaryDto roleSummary = new RoleSummaryDto(
                 role.toLowerCase(),
@@ -52,8 +50,6 @@ public record UserAccountDto(
                 .department(user.getDepartment())
                 .position(user.getPosition())
                 .phone(user.getPhone())
-                .orgUnitId(user.getOrgUnitId())
-                .orgUnitName(orgUnitName)
                 .roleIds(List.of(role.toLowerCase()))
                 .roles(List.of(roleSummary))
                 .accountStatus(user.getAccountStatus())

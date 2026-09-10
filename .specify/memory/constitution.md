@@ -1,3 +1,14 @@
+<!--
+Sync Impact Report
+- Version change: 1.0.0 -> 1.1.0
+- Modified principles: 핵심 원칙에 "VII. 로컬 개발 환경 전체 실행" 추가
+- Added sections: 없음
+- Removed sections: 없음
+- Templates requiring updates: .specify/templates/plan-template.md updated
+- Runtime docs requiring updates: docs/RUNNING.md, README.md, backend/README.md updated
+- Follow-up TODOs: 없음
+-->
+
 # Vision Monitor 헌법
 
 > 이 문서는 Spec Kit 산출물의 기준 문서다. 모든 산출물은 한국어로 작성하되, 기술 용어, API 이름, 파일 경로, 코드 식별자는 원문 또는 영문 표기를 유지할 수 있다.
@@ -22,6 +33,9 @@ frontend/backend/external system 경계는 명시적 계약으로 기록한다. 
 ### VI. 테스트 가능한 증분
 각 사용자 스토리는 독립 구현 및 독립 검증 가능해야 한다. 테스트 범위는 변경 위험과 사용자 영향도에 맞춘다. UI 변경은 가능한 경우 unit/component test 또는 build 검증을 포함한다.
 
+### VII. 로컬 개발 환경 전체 실행
+로컬 개발 서버를 실행할 때는 frontend만 단독 실행하지 않고 backend와 frontend를 함께 실행하는 절차를 우선한다. Windows에서는 `scripts\develop.bat`를 기본 진입점으로 사용하고, 수동 실행이 필요하면 backend는 `mvn spring-boot:run "-Dspring-boot.run.profiles=local"`, frontend는 `npm run dev`로 각각 실행한다. 실행 후에는 `http://localhost:3000`, `http://localhost:8080`, `http://localhost:8080/swagger-ui.html` 중 관련 endpoint 응답을 확인한다.
+
 ## 제품 경계
 
 - 영상 확대 보기, 카메라 그리드, 알람/경고 토스트, 녹화/실시간 UI는 frontend 중심으로 구현한다.
@@ -34,10 +48,11 @@ frontend/backend/external system 경계는 명시적 계약으로 기록한다. 
 - 기본 Spec Kit 흐름은 `specify -> plan -> tasks -> implement`다.
 - `clarify`는 요구사항이 애매할 때만 선택적으로 실행한다.
 - `plan`과 `tasks`는 승인 게이트 없이 기계적으로 진행하되, 산출물에 모순이나 미정 항목이 있으면 구현 전에 정리한다.
+- 로컬 개발 서버 실행은 `docs/RUNNING.md`를 기준으로 하며, 특별한 이유가 없으면 `scripts\develop.bat`로 backend/frontend를 함께 실행한다.
 - 구현 후에는 관련 테스트, 빌드, 또는 최소한의 정적 검증을 수행하고 결과를 기록한다.
 
 ## 거버넌스
 
 이 헌법은 Spec Kit 산출물과 구현 판단의 기본 기준이다. 헌법을 변경할 때는 변경 이유와 영향을 커밋 또는 문서에 남긴다. 복잡도가 증가하는 결정은 더 단순한 대안을 왜 거부했는지 기록한다.
 
-**버전**: 1.0.0 | **비준일**: 2026-08-16 | **마지막 개정일**: 2026-08-16
+**버전**: 1.1.0 | **비준일**: 2026-08-16 | **마지막 개정일**: 2026-09-10

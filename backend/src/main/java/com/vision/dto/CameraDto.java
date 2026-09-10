@@ -1,6 +1,5 @@
 package com.vision.dto;
 
-import com.vision.entity.Camera;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,39 +29,5 @@ public class CameraDto {
     private LocalDateTime lastSeen;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    public static CameraDto fromEntity(Camera camera) {
-        return CameraDto.builder()
-                .id(camera.getId())
-                .name(camera.getName())
-                .location(camera.getLocation())
-                .zone(camera.getZone())
-                .streamUrl(camera.getStreamUrl())
-                .status(camera.getStatus())
-                .resolution(camera.getResolution())
-                .fps(camera.getFps())
-                .recordingEnabled(camera.getRecordingEnabled())
-                .lastSeen(camera.getLastSeen())
-                .createdAt(camera.getCreatedAt())
-                .updatedAt(camera.getUpdatedAt())
-                .build();
-    }
-
-    public Camera toEntity() {
-        return Camera.builder()
-                .id(this.id)
-                .name(this.name)
-                .location(this.location)
-                .zone(this.zone)
-                .streamUrl(this.streamUrl)
-                .status(this.status)
-                .resolution(this.resolution)
-                .fps(this.fps)
-                .recordingEnabled(this.recordingEnabled)
-                .lastSeen(this.lastSeen)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
-                .build();
-    }
 
 }

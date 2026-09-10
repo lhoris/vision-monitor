@@ -46,7 +46,7 @@ class LayoutServiceTest {
     void getsCurrentUserLayout() throws Exception {
         UserAccount admin = user(1L, "admin");
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
-        when(layoutRepository.findFirstByUserIdOrderByIdAsc(1L)).thenReturn(Optional.of(layout(10L, 1L)));
+        when(layoutRepository.findFirstByUserIdAndTabNameOrderByIdAsc(1L, "dashboard")).thenReturn(Optional.of(layout(10L, 1L)));
 
         LayoutDto response = service.getMyLayout("admin");
 
@@ -55,11 +55,13 @@ class LayoutServiceTest {
         assertEquals(1L, response.getUserId());
         assertEquals("tab-1", response.getActiveTab());
         assertEquals(1, response.getTabs().size());
+        assertEquals("theme3", response.getTheme().getMode());
     }
 
     @Test
     void returnsNullWhenCurrentUserHasNoLayout() {
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user(1L, "admin")));
+        when(layoutRepository.findFirstByUserIdAndTabNameOrderByIdAsc(1L, "dashboard")).thenReturn(Optional.empty());
         when(layoutRepository.findFirstByUserIdOrderByIdAsc(1L)).thenReturn(Optional.empty());
 
         assertNull(service.getMyLayout("admin"));
@@ -75,6 +77,7 @@ class LayoutServiceTest {
     @Test
     void createsCurrentUserLayoutAndIgnoresRequestUserId() throws Exception {
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user(1L, "admin")));
+        when(layoutRepository.findFirstByUserIdAndTabNameOrderByIdAsc(1L, "dashboard")).thenReturn(Optional.empty());
         when(layoutRepository.findFirstByUserIdOrderByIdAsc(1L)).thenReturn(Optional.empty());
         when(layoutRepository.save(any(Layout.class))).thenAnswer(invocation -> {
             Layout saved = invocation.getArgument(0);
@@ -87,13 +90,15 @@ class LayoutServiceTest {
 
         assertEquals(33L, response.getId());
         assertEquals(1L, response.getUserId());
-        verify(layoutRepository).deleteByUserIdAndIdNot(1L, 33L);
+        assertEquals("dashboard", response.getTabName());
+        assertEquals("theme3", response.getTheme().getMode());
+        verify(layoutRepository).deleteByUserIdAndTabNameAndIdNot(1L, "dashboard", 33L);
     }
 
     @Test
     void updatesExistingCurrentUserLayout() throws Exception {
         when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user(1L, "admin")));
-        when(layoutRepository.findFirstByUserIdOrderByIdAsc(1L)).thenReturn(Optional.of(layout(10L, 1L)));
+        when(layoutRepository.findFirstByUserIdAndTabNameOrderByIdAsc(1L, "dashboard")).thenReturn(Optional.of(layout(10L, 1L)));
         when(layoutRepository.save(any(Layout.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         LayoutDto response = service.saveMyLayout("admin", dto(999L));
@@ -115,6 +120,17 @@ class LayoutServiceTest {
         assertEquals("INVALID_LAYOUT", exception.getCode());
     }
 
+    @Test
+    void rejectsInvalidThemeMode() throws Exception {
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(user(1L, "admin")));
+        LayoutDto request = dto(1L);
+        request.setTheme(LayoutDto.ThemeDto.builder().mode("theme9").build());
+
+        ApiException exception = assertThrows(ApiException.class, () -> service.saveMyLayout("admin", request));
+
+        assertEquals("INVALID_LAYOUT", exception.getCode());
+    }
+
     private UserAccount user(Long id, String username) {
         return UserAccount.builder()
                 .id(id)
@@ -129,14 +145,24 @@ class LayoutServiceTest {
         return Layout.builder()
                 .id(id)
                 .userId(userId)
-                .activeTab("tab-1")
-                .tabs(tabs().toString())
+                .tabName("dashboard")
+                .personalData("""
+                        {
+                          "version": 1,
+                          "theme": { "mode": "theme3" },
+                          "layout": {
+                            "activeTab": "tab-1",
+                            "tabs": %s
+                          }
+                        }
+                        """.formatted(tabs().toString()))
                 .build();
     }
 
     private LayoutDto dto(Long userId) throws Exception {
         return LayoutDto.builder()
                 .userId(userId)
+                .theme(LayoutDto.ThemeDto.builder().mode("theme3").build())
                 .activeTab("tab-1")
                 .tabs(tabs())
                 .build();
