@@ -30,15 +30,18 @@ import {
 import type { CameraPosition, Tab, SubTab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
 import type { PlayerState, TemporaryVideoSource } from '@/types/streamPlayer'
+import type { VideoSource } from '@/types/videoSource'
 
 interface GridContainerProps {
   userId?: number
   cameras?: Camera[]
+  videoSources?: VideoSource[]
 }
 
 export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
+  videoSources = [],
 }) => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -400,6 +403,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       <AddCameraDialog
         isOpen={showCameraSelector}
         cameras={cameras}
+        videoSources={videoSources}
         usedCameraIds={usedCameraIds}
         existingTemporaryUrls={activeSubTab.cameraPositions
           .map((position) => position.source?.url)

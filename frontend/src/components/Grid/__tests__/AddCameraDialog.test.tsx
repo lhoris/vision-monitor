@@ -4,6 +4,7 @@ import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import { AddCameraDialog } from '../AddCameraDialog'
 import type { Camera } from '@/types/camera'
+import type { VideoSource } from '@/types/videoSource'
 
 const cameras: Camera[] = [{
   id: 1,
@@ -14,6 +15,27 @@ const cameras: Camera[] = [{
   streamProtocol: 'hls',
   status: 'online',
 }]
+
+const videoSources: VideoSource[] = [
+  {
+    id: 10,
+    name: 'Managed Line Feed',
+    url: 'https://managed.test/live.m3u8',
+    protocol: 'HLS',
+    location: 'Line B',
+    zone: 'Packaging',
+    status: 'ACTIVE',
+  },
+  {
+    id: 11,
+    name: 'Inactive Feed',
+    url: 'https://managed.test/inactive.m3u8',
+    protocol: 'HLS',
+    location: 'Line C',
+    zone: 'Storage',
+    status: 'INACTIVE',
+  },
+]
 
 describe('AddCameraDialog', () => {
   it('switches to direct source mode and uses WebRTC as the default protocol', () => {
@@ -104,5 +126,53 @@ describe('AddCameraDialog', () => {
     const cameraButton = screen.getByRole('button', { name: /Camera 1/ })
     expect(cameraButton).toBeDisabled()
     expect(cameraButton).toHaveTextContent('Already added')
+  })
+
+  it('shows active managed video sources in the catalog list and selects one as a video tile source', () => {
+    const onAddDirectSource = vi.fn()
+
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={onAddDirectSource}
+        onClose={vi.fn()}
+      /></I18nextProvider>
+    )
+
+    expect(screen.getByRole('button', { name: /Managed Line Feed/ })).toHaveTextContent('Managed source')
+    expect(screen.queryByText('Inactive Feed')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Managed Line Feed/ }))
+
+    expect(onAddDirectSource).toHaveBeenCalledWith({
+      id: 'video-source-10',
+      url: 'https://managed.test/live.m3u8',
+      protocol: 'hls',
+      displayName: 'Managed Line Feed',
+      playbackStatus: 'idle',
+    })
+  })
+
+  it('disables a managed video source when the same URL is already placed', () => {
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[]}
+        existingTemporaryUrls={['https://managed.test/live.m3u8']}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onClose={vi.fn()}
+      /></I18nextProvider>
+    )
+
+    const sourceButton = screen.getByRole('button', { name: /Managed Line Feed/ })
+    expect(sourceButton).toBeDisabled()
+    expect(sourceButton).toHaveTextContent('Already added')
   })
 })

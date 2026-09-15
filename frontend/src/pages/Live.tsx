@@ -2,13 +2,15 @@
  * Live Monitoring Page
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { GridContainer } from '@/components/Grid'
 import { useAppSelector, useAppDispatch } from '@/store'
 import { fetchMyLayout } from '@/store/slices/layoutSlice'
 import { createMockCameras } from '@/mocks/liveMonitoring'
 import { usePersistLayout } from '@/hooks/usePersistLayout'
 import LayoutPersistStatus from '@/components/Grid/LayoutPersistStatus'
+import { videoSourceService } from '@/services/videoSourceService'
+import type { VideoSource } from '@/types/videoSource'
 
 export function Live() {
   const dispatch = useAppDispatch()
@@ -16,6 +18,7 @@ export function Live() {
   const restoredForUser = useAppSelector((state) => state.layout.restoredForUser)
   const loading = useAppSelector((state) => state.layout.loading)
   const mockCameras = createMockCameras()
+  const [videoSources, setVideoSources] = useState<VideoSource[]>([])
   usePersistLayout()
 
   useEffect(() => {
@@ -23,6 +26,18 @@ export function Live() {
       dispatch(fetchMyLayout(username))
     }
   }, [dispatch, restoredForUser, username])
+
+  useEffect(() => {
+    let mounted = true
+
+    videoSourceService.list().then((sources) => {
+      if (mounted) setVideoSources(sources)
+    })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   if (loading) {
     return (
@@ -38,7 +53,7 @@ export function Live() {
   return (
     <div className="relative flex-1 flex flex-col h-screen">
       <LayoutPersistStatus />
-      <GridContainer cameras={mockCameras} />
+      <GridContainer cameras={mockCameras} videoSources={videoSources} />
     </div>
   )
 }

@@ -47,6 +47,7 @@
       "searchLabel": "Search cameras",
       "noResults": "No search results.",
       "alreadyAdded": "Already added",
+      "managedSource": "Managed source",
       "protocolLabel": "Protocol",
       "urlLabel": "Video URL",
       "displayNameLabel": "Display title",
