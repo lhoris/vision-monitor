@@ -4,7 +4,12 @@ import type { Camera } from '@/types/camera'
 import type { TemporaryVideoSource, StreamProtocol } from '@/types/streamPlayer'
 import type { VideoSource } from '@/types/videoSource'
 
-type DirectProtocol = Exclude<StreamProtocol, 'unknown'>
+type DirectProtocol = Extract<StreamProtocol, 'webrtc' | 'hls'>
+const DIRECT_PROTOCOLS: DirectProtocol[] = ['webrtc', 'hls']
+
+function normalizeDirectProtocol(protocol?: StreamProtocol): DirectProtocol {
+  return protocol === 'hls' || protocol === 'webrtc' ? protocol : 'webrtc'
+}
 
 interface AddCameraDialogProps {
   isOpen: boolean
@@ -28,8 +33,7 @@ function validateUrl(value: string, protocol: DirectProtocol): string | null {
     return 'invalid'
   }
 
-  const allowedSchemes = protocol === 'rtsp' ? ['rtsp:'] : ['http:', 'https:']
-  if (!allowedSchemes.includes(parsed.protocol)) {
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
     return `protocol:${protocol}`
   }
 
@@ -50,7 +54,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   const { t } = useTranslation()
   const [mode, setMode] = useState<'catalog' | 'direct'>(initialSource ? 'direct' : 'catalog')
   const [searchTerm, setSearchTerm] = useState('')
-  const [protocol, setProtocol] = useState<DirectProtocol>(initialSource?.protocol ?? 'webrtc')
+  const [protocol, setProtocol] = useState<DirectProtocol>(normalizeDirectProtocol(initialSource?.protocol))
   const [url, setUrl] = useState(initialSource?.url ?? '')
   const [displayName, setDisplayName] = useState(initialSource?.displayName ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -58,7 +62,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   useEffect(() => {
     if (!isOpen) return
     setMode(initialSource ? 'direct' : 'catalog')
-    setProtocol(initialSource?.protocol ?? 'webrtc')
+    setProtocol(normalizeDirectProtocol(initialSource?.protocol))
     setUrl(initialSource?.url ?? '')
     setDisplayName(initialSource?.displayName ?? '')
     setSearchTerm('')
@@ -69,6 +73,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     const term = searchTerm.trim().toLowerCase()
     return videoSources
       .filter((source) => source.status === 'ACTIVE')
+      .filter((source) => source.protocol === 'WEBRTC' || source.protocol === 'HLS')
       .filter((source) =>
         !term || [source.name, source.location, source.zone, source.url].some((value) => (value ?? '').toLowerCase().includes(term))
       )
@@ -89,7 +94,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
         const [, invalidProtocol] = validationError.split(':')
         setError(t('live.addCameraDialog.errors.invalidProtocol', {
           protocol: t(`live.addCameraDialog.protocols.${invalidProtocol}`),
-          schemes: invalidProtocol === 'rtsp' ? 'rtsp:' : 'http:, https:',
+          schemes: 'http:, https:',
         }))
       }
       return
@@ -185,12 +190,12 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
             <div>
               <label htmlFor="direct-video-protocol" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.protocolLabel')}</label>
               <select id="direct-video-protocol" value={protocol} onChange={(event) => { setProtocol(event.target.value as DirectProtocol); setError(null) }} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                {(Object.keys({ webrtc: true, rtsp: true, hls: true }) as DirectProtocol[]).map((key) => <option key={key} value={key}>{t(`live.addCameraDialog.protocols.${key}`)}</option>)}
+                {DIRECT_PROTOCOLS.map((key) => <option key={key} value={key}>{t(`live.addCameraDialog.protocols.${key}`)}</option>)}
               </select>
             </div>
             <div>
               <label htmlFor="direct-video-url" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.urlLabel')}</label>
-              <input id="direct-video-url" value={url} onChange={(event) => { setUrl(event.target.value); setError(null) }} placeholder={protocol === 'rtsp' ? 'rtsp://...' : 'https://...'} className="w-full cursor-text rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 caret-blue-600 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:caret-blue-300 dark:placeholder:text-gray-400" autoFocus />
+              <input id="direct-video-url" value={url} onChange={(event) => { setUrl(event.target.value); setError(null) }} placeholder="https://..." className="w-full cursor-text rounded border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 caret-blue-600 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:caret-blue-300 dark:placeholder:text-gray-400" autoFocus />
             </div>
             <div>
               <label htmlFor="direct-video-name" className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">{t('live.addCameraDialog.displayNameLabel')} <span className="font-normal text-gray-400">{t('live.addCameraDialog.optional')}</span></label>

@@ -56,7 +56,12 @@ export function FocusVideoStage({
   if (mode === 'live' && camera && liveStream) {
     return (
       <section className="focus-video-stage min-h-[420px] flex-1">
-        <LiveStreamPlayer camera={toPlayerCamera(camera, liveStream)} className="h-full min-h-[420px] w-full" />
+        <LiveStreamPlayer
+          camera={toPlayerCamera(camera, liveStream)}
+          className="h-full min-h-[420px] w-full"
+          autoplay
+          muted
+        />
       </section>
     )
   }

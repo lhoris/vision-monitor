@@ -15,7 +15,7 @@ import java.util.Locale;
 @Service
 @RequiredArgsConstructor
 public class VideoSourceService {
-    private static final List<String> PROTOCOLS = List.of("WEBRTC", "RTSP", "HLS");
+    private static final List<String> PROTOCOLS = List.of("WEBRTC", "HLS");
     private final VideoSourceRepository repository;
 
     @Transactional(readOnly = true)

@@ -31,7 +31,7 @@ class VideoSourceServiceTest {
 
     @Test
     void createsVideoSourceWithNormalizedValues() {
-        when(repository.existsByUrlIgnoreCase("rtsp://example.test/live")).thenReturn(false);
+        when(repository.existsByUrlIgnoreCase("https://example.test/live.m3u8")).thenReturn(false);
         when(repository.save(any(VideoSource.class))).thenAnswer(invocation -> {
             VideoSource source = invocation.getArgument(0);
             source.setId(1L);
@@ -40,14 +40,14 @@ class VideoSourceServiceTest {
 
         VideoSourceDto result = service.create(VideoSourceDto.builder()
                 .name(" Line A ")
-                .url(" rtsp://example.test/live ")
-                .protocol("rtsp")
+                .url(" https://example.test/live.m3u8 ")
+                .protocol("hls")
                 .status("active")
                 .build());
 
         assertEquals(1L, result.getId());
         assertEquals("Line A", result.getName());
-        assertEquals("RTSP", result.getProtocol());
+        assertEquals("HLS", result.getProtocol());
         assertEquals("ACTIVE", result.getStatus());
     }
 
@@ -70,6 +70,17 @@ class VideoSourceServiceTest {
                 .name("Line A")
                 .url("https://example.test/live")
                 .protocol("HTTP")
+                .build()));
+
+        assertEquals("VALIDATION_ERROR", error.getCode());
+    }
+
+    @Test
+    void rejectsRtspProtocol() {
+        ApiException error = assertThrows(ApiException.class, () -> service.create(VideoSourceDto.builder()
+                .name("Line A")
+                .url("rtsp://example.test/live")
+                .protocol("RTSP")
                 .build()));
 
         assertEquals("VALIDATION_ERROR", error.getCode());

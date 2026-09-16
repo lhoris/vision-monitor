@@ -65,7 +65,7 @@ describe('AddCameraDialog', () => {
     }))
   })
 
-  it('rejects an RTSP source with an HTTP URL', () => {
+  it('does not offer RTSP for direct video sources', () => {
     const onAddDirectSource = vi.fn()
 
     render(
@@ -80,11 +80,10 @@ describe('AddCameraDialog', () => {
     )
 
     fireEvent.click(screen.getByRole('tab', { name: 'Enter Video URL' }))
-    fireEvent.change(screen.getByLabelText('Protocol'), { target: { value: 'rtsp' } })
-    fireEvent.change(screen.getByLabelText('Video URL'), { target: { value: 'https://media.test/live' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Add Video' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('RTSP')
+    expect(screen.getByLabelText('Protocol')).toHaveTextContent('WebRTC')
+    expect(screen.getByLabelText('Protocol')).toHaveTextContent('HLS')
+    expect(screen.getByLabelText('Protocol')).not.toHaveTextContent('RTSP')
     expect(onAddDirectSource).not.toHaveBeenCalled()
   })
 
@@ -154,6 +153,32 @@ describe('AddCameraDialog', () => {
       displayName: 'Managed Line Feed',
       playbackStatus: 'idle',
     })
+  })
+
+  it('hides legacy RTSP managed video sources from the catalog list', () => {
+    const legacyRtspSource = {
+      id: 12,
+      name: 'Legacy RTSP Feed',
+      url: 'rtsp://managed.test/live',
+      protocol: 'RTSP' as unknown as VideoSource['protocol'],
+      location: 'Line D',
+      zone: 'Legacy',
+      status: 'ACTIVE' as const,
+    }
+
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={[...videoSources, legacyRtspSource]}
+        usedCameraIds={[]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onClose={vi.fn()}
+      /></I18nextProvider>
+    )
+
+    expect(screen.queryByText('Legacy RTSP Feed')).not.toBeInTheDocument()
   })
 
   it('disables a managed video source when the same URL is already placed', () => {

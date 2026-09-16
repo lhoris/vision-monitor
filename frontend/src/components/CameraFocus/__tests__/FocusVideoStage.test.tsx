@@ -3,10 +3,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { FocusVideoStage } from '../FocusVideoStage'
 import type { CameraEventDto, CameraFocusDto, EventDetailDto, LiveStreamDto, PlaybackSessionDto } from '@/types/cameraFocus'
 
-vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
-  LiveStreamPlayer: ({ camera }: { camera: { name: string; streamUrl: string } }) => (
+const liveStreamPlayerMock = vi.hoisted(() => vi.fn(
+  ({ camera }: { camera: { name: string; streamUrl: string } }) => (
     <div data-testid="focus-live-player">{camera.name}:{camera.streamUrl}</div>
-  ),
+  )
+))
+
+vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
+  LiveStreamPlayer: liveStreamPlayerMock,
 }))
 
 vi.mock('@/components/StreamPlayer/StreamPlayerComponent', () => ({
@@ -109,6 +113,13 @@ describe('FocusVideoStage', () => {
 
     expect(screen.getByTestId('focus-live-player')).toHaveTextContent(
       'Entry Zone CAM-01:http://220.81.187.50:1984/stream.html?src=video_high1'
+    )
+    expect(liveStreamPlayerMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        autoplay: true,
+        muted: true,
+      }),
+      undefined
     )
   })
 

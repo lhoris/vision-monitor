@@ -1,4 +1,4 @@
-export type VideoProtocol = 'WEBRTC' | 'RTSP' | 'HLS'
+export type VideoProtocol = 'WEBRTC' | 'HLS'
 export type VideoSourceStatus = 'ACTIVE' | 'INACTIVE'
 
 export interface VideoSource {
