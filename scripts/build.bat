@@ -35,13 +35,6 @@ popd
 echo.
 echo [2/2] Building frontend...
 pushd "%ROOT_DIR%\frontend"
-call npm ci
-if errorlevel 1 (
-  popd
-  echo Frontend dependency install failed.
-  exit /b 1
-)
-
 call npm run build
 if errorlevel 1 (
   popd

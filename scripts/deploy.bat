@@ -17,9 +17,6 @@ echo ==========================================
 echo Vision Monitor VMS - Deploy
 echo ==========================================
 
-call "%ROOT_DIR%\scripts\build.bat"
-if errorlevel 1 exit /b 1
-
 if not exist "%APP_DIR%" mkdir "%APP_DIR%"
 if not exist "%WEB_DIR%" mkdir "%WEB_DIR%"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
@@ -31,6 +28,7 @@ for /f "delims=" %%F in ('dir /b /o-d "%BACKEND_DIR%\target\vision-monitor-*.jar
   goto :jar_copied
 )
 echo Backend jar not found.
+echo Run scripts\build.bat first, then run scripts\deploy.bat.
 exit /b 1
 
 :jar_copied
@@ -40,6 +38,7 @@ echo.
 echo Copying frontend dist...
 if not exist "%FRONTEND_DIST%" (
   echo Frontend dist not found: %FRONTEND_DIST%
+  echo Run scripts\build.bat first, then run scripts\deploy.bat.
   exit /b 1
 )
 robocopy "%FRONTEND_DIST%" "%WEB_DIR%" /MIR >nul
