@@ -8,6 +8,8 @@ import { createMockCameras } from '@/mocks/liveMonitoring'
 import { focusApiService } from '@/services'
 import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
+import type { TemporaryVideoSource } from '@/types/streamPlayer'
+import type { Camera } from '@/types/camera'
 
 export default function CameraFocus() {
   const { cameraId } = useParams<{ cameraId: string }>()
@@ -20,6 +22,10 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
+  const temporarySources = useMemo(
+    () => parseTemporarySources(searchParams.get('temporarySources')),
+    [searchParams]
+  )
   const cameraNameOverrides = useMemo(
     () => parseCameraNameOverrides(searchParams.get('cameraNames')),
     [searchParams]
@@ -38,10 +44,23 @@ export default function CameraFocus() {
 
     const cameraMap = new Map(allCameras.map((cameraItem) => [cameraItem.id, cameraItem]))
     return cameraIds.flatMap((id) => {
+      const temporarySource = temporarySources[id]
+      if (temporarySource) {
+        return [{
+          id,
+          name: temporarySource.displayName,
+          location: 'Temporary video',
+          zone: temporarySource.protocol.toUpperCase(),
+          streamUrl: temporarySource.url,
+          streamProtocol: temporarySource.protocol,
+          status: temporarySource.playbackStatus === 'error' ? 'error' : 'online',
+        } satisfies Camera]
+      }
+
       const cameraItem = cameraMap.get(id)
       return cameraItem ? [applyNameOverride(cameraItem)] : []
     })
-  }, [cameraNameOverrides, searchParams])
+  }, [cameraNameOverrides, searchParams, temporarySources])
   const displayCamera = useMemo(() => {
     if (!camera) {
       return null
@@ -54,12 +73,14 @@ export default function CameraFocus() {
     () => parseCameraFocusRouteState(cameraId, searchParams),
     [cameraId, searchParams]
   )
+  const selectedTemporarySource = routeState.cameraId ? temporarySources[routeState.cameraId] : undefined
+  const apiCameraId = routeState.cameraId && routeState.cameraId > 0 ? routeState.cameraId : null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
-    cameraId: routeState.cameraId,
+    cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
     eventId: routeState.selectedEventId,
   })
-  const { alerts } = useActiveCameraAlerts(routeState.cameraId)
+  const { alerts } = useActiveCameraAlerts(apiCameraId)
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
   const eventRange = useMemo(
     () => ({
@@ -69,7 +90,7 @@ export default function CameraFocus() {
     [playbackSession?.availableFrom, playbackSession?.availableTo]
   )
   const { events, eventsError } = useCameraFocusEvents({
-    cameraId: routeState.cameraId,
+    cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
     range: eventRange,
   })
@@ -78,12 +99,13 @@ export default function CameraFocus() {
     let cancelled = false
 
     async function loadCamera() {
-      if (!routeState.cameraId) {
+      if (!apiCameraId) {
         setCamera(null)
+        setCameraError(null)
         return
       }
 
-      const response = await focusApiService.getCameraFocus(routeState.cameraId)
+      const response = await focusApiService.getCameraFocus(apiCameraId)
       if (!cancelled) {
         setCamera(response.success ? response.data ?? null : null)
         setCameraError(response.success ? null : response.error ?? 'UNKNOWN')
@@ -95,13 +117,20 @@ export default function CameraFocus() {
     return () => {
       cancelled = true
     }
-  }, [routeState.cameraId])
+  }, [apiCameraId])
 
   useEffect(() => {
     let cancelled = false
 
     async function loadLiveStream() {
-      if (!routeState.cameraId || routeState.mode !== 'live') {
+      if (selectedTemporarySource && routeState.mode === 'live') {
+        setLiveStream(toTemporaryLiveStream(routeState.cameraId ?? -1, selectedTemporarySource))
+        setLiveLoading(false)
+        setLiveError(null)
+        return
+      }
+
+      if (!apiCameraId || routeState.mode !== 'live') {
         setLiveStream(null)
         setLiveLoading(false)
         return
@@ -109,7 +138,7 @@ export default function CameraFocus() {
 
       setLiveLoading(true)
       setLiveError(null)
-      const response = await focusApiService.getCameraLiveStream(routeState.cameraId)
+      const response = await focusApiService.getCameraLiveStream(apiCameraId)
       if (!cancelled) {
         setLiveStream(response.success ? response.data ?? null : null)
         setLiveError(response.success ? null : response.error ?? 'UNKNOWN')
@@ -122,7 +151,7 @@ export default function CameraFocus() {
     return () => {
       cancelled = true
     }
-  }, [routeState.cameraId, routeState.mode])
+  }, [apiCameraId, routeState.cameraId, routeState.mode, selectedTemporarySource])
 
   useEffect(() => {
     let cancelled = false
@@ -170,7 +199,7 @@ export default function CameraFocus() {
   }
 
   function handleTriggerTestAlert(message: string) {
-    const currentCameraId = routeState.cameraId
+    const currentCameraId = apiCameraId
     if (!currentCameraId) {
       return
     }
@@ -188,6 +217,11 @@ export default function CameraFocus() {
     ])
   }
 
+  const temporaryCamera = routeState.cameraId && selectedTemporarySource
+    ? toTemporaryCameraFocus(routeState.cameraId, selectedTemporarySource)
+    : null
+  const focusCamera = displayCamera ?? temporaryCamera
+
   if (!routeState.cameraId) {
     return (
       <section className="p-6" aria-labelledby="camera-focus-title">
@@ -204,7 +238,7 @@ export default function CameraFocus() {
       mode={routeState.mode}
       selectedEventId={routeState.selectedEventId}
       alerts={visibleAlerts}
-      camera={displayCamera}
+      camera={focusCamera}
       cameraList={cameraList}
       liveStream={liveStream}
       liveLoading={liveLoading}
@@ -219,9 +253,77 @@ export default function CameraFocus() {
       onModeChange={handleModeChange}
       onSelectCamera={handleSelectCamera}
       onSelectEvent={handleSelectEvent}
-      onTriggerTestAlert={handleTriggerTestAlert}
+      onTriggerTestAlert={apiCameraId ? handleTriggerTestAlert : undefined}
     />
   )
+}
+
+function parseTemporarySources(value: string | null): Record<number, TemporaryVideoSource> {
+  if (!value) {
+    return {}
+  }
+
+  try {
+    const parsed = JSON.parse(value) as Record<string, TemporaryVideoSource>
+    return Object.entries(parsed).reduce<Record<number, TemporaryVideoSource>>((sources, [id, source]) => {
+      const numericId = Number(id)
+      if (
+        Number.isSafeInteger(numericId) &&
+        numericId !== 0 &&
+        source &&
+        typeof source.url === 'string' &&
+        typeof source.displayName === 'string' &&
+        (source.protocol === 'hls' || source.protocol === 'webrtc' || source.protocol === 'rtsp')
+      ) {
+        sources[numericId] = source
+      }
+      return sources
+    }, {})
+  } catch {
+    return {}
+  }
+}
+
+function toTemporaryCameraFocus(cameraId: number, source: TemporaryVideoSource): CameraFocusDto {
+  return {
+    cameraId,
+    cameraName: source.displayName,
+    processType: 'temporary',
+    zoneName: source.protocol.toUpperCase(),
+    lineName: 'Temporary video',
+    location: 'Temporary video',
+    status: source.playbackStatus === 'error' ? 'error' : 'online',
+    recordingEnabled: false,
+    capabilities: {
+      live: true,
+      recording: false,
+      ptz: false,
+      overlay: false,
+    },
+    lastSeenAt: null,
+    recentEventSummary: {
+      lastEventId: null,
+      lastSeverity: null,
+      lastOccurredAt: null,
+      openCount: 0,
+    },
+  }
+}
+
+function toTemporaryLiveStream(cameraId: number, source: TemporaryVideoSource): LiveStreamDto {
+  return {
+    cameraId,
+    streamUrl: source.url,
+    streamProtocol: source.protocol === 'rtsp' ? 'rtsp_bridge' : source.protocol,
+    expiresAt: null,
+    status: source.playbackStatus === 'error' ? 'error' : 'active',
+    resolution: null,
+    fps: null,
+    metadata: {
+      provider: 'temporary',
+      latencyClass: 'live',
+    },
+  }
 }
 
 function buildManualTestAlert({
@@ -260,7 +362,7 @@ function parseCameraIds(value: string | null): number[] {
   return value
     .split(',')
     .map((id) => Number(id.trim()))
-    .filter((id) => Number.isInteger(id) && id > 0)
+    .filter((id) => Number.isSafeInteger(id) && id !== 0)
 }
 
 function parseCameraNameOverrides(value: string | null): Record<number, string> {
@@ -276,7 +378,7 @@ function parseCameraNameOverrides(value: string | null): Record<number, string> 
 
     return Object.entries(parsed).reduce<Record<number, string>>((overrides, [rawId, rawName]) => {
       const id = Number(rawId)
-      if (Number.isInteger(id) && id > 0 && typeof rawName === 'string' && rawName.trim()) {
+      if (Number.isSafeInteger(id) && id !== 0 && typeof rawName === 'string' && rawName.trim()) {
         overrides[id] = rawName.trim()
       }
       return overrides

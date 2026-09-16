@@ -70,7 +70,7 @@ const PlayerControls: React.FC<{
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+    <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-3">
       <div
         className="w-full h-1 bg-gray-600 rounded cursor-pointer hover:h-2 transition-all mb-3"
         onClick={handleProgressClick}
@@ -191,7 +191,7 @@ const PlayerControls: React.FC<{
 }
 
 const ErrorDisplay: React.FC<{ error: string }> = ({ error }) => (
-  <div className="flex items-center justify-center h-full bg-black/80 text-white">
+  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/80 text-white">
     <div className="text-center">
       <svg className="w-12 h-12 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -203,7 +203,7 @@ const ErrorDisplay: React.FC<{ error: string }> = ({ error }) => (
 )
 
 const LoadingSpinner: React.FC = () => (
-  <div className="flex items-center justify-center h-full">
+  <div className="absolute inset-0 z-10 flex items-center justify-center">
     <div className="animate-spin">
       <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="10" strokeWidth="4" stroke="currentColor" opacity="0.25" />
@@ -217,7 +217,7 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   source,
   autoplay = false,
   controls = true,
-  muted: _initialMuted = false,
+  muted: initialMuted = false,
   loop: _loop = false,
   width = '100%',
   height = '100%',
@@ -237,6 +237,8 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const latestStatsRef = useRef({ currentTime: 0, duration: 0 })
+  const onStateChangeRef = useRef(onStateChange)
+  const onErrorRef = useRef(onError)
   const [showControls, setShowControls] = useState(true)
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -274,16 +276,22 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   }, [stats.currentTime, stats.duration])
 
   useEffect(() => {
-    if (onStateChange) {
-      onStateChange(state)
-    }
-  }, [state, onStateChange])
+    onStateChangeRef.current = onStateChange
+  }, [onStateChange])
 
   useEffect(() => {
-    if (error && onError) {
-      onError(error)
+    onErrorRef.current = onError
+  }, [onError])
+
+  useEffect(() => {
+    onStateChangeRef.current?.(state)
+  }, [state])
+
+  useEffect(() => {
+    if (error) {
+      onErrorRef.current?.(error)
     }
-  }, [error, onError])
+  }, [error])
 
   useEffect(() => {
     const handleTimeUpdate = () => {
@@ -310,32 +318,46 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   }, [on, off, onPlay, onPause, onEnded, onTimeUpdate, onBuffering, onQualityChangeCallback])
 
   useEffect(() => {
+    setMuted(initialMuted)
+  }, [initialMuted, setMuted])
+
+  useEffect(() => {
     if (autoplay && state === 'idle') {
       play().catch(console.error)
     }
   }, [autoplay, state, play])
 
   useEffect(() => {
-    const handleMouseMove = () => {
-      setShowControls(true)
+    const clearControlsTimeout = () => {
       if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current)
+      controlsTimeoutRef.current = null
+    }
+
+    const scheduleHideControls = () => {
+      clearControlsTimeout()
       controlsTimeoutRef.current = setTimeout(() => {
         if (state === 'playing') setShowControls(false)
       }, 3000)
     }
 
-    if (containerRef.current && state === 'playing') {
-      containerRef.current.addEventListener('mousemove', handleMouseMove)
-      return () => {
-        containerRef.current?.removeEventListener('mousemove', handleMouseMove)
-        if (controlsTimeoutRef.current) {
-          clearTimeout(controlsTimeoutRef.current)
-          controlsTimeoutRef.current = null
-        }
-      }
+    const handleMouseMove = () => {
+      setShowControls(true)
+      scheduleHideControls()
     }
 
-    return undefined
+    if (state !== 'playing') {
+      setShowControls(true)
+      clearControlsTimeout()
+      return undefined
+    }
+
+    scheduleHideControls()
+    containerRef.current?.addEventListener('mousemove', handleMouseMove)
+
+    return () => {
+      containerRef.current?.removeEventListener('mousemove', handleMouseMove)
+      clearControlsTimeout()
+    }
   }, [state])
 
   return (
@@ -372,7 +394,7 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
 
       {state === 'idle' && !error && (
         <div
-          className="absolute inset-0 flex items-center justify-center cursor-pointer group"
+          className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer group"
           onClick={() => play().catch(console.error)}
           style={{ backgroundImage: poster ? `url(${poster})` : undefined, backgroundSize: 'cover' }}
         >

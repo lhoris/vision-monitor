@@ -35,11 +35,17 @@ describe('authSlice', () => {
     expect(state.user?.permissions).toEqual(['admin:access'])
     expect(localStorage.getItem('authToken')).toBe('dev-auth-token-admin')
     expect(localStorage.getItem('authUsername')).toBe('admin')
+    expect(JSON.parse(localStorage.getItem('authUser') ?? '{}')).toMatchObject({
+      username: 'admin',
+      role: 'admin',
+      permissions: ['admin:access'],
+    })
   })
 
   it('clears auth state and localStorage values on rejected login and logout', async () => {
     localStorage.setItem('authToken', 'old-token')
     localStorage.setItem('authUsername', 'admin')
+    localStorage.setItem('authUser', JSON.stringify({ id: 1, username: 'admin' }))
     mockedAuthService.login.mockRejectedValue(new Error('Invalid username or password'))
 
     const rejected = await loginUser({ username: 'admin', password: 'wrong' })(vi.fn(), vi.fn(), undefined)
@@ -49,21 +55,49 @@ describe('authSlice', () => {
     expect(rejectedState.user).toBeNull()
     expect(rejectedState.error).toBe('Invalid username or password')
     expect(localStorage.getItem('authToken')).toBeNull()
+    expect(localStorage.getItem('authUsername')).toBeNull()
+    expect(localStorage.getItem('authUser')).toBeNull()
 
     localStorage.setItem('authToken', 'token')
     localStorage.setItem('authUsername', 'admin')
+    localStorage.setItem('authUser', JSON.stringify({ id: 1, username: 'admin' }))
     const loggedOutState = authReducer(rejectedState, logout())
 
     expect(loggedOutState.isAuthenticated).toBe(false)
     expect(localStorage.getItem('authToken')).toBeNull()
     expect(localStorage.getItem('authUsername')).toBeNull()
+    expect(localStorage.getItem('authUser')).toBeNull()
 
     localStorage.setItem('authToken', 'token')
     localStorage.setItem('authUsername', 'admin')
+    localStorage.setItem('authUser', JSON.stringify({ id: 1, username: 'admin' }))
     const logoutAction = await logoutUser()(vi.fn(), vi.fn(), undefined)
     authReducer(loggedOutState, logoutAction)
 
     expect(localStorage.getItem('authToken')).toBeNull()
     expect(localStorage.getItem('authUsername')).toBeNull()
+    expect(localStorage.getItem('authUser')).toBeNull()
+  })
+
+  it('restores auth state from stored token and user on initialization', async () => {
+    vi.resetModules()
+    localStorage.setItem('authToken', 'dev-auth-token-admin')
+    localStorage.setItem('authUsername', 'admin')
+    localStorage.setItem('authUser', JSON.stringify({
+      id: 1,
+      username: 'admin',
+      role: 'admin',
+      permissions: ['admin:access'],
+    }))
+
+    const { default: freshAuthReducer } = await import('../authSlice')
+    const state = freshAuthReducer(undefined, { type: '@@INIT' })
+
+    expect(state.isAuthenticated).toBe(true)
+    expect(state.user).toMatchObject({
+      username: 'admin',
+      role: 'admin',
+      permissions: ['admin:access'],
+    })
   })
 })

@@ -22,6 +22,20 @@ const INITIAL_STATS: PlayerStats = {
   playbackRate: 1,
 }
 
+function attachMediaElement(
+  container: HTMLDivElement,
+  element: HTMLVideoElement | HTMLCanvasElement
+): void {
+  element.style.position = 'absolute'
+  element.style.inset = '0'
+  element.style.width = '100%'
+  element.style.height = '100%'
+  element.style.objectFit = 'contain'
+  element.style.zIndex = '0'
+
+  container.prepend(element)
+}
+
 export interface UseStreamPlayerReturn {
   state: PlayerState
   stats: PlayerStats
@@ -176,22 +190,16 @@ export function useStreamPlayer(
     switch (protocol) {
       case 'hls': {
         videoElementRef.current = document.createElement('video')
-        videoElementRef.current.style.width = '100%'
-        videoElementRef.current.style.height = '100%'
-        videoElementRef.current.style.objectFit = 'contain'
-        containerRef.current.appendChild(videoElementRef.current)
+        attachMediaElement(containerRef.current, videoElementRef.current)
 
         return new HLSPlayer(videoElementRef.current, source.url, configRef.current?.reconnect)
       }
 
       case 'webrtc': {
         videoElementRef.current = document.createElement('video')
-        videoElementRef.current.style.width = '100%'
-        videoElementRef.current.style.height = '100%'
-        videoElementRef.current.style.objectFit = 'contain'
         videoElementRef.current.autoplay = true
         videoElementRef.current.playsInline = true
-        containerRef.current.appendChild(videoElementRef.current)
+        attachMediaElement(containerRef.current, videoElementRef.current)
 
         return new WebRTCPlayer(
           videoElementRef.current,
@@ -203,9 +211,7 @@ export function useStreamPlayer(
 
       case 'rtsp': {
         canvasElementRef.current = document.createElement('canvas')
-        canvasElementRef.current.style.width = '100%'
-        canvasElementRef.current.style.height = '100%'
-        containerRef.current.appendChild(canvasElementRef.current)
+        attachMediaElement(containerRef.current, canvasElementRef.current)
 
         return new RTSPPlayer(canvasElementRef.current, source.url, configRef.current?.reconnect)
       }

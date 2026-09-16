@@ -1,0 +1,441 @@
+@charset "utf-8";
+@import url("fonts/font.css");
+
+/* ==========================================
+   1. Reset & Global Styles
+   ========================================== */
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+    line-height: 1.17;
+    letter-spacing: 0;
+    color: #333;
+    background-color: #f3f3f9;
+    vertical-align: baseline;
+}
+
+p, td, ul, ol, li, dl, dt, dd, form, fieldset, legend, h1, h2, h3, h4, h5 {
+    margin: 0;
+    padding: 0;
+}
+
+fieldset, legend {
+    border: none;
+}
+
+input, select, textarea, button {
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+}
+
+input, select, textarea {
+    font-size: 14px;
+    vertical-align: middle;
+    -webkit-appearance: none;
+    outline: 0;
+    -webkit-border-radius: 0;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    color: #333;
+    text-decoration: none;
+}
+
+button {
+    border: none;
+    background: none;
+}
+
+img {
+    border: 0;
+    vertical-align: top;
+}
+
+em {
+    font-style: normal;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+select::-ms-expand {
+    display: none;
+}
+
+label {
+    display: inline-block;
+}
+
+.hide {
+    width: 0;
+    height: 0;
+    padding: 0;
+    font-size: 0;
+    opacity: 0;
+    display: none;
+}
+
+[type=button]:not(:disabled), 
+[type=reset]:not(:disabled), 
+[type=submit]:not(:disabled), 
+button:not(:disabled) {
+    cursor: pointer;
+}
+
+*, ::after, ::before {
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   2. Checkbox Style
+   ========================================== */
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    margin-top: 1px;
+    vertical-align: top;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 1px solid rgba(0, 0, 0, .25);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    -webkit-print-color-adjust: exact;
+}
+
+.form-check-input[type=checkbox]:checked {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
+}
+
+.form-check-input:checked {
+    background-color: #1f4396;
+    border-color: #1f4396;
+}
+
+.form-check-input:checked:focus { 
+    border-color: #1f81b5; 
+    box-shadow: 0px 0px 0px 2px #d1dcfc; 
+    -webkit-transition: all .3s ease-out; 
+    transition: all .3s ease-out; 
+}
+
+.form-check-label {
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+/* ==========================================
+   3. Login Layout & Structure
+   ========================================== */
+.login-wrap {
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    background-image: url('../img/bg_img01.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.login-wrap .content-wrap {
+    display: flex;
+    width: 1185px;
+    background-color: #fff;
+    border-radius: 0 45px 0 15px;
+}
+
+.login-wrap .content-wrap .imgWrap {
+    width: 55%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    background-color: #9ad1ff;
+    background-size: cover;
+    background-position: center;
+    transition: all ease 2s 0s;
+    margin: 8px;
+    border-radius: 0 0 0 14px;
+}
+
+.login-wrap .content-wrap .formWrap {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 22px;
+}
+
+.login-wrap .content-wrap .formWrap .page-tab {
+    padding: 80px 23px 20px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.login-wrap .content-wrap .formWrap .page-tab h1 {
+    margin-bottom: 8px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #203366;
+}
+
+.login-wrap .content-wrap .formWrap .page-tab h1 img {
+    width: 135px;
+}
+
+.login-wrap .content-wrap .formWrap .page-tab h2 {
+    font-size: 30px;
+}
+
+.login-wrap .content-wrap .formWrap .tab-content {
+    padding: 25px 70px 50px 70px;
+    display: flex;
+    height: 100%;
+}
+
+.login-wrap .content-wrap .formWrap .tab-content .tab-pane {
+    max-width: 440px;
+    width: 100%;
+}
+
+/* ==========================================
+   4. Floating Label & Form Controls
+   ========================================== */
+.formWrap .form-group {
+    position: relative;
+    margin-bottom: 26px;
+}
+
+.formWrap .form-group.pw {
+    margin-bottom: 30px;
+}
+
+.formWrap .form-group i {
+    position: absolute;
+    top: 56%;
+    right: 0;
+    transform: translateY(-50%);
+    font-size: 22px;
+    color: #777575;
+}
+
+.formWrap .form-group .form-control {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    padding: 18px 30px 0px 0px;
+    box-sizing: border-box;
+    color: #1b1e26;
+    font-size: 16px;
+    outline: none;
+    appearance: none;
+    background: transparent !important;
+    border: none;
+    border-bottom: 2px solid #bdbdbd;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.formWrap .form-group .form-control:hover { 
+    border-color: #b2c0d1; 
+}
+
+.formWrap .form-group .form-control:focus { 
+    border-color: #6081a8;
+}
+
+.formWrap .form-group label:not(.form-check-label) {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #8d9098;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    margin: 0;
+    display: block !important;
+}
+
+/* Focus or Not Empty -> Move Up */
+.formWrap .form-group .form-control:focus ~ label,
+.formWrap .form-group .form-control:not(:placeholder-shown) ~ label {
+    top: 3px;
+    transform: translateY(0);
+    font-size: 12px;
+    color: #1f4396;
+    font-weight: 600;
+}
+
+/* ==========================================
+   5. Checkbox, Links & Buttons
+   ========================================== */
+.formWrap .form-group .checkbox-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.checkbox-wrap .form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-wrap .switcher-text {
+    cursor: pointer;
+    color: #5b8dbb;
+    font-size: 15px;
+    font-weight: 500;
+    display: inline-block;
+    letter-spacing: -0.5px;
+    transition: all 0.3s ease-in-out;
+}
+
+.checkbox-wrap .switcher-text:hover {
+    color: #06339e;
+}
+
+.formWrap .form-group .btn-fill {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 17px;
+    font-weight: 500;
+    color: #fff;
+    border-radius: 3px;
+    background-color: #5876e5;
+    padding: 13px 36px;
+    width: 100%;
+    transition: transform .2s ease, opacity .2s ease, background .2s ease;
+}
+
+.formWrap .form-group .btn-fill span {
+    z-index: 1;
+    position: relative;
+}
+
+.formWrap .form-group .btn-fill:hover {
+    background-color: #4b68d2;
+    transform: translateY(-2px);
+}
+
+/* ==========================================
+   6. Footer & Background Video
+   ========================================== */
+.formWrap .footer {
+    float: left;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    margin: 24px 0 22px;
+}
+
+.footer::before {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 100%;
+    height: 1px;
+    background: #e4e4e4;
+    content: "";
+}
+
+.footer > span {
+    width: auto;
+    display: inline-block;
+    padding: 1px 20px;
+    z-index: 1;
+    position: relative;
+    font-size: 13px;
+    color: #9b9ba0;
+    background: #fff;
+    font-weight: 500;
+}
+
+.imgWrap > .bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.imgWrap > .bg > .video {
+    position: relative;
+    width: 147%;
+    height: 74%;
+}
+
+.imgWrap > .bg video {
+    width: auto;
+    height: 142%;
+    position: absolute;
+    top: 71%;
+    left: 53%;
+    transform: translate(-50%, -50%);
+}
+
+/* ==========================================
+   7. Media Queries
+   ========================================== */
+@media screen and (max-width: 1300px) {
+    .login-wrap .content-wrap .formWrap .page-tab { padding: 90px 30px 0 30px; }
+    .login-wrap .content-wrap .formWrap .tab-content { padding: 10px 30px 20px 30px; }
+    .login-wrap .content-wrap .formWrap .page-tab h1 { font-size: 32px; }
+}
+
+@media screen and (max-width: 1086px) {
+    .login-wrap .content-wrap { display: block; }
+    .login-wrap .content-wrap .imgWrap { display: none; }
+    .login-wrap .content-wrap .formWrap {
+        width: 100%;
+        background-color: rgba(255, 255, 255, 1);
+        position: relative;
+        height: 100%;
+    }
+    .login-wrap .content-wrap .formWrap .tab-content { justify-content: center; }
+    .login-wrap .content-wrap .formWrap .page-tab { padding-top: 50px; }
+    .login-wrap .content-wrap .formWrap .tab-content .tab-pane { max-width: inherit; }
+}
+
+@media screen and (max-width: 750px) {
+    .login-wrap { padding: 120px 15px; }
+}
+
+@media screen and (max-width: 480px) {
+    .login-wrap { padding: 75px 15px 50px 15px; }
+    .login-wrap .content-wrap .formWrap .page-tab { padding: 30px 20px 0 20px; }
+    .login-wrap .content-wrap .formWrap .page-tab h1 { font-size: 26px; }
+    .login-wrap .content-wrap .formWrap .tab-content { padding: 0 20px 20px 20px; }
+}

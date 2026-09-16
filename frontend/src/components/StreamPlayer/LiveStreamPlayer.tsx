@@ -7,11 +7,20 @@ import { StreamPlayerComponent } from './StreamPlayerComponent'
 interface LiveStreamPlayerProps {
   camera: Camera
   className?: string
+  autoplay?: boolean
+  muted?: boolean
   onStateChange?: (state: PlayerState) => void
   onError?: (error: PlayerError) => void
 }
 
-export function LiveStreamPlayer({ camera, className = '', onStateChange, onError }: LiveStreamPlayerProps) {
+export function LiveStreamPlayer({
+  camera,
+  className = '',
+  autoplay = false,
+  muted = false,
+  onStateChange,
+  onError,
+}: LiveStreamPlayerProps) {
   const resumeToken = usePageResumeToken()
 
   if (isStreamPageUrl(camera.streamUrl)) {
@@ -35,7 +44,8 @@ export function LiveStreamPlayer({ camera, className = '', onStateChange, onErro
         protocol: (camera.streamProtocol || 'unknown') as StreamProtocol,
       }}
       controls={true}
-      autoplay={false}
+      autoplay={autoplay}
+      muted={muted}
       className={className}
       onStateChange={onStateChange}
       onError={onError}

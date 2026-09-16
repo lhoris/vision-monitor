@@ -29,7 +29,10 @@ class WHEPClient {
   /**
    * WHEP 세션 시작
    */
-  async connect(): Promise<RTCPeerConnection> {
+  async connect(
+    onTrack?: (event: RTCTrackEvent) => void,
+    onConnectionStateChange?: () => void
+  ): Promise<RTCPeerConnection> {
     const iceServersConfig = this.iceServers.length > 0
       ? this.iceServers
       : [
@@ -40,6 +43,14 @@ class WHEPClient {
     this.peerConnection = new RTCPeerConnection({
       iceServers: iceServersConfig,
     })
+
+    if (onTrack) {
+      this.peerConnection.addEventListener('track', onTrack)
+    }
+
+    if (onConnectionStateChange) {
+      this.peerConnection.addEventListener('connectionstatechange', onConnectionStateChange)
+    }
 
     // ICE 후보자 수집
     const iceCandidates: RTCIceCandidate[] = []
@@ -248,18 +259,11 @@ export class WebRTCPlayer extends StreamPlayer {
       const whepUrl = this.webrtcConfig.whepUrl || this.url
       this.whepClient = new WHEPClient(whepUrl, this.webrtcConfig.iceServers)
 
-      this.peerConnection = await this.whepClient.connect()
-
-      // 원격 스트림 받기
-      this.peerConnection.addEventListener('track', this.handlePeerTrack)
-
-      // 연결 상태 모니터링
-      this.peerConnection.addEventListener(
-        'connectionstatechange',
+      this.peerConnection = await this.whepClient.connect(
+        this.handlePeerTrack,
         this.handlePeerConnectionStateChange
       )
 
-      this.setState('loading')
       this.emit('loadend', {})
     } catch (error) {
       this.handleError({
@@ -280,12 +284,13 @@ export class WebRTCPlayer extends StreamPlayer {
     }
 
     try {
+      this.setState('loading')
+      this.emit('loadstart', {})
+
       if (!this.peerConnection) {
         await this.setupWebRTC()
       }
 
-      this.setState('loading')
-      this.emit('loadstart', {})
       await this.videoElement.play()
       this.cancelReconnect()
     } catch (error) {

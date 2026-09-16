@@ -2,11 +2,278 @@
  * Login Page
  */
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { loginUser } from '@/store/slices/authSlice'
 import { authService } from '@/services/authService'
+import poscoLogo from '../../bak/login_html/img/posco_logo.svg'
+import poscoLogoWhite from '../../bak/login_html/img/posco_logo_w.svg'
+import type1Background from '../../bak/login_html/img/bg_img01.png'
+import type2Visual from '../../bak/login_html/img/bg_img02.png'
+import type3Background from '../../bak/login_html/img/bg_img04.png'
+import type3CctvIcon from '../../bak/login_html/img/bg_icon01.png'
+import loginVideo from '../../bak/login_html/img/login_video.mp4'
+import './loginTemplates.css'
+
+type LoginTemplateId = 1 | 2 | 3
+
+export const ACTIVE_LOGIN_TEMPLATE = 2 as LoginTemplateId
+
+interface LoginFormProps {
+  username: string
+  password: string
+  error: string
+  loading: boolean
+  onUsernameChange: (value: string) => void
+  onPasswordChange: (value: string) => void
+  onSubmit: (event: React.FormEvent) => void
+  buttonClassName: string
+}
+
+function LoginFields({
+  username,
+  password,
+  error,
+  loading,
+  onUsernameChange,
+  onPasswordChange,
+  onSubmit,
+  buttonClassName,
+}: LoginFormProps) {
+  return (
+    <form className="vm-login-form" onSubmit={onSubmit}>
+      <div className="vm-login-field">
+        <label htmlFor="login-username">USER ID</label>
+        <input
+          id="login-username"
+          type="text"
+          value={username}
+          onChange={(event) => onUsernameChange(event.target.value)}
+          placeholder="ID"
+          autoComplete="username"
+          required
+        />
+      </div>
+
+      <div className="vm-login-field">
+        <label htmlFor="login-password">PASSWORD</label>
+        <input
+          id="login-password"
+          type="password"
+          value={password}
+          onChange={(event) => onPasswordChange(event.target.value)}
+          placeholder="Password"
+          autoComplete="current-password"
+          required
+        />
+      </div>
+
+      <div className="vm-login-options">
+        <label className="vm-login-check">
+          <input type="checkbox" defaultChecked />
+          <span>아이디 저장</span>
+        </label>
+        <button type="button" className="vm-login-link">아이디/비밀번호 찾기</button>
+      </div>
+
+      {error && <p className="vm-login-error">{error}</p>}
+
+      <button type="submit" className={buttonClassName} disabled={loading}>
+        {loading ? 'Signing In...' : 'Login'}
+      </button>
+
+      <DemoCredentials />
+    </form>
+  )
+}
+
+function DemoCredentials() {
+  return (
+    <div className="vm-login-demo" aria-label="Demo Credentials">
+      <strong>Demo Credentials</strong>
+      <span>Username: <code>tester</code></span>
+      <span>Password: <code>tester123</code></span>
+    </div>
+  )
+}
+
+function Type1Login(props: LoginFormProps) {
+  return (
+    <div className="vm-login-root vm-login-type1" style={{ '--type1-bg': `url(${type1Background})` } as React.CSSProperties}>
+      <section className="vm-type1-shell">
+        <div className="vm-type1-media">
+          <video autoPlay muted loop playsInline>
+            <source src={loginVideo} type="video/mp4" />
+          </video>
+        </div>
+        <div className="vm-type1-panel">
+          <img src={poscoLogo} alt="POSCO" className="vm-login-logo" />
+          <h1>포항 4선재 AI 영상통합 플랫폼</h1>
+          <LoginFields {...props} buttonClassName="vm-type1-submit" />
+          <footer>POSCO Smart Factory / AI Video Platform</footer>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function Type2Login(props: LoginFormProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const leftSectionRef = useRef<HTMLDivElement>(null)
+  const eyeRefs = useRef<Array<HTMLSpanElement | null>>([])
+  const [serverTime, setServerTime] = useState('')
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const container = leftSectionRef.current
+    const context = canvas?.getContext('2d')
+    if (!canvas || !container || !context) return undefined
+
+    let frameId = 0
+    let step = 0
+
+    const resizeCanvas = () => {
+      canvas.width = container.offsetWidth
+      canvas.height = container.offsetHeight
+    }
+
+    const animate = () => {
+      context.clearRect(0, 0, canvas.width, canvas.height)
+      step += 0.015
+
+      for (let i = 0; i < 3; i += 1) {
+        context.beginPath()
+        context.lineWidth = 1.2
+        context.strokeStyle = i === 0
+          ? 'rgba(56, 189, 248, 0.2)'
+          : i === 1
+            ? 'rgba(129, 140, 248, 0.15)'
+            : 'rgba(52, 211, 153, 0.12)'
+
+        const amplitude = 40 + i * 20
+        const frequency = 0.003 + i * 0.001
+        const speed = step * (1 + i * 0.3)
+
+        for (let x = 0; x <= canvas.width; x += 10) {
+          const y = (canvas.height / 2) + Math.sin(x * frequency + speed) * amplitude * Math.cos(step * 0.5)
+          if (x === 0) context.moveTo(x, y)
+          else context.lineTo(x, y)
+        }
+        context.stroke()
+      }
+
+      frameId = requestAnimationFrame(animate)
+    }
+
+    resizeCanvas()
+    animate()
+    window.addEventListener('resize', resizeCanvas)
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [])
+
+  useEffect(() => {
+    const updateServerTime = () => {
+      const now = new Date()
+      setServerTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')} KST`)
+    }
+
+    updateServerTime()
+    const timer = window.setInterval(updateServerTime, 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      eyeRefs.current.forEach((eye) => {
+        if (!eye) return
+        const rect = eye.getBoundingClientRect()
+        const eyeX = rect.left + rect.width / 2
+        const eyeY = rect.top + rect.height / 2
+        const angle = Math.atan2(event.clientY - eyeY, event.clientX - eyeX)
+        const distance = Math.min(6, Math.hypot(event.clientX - eyeX, event.clientY - eyeY) / 18)
+        eye.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`
+      })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
+  return (
+    <div className="vm-login-root vm-login-type2">
+      <main className="vm-type2-container">
+        <section className="vm-type2-left" ref={leftSectionRef} style={{ '--type2-visual': `url(${type2Visual})` } as React.CSSProperties}>
+          <canvas ref={canvasRef} className="vm-type2-canvas" />
+          <div className="vm-type2-hero">
+            <img src={poscoLogoWhite} alt="POSCO" />
+            <h1>포항 4선재<br /><span>AI 영상통합 플랫폼</span></h1>
+            <p>Real-time CCTV Vision AI & Safety Monitoring Control</p>
+          </div>
+        </section>
+
+        <section className="vm-type2-right">
+          <header className="vm-type2-header">
+            <div className="vm-type2-login-word" aria-label="Login">
+              <span>L</span>
+              <span className="vm-type2-eye-o">
+                <span className="vm-type2-o">o</span>
+                <span className="vm-type2-eyes">
+                  <span ref={(element) => { eyeRefs.current[0] = element }} />
+                  <span ref={(element) => { eyeRefs.current[1] = element }} />
+                </span>
+              </span>
+              <span>gin</span>
+            </div>
+            <p>모니터링 및 AI 관제를 위해 로그인해 주세요.</p>
+          </header>
+
+          <LoginFields {...props} buttonClassName="vm-type2-submit" />
+
+          <footer className="vm-type2-status">
+            <div><span>AI VISION SERVER</span><strong>ONLINE</strong></div>
+            <div><span>CCTV STREAMING HUB</span><strong>4선재 라인 연동중</strong></div>
+            <div><span>SERVER TIME</span><strong>{serverTime}</strong></div>
+          </footer>
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function Type3Login(props: LoginFormProps) {
+  useEffect(() => {
+    const root = document.documentElement
+    const handleMouseMove = (event: MouseEvent) => {
+      root.style.setProperty('--vm-login-mouse-x', `${event.clientX}px`)
+      root.style.setProperty('--vm-login-mouse-y', `${event.clientY}px`)
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
+  return (
+    <div className="vm-login-root vm-login-type3" style={{ '--type3-bg': `url(${type3Background})`, '--type3-cctv': `url(${type3CctvIcon})` } as React.CSSProperties}>
+      <div className="vm-type3-spotlight" />
+      <section className="vm-type3-shell">
+        <header className="vm-type3-logo-row">
+          <img src={poscoLogoWhite} alt="POSCO" />
+          <span className="vm-type3-cctv" />
+        </header>
+        <div className="vm-type3-card">
+          <h1>포항 4선재<br /><span>AI 영상통합 플랫폼</span></h1>
+          <p>시스템을 사용하시려면 로그인해 주세요.</p>
+          <LoginFields {...props} buttonClassName="vm-type3-submit" />
+        </div>
+      </section>
+    </div>
+  )
+}
 
 export const Login: React.FC = () => {
   const dispatch = useAppDispatch()
@@ -59,121 +326,35 @@ export const Login: React.FC = () => {
     }
   }
 
+  const templateProps: LoginFormProps = {
+    username,
+    password,
+    error,
+    loading,
+    onUsernameChange: setUsername,
+    onPasswordChange: setPassword,
+    onSubmit: handleLogin,
+    buttonClassName: '',
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background gradient animation */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      </div>
+    <>
       {passwordChangeRequired && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-2xl dark:bg-slate-800">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">비밀번호 변경</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정하세요.</p>
-            <input aria-label="새 비밀번호" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} className="mt-4 w-full rounded border px-3 py-2" placeholder="새 비밀번호" />
-            <input aria-label="새 비밀번호 확인" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-3 w-full rounded border px-3 py-2" placeholder="새 비밀번호 확인" />
-            <button type="button" onClick={() => void handlePasswordChange()} className="mt-4 w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white">비밀번호 저장</button>
+        <div className="vm-password-modal">
+          <div className="vm-password-card">
+            <h2>비밀번호 변경</h2>
+            <p>관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정해 주세요.</p>
+            <input aria-label="새 비밀번호" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="새 비밀번호" />
+            <input aria-label="새 비밀번호 확인" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" />
+            <button type="button" onClick={() => void handlePasswordChange()}>비밀번호 저장</button>
           </div>
         </div>
       )}
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/20">
-          {/* Logo / Title */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg blur opacity-75"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-indigo-700 p-3 rounded-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400 mb-2">
-              AI Vision Monitor
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 font-medium">Intelligent VMS Platform</p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-6">
-            {/* Username */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                placeholder="username"
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                placeholder="password"
-              />
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg p-3">
-                <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700
-                         text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                         dark:focus:ring-offset-gray-800 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
-                         disabled:cursor-not-allowed disabled:opacity-70 disabled:transform-none"
-            >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </button>
-          </form>
-
-          {/* Info */}
-          <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <span className="font-semibold block mb-2">Demo Credentials</span>
-                  <span className="text-blue-700 dark:text-blue-300">Username: </span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400">tester</span>
-                  <br />
-                  <span className="text-blue-700 dark:text-blue-300">Password: </span>
-                  <span className="font-mono text-blue-600 dark:text-blue-400">tester123</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      {ACTIVE_LOGIN_TEMPLATE === 1 && <Type1Login {...templateProps} />}
+      {ACTIVE_LOGIN_TEMPLATE === 2 && <Type2Login {...templateProps} />}
+      {ACTIVE_LOGIN_TEMPLATE === 3 && <Type3Login {...templateProps} />}
+    </>
   )
 }
 

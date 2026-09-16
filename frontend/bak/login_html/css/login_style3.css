@@ -1,0 +1,547 @@
+@charset "utf-8";
+@import url("fonts/font.css");
+
+/* ==========================================
+    1. Reset & Global Styles
+   ========================================== */
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+    line-height: 1.17;
+    letter-spacing: 0;
+    color: #333;
+    background-color: #f8f9fc;
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+    overflow-y: auto;   /* 세로 스크롤은 필요시 자동 생성 */
+    vertical-align: baseline;
+}
+
+p, td, ul, ol, li, dl, dt, dd, form, fieldset, legend, h1, h2, h3, h4, h5 {
+    margin: 0;
+    padding: 0;
+}
+
+fieldset, legend {
+    border: none;
+}
+
+input, select, textarea, button {
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+    font-family: 'Noto Sans KR', Arial, sans-serif;
+}
+
+input, select, textarea {
+    font-size: 14px;
+    -webkit-appearance: none;
+    outline: 0;
+    -webkit-border-radius: 0;
+}
+
+ul, ol {
+    list-style: none;
+}
+
+a {
+    color: #333;
+    text-decoration: none;
+}
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+img {
+    border: 0;
+    vertical-align: top;
+}
+
+em {
+    font-style: normal;
+}
+
+*, ::after, ::before {
+    box-sizing: border-box;
+}
+
+:root {
+    --mouse-x: 50vw;
+    --mouse-y: 50vh;
+    --navy: #071a84;
+    --muted: #6b7280;
+    --line: #d1d5db;
+}
+
+/* ==========================================
+    2. Background & Effects
+   ========================================== */
+.grid-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    background-color: #f8f9fc;
+    overflow: hidden;
+}
+
+.grid-background::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('../img/bg_img04.png') no-repeat;
+    background-size: cover;
+}
+
+.spotlight-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    background: 
+        radial-gradient(
+            600px circle at var(--mouse-x) var(--mouse-y),
+            rgba(147, 51, 234, 0.12),
+            transparent 70%
+        ),
+        radial-gradient(
+            800px circle at calc(var(--mouse-x) + 40px) calc(var(--mouse-y) + 40px),
+            rgba(20, 184, 166, 0.1),
+            transparent 75%
+        );
+}
+
+/* ==========================================
+    3. Login Layout & Card
+   ========================================== */
+.login-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px;
+    transition: transform .7s cubic-bezier(.22, 1, .36, 1), opacity .5s ease;
+}
+
+.login-wrapper.loading-state {
+    transform: scale(.96);
+}
+
+.login-wrapper .posco-logo {
+    width: 100%;
+    max-width: 660px;
+    padding-left: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+}  
+
+.login-wrapper img {
+    width: 122px;
+    margin-bottom: 2px;
+}
+
+.live-status {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: -5px;
+    padding-right: 10px;
+    color: #56d3b4;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+}
+
+.live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #56d3b4;
+    box-shadow: 0 0 10px #56d3b4;
+    animation: pulse 1.8s infinite;
+    flex-shrink: 0;
+}
+
+.live-status .cctv-bg {
+    display: inline-block;
+    width: 73px;
+    height: 62px;
+    background-image: url('../img/bg_icon01.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: cctvBreathing 2.5s infinite ease-in-out;
+    flex-shrink: 0;
+}
+
+/* Glassmorphism Login Card */
+.login-card {
+    width: 100%;
+    max-width: 660px;
+    padding: 65px 62px;
+    background: rgba(255, 255, 255, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+    color: #111827;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 16px;
+}
+
+.logo-title {
+    font-size: 35px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.logo-title span {
+    color: #072c70;
+}
+
+.logo-desc {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-top: 17px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+/* ==========================================
+    4. Form Elements & Inputs
+   ========================================== */
+.login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.input-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group.focused label {
+    color: var(--navy);
+    transform: translateX(2px);
+}
+
+.input-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    transition: color .25s ease, transform .25s ease;
+}
+
+.field-inner {
+    position: relative;
+}
+
+.input-group input {
+    width: 100%;
+    height: 53px;
+    padding: 0 45px 0 14px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+    border-color: #071a84;
+    background: rgba(255, 255, 255, .95);
+    box-shadow: 0 0 0 4px rgba(7, 26, 132, .07);
+    transform: translateY(-1px);
+}
+
+.input-group.has-value input {
+    border-color: rgba(58, 84, 170, .45);
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    width: 24px;
+    height: 24px;
+    transform: translateY(-50%);
+    background: transparent;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .2s ease;
+}
+
+.password-toggle:hover {
+    color: var(--navy);
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+.form-options .password-hint {
+    margin: 0;
+}
+
+.password-hint {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -2px;
+    margin-bottom: 6px;
+}
+
+.password-hint a {
+    font-size: 14px;
+    color: #00256f;
+    text-decoration: none;
+}
+
+.password-hint a:hover {
+    text-decoration: underline;
+}
+
+/* Custom Checkbox */
+.remember-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555555;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.remember-checkbox-label:hover {
+    color: #111111;
+}
+
+.remember-checkbox-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.remember-checkbox-label .custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+}
+
+.remember-checkbox-label:hover input ~ .custom-checkbox {
+    border-color: #999999;
+}
+
+.remember-checkbox-label input:checked ~ .custom-checkbox {
+    background-color: #003366;
+    border-color: #003366;
+}
+
+.remember-checkbox-label .custom-checkbox:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.remember-checkbox-label input:checked ~ .custom-checkbox:after {
+    display: block;
+}
+
+.remember-checkbox-label .custom-checkbox:after {
+    left: 6px;
+    top: 2px;
+    width: 4px;
+    height: 9px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* ==========================================
+    5. Buttons & Animations
+   ========================================== */
+.btn-submit {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    margin-top: 4px;
+    border: none;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden;
+    background: #111827;
+    box-shadow: 0 10px 24px rgba(7, 26, 132, .12);
+    transition: background .35s ease, transform .2s ease, box-shadow .35s ease;
+}
+
+.btn-submit:hover {
+    background: #1f2937;
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(7, 26, 132, .20);
+}
+
+.btn-submit:active {
+    transform: scale(.97);
+}
+
+.button-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity .2s ease;
+}
+
+.ripple {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .3);
+    transform: scale(0);
+    animation: rippleAnim .7s ease-out;
+    pointer-events: none;
+}
+
+.spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, .35);
+    border-top-color: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: spin .7s linear infinite;
+}
+
+.btn-submit.loading .spinner {
+    opacity: 1;
+}
+
+.btn-submit.loading .button-content {
+    opacity: 0;
+}
+
+.signup-text {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+.signup-text a {
+    color: #9333ea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-text a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+    6. Keyframe Animations
+   ========================================== */
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(86, 211, 180, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(86, 211, 180, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(86, 211, 180, 0);
+    }
+}
+
+@keyframes cctvBreathing {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(35);
+        opacity: 0;
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+    7. Media Queries
+   ========================================== */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 40px 24px;
+    }
+    .logo-title {
+        font-size: 28px;
+    }
+    .login-wrapper .posco-logo {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+}

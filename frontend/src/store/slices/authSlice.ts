@@ -20,24 +20,91 @@ interface AuthState {
   error: string | null
 }
 
+const AUTH_TOKEN_KEY = 'authToken'
+const AUTH_USERNAME_KEY = 'authUsername'
+const AUTH_USER_KEY = 'authUser'
+
+function isStorageAvailable(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.localStorage)
+}
+
+function removeStoredAuth(): void {
+  if (!isStorageAvailable()) return
+
+  localStorage.removeItem(AUTH_TOKEN_KEY)
+  localStorage.removeItem(AUTH_USERNAME_KEY)
+  localStorage.removeItem(AUTH_USER_KEY)
+}
+
+function readStoredUser(): User | null {
+  if (!isStorageAvailable()) return null
+
+  const rawUser = localStorage.getItem(AUTH_USER_KEY)
+  if (rawUser) {
+    try {
+      const user = JSON.parse(rawUser) as Partial<User>
+      if (typeof user.username === 'string' && user.username.trim()) {
+        return {
+          id: typeof user.id === 'number' ? user.id : 0,
+          username: user.username,
+          role: user.role,
+          permissions: Array.isArray(user.permissions) ? user.permissions : [],
+        }
+      }
+    } catch {
+      removeStoredAuth()
+      return null
+    }
+  }
+
+  const username = localStorage.getItem(AUTH_USERNAME_KEY)
+  if (!username) return null
+
+  return {
+    id: 0,
+    username,
+    role: username === 'tester' ? 'admin' : 'user',
+    permissions: username === 'tester' ? ['admin:access'] : [],
+  }
+}
+
+function createInitialState(): AuthState {
+  const token = isStorageAvailable() ? localStorage.getItem(AUTH_TOKEN_KEY) : null
+  const user = token ? readStoredUser() : null
+
+  if (!token || !user) {
+    return {
+      isAuthenticated: false,
+      user: null,
+      loading: false,
+      error: null,
+    }
+  }
+
+  return {
+    isAuthenticated: true,
+    user,
+    loading: false,
+    error: null,
+  }
+}
+
 const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  loading: false,
-  error: null,
+  ...createInitialState(),
 }
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials: LoginCredentials, { rejectWithValue, dispatch }) => {
-      try {
+    try {
       const result = await authService.login(credentials)
-      localStorage.setItem('authToken', result.token)
-      localStorage.setItem('authUsername', result.user.username)
+      localStorage.setItem(AUTH_TOKEN_KEY, result.token)
+      localStorage.setItem(AUTH_USERNAME_KEY, result.user.username)
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(result.user))
       void dispatch(fetchCommonCodes())
       return result
     } catch (error) {
-      localStorage.removeItem('authToken')
+      removeStoredAuth()
       const message = error instanceof Error ? error.message : 'Invalid username or password'
       if (typeof error === 'object' && error && 'message' in error) {
         return rejectWithValue(String(error.message))
@@ -48,8 +115,7 @@ export const loginUser = createAsyncThunk(
 )
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
-  localStorage.removeItem('authToken')
-  localStorage.removeItem('authUsername')
+  removeStoredAuth()
 })
 
 const authSlice = createSlice({
@@ -60,8 +126,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.error = null
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('authUsername')
+      removeStoredAuth()
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload

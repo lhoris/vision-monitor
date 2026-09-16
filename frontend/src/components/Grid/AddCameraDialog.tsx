@@ -38,12 +38,12 @@ function validateUrl(value: string, protocol: DirectProtocol): string | null {
 
 export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   isOpen,
-  cameras,
+  cameras: _cameras,
   videoSources = [],
-  usedCameraIds,
+  usedCameraIds: _usedCameraIds,
   existingTemporaryUrls = [],
   initialSource,
-  onSelectCamera,
+  onSelectCamera: _onSelectCamera,
   onAddDirectSource,
   onClose,
 }) => {
@@ -64,13 +64,6 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     setSearchTerm('')
     setError(null)
   }, [isOpen, initialSource])
-
-  const filteredCameras = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase()
-    return cameras.filter((camera) =>
-      !term || [camera.name, camera.location, camera.zone].some((value) => value.toLowerCase().includes(term))
-    )
-  }, [cameras, searchTerm])
 
   const filteredVideoSources = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
@@ -159,7 +152,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
               <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
             </div>
             <div className="max-h-80 overflow-y-auto border-t border-gray-100 dark:border-gray-700">
-              {filteredCameras.length === 0 && filteredVideoSources.length === 0 ? (
+              {filteredVideoSources.length === 0 ? (
                 <p className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{t('live.addCameraDialog.noResults')}</p>
               ) : (
                 <>
@@ -183,23 +176,6 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                       </button>
                     )
                   })}
-                  {filteredCameras.map((camera) => (
-                    <button
-                      key={`camera-${camera.id}`}
-                      type="button"
-                      disabled={usedCameraIds.includes(camera.id)}
-                      onClick={() => { onSelectCamera(camera); onClose() }}
-                      className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-4 text-left hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60 dark:border-gray-700 dark:hover:bg-gray-700 dark:disabled:bg-gray-900"
-                    >
-                      <span className="min-w-0">
-                        <strong className="block truncate text-sm text-gray-900 dark:text-white">{camera.name}</strong>
-                        <span className="block text-xs text-gray-500 dark:text-gray-400">{camera.location} - {camera.zone}</span>
-                      </span>
-                      <span className={`ml-3 shrink-0 text-xs font-semibold ${usedCameraIds.includes(camera.id) ? 'text-gray-500' : camera.status === 'online' ? 'text-green-600' : 'text-red-500'}`}>
-                        {usedCameraIds.includes(camera.id) ? t('live.addCameraDialog.alreadyAdded') : t(`common.${camera.status}`, { defaultValue: camera.status })}
-                      </span>
-                    </button>
-                  ))}
                 </>
               )}
             </div>

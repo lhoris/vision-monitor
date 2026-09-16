@@ -127,8 +127,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
   const handleFocusClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (camera && onFocusCamera) {
-      onFocusCamera(camera.id)
+    if (effectiveCamera && onFocusCamera) {
+      onFocusCamera(effectiveCamera.id)
     }
   }
 
@@ -164,7 +164,6 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <button
           type="button"
           onClick={handleFocusClick}
-          style={{ visibility: isTemporary ? 'hidden' : undefined }}
           className="shrink-0 flex items-center justify-center p-1.5 rounded border border-sky-400 bg-sky-100 text-slate-950 opacity-0 transition-all duration-150 hover:bg-white hover:border-sky-500 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:bg-sky-950/40 dark:border-sky-500/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
           aria-label={`${displayName} 확대 보기`}
           title="확대 보기"
@@ -189,6 +188,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <LiveStreamPlayer
           camera={{ ...effectiveCamera, name: displayName }}
           className="h-full w-full"
+          autoplay={isTemporary}
+          muted={isTemporary}
           onStateChange={isTemporary ? onTemporaryStatusChange : undefined}
           onError={isTemporary ? (() => onTemporaryStatusChange?.('error')) : undefined}
         />
@@ -207,7 +208,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
               left: `${contextMenu.x}px`,
             }}
           >
-            {isTemporary ? (
+            {isTemporary && onEditTemporarySource ? (
               <button
                 onClick={handleEditSourceClick}
                 className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"

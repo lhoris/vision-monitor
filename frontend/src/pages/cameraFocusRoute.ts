@@ -10,7 +10,7 @@ export function parseCameraFocusRouteState(
   cameraIdParam: string | undefined,
   searchParams: URLSearchParams
 ): CameraFocusRouteState {
-  const cameraId = parsePositiveInteger(cameraIdParam)
+  const cameraId = parseCameraId(cameraIdParam)
   const mode = searchParams.get('mode') === 'recording' ? 'recording' : 'live'
   const selectedEventId = parsePositiveInteger(searchParams.get('eventId') || undefined)
 
@@ -19,6 +19,15 @@ export function parseCameraFocusRouteState(
     mode,
     selectedEventId: selectedEventId ?? undefined,
   }
+}
+
+function parseCameraId(value: string | undefined): number | null {
+  if (!value) {
+    return null
+  }
+
+  const parsed = Number(value)
+  return Number.isSafeInteger(parsed) && parsed !== 0 ? parsed : null
 }
 
 function parsePositiveInteger(value: string | undefined): number | null {

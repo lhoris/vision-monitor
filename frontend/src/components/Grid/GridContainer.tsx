@@ -38,6 +38,23 @@ interface GridContainerProps {
   videoSources?: VideoSource[]
 }
 
+export function updateTemporarySourcePositions(
+  positions: CameraPosition[],
+  editingTemporaryId: number,
+  source: TemporaryVideoSource
+): CameraPosition[] {
+  return positions.map((position) =>
+    position.cameraId === editingTemporaryId
+      ? {
+          ...position,
+          displayName: source.displayName,
+          temporarySourceId: source.id,
+          source,
+        }
+      : position
+  )
+}
+
 export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
@@ -60,6 +77,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
   const [editingTemporaryId, setEditingTemporaryId] = useState<number | null>(null)
+  const [temporaryPlaybackStatuses, setTemporaryPlaybackStatuses] = useState<Record<number, PlayerState>>({})
   const temporaryIdRef = useRef(-1)
 
   useEffect(() => {
@@ -158,6 +176,17 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       if (Object.keys(currentNameOverrides).length > 0) {
         params.set('cameraNames', JSON.stringify(currentNameOverrides))
       }
+
+      const currentTemporarySources = activeSubTab.cameraPositions.reduce<Record<number, TemporaryVideoSource>>((sources, position) => {
+        if (position.source) {
+          sources[position.cameraId] = position.source
+        }
+        return sources
+      }, {})
+
+      if (Object.keys(currentTemporarySources).length > 0) {
+        params.set('temporarySources', JSON.stringify(currentTemporarySources))
+      }
     }
 
     navigate(`/live/cameras/${cameraId}?${params.toString()}`)
@@ -181,25 +210,18 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }
 
   const handleAddDirectSource = (source: TemporaryVideoSource) => {
-    if (!selectedCellId || !activeSubTab) return
+    if (!activeSubTab) return
 
     if (editingTemporaryId !== null) {
       updateActiveSubTabPositions(
-        activeSubTab.cameraPositions.map((position) =>
-          position.cameraId === editingTemporaryId
-            ? {
-                ...position,
-                displayName: source.displayName,
-                temporarySourceId: source.id,
-                source,
-              }
-            : position
-        )
+        updateTemporarySourcePositions(activeSubTab.cameraPositions, editingTemporaryId, source)
       )
       setEditingTemporaryId(null)
       setSelectedCellId(null)
       return
     }
+
+    if (!selectedCellId) return
 
     const temporaryId = temporaryIdRef.current
     temporaryIdRef.current -= 1
@@ -230,14 +252,9 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }
 
   const handleTemporaryStatusChange = (cameraId: number, status: PlayerState) => {
-    if (!activeSubTab) return
-    updateActiveSubTabPositions(
-      activeSubTab.cameraPositions.map((position) =>
-        position.cameraId === cameraId && position.source && position.source.playbackStatus !== status
-          ? { ...position, source: { ...position.source, playbackStatus: status } }
-          : position
-      )
-    )
+    setTemporaryPlaybackStatuses((current) => (
+      current[cameraId] === status ? current : { ...current, [cameraId]: status }
+    ))
   }
 
   const handleAddTab = (tab: Tab) => {
@@ -321,6 +338,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       ? { ...baseCamera, name: position.displayName }
       : baseCamera
     const temporarySource = position?.source
+      ? {
+          ...position.source,
+          playbackStatus: temporaryPlaybackStatuses[position.cameraId] ?? position.source.playbackStatus,
+        }
+      : undefined
 
     return {
       id: `cell-${index}`,
@@ -389,9 +411,16 @@ export const GridContainer: React.FC<GridContainerProps> = ({
                   removeCamera(cameraId)
                 }
               }}
-              onFocusCamera={cell.temporarySource ? undefined : handleFocusCamera}
+              onFocusCamera={handleFocusCamera}
               onRenameCamera={handleRenameCamera}
-              onEditTemporarySource={cell.temporarySource && cell.positionId !== undefined ? () => handleEditTemporarySource(cell.positionId as number) : undefined}
+              onEditTemporarySource={cell.temporarySource ? () => {
+                const cameraId = cell.positionId ?? activeSubTab.cameraPositions.find(
+                  (position) => position.source?.id === cell.temporarySource?.id
+                )?.cameraId
+                if (cameraId !== undefined) {
+                  handleEditTemporarySource(cameraId)
+                }
+              } : undefined}
               onTemporaryStatusChange={cell.temporarySource && cell.positionId !== undefined ? (status) => handleTemporaryStatusChange(cell.positionId as number, status) : undefined}
               onDragStart={handleDragStart}
               onDrop={handleDrop}

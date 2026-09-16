@@ -8,7 +8,9 @@ import { store } from '@/store'
 import { fetchUserLayout } from '@/store/slices/layoutSlice'
 
 vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
-  LiveStreamPlayer: () => <div data-testid="live-stream-player" />,
+  LiveStreamPlayer: ({ camera }: { camera: { name: string; streamUrl: string } }) => (
+    <div data-testid="live-stream-player">{camera.name}:{camera.streamUrl}</div>
+  ),
 }))
 
 function LocationProbe() {
@@ -93,5 +95,54 @@ describe('GridContainer focus routing', () => {
     expect(locationText).toContain('cameraNames=')
     const routeSearch = locationText.slice(locationText.indexOf('?'))
     expect(new URLSearchParams(routeSearch).get('cameraNames')).toContain('"1":"공냉대 진입부"')
+  })
+
+  it('passes temporary video sources to the focus view route', async () => {
+    const layout = createMockLayout('2026-08-15T00:00:00.000Z')
+    layout.activeTab = 'tab-2'
+    layout.tabs[1].subTabs[0].cameraPositions = [{
+      cameraId: -1,
+      row: 0,
+      col: 0,
+      rowSpan: 1,
+      colSpan: 1,
+      displayName: 'External Feed',
+      temporarySourceId: 'temporary-1',
+      source: {
+        id: 'temporary-1',
+        url: 'https://media.test/live.m3u8',
+        protocol: 'hls',
+        displayName: 'External Feed',
+        playbackStatus: 'idle',
+      },
+    }]
+
+    store.dispatch(fetchUserLayout.fulfilled(layout, '', 1))
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/live']}>
+          <Routes>
+            <Route
+              path="/live"
+              element={
+                <>
+                  <GridContainer userId={1} cameras={createMockCameras()} />
+                  <LocationProbe />
+                </>
+              }
+            />
+            <Route path="/live/cameras/:cameraId" element={<LocationProbe />} />
+          </Routes>
+        </MemoryRouter>
+      </Provider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /External Feed/ }))
+
+    const locationText = (await screen.findByTestId('location')).textContent ?? ''
+    expect(locationText).toContain('/live/cameras/-1?')
+    expect(locationText).toContain('cameraIds=-1')
+    expect(new URLSearchParams(locationText.slice(locationText.indexOf('?'))).get('temporarySources')).toContain('https://media.test/live.m3u8')
   })
 })

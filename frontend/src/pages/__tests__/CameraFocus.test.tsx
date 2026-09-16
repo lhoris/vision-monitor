@@ -53,6 +53,22 @@ describe('CameraFocus page shell', () => {
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'false')
   })
 
+  it('renders temporary video sources in the focus view', async () => {
+    const temporarySources = encodeURIComponent(JSON.stringify({
+      '-1': {
+        id: 'temporary-1',
+        url: 'https://media.test/live.m3u8',
+        protocol: 'hls',
+        displayName: 'External Feed',
+        playbackStatus: 'idle',
+      },
+    }))
+    renderRoute(`/live/cameras/-1?mode=live&cameraIds=-1&temporarySources=${temporarySources}`)
+
+    expect(await screen.findByRole('tab', { name: 'External Feed' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByTestId('focus-playback-player')).toHaveTextContent('hls:https://media.test/live.m3u8')
+  })
+
   it('applies renamed camera titles from the focus route query', async () => {
     const cameraNames = encodeURIComponent(JSON.stringify({ 1: '공냉대 진입부' }))
     renderRoute(`/live/cameras/1?mode=live&cameraIds=1%2C2&cameraNames=${cameraNames}`)

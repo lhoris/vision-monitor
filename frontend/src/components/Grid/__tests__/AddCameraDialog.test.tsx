@@ -111,7 +111,7 @@ describe('AddCameraDialog', () => {
     expect(onAddDirectSource).not.toHaveBeenCalled()
   })
 
-  it('shows an already placed catalog camera but disables duplicate placement', () => {
+  it('does not show mock cameras in the video source catalog', () => {
     render(
       <I18nextProvider i18n={i18n}><AddCameraDialog
         isOpen
@@ -123,9 +123,8 @@ describe('AddCameraDialog', () => {
       /></I18nextProvider>
     )
 
-    const cameraButton = screen.getByRole('button', { name: /Camera 1/ })
-    expect(cameraButton).toBeDisabled()
-    expect(cameraButton).toHaveTextContent('Already added')
+    expect(screen.queryByRole('button', { name: /Camera 1/ })).not.toBeInTheDocument()
+    expect(screen.getByText('No search results.')).toBeInTheDocument()
   })
 
   it('shows active managed video sources in the catalog list and selects one as a video tile source', () => {

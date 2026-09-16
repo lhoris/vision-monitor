@@ -3,12 +3,16 @@ import { describe, expect, it, vi } from 'vitest'
 import { DraggableCell } from '../DraggableCell'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
 
-vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
-  LiveStreamPlayer: ({ onStateChange }: { onStateChange?: (state: string) => void }) => (
+const liveStreamPlayerMock = vi.hoisted(() => vi.fn(
+  ({ onStateChange }: { onStateChange?: (state: string) => void }) => (
     <button type="button" data-testid="live-stream-player" onClick={() => onStateChange?.('playing')}>
       player
     </button>
-  ),
+  )
+))
+
+vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
+  LiveStreamPlayer: liveStreamPlayerMock,
 }))
 
 const source: TemporaryVideoSource = {
@@ -49,5 +53,26 @@ describe('TemporaryVideoTile', () => {
     fireEvent.contextMenu(screen.getByRole('heading', { name: '외부 영상' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
     expect(onRemove).toHaveBeenCalledTimes(1)
+  })
+
+  it('starts temporary videos with autoplay and muted enabled', () => {
+    render(
+      <DraggableCell
+        cellId="cell-0"
+        index={0}
+        positionId={-1}
+        temporarySource={source}
+        onAddCamera={vi.fn()}
+        onRemoveCamera={vi.fn()}
+      />
+    )
+
+    expect(liveStreamPlayerMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        autoplay: true,
+        muted: true,
+      }),
+      undefined
+    )
   })
 })

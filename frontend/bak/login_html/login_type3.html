@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html lang="ko">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POSCO 4선재 AI영상통합플랫폼</title>
+    <link rel="stylesheet" type="text/css" href="css/login_style3.css">
+    <link rel="stylesheet" type="text/css" href="css/XEIcon-2.2.0/xeicon.min.css">
+</head>
+<body>
+
+  <!-- 사선 그리드 배경 & 보라/청록 그라데이션 스포트라이트 -->
+  <div class="grid-background"></div>
+  <div class="spotlight-overlay" id="spotlight"></div>
+
+  <!-- 로그인 카드 영역 -->
+  <div class="login-wrapper" id="loginContainer">
+    <div class="posco-logo">
+      <img src="img/posco_logo_w.svg" alt="POSCO Logo" />
+      <div class="live-status">
+        <i class="live-dot"></i>
+        <span class="cctv-bg"></span>
+      </div>
+    </div>
+    <div class="login-card">
+      <h1 class="logo-title">포항 4선재<br><span>AI 영상통합 플랫폼</span></h1>
+      <p class="logo-desc">시스템을 사용하시려면 로그인 하시기 바랍니다.</p>
+
+      <form class="login-form" id="loginForm">
+        <div class="input-group" id="usernameField">
+          <label for="username">아이디</label>
+          <div class="field-inner">
+            <input type="text" id="username" placeholder="아이디 입력" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="input-group" id="passwordField">
+          <label for="password">비밀번호</label>
+          <div class="field-inner">
+            <input type="password" id="password" placeholder="비밀번호 입력">
+          </div>
+        </div>
+
+        <!-- 아이디 저장 체크박스 영역 (클래스 기반 스타일 적용) -->
+        <div class="form-options">
+          <label class="remember-checkbox-label" for="rememberId">
+            <input type="checkbox" id="rememberId">
+            <span class="custom-checkbox"></span>
+            아이디 저장
+          </label>
+          <div class="password-hint">
+            <a href="#forgot">아이디/패스워드 찾기</a>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="loginButton">
+          <span class="button-content">
+            <span class="button-text">로그인</span>
+            <span class="arrow">→</span>
+          </span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+
+  <script>
+    // 마우스 좌표 추적 스크립트 (스포트라이트)
+    const root = document.documentElement;
+    window.addEventListener('mousemove', (e) => {
+      root.style.setProperty('--mouse-x', `${e.clientX}px`);
+      root.style.setProperty('--mouse-y', `${e.clientY}px`);
+    });
+
+    // 폼 요소 선택
+    const form = document.getElementById("loginForm");
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const usernameField = document.getElementById("usernameField");
+    const passwordField = document.getElementById("passwordField");
+    const loginButton = document.getElementById("loginButton");
+    const loginContainer = document.getElementById("loginContainer");
+
+    // 필드 상태 업데이트 함수
+    function updateField(field, input) {
+      if (document.activeElement === input) {
+        field.classList.add("focused");
+      } else {
+        field.classList.remove("focused");
+      }
+
+      if (input.value.trim() !== "") {
+        field.classList.add("has-value");
+      } else {
+        field.classList.remove("has-value");
+      }
+    }
+
+    // 입력 이벤트 바인딩
+    [usernameInput, passwordInput].forEach(input => {
+      const field = input === usernameInput ? usernameField : passwordField;
+
+      input.addEventListener("focus", () => field.classList.add("focused"));
+      input.addEventListener("blur", () => updateField(field, input));
+      input.addEventListener("input", () => {
+        updateField(field, input);
+      });
+    });
+
+
+    // 버튼 클릭 시 Ripple 효과
+    loginButton.addEventListener("click", event => {
+      const ripple = document.createElement("span");
+      const rect = loginButton.getBoundingClientRect();
+      ripple.className = "ripple";
+      ripple.style.left = (event.clientX - rect.left) + "px";
+      ripple.style.top = (event.clientY - rect.top) + "px";
+      loginButton.appendChild(ripple);
+
+      setTimeout(() => ripple.remove(), 700);
+    });
+  </script>
+</body>
+</html>

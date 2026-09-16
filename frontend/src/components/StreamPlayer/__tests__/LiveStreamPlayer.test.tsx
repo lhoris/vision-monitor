@@ -3,8 +3,10 @@ import { act, render, screen } from '@testing-library/react'
 import { LiveStreamPlayer } from '../LiveStreamPlayer'
 import type { Camera } from '@/types/camera'
 
+const streamPlayerComponentMock = vi.hoisted(() => vi.fn(() => <div data-testid="stream-player-component" />))
+
 vi.mock('../StreamPlayerComponent', () => ({
-  StreamPlayerComponent: () => <div data-testid="stream-player-component" />,
+  StreamPlayerComponent: streamPlayerComponentMock,
 }))
 
 const camera: Camera = {
@@ -51,6 +53,28 @@ describe('LiveStreamPlayer', () => {
     )
 
     expect(screen.getByTestId('stream-player-component')).toBeInTheDocument()
+  })
+
+  it('forwards autoplay and muted options to normal stream player', () => {
+    render(
+      <LiveStreamPlayer
+        camera={{
+          ...camera,
+          streamUrl: 'http://example.com/stream.m3u8',
+          streamProtocol: 'hls',
+        }}
+        autoplay
+        muted
+      />
+    )
+
+    expect(streamPlayerComponentMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        autoplay: true,
+        muted: true,
+      }),
+      undefined
+    )
   })
 
   it('remounts iframe stream page after page resumes', () => {
