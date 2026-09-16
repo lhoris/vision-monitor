@@ -35,6 +35,7 @@ describe('FocusMetadataPanel', () => {
     expect(screen.getByText('냉각')).toBeInTheDocument()
     expect(screen.getByText('Entry Zone')).toBeInTheDocument()
     expect(screen.getByText('online')).toBeInTheDocument()
+    expect(screen.getByText('최근 알람')).toBeInTheDocument()
   })
 
   it('uses dash fallback for missing camera values', () => {

@@ -18,7 +18,7 @@
     "live": "Live",
     "playback": "Playback",
     "settings": "Settings",
-    "events": "Events",
+    "events": "Alarms",
     "admin": {
       "title": "Admin Menu",
       "communicationModel": "Communication & Model Management",
@@ -110,8 +110,8 @@
     "subtitle": "View recorded videos"
   },
   "events": {
-    "title": "Events",
-    "subtitle": "Manage system events and alerts"
+    "title": "Alarms",
+    "subtitle": "Manage system alarms"
   },
   "zones": {
     "zone1": "Zone 1",

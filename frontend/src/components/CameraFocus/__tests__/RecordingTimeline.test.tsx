@@ -54,7 +54,7 @@ describe('RecordingTimeline', () => {
   it('positions event markers by occurredAt and exposes accessible labels', () => {
     render(<RecordingTimeline playbackSession={playbackSession} events={events} />)
 
-    const marker = screen.getByLabelText('이벤트 marker 2026-08-15T08:55:00+09:00 Entry Zone 치입불 발생')
+    const marker = screen.getByLabelText('알람 marker 2026-08-15T08:55:00+09:00 Entry Zone 치입불 발생')
     expect(marker).toBeInTheDocument()
     expect(marker).toHaveStyle({ left: '91.67%' })
   })
@@ -63,6 +63,6 @@ describe('RecordingTimeline', () => {
     render(<RecordingTimeline playbackSession={{ ...playbackSession, timelineSegments: [] }} events={[]} />)
 
     expect(screen.getByText('표시할 녹화 구간이 없습니다.')).toBeInTheDocument()
-    expect(screen.getByText('표시할 이벤트가 없습니다.')).toBeInTheDocument()
+    expect(screen.getByText('표시할 알람이 없습니다.')).toBeInTheDocument()
   })
 })

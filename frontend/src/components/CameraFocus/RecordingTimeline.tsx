@@ -16,7 +16,7 @@ export function RecordingTimeline({ playbackSession, events }: RecordingTimeline
         <span>{playbackSession.availableTo}</span>
       </div>
 
-      <div className="focus-recording-timeline relative h-12 rounded" role="group" aria-label="녹화 구간과 이벤트 marker">
+      <div className="focus-recording-timeline relative h-12 rounded" role="group" aria-label="녹화 구간과 알람 marker">
         {hasSegments ? (
           playbackSession.timelineSegments.map((segment) => (
             <TimelineSegment
@@ -33,14 +33,14 @@ export function RecordingTimeline({ playbackSession, events }: RecordingTimeline
           <span
             key={event.eventId}
             role="img"
-            aria-label={`이벤트 marker ${event.occurredAt} ${event.title}`}
+            aria-label={`알람 marker ${event.occurredAt} ${event.title}`}
             className="focus-recording-event-marker absolute top-1 h-10 w-1 rounded ring-2"
             style={{ left: `${formatPercent(toPercent(event.occurredAt, playbackSession))}%` }}
           />
         ))}
       </div>
 
-      {!hasEvents ? <p className="focus-recording-muted mt-2 text-xs">표시할 이벤트가 없습니다.</p> : null}
+      {!hasEvents ? <p className="focus-recording-muted mt-2 text-xs">표시할 알람이 없습니다.</p> : null}
     </div>
   )
 }

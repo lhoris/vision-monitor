@@ -99,7 +99,7 @@ export function FocusVideoStage({
         )}
         {eventsError ? (
           <p className="focus-recording-message focus-recording-message--error border-t px-4 py-3 text-xs">
-            이벤트 목록을 불러오지 못했습니다.
+            알람 목록을 불러오지 못했습니다.
           </p>
         ) : (
           <RecordingEventList
@@ -108,7 +108,7 @@ export function FocusVideoStage({
             onSelectEvent={onSelectEvent ?? (() => undefined)}
           />
         )}
-        {selectedEventId ? <p className="sr-only">선택 이벤트: {selectedEventId}</p> : null}
+        {selectedEventId ? <p className="sr-only">선택 알람: {selectedEventId}</p> : null}
       </section>
     )
   }
@@ -118,8 +118,8 @@ export function FocusVideoStage({
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold">{title}</h2>
-          <p className="mt-2 text-sm text-gray-300">영상 플레이어는 후속 Story에서 연결됩니다.</p>
-          {selectedEventId ? <p className="mt-2 text-sm">선택 이벤트: {selectedEventId}</p> : null}
+          <p className="mt-2 text-sm text-gray-300">영상 플레이어는 후속 Story에서 연결합니다.</p>
+          {selectedEventId ? <p className="mt-2 text-sm">선택 알람: {selectedEventId}</p> : null}
         </div>
       </div>
     </section>

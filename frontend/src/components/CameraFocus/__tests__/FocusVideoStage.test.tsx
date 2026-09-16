@@ -162,7 +162,7 @@ describe('FocusVideoStage', () => {
     expect(screen.getByTestId('focus-playback-player')).toHaveTextContent('seek:2026-08-15T08:54:50+09:00')
   })
 
-  it('keeps the event list visible when playback loading fails', () => {
+  it('keeps the alarm list visible when playback loading fails', () => {
     render(
       <FocusVideoStage
         mode="recording"
@@ -177,7 +177,7 @@ describe('FocusVideoStage', () => {
     expect(screen.getByRole('button', { name: 'Entry Zone 치입불 발생 2026-08-15T08:55:00+09:00 warning' })).toBeInTheDocument()
   })
 
-  it('keeps playback visible when event loading fails', () => {
+  it('keeps playback visible when alarm loading fails', () => {
     render(
       <FocusVideoStage
         mode="recording"
@@ -189,7 +189,7 @@ describe('FocusVideoStage', () => {
     )
 
     expect(screen.getByTestId('focus-playback-player')).toBeInTheDocument()
-    expect(screen.getByText('이벤트 목록을 불러오지 못했습니다.')).toBeInTheDocument()
+    expect(screen.getByText('알람 목록을 불러오지 못했습니다.')).toBeInTheDocument()
   })
 
   it('renders live stream error state without metadata dependency', () => {

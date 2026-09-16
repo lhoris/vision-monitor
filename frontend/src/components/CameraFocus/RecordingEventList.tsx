@@ -8,11 +8,11 @@ interface RecordingEventListProps {
 
 export function RecordingEventList({ events, selectedEventId, onSelectEvent }: RecordingEventListProps) {
   if (events.length === 0) {
-    return <p className="focus-recording-message border-t px-4 py-3 text-xs">표시할 이벤트가 없습니다.</p>
+    return <p className="focus-recording-message border-t px-4 py-3 text-xs">표시할 알람이 없습니다.</p>
   }
 
   return (
-    <div className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 이벤트 목록">
+    <div className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 알람 목록">
       <div className="grid gap-2 md:grid-cols-2">
         {events.map((event) => (
           <button

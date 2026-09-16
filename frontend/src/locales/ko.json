@@ -18,7 +18,7 @@
     "live": "라이브",
     "playback": "녹화",
     "settings": "설정",
-    "events": "이벤트",
+    "events": "알람",
     "admin": {
       "title": "관리자 메뉴",
       "communicationModel": "통신 및 모델 수정",
@@ -109,8 +109,8 @@
     "subtitle": "녹화된 비디오 보기"
   },
   "events": {
-    "title": "이벤트",
-    "subtitle": "시스템 이벤트 및 알림 관리"
+    "title": "알람",
+    "subtitle": "시스템 알람 관리"
   },
   "zones": {
     "zone1": "구역 1",

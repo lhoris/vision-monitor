@@ -107,11 +107,11 @@ export function CameraDetailView({ camera, onClose }: CameraDetailViewProps) {
               </CardBody>
             </Card>
 
-            {/* Events Timeline */}
+            {/* Alarms Timeline */}
             <Card>
               <CardHeader>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Recent Events
+                  Recent Alarms
                 </h3>
               </CardHeader>
               <CardBody>

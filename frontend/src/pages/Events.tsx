@@ -1,6 +1,6 @@
 /**
- * Events Page
- * 이벤트 필터링, 테이블, 상세 패널
+ * Alarms Page
+ * 알람 필터링, 테이블, 상세 패널
  */
 
 import { useState } from 'react'
@@ -15,7 +15,7 @@ import { useAppSelector, useAppDispatch } from '@/store'
 import { setFilter, acknowledgeEvent } from '@/store/slices/eventSlice'
 import type { Event } from '@/types'
 
-// Mock events data
+// Mock alarm data
 const mockEvents: Event[] = [
   {
     id: 1,
@@ -82,7 +82,7 @@ export function Events() {
     { value: 'recording_error', label: 'Recording Error' },
   ]
 
-  // Filter events
+  // Filter alarms
   const filteredEvents = events.filter((event) => {
     if (filter.severity && event.severity !== filter.severity) return false
     if (filter.cameraId && event.cameraId !== filter.cameraId) return false
@@ -138,16 +138,16 @@ export function Events() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Events
+            Alarms
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Monitor and manage system events and alerts
+            Monitor and manage system alarms
           </p>
         </div>
         {unacknowledgedCount > 0 && (
           <div className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-4 py-2 rounded-lg">
             <span className="font-semibold">{unacknowledgedCount}</span>{' '}
-            unacknowledged events
+            unacknowledged alarms
           </div>
         )}
       </div>
@@ -219,12 +219,12 @@ export function Events() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Events Table */}
+        {/* Alarms Table */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-900 dark:text-white">
-                Events ({filteredEvents.length})
+                Alarms ({filteredEvents.length})
               </h3>
               {unacknowledgedCount > 0 && (
                 <Button
@@ -265,7 +265,7 @@ export function Events() {
                           colSpan={5}
                           className="text-center px-4 py-8 text-gray-600 dark:text-gray-400"
                         >
-                          No events found
+                          No alarms found
                         </td>
                       </tr>
                     ) : (
@@ -328,13 +328,13 @@ export function Events() {
           </Card>
         </div>
 
-        {/* Event Details Sidebar */}
+        {/* Alarm Details Sidebar */}
         <div>
           {selectedEvent ? (
             <Card>
               <CardHeader>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  Event Details
+                  Alarm Details
                 </h3>
               </CardHeader>
               <CardBody className="space-y-4">
@@ -422,7 +422,7 @@ export function Events() {
                       className="w-full"
                       onClick={() => handleAcknowledge(selectedEvent.id)}
                     >
-                      Acknowledge Event
+                      Acknowledge Alarm
                     </Button>
                   </div>
                 )}
@@ -432,7 +432,7 @@ export function Events() {
             <Card>
               <CardBody className="text-center py-8">
                 <p className="text-gray-600 dark:text-gray-400">
-                  Select an event to view details
+                  Select an alarm to view details
                 </p>
               </CardBody>
             </Card>

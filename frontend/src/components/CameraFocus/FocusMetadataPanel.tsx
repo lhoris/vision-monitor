@@ -10,9 +10,9 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail }: Focus
   if (selectedEventDetail) {
     return (
       <aside className="w-full border-l border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 lg:w-[380px]">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">이벤트 상세</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">알람 상세</h2>
         <dl className="mt-4 space-y-3 text-gray-700 dark:text-gray-200">
-          <MetadataRow label="이벤트" value={selectedEventDetail.title} />
+          <MetadataRow label="알람" value={selectedEventDetail.title} />
           <MetadataRow label="발생 시각" value={selectedEventDetail.occurredAt} />
           <MetadataRow label="종료 시각" value={selectedEventDetail.endedAt} />
           <MetadataRow label="상태" value={selectedEventDetail.status} />
@@ -64,7 +64,7 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail }: Focus
         <MetadataRow label="위치" value={camera.location} />
         <MetadataRow label="상태" value={camera.status} />
         <MetadataRow label="마지막 수신" value={camera.lastSeenAt} />
-        <MetadataRow label="최근 이벤트" value={camera.recentEventSummary.lastEventId?.toString() ?? null} />
+        <MetadataRow label="최근 알람" value={camera.recentEventSummary.lastEventId?.toString() ?? null} />
       </dl>
     </aside>
   )
