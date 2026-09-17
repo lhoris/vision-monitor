@@ -29,7 +29,8 @@ describe('ModelManagement', () => {
   it('opens event logs and settings from the grid', async () => {
     render(<ModelManagement />)
     await screen.findByText('가열로 스키드 감시')
-    fireEvent.click(screen.getAllByRole('button', { name: '로그' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: /작업 메뉴/ })[0])
+    fireEvent.click(screen.getAllByRole('menuitem', { name: '로그' })[0])
     expect(await screen.findByText('Python 프로세스 heartbeat 수신')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '닫기' }))
   })
