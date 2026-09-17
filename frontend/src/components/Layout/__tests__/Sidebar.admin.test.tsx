@@ -7,6 +7,7 @@ import { Sidebar } from '../Sidebar'
 import { store } from '@/store'
 import i18n from '@/i18n'
 import { loginUser, logout } from '@/store/slices/authSlice'
+import { mergeCommonCodes } from '@/store/slices/commonCodeSlice'
 import { setSidebarOpen } from '@/store/slices/uiSlice'
 
 function renderSidebar() {
@@ -28,7 +29,7 @@ describe('Sidebar admin navigation', () => {
     store.dispatch(setSidebarOpen(true))
   })
 
-  it('shows admin menu groups for the tester admin account', () => {
+  it('shows only the retained admin menu items for the tester admin account', () => {
     store.dispatch(
       loginUser.fulfilled(
         {
@@ -48,21 +49,60 @@ describe('Sidebar admin navigation', () => {
     renderSidebar()
 
     expect(screen.getByText('관리자 메뉴')).toBeInTheDocument()
-    expect(screen.getByText('통신 및 모델 수정')).toBeInTheDocument()
-    expect(screen.getByText('모니터링 통신 현황')).toBeInTheDocument()
-    expect(screen.getByText('제어 연동 통신 현황')).toBeInTheDocument()
-    expect(screen.getByText('기타 주소 설정 현황')).toBeInTheDocument()
-    expect(screen.getByText('모델 재가동')).toBeInTheDocument()
+    expect(screen.getByText('통신 및 모델 설정')).toBeInTheDocument()
+    expect(screen.getByText('모델 관리')).toBeInTheDocument()
     expect(screen.getByText('영상 관리')).toBeInTheDocument()
+    expect(screen.getByText('공통코드 관리')).toBeInTheDocument()
     expect(screen.getByText('접속 권한 관리')).toBeInTheDocument()
     expect(screen.getByText('사용자 관리')).toBeInTheDocument()
-    expect(screen.getByText('역할 관리')).toBeInTheDocument()
-    expect(screen.getByText('권한 정책 관리')).toBeInTheDocument()
-    expect(screen.getByText('메뉴 접근 권한 관리')).toBeInTheDocument()
-    expect(screen.queryByText('화면 수정')).not.toBeInTheDocument()
-    expect(screen.queryByText('공정 추가')).not.toBeInTheDocument()
-    expect(screen.queryByText('세부 공정 수정')).not.toBeInTheDocument()
-    expect(screen.queryByText('화면 배치 수정')).not.toBeInTheDocument()
+
+    expect(screen.queryByText('모니터링 통신 현황')).not.toBeInTheDocument()
+    expect(screen.queryByText('제어 연동 통신 현황')).not.toBeInTheDocument()
+    expect(screen.queryByText('기타 주소 설정 현황')).not.toBeInTheDocument()
+    expect(screen.queryByText('모델 재가동')).not.toBeInTheDocument()
+    expect(screen.queryByText('역할 관리')).not.toBeInTheDocument()
+    expect(screen.queryByText('권한 정책 관리')).not.toBeInTheDocument()
+    expect(screen.queryByText('메뉴 접근 권한 관리')).not.toBeInTheDocument()
+  })
+
+  it('uses APP_BRANDING common code values for the sidebar title', () => {
+    store.dispatch(mergeCommonCodes({
+      version: 'test-branding',
+      codes: {
+        APP_BRANDING: {
+          code: 'APP_BRANDING',
+          description: 'Application branding labels',
+          type: 'SYSTEM',
+          items: [
+            { id: 1, value: 'APP_TITLE', name: '공통코드 타이틀', nameKo: '공통코드 타이틀', nameEn: 'Common Code Title', sortOrder: 10 },
+            { id: 2, value: 'APP_SUBTITLE', name: '공통코드 부제목', nameKo: '공통코드 부제목', nameEn: 'Common Code Subtitle', sortOrder: 20 },
+          ],
+        },
+      },
+    }))
+
+    store.dispatch(
+      loginUser.fulfilled(
+        {
+          user: {
+            id: 1,
+            username: 'tester',
+            role: 'admin',
+            permissions: ['admin:access'],
+          },
+          token: 'mock-tester-token',
+        },
+        'request-id',
+        { username: 'tester', password: 'tester123' }
+      )
+    )
+
+    renderSidebar()
+
+    expect(screen.getByText('공통코드 타이틀')).toBeInTheDocument()
+    expect(screen.getByText('공통코드 부제목')).toBeInTheDocument()
+    expect(screen.queryByText('AI 영상통합 플랫폼')).not.toBeInTheDocument()
+    expect(screen.queryByText('포항 4선재')).not.toBeInTheDocument()
   })
 
   it('hides admin menu groups for the tester1 non-admin account', () => {
@@ -88,7 +128,7 @@ describe('Sidebar admin navigation', () => {
     expect(screen.getByText('녹화')).toBeInTheDocument()
     expect(screen.getByText('알람')).toBeInTheDocument()
     expect(screen.queryByText('관리자 메뉴')).not.toBeInTheDocument()
-    expect(screen.queryByText('통신 및 모델 수정')).not.toBeInTheDocument()
+    expect(screen.queryByText('통신 및 모델 설정')).not.toBeInTheDocument()
     expect(screen.queryByText('접속 권한 관리')).not.toBeInTheDocument()
     expect(screen.queryByText('사용자 관리')).not.toBeInTheDocument()
   })

@@ -5,7 +5,7 @@
 
 import { Provider } from 'react-redux'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { useAppSelector } from '@/store'
+import { useAppDispatch, useAppSelector } from '@/store'
 import { AppLayout } from '@/components/Layout'
 import Login from '@/pages/Login'
 import Live from '@/pages/Live'
@@ -16,15 +16,18 @@ import Settings from '@/pages/Settings'
 import AdminPlaceholder from '@/pages/AdminPlaceholder'
 import { store } from '@/store'
 import { useEffect } from 'react'
+import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
 
 function AppRoutes() {
+  const dispatch = useAppDispatch()
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
   const user = useAppSelector((state) => state.auth.user)
   const themeMode = useAppSelector((state) => state.ui.themeMode)
+  const commonCodeStatus = useAppSelector((state) => state.commonCode.status)
   const canAccessAdminRoutes = user?.role === 'admin' || Boolean(user?.permissions?.includes('admin:access'))
 
   useEffect(() => {
@@ -36,6 +39,12 @@ function AppRoutes() {
       document.documentElement.classList.remove('dark')
     }
   }, [themeMode])
+
+  useEffect(() => {
+    if (isAuthenticated && commonCodeStatus === 'idle') {
+      void dispatch(fetchCommonCodes())
+    }
+  }, [commonCodeStatus, dispatch, isAuthenticated])
 
   if (!isAuthenticated) {
     return (

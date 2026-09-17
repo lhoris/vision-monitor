@@ -5,10 +5,13 @@ import com.vision.dto.UserAccountDto;
 import com.vision.dto.UserDangerActionRequest;
 import com.vision.dto.UserListResponse;
 import com.vision.dto.UserMutationRequest;
+import com.vision.entity.Code;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
-import com.vision.repository.UserAccountRepository;
 import com.vision.repository.AuthorizationRepository;
+import com.vision.repository.CodeDetailRepository;
+import com.vision.repository.CodeRepository;
+import com.vision.repository.UserAccountRepository;
 import com.vision.repository.UserAuthorizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,25 +36,43 @@ public class UserManagementService {
     private static final String EMPLOYED = "employed";
     private static final String LEAVE = "leave";
     private static final String RETIRED = "retired";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_MANAGER = "MANAGER";
+    private static final String ROLE_USER = "USER";
+    private static final String USER_ROLE_CODE = "USER_ROLE";
     private static final String DEFAULT_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
 
     private final UserAccountRepository userRepository;
     private final AuthorizationRepository authorizationRepository;
     private final UserAuthorizationRepository userAuthorizationRepository;
+    private final CodeRepository codeRepository;
+    private final CodeDetailRepository codeDetailRepository;
 
     @Autowired
     public UserManagementService(
             UserAccountRepository userRepository,
             AuthorizationRepository authorizationRepository,
-            UserAuthorizationRepository userAuthorizationRepository
+            UserAuthorizationRepository userAuthorizationRepository,
+            CodeRepository codeRepository,
+            CodeDetailRepository codeDetailRepository
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
+        this.codeRepository = codeRepository;
+        this.codeDetailRepository = codeDetailRepository;
+    }
+
+    public UserManagementService(
+            UserAccountRepository userRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository
+    ) {
+        this(userRepository, authorizationRepository, userAuthorizationRepository, null, null);
     }
 
     public UserManagementService(UserAccountRepository userRepository) {
-        this(userRepository, null, null);
+        this(userRepository, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -72,14 +93,15 @@ public class UserManagementService {
                 buildSpecification(query, roleId, accountStatus, employmentStatus),
                 PageRequest.of(safePage - 1, safePageSize, resolveSort(sort))
         );
-        List<UserAccountDto> items = result.getContent().stream().map(this::toDto).toList();
-        return new UserListResponse(items, result.getTotalElements(), safePage, safePageSize, summary(), availableRoles());
+        List<RoleSummaryDto> roles = availableRoles();
+        List<UserAccountDto> items = result.getContent().stream().map(user -> toDto(user, roles)).toList();
+        return new UserListResponse(items, result.getTotalElements(), safePage, safePageSize, summary(), roles);
     }
 
     @Transactional(readOnly = true)
     public UserAccountDto getUser(String actorUsername, Long userId) {
         requireAdmin(actorUsername);
-        return toDto(findUser(userId));
+        return toDto(findUser(userId), availableRoles());
     }
 
     @Transactional
@@ -108,7 +130,9 @@ public class UserManagementService {
         if (Boolean.TRUE.equals(request.resetPassword())) {
             user.setPasswordHash(DEFAULT_FOUNDATION_PASSWORD_HASH);
         }
-        return toDto(userRepository.save(user));
+        UserAccount saved = userRepository.save(user);
+        syncUserAuthorization(saved, saved.getRole());
+        return toDto(saved, availableRoles());
     }
 
     @Transactional
@@ -139,7 +163,9 @@ public class UserManagementService {
         user.setUpdatedBy(actor.getUsername());
         user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        return toDto(userRepository.save(user));
+        UserAccount saved = userRepository.save(user);
+        syncUserAuthorization(saved, nextRole);
+        return toDto(saved, availableRoles());
     }
 
     @Transactional
@@ -151,7 +177,7 @@ public class UserManagementService {
         }
         user.setPasswordHash(null);
         user.setUpdatedBy(actor.getUsername());
-        return toDto(userRepository.save(user));
+        return toDto(userRepository.save(user), availableRoles());
     }
 
     @Transactional
@@ -197,7 +223,7 @@ public class UserManagementService {
         user.setUpdatedBy(actor.getUsername());
         user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
-        return toDto(userRepository.save(user));
+        return toDto(userRepository.save(user), availableRoles());
     }
 
     private Specification<UserAccount> buildSpecification(String query, String roleId, String accountStatus, String employmentStatus) {
@@ -234,17 +260,41 @@ public class UserManagementService {
     }
 
     private List<RoleSummaryDto> availableRoles() {
+        if (codeRepository != null && codeDetailRepository != null) {
+            return codeRepository.findByNameIgnoreCase(USER_ROLE_CODE)
+                    .filter(code -> "N".equalsIgnoreCase(code.getDataEndStatus()))
+                    .map(Code::getId)
+                    .map(codeId -> codeDetailRepository.findAllByCodeIdAndDataEndStatusOrderBySortOrderAscIdAsc(codeId, "N").stream()
+                            .map(detail -> new RoleSummaryDto(
+                                    detail.getValue().toLowerCase(Locale.ROOT),
+                                    firstNonBlank(detail.getNameKo(), detail.getName(), detail.getValue()),
+                                    firstNonBlank(detail.getDescription(), detail.getRemarks(), ""),
+                                    ROLE_ADMIN.equalsIgnoreCase(detail.getValue())
+                            ))
+                            .toList())
+                    .filter(roles -> !roles.isEmpty())
+                    .orElseGet(this::fallbackRoles);
+        }
+        return fallbackRoles();
+    }
+
+    private List<RoleSummaryDto> fallbackRoles() {
         return List.of(
-                new RoleSummaryDto("admin", "ADMIN", "관리자 역할", true),
-                new RoleSummaryDto("user", "USER", "일반 사용자 역할", false)
+                new RoleSummaryDto("admin", "최고관리자", "시스템 전체 관리와 사용자관리 접근", true),
+                new RoleSummaryDto("manager", "관리자", "현장 운영 관리", false),
+                new RoleSummaryDto("user", "일반 사용자", "허용된 화면 조회와 기본 사용", false)
         );
     }
 
     private UserAccountDto toDto(UserAccount user) {
-        user.setRole(isAdministrator(user) ? "ADMIN" : "USER");
+        return toDto(user, availableRoles());
+    }
+
+    private UserAccountDto toDto(UserAccount user, List<RoleSummaryDto> roles) {
+        user.setRole(resolveRoleCode(user));
         user.setAccountStatus("Y".equalsIgnoreCase(user.getDataEndStatus()) ? DISABLED : ACTIVE);
         user.setEnabled(!"Y".equalsIgnoreCase(user.getDataEndStatus()));
-        return UserAccountDto.from(user);
+        return UserAccountDto.from(user, roles);
     }
 
     private UserAccount findUser(Long userId) {
@@ -265,11 +315,11 @@ public class UserManagementService {
     }
 
     private boolean isAdministrator(UserAccount user) {
-        if ("ADMIN".equalsIgnoreCase(user.getRole())) return true;
+        if (ROLE_ADMIN.equalsIgnoreCase(user.getRole())) return true;
         if (authorizationRepository == null || userAuthorizationRepository == null) return false;
         return userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
                 .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
-                .anyMatch(auth -> auth != null && "ADMIN".equalsIgnoreCase(auth.getCode()) && "N".equalsIgnoreCase(auth.getDataEndStatus()));
+                .anyMatch(auth -> auth != null && ROLE_ADMIN.equalsIgnoreCase(auth.getCode()) && "N".equalsIgnoreCase(auth.getDataEndStatus()));
     }
 
     private void validateMutation(UserMutationRequest request, boolean update) {
@@ -281,10 +331,42 @@ public class UserManagementService {
     }
 
     private String resolveRole(UserMutationRequest request) {
-        if (request.roleIds() == null || request.roleIds().isEmpty() || request.roleIds().get(0).isBlank()) return "USER";
+        if (request.roleIds() == null || request.roleIds().isEmpty() || request.roleIds().get(0).isBlank()) return ROLE_USER;
         String role = request.roleIds().get(0).trim().toUpperCase(Locale.ROOT);
-        if (!role.equals("ADMIN") && !role.equals("USER")) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 역할입니다.");
+        if (!List.of(ROLE_ADMIN, ROLE_MANAGER, ROLE_USER).contains(role)) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 역할입니다.");
         return role;
+    }
+
+    private String resolveRoleCode(UserAccount user) {
+        if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) {
+            String role = user.getRole() == null ? ROLE_USER : user.getRole().toUpperCase(Locale.ROOT);
+            return List.of(ROLE_ADMIN, ROLE_MANAGER, ROLE_USER).contains(role) ? role : ROLE_USER;
+        }
+        List<String> codes = userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
+                .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
+                .filter(auth -> auth != null && "N".equalsIgnoreCase(auth.getDataEndStatus()))
+                .map(auth -> auth.getCode() == null ? "" : auth.getCode().toUpperCase(Locale.ROOT))
+                .toList();
+        if (codes.contains(ROLE_ADMIN)) return ROLE_ADMIN;
+        if (codes.contains(ROLE_MANAGER)) return ROLE_MANAGER;
+        if (codes.contains(ROLE_USER)) return ROLE_USER;
+        return ROLE_USER;
+    }
+
+    private void syncUserAuthorization(UserAccount user, String role) {
+        if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) return;
+        userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").forEach(link -> {
+            link.setDataEndStatus("Y");
+            userAuthorizationRepository.save(link);
+        });
+        authorizationRepository.findByCodeIgnoreCaseAndDataEndStatus(role, "N").ifPresent(auth -> userAuthorizationRepository.save(
+                com.vision.entity.UserAuthorization.builder()
+                        .userId(user.getId())
+                        .authId(auth.getId())
+                        .grantStartDate("20260101")
+                        .dataEndStatus("N")
+                        .build()
+        ));
     }
 
     private String normalizeAccountStatus(String value) {
@@ -304,13 +386,13 @@ public class UserManagementService {
     }
 
     private void protectAdminRemoval(UserAccount actor, UserAccount target, String nextRole, String nextAccountStatus, String nextEmploymentStatus) {
-        if (actor.getId().equals(target.getId()) && ("ADMIN".equalsIgnoreCase(target.getRole()) && (!"ADMIN".equalsIgnoreCase(nextRole) || !ACTIVE.equalsIgnoreCase(nextAccountStatus) || !EMPLOYED.equalsIgnoreCase(nextEmploymentStatus)))) {
+        if (actor.getId().equals(target.getId()) && (ROLE_ADMIN.equalsIgnoreCase(target.getRole()) && (!ROLE_ADMIN.equalsIgnoreCase(nextRole) || !ACTIVE.equalsIgnoreCase(nextAccountStatus) || !EMPLOYED.equalsIgnoreCase(nextEmploymentStatus)))) {
             throw new ApiException("SELF_LOCKOUT_RISK", "현재 로그인한 관리자 계정은 잠글 수 없습니다.");
         }
-        boolean removesActiveAdmin = "ADMIN".equalsIgnoreCase(target.getRole())
+        boolean removesActiveAdmin = ROLE_ADMIN.equalsIgnoreCase(target.getRole())
                 && ACTIVE.equalsIgnoreCase(target.getAccountStatus())
                 && EMPLOYED.equalsIgnoreCase(target.getEmploymentStatus())
-                && (!"ADMIN".equalsIgnoreCase(nextRole) || !ACTIVE.equalsIgnoreCase(nextAccountStatus) || !EMPLOYED.equalsIgnoreCase(nextEmploymentStatus));
+                && (!ROLE_ADMIN.equalsIgnoreCase(nextRole) || !ACTIVE.equalsIgnoreCase(nextAccountStatus) || !EMPLOYED.equalsIgnoreCase(nextEmploymentStatus));
         if (removesActiveAdmin && userRepository.countByRoleIgnoreCaseAndAccountStatusAndEmploymentStatus("ADMIN", ACTIVE, EMPLOYED) <= 1) {
             throw new ApiException("LAST_ADMIN_RISK", "활성 관리자 계정이 최소 한 개는 필요합니다.");
         }
@@ -318,5 +400,12 @@ public class UserManagementService {
 
     private String valueOrNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) return value.trim();
+        }
+        return "";
     }
 }

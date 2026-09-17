@@ -9,6 +9,7 @@ import {
 import type { ThemeMode } from '@/store/slices/uiSlice'
 import { saveThemePreference } from '@/store/slices/layoutSlice'
 import { logoutUser } from '@/store/slices/authSlice'
+import { useAppBranding } from '@/hooks/useAppBranding'
 
 const themeOptions: Array<{
   id: ThemeMode
@@ -56,6 +57,7 @@ export function Header() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { i18n, t } = useTranslation()
+  const branding = useAppBranding()
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const notifications = useAppSelector((state) => state.ui.notifications)
   const user = useAppSelector((state) => state.auth.user)
@@ -138,9 +140,9 @@ export function Header() {
             </div>
             <div>
               <h1 className="text-xl font-medium custom-title-text pt-1.5">
-                AI Vision Monitor
+                {branding.title}
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-500">Intelligent VMS</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">{branding.subtitle}</p>
             </div>
           </div>
         </div>

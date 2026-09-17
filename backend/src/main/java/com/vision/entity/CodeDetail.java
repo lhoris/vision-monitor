@@ -12,6 +12,8 @@ public class CodeDetail {
     @Column(name = "CODE_ID") private Long codeId;
     @Column(name = "CODE_VALUE", length = 30) private String value;
     @Column(name = "CODE_VALUE_NAME", length = 100) private String name;
+    @Column(name = "CODE_VALUE_NAME_KO", length = 100) private String nameKo;
+    @Column(name = "CODE_VALUE_NAME_EN", length = 100) private String nameEn;
     @Column(name = "CODE_VALUE_DESCRIPTION", length = 1000) private String description;
     @Column(name = "SORT_ORDER") private Integer sortOrder;
     @Column(name = "DEFAULT_VALUE", length = 30) private String defaultValue;

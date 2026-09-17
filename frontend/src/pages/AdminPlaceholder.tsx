@@ -2,17 +2,15 @@ import { useLocation } from 'react-router-dom'
 import UserManagement from './UserManagement'
 import VideoManagement from './VideoManagement'
 import CommonCodeManagement from './CommonCodeManagement'
+import ModelManagement from './ModelManagement'
 
 const adminPageLabels: Record<string, string> = {
-  '/admin/monitoring-communication': '모니터링 통신 현황',
-  '/admin/control-communication': '제어 연동 통신 현황',
-  '/admin/external-addresses': '기타 주소 설정 현황',
-  '/admin/model-restart': '모델 재가동',
+  '/admin/model-management': '모델 관리',
+  '/admin/model-restart': '모델 관리',
   '/admin/cameras/new': '카메라 추가',
   '/admin/users': '사용자 관리',
-  '/admin/roles': '역할 관리',
-  '/admin/permission-policies': '권한 정책 관리',
-  '/admin/menu-access': '메뉴 접근 권한 관리',
+  '/admin/videos': '영상 관리',
+  '/admin/common-codes': '공통코드 관리',
 }
 
 export function AdminPlaceholder() {
@@ -20,6 +18,7 @@ export function AdminPlaceholder() {
   if (location.pathname === '/admin/users') return <UserManagement />
   if (location.pathname === '/admin/videos') return <VideoManagement />
   if (location.pathname === '/admin/common-codes') return <CommonCodeManagement />
+  if (location.pathname === '/admin/model-management' || location.pathname === '/admin/model-restart') return <ModelManagement />
   const title = adminPageLabels[location.pathname] ?? '관리자 메뉴'
 
   return (

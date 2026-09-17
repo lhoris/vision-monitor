@@ -11,7 +11,8 @@
     "error": "Error"
   },
   "header": {
-    "title": "Vision Monitor VMS",
+    "title": "AI Video Integration Platform",
+    "subtitle": "Pohang Wire No.4",
     "language": "Language"
   },
   "navigation": {
@@ -22,16 +23,12 @@
     "admin": {
       "title": "Admin Menu",
       "communicationModel": "Communication & Model Management",
-      "monitoringCommunication": "Monitoring Communication Status",
-      "controlCommunication": "Control Integration Communication Status",
-      "externalAddresses": "External Address Settings",
-      "modelRestart": "Restart Model",
+      "modelRestart": "Model Management",
       "cameraCreate": "Add Camera",
+      "videos": "Video Management",
+      "commonCodes": "Common Code Management",
       "accessManagement": "Access Permission Management",
-      "users": "User Management",
-      "roles": "Role Management",
-      "permissionPolicies": "Permission Policy Management",
-      "menuAccess": "Menu Access Management"
+      "users": "User Management"
     }
   },
   "live": {

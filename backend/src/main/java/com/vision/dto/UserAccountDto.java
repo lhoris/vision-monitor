@@ -34,13 +34,25 @@ public record UserAccountDto(
 ) {
 
     public static UserAccountDto from(UserAccount user) {
+        return from(user, List.of());
+    }
+
+    public static UserAccountDto from(UserAccount user, List<RoleSummaryDto> availableRoles) {
         String role = user.getRole() == null ? "USER" : user.getRole();
-        RoleSummaryDto roleSummary = new RoleSummaryDto(
-                role.toLowerCase(),
-                role,
-                "사용자 역할",
-                "ADMIN".equalsIgnoreCase(role)
-        );
+        boolean systemAdmin = "ADMIN".equalsIgnoreCase(role);
+        RoleSummaryDto roleSummary = availableRoles.stream()
+                .filter(candidate -> candidate.id().equalsIgnoreCase(role) || candidate.name().equalsIgnoreCase(role))
+                .findFirst()
+                .orElseGet(() -> new RoleSummaryDto(
+                        role.toLowerCase(),
+                        role,
+                        switch (role.toUpperCase()) {
+                            case "ADMIN" -> "최고관리자 역할";
+                            case "MANAGER" -> "관리자 역할";
+                            default -> "일반 사용자 역할";
+                        },
+                        systemAdmin
+                ));
         return UserAccountDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())

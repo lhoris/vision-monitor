@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { toggleSidebar } from '@/store/slices/uiSlice'
+import { useAppBranding } from '@/hooks/useAppBranding'
 import type { User } from '@/store/slices/authSlice'
 import type { ReactNode } from 'react'
 
@@ -33,18 +34,10 @@ function PlaybackIcon() {
   )
 }
 
-function EventIcon() {
+function AlarmIcon() {
   return (
     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-    </svg>
-  )
-}
-
-function NetworkIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9h8M8 15h8M5 5h14v14H5z" />
     </svg>
   )
 }
@@ -66,71 +59,33 @@ function UserAccessIcon() {
   )
 }
 
-function PolicyIcon() {
+function SettingsIcon() {
   return (
     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M6 4h12v7c0 5-3.5 8-6 9-2.5-1-6-4-6-9V4z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.5 4a6.5 6.5 0 01-.1 1.1l1.1.9-2 3.4-1.3-.5a7 7 0 01-1.9 1.1L16 19.5h-4l-.3-1.5a7 7 0 01-1.9-1.1l-1.3.5-2-3.4 1.1-.9A6.5 6.5 0 017.5 12c0-.4 0-.8.1-1.1l-1.1-.9 2-3.4 1.3.5a7 7 0 011.9-1.1L12 4.5h4l.3 1.5a7 7 0 011.9 1.1l1.3-.5 2 3.4-1.1.9c.1.4.1.7.1 1.1z" />
     </svg>
   )
-}
-
-function SettingsIcon() {
-  return <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.5 4a6.5 6.5 0 01-.1 1.1l1.1.9-2 3.4-1.3-.5a7 7 0 01-1.9 1.1L16 19.5h-4l-.3-1.5a7 7 0 01-1.9-1.1l-1.3.5-2-3.4 1.1-.9A6.5 6.5 0 017.5 12c0-.4 0-.8.1-1.1l-1.1-.9 2-3.4 1.3.5a7 7 0 011.9-1.1L12 4.5h4l.3 1.5a7 7 0 011.9 1.1l1.3-.5 2 3.4-1.1.9c.1.4.1.7.1 1.1z" /></svg>
 }
 
 const generalNavItems: NavItem[] = [
   { path: '/live', labelKey: 'navigation.live', icon: <CameraIcon /> },
   { path: '/playback', labelKey: 'navigation.playback', icon: <PlaybackIcon /> },
-  { path: '/events', labelKey: 'navigation.events', icon: <EventIcon /> },
+  { path: '/events', labelKey: 'navigation.events', icon: <AlarmIcon /> },
 ]
 
 const adminNavGroups: NavGroup[] = [
   {
     labelKey: 'navigation.admin.communicationModel',
     items: [
-      {
-        path: '/admin/monitoring-communication',
-        labelKey: 'navigation.admin.monitoringCommunication',
-        icon: <NetworkIcon />,
-      },
-      {
-        path: '/admin/control-communication',
-        labelKey: 'navigation.admin.controlCommunication',
-        icon: <NetworkIcon />,
-      },
-      {
-        path: '/admin/external-addresses',
-        labelKey: 'navigation.admin.externalAddresses',
-        icon: <NetworkIcon />,
-      },
-      {
-        path: '/admin/model-restart',
-        labelKey: 'navigation.admin.modelRestart',
-        icon: <ModelIcon />,
-      },
-      {
-        path: '/admin/videos',
-        labelKey: '영상 관리',
-        icon: <CameraIcon />,
-      },
-      {
-        path: '/admin/common-codes',
-        labelKey: '공통코드 관리',
-        icon: <SettingsIcon />,
-      },
+      { path: '/admin/model-management', labelKey: 'navigation.admin.modelRestart', icon: <ModelIcon /> },
+      { path: '/admin/videos', labelKey: 'navigation.admin.videos', icon: <CameraIcon /> },
+      { path: '/admin/common-codes', labelKey: 'navigation.admin.commonCodes', icon: <SettingsIcon /> },
     ],
   },
   {
     labelKey: 'navigation.admin.accessManagement',
     items: [
       { path: '/admin/users', labelKey: 'navigation.admin.users', icon: <UserAccessIcon /> },
-      { path: '/admin/roles', labelKey: 'navigation.admin.roles', icon: <UserAccessIcon /> },
-      {
-        path: '/admin/permission-policies',
-        labelKey: 'navigation.admin.permissionPolicies',
-        icon: <PolicyIcon />,
-      },
-      { path: '/admin/menu-access', labelKey: 'navigation.admin.menuAccess', icon: <PolicyIcon /> },
     ],
   },
 ]
@@ -141,6 +96,7 @@ function canAccessAdminMenu(user: User | null): boolean {
 
 export function Sidebar() {
   const { t } = useTranslation()
+  const branding = useAppBranding()
   const location = useLocation()
   const dispatch = useAppDispatch()
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen)
@@ -188,8 +144,8 @@ export function Sidebar() {
         }`}
       >
         <div className="border-b border-gray-800 px-6 py-4">
-          <h1 className="text-xl font-bold">Vision Monitor</h1>
-          <p className="mt-1 text-xs text-gray-400">Manufacturing VMS</p>
+          <h1 className="text-xl font-bold">{branding.title}</h1>
+          <p className="mt-1 text-xs text-gray-400">{branding.subtitle}</p>
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-3 py-4">

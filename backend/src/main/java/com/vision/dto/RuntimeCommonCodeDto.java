@@ -8,5 +8,5 @@ import java.util.Map;
 public class RuntimeCommonCodeDto {
     private String version; private Map<String, CommonCodeGroupDto> codes;
     @Data @Builder @NoArgsConstructor @AllArgsConstructor public static class CommonCodeGroupDto { private String code; private String description; private String type; private List<CommonCodeItemDto> items; }
-    @Data @Builder @NoArgsConstructor @AllArgsConstructor public static class CommonCodeItemDto { private Long id; private String value; private String name; private String description; private Integer sortOrder; private String defaultValue; }
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor public static class CommonCodeItemDto { private Long id; private String value; private String name; private String nameKo; private String nameEn; private String description; private Integer sortOrder; private String defaultValue; }
 }

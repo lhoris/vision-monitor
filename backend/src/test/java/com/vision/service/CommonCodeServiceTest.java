@@ -30,7 +30,7 @@ class CommonCodeServiceTest {
     @Test
     void bootstrapReturnsActiveCodesAndSortedDetails() {
         Code code = Code.builder().id(1L).name("ALERT_LEVEL").description("alerts").dataEndStatus("N").build();
-        CodeDetail detail = CodeDetail.builder().id(2L).codeId(1L).value("HIGH").name("High").sortOrder(1).dataEndStatus("N").build();
+        CodeDetail detail = CodeDetail.builder().id(2L).codeId(1L).value("HIGH").name("High").nameKo("높음").nameEn("High").sortOrder(1).dataEndStatus("N").build();
         when(codeRepository.findAllByDataEndStatusOrderByNameAsc("N")).thenReturn(List.of(code));
         when(detailRepository.findAllByCodeIdAndDataEndStatusOrderBySortOrderAscIdAsc(1L, "N")).thenReturn(List.of(detail));
 
@@ -38,5 +38,7 @@ class CommonCodeServiceTest {
 
         assertThat(result.getCodes()).containsKey("ALERT_LEVEL");
         assertThat(result.getCodes().get("ALERT_LEVEL").getItems()).extracting("value").containsExactly("HIGH");
+        assertThat(result.getCodes().get("ALERT_LEVEL").getItems()).extracting("nameKo").containsExactly("높음");
+        assertThat(result.getCodes().get("ALERT_LEVEL").getItems()).extracting("nameEn").containsExactly("High");
     }
 }

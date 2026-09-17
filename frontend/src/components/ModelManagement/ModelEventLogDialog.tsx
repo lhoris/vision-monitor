@@ -1,0 +1,6 @@
+import { Modal } from '@/components/Common'
+import type { ModelEventLog, ModelProcess } from '@/types/modelManagement'
+
+export function ModelEventLogDialog({ process, logs, onClose }: { process: ModelProcess | null; logs: ModelEventLog[]; onClose: () => void }) {
+  return <Modal isOpen={Boolean(process)} title={`${process?.modelName ?? ''} 모니터링 이벤트 로그`} onClose={onClose} className="max-w-3xl"><div className="max-h-[60vh] overflow-auto">{logs.length ? <table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-2">발생 시각</th><th className="p-2">등급</th><th className="p-2">메시지</th><th className="p-2">감지 결과</th></tr></thead><tbody>{logs.map((log) => <tr key={log.id} className="border-b dark:border-slate-700"><td className="p-2 whitespace-nowrap">{new Date(log.occurredAt).toLocaleString('ko-KR')}</td><td className={`p-2 font-semibold ${log.severity === 'error' ? 'text-rose-600' : log.severity === 'warning' ? 'text-amber-600' : 'text-emerald-600'}`}>{log.severity}</td><td className="p-2">{log.message}</td><td className="p-2 font-mono text-xs">{log.detectionSummary ?? '-'}</td></tr>)}</tbody></table> : <p className="p-10 text-center text-sm text-slate-500">조회된 이벤트 로그가 없습니다.</p>}</div></Modal>
+}

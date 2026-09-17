@@ -81,7 +81,7 @@ describe('UserManagementGrid', () => {
     await waitFor(() => expect(props.onSaveChanges).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: userManagementFixture[0].id,
-        input: expect.objectContaining({ roleIds: ['admin', 'operator'] }),
+        input: expect.objectContaining({ roleIds: ['admin', 'manager'] }),
       }),
     ]))
   })

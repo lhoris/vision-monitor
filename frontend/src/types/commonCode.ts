@@ -2,6 +2,8 @@ export interface CommonCodeItem {
   id: number
   value: string
   name: string
+  nameKo?: string | null
+  nameEn?: string | null
   description?: string | null
   sortOrder: number
   defaultValue?: string | null
@@ -34,4 +36,4 @@ export interface CommonCode extends Omit<CommonCodeGroup, 'code'> {
 }
 
 export type CommonCodeInput = Pick<CommonCode, 'name' | 'description' | 'type' | 'remarks'>
-export type CommonCodeDetailInput = Pick<CommonCodeDetail, 'value' | 'name' | 'description' | 'sortOrder' | 'defaultValue' | 'remarks'>
+export type CommonCodeDetailInput = Pick<CommonCodeDetail, 'value' | 'name' | 'nameKo' | 'nameEn' | 'description' | 'sortOrder' | 'defaultValue' | 'remarks'>

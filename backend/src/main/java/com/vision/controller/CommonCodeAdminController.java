@@ -23,6 +23,8 @@ public class CommonCodeAdminController {
     public ApiResponse<CommonCodeDto> update(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @RequestBody CommonCodeDto request) { return ApiResponse.success(service.updateCode(actor, codeId, request)); }
     @PostMapping("/{codeId}/deactivate")
     public ApiResponse<Void> deactivate(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { service.deactivateCode(actor, codeId); return ApiResponse.success(null); }
+    @PostMapping("/{codeId}/activate")
+    public ApiResponse<Void> activate(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { service.activateCode(actor, codeId); return ApiResponse.success(null); }
     @GetMapping("/{codeId}/details")
     public ApiResponse<List<CommonCodeDetailDto>> details(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { return ApiResponse.success(service.listDetails(actor, codeId)); }
     @PostMapping("/{codeId}/details")
@@ -31,4 +33,6 @@ public class CommonCodeAdminController {
     public ApiResponse<CommonCodeDetailDto> updateDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId, @RequestBody CommonCodeDetailDto request) { return ApiResponse.success(service.updateDetail(actor, codeId, detailId, request)); }
     @PostMapping("/{codeId}/details/{detailId}/deactivate")
     public ApiResponse<Void> deactivateDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId) { service.deactivateDetail(actor, codeId, detailId); return ApiResponse.success(null); }
+    @PostMapping("/{codeId}/details/{detailId}/activate")
+    public ApiResponse<Void> activateDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId) { service.activateDetail(actor, codeId, detailId); return ApiResponse.success(null); }
 }
