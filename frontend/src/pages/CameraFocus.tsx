@@ -199,7 +199,7 @@ export default function CameraFocus() {
   }
 
   function handleTriggerTestAlert(message: string) {
-    const currentCameraId = apiCameraId
+    const currentCameraId = routeState.cameraId
     if (!currentCameraId) {
       return
     }
@@ -210,11 +210,15 @@ export default function CameraFocus() {
         alertId: Date.now(),
         cameraId: currentCameraId,
         message,
-        location: displayCamera?.location ?? 'Entry Zone',
+        location: displayCamera?.location ?? (selectedTemporarySource ? 'Temporary video' : 'Entry Zone'),
         startedAt: now,
       }),
       ...current,
     ])
+  }
+
+  function handleBackToLive() {
+    navigate('/live')
   }
 
   const temporaryCamera = routeState.cameraId && selectedTemporarySource
@@ -253,7 +257,8 @@ export default function CameraFocus() {
       onModeChange={handleModeChange}
       onSelectCamera={handleSelectCamera}
       onSelectEvent={handleSelectEvent}
-      onTriggerTestAlert={apiCameraId ? handleTriggerTestAlert : undefined}
+      onTriggerTestAlert={handleTriggerTestAlert}
+      onBackToLive={handleBackToLive}
     />
   )
 }

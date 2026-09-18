@@ -68,6 +68,9 @@
       }
     }
   },
+  "cameraFocus": {
+    "backToLive": "라이브로 돌아가기"
+  },
   "settings": {
     "title": "설정",
     "subtitle": "카메라 및 시스템 환경설정을 관리합니다.",

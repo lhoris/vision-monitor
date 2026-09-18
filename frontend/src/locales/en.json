@@ -68,6 +68,9 @@
       }
     }
   },
+  "cameraFocus": {
+    "backToLive": "Back to Live"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage cameras and system preferences",

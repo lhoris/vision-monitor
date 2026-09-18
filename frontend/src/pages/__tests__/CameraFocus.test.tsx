@@ -45,6 +45,7 @@ describe('CameraFocus page shell', () => {
 
     expect(screen.getByRole('heading', { name: '화면 확대 보기' })).toBeInTheDocument()
     expect(screen.getByRole('tablist', { name: '카메라 목록' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /라이브로 돌아가기|Back to Live/ })).toBeInTheDocument()
     expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Camera 1' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('tab', { name: 'Camera 2' })).toBeInTheDocument()
@@ -91,6 +92,24 @@ describe('CameraFocus page shell', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('[사용자 테스트] 냉각 구간 속도 이상')
     expect(screen.queryByRole('dialog', { name: '테스트 알람 메시지' })).not.toBeInTheDocument()
+  })
+
+  it('shows a manual test alert for a temporary video source', async () => {
+    const temporarySources = encodeURIComponent(JSON.stringify({
+      '-1': {
+        id: 'temporary-1',
+        url: 'https://media.test/live.m3u8',
+        protocol: 'hls',
+        displayName: 'External Feed',
+        playbackStatus: 'idle',
+      },
+    }))
+    renderRoute(`/live/cameras/-1?mode=live&cameraIds=-1&temporarySources=${temporarySources}`)
+
+    fireEvent.click(screen.getByRole('button', { name: '테스트 알람' }))
+    fireEvent.click(screen.getByRole('button', { name: '띄우기' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('[테스트 경고] Entry Zone 치입불 발생 중')
   })
 
   it('changes the focused camera when a camera tab is selected', async () => {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FocusAlertBanner } from './FocusAlertBanner'
 import { FocusMetadataPanel } from './FocusMetadataPanel'
 import { FocusVideoStage } from './FocusVideoStage'
@@ -33,6 +34,7 @@ interface CameraFocusShellProps {
   onSelectCamera?: (cameraId: number) => void
   onSelectEvent?: (eventId: number) => void
   onTriggerTestAlert?: (message: string) => void
+  onBackToLive?: () => void
 }
 
 export function CameraFocusShell({
@@ -55,7 +57,10 @@ export function CameraFocusShell({
   onSelectCamera,
   onSelectEvent,
   onTriggerTestAlert,
+  onBackToLive,
 }: CameraFocusShellProps) {
+  const { t } = useTranslation()
+  const backToLiveLabel = t('cameraFocus.backToLive', '라이브로 돌아가기')
   const [isTestAlertDialogOpen, setIsTestAlertDialogOpen] = useState(false)
   const [testAlertMessage, setTestAlertMessage] = useState('[테스트 경고] Entry Zone 치입불 발생 중')
 
@@ -126,13 +131,24 @@ export function CameraFocusShell({
               녹화
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsTestAlertDialogOpen(true)}
-            className="focus-action-button border px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2"
-          >
-            테스트 알람
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={onBackToLive}
+              className="focus-secondary-button border px-3 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2"
+              title={backToLiveLabel}
+              aria-label={backToLiveLabel}
+            >
+              ← {backToLiveLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsTestAlertDialogOpen(true)}
+              className="focus-action-button border px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2"
+            >
+              테스트 알람
+            </button>
+          </div>
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
@@ -152,7 +168,7 @@ export function CameraFocusShell({
           selectedEventDetail={selectedEventDetail}
           onSelectEvent={onSelectEvent}
         />
-        <FocusMetadataPanel camera={camera} error={cameraError} selectedEventDetail={selectedEventDetail} />
+        <FocusMetadataPanel camera={camera} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />
       </div>
       {isTestAlertDialogOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="presentation">

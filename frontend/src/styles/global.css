@@ -421,6 +421,17 @@ html[data-theme='theme3'] .camera-rename-dialog {
   background: var(--focus-accent-hover);
 }
 
+.focus-secondary-button {
+  background: var(--focus-control-bg);
+  border-color: var(--focus-selected-border);
+  color: var(--focus-control-text);
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.focus-secondary-button:hover {
+  background: var(--focus-control-bg-hover);
+}
+
 .focus-shell__body {
   background: var(--focus-bg);
 }
