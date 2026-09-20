@@ -18,6 +18,7 @@ release.properties
 # Production
 dist/
 build/
+.tools/
 
 # Environment
 .env

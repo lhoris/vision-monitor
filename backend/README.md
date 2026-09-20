@@ -12,13 +12,13 @@ Spring Boot 3.x + Java 21濡?援ъ꽦??REST API ?쒕쾭
 
 ```bash
 cd backend
-mvn clean install
+./mvnw clean install
 ```
 
 ## 媛쒕컻 ?쒕쾭 ?ㅽ뻾
 
 ```bash
-mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 ?쒕쾭??`http://localhost:8080`?먯꽌 ?ㅽ뻾?⑸땲??
@@ -117,13 +117,13 @@ src/main/resources/
 ### ?⑥쐞 ?뚯뒪???ㅽ뻾
 
 ```bash
-mvn test
+./mvnw test
 ```
 
 ### ?뱀젙 ?뚯뒪???대옒?ㅻ쭔 ?ㅽ뻾
 
 ```bash
-mvn test -Dtest=CameraRepositoryTest
+./mvnw test -Dtest=CameraRepositoryTest
 ```
 
 ## 鍮뚮뱶 諛?諛고룷
@@ -131,7 +131,7 @@ mvn test -Dtest=CameraRepositoryTest
 ### ?꾨줈?뺤뀡 鍮뚮뱶
 
 ```bash
-mvn clean package
+./mvnw clean package
 ```
 
 JAR ?뚯씪??`target/` ?붾젆?좊━???앹꽦?⑸땲??
@@ -223,15 +223,15 @@ brew services start mariadb
 
 ### ?ы듃 8080 ?대? ?ъ슜 以?
 ```bash
-mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
 ### ?곗씠?곕쿋?댁뒪 留덉씠洹몃젅?댁뀡 ?ㅻ쪟
 
 ```bash
 # Flyway ?덉뒪?좊━ 珥덇린??(媛쒕컻 ?섍꼍留?
-mvn flyway:clean
-mvn flyway:migrate
+./mvnw flyway:clean
+./mvnw flyway:migrate
 ```
 
 ## Phase 3 援ы쁽 ?덉젙

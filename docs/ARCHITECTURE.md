@@ -707,50 +707,9 @@ Backend EventService
 └─────────────────────────────────────┘
 ```
 
-### 5.2 배포 스크립트 (`deploy.sh`)
+### 5.2 배포 스크립트
 
-```bash
-#!/bin/bash
-set -e
-
-# 환경 설정
-DEPLOY_DIR="/opt/visionmonitor"
-DB_HOST=${DB_HOST:-"localhost"}
-DB_PORT=${DB_PORT:-"3306"}
-BACKEND_PORT=${BACKEND_PORT:-"8080"}
-
-# 1. 빌드
-echo "Building Frontend..."
-cd frontend
-npm run build
-cd ..
-
-echo "Building Backend..."
-cd backend
-mvn clean package -DskipTests
-cd ..
-
-# 2. 배포
-echo "Deploying..."
-mkdir -p $DEPLOY_DIR/{backend,frontend,data/{recordings,hls}}
-
-# Frontend 배포
-cp -r frontend/dist/* $DEPLOY_DIR/frontend/
-
-# Backend 배포
-cp backend/target/*.jar $DEPLOY_DIR/backend/app.jar
-
-# 3. 데이터베이스 마이그레이션 (Flyway 자동)
-echo "Running database migration..."
-java -jar $DEPLOY_DIR/backend/app.jar --spring.profiles.active=migration
-
-# 4. 서비스 재시작
-echo "Restarting services..."
-systemctl restart visionmonitor-backend
-systemctl restart nginx
-
-echo "Deployment completed!"
-```
+운영 배포는 빌드와 배포를 분리한다. `bash scripts/build.sh`는 프로젝트 Maven Wrapper를 통해 JAR를 빌드하고 frontend dist를 생성한다. `sudo bash scripts/deploy.sh`는 전달된 산출물 검증, systemd backend 재기동, 준비 확인을 수행한다. 경로와 unit 계약은 [운영 배포 가이드](DEPLOYMENT.md)를 따른다.
 
 ---
 

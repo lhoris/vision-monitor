@@ -98,7 +98,7 @@ chmod +x scripts/develop.sh
 터미널 1 - Backend:
 ```bash
 cd backend
-mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 터미널 2 - Frontend:
@@ -205,9 +205,9 @@ npm run test         # 테스트
 
 ```bash
 cd backend
-mvn clean spring-boot:run "-Dspring-boot.run.profiles=local"  # 개발 서버
-mvn clean package    # 프로덕션 빌드
-mvn test             # 테스트
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=local"  # 개발 서버 (Windows: mvnw.cmd)
+./mvnw clean package  # 프로덕션 빌드
+./mvnw test           # 테스트
 ```
 
 ## 🗄️ 데이터베이스 스키마
@@ -230,9 +230,19 @@ mvn test             # 테스트
 ### 프로덕션 빌드 및 배포
 
 ```bash
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
+bash scripts/build.sh
+# backend JAR와 frontend/dist를 같은 커밋 기준으로 운영 서버에 전달
+sudo bash scripts/deploy.sh
 ```
+
+Windows 빌드 및 배포:
+
+```bat
+scripts\build.bat
+scripts\deploy.bat
+```
+
+배포 설정, Java/Maven 자동 감지, 프로젝트 관리 Nginx 준비는 [운영 배포 가이드](docs/DEPLOYMENT.md)를 참고하세요. 배포 스크립트는 빌드하지 않고 사전 산출물을 검증합니다.
 
 ### Docker 배포 (예정)
 
@@ -296,7 +306,7 @@ npm run dev -- --port 3001
 
 # 포트 8080 이미 사용 중인 경우
 cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
+./mvnw spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
 ### 마이그레이션 오류
@@ -304,8 +314,8 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.argume
 ```bash
 # Flyway 히스토리 초기화 (개발 환경만)
 cd backend
-mvn flyway:clean
-mvn flyway:migrate
+./mvnw flyway:clean
+./mvnw flyway:migrate
 ```
 
 ## 📖 문서

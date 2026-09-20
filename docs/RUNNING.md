@@ -7,14 +7,14 @@
 | 항목 | 버전 | 확인 기준 |
 | --- | --- | --- |
 | JDK | 21 | `backend/pom.xml`의 `java.version`, `maven.compiler.release` |
-| Maven | 3.8 이상 | 현재 검증 환경: Maven 3.9.0 |
+| Maven | 3.9.16 | 프로젝트 Maven Wrapper가 버전을 자동으로 준비 |
 | Node.js | 24.x | 루트 `.nvmrc` |
 | npm | 11.x | Node 24 기본 npm 사용 |
 | MariaDB | 10.6 이상 | Flyway + MariaDB JDBC |
 
 ## 2. Windows 권장 실행 방법
 
-Node는 nvm으로 24 버전을 선택하고, JDK는 스크립트가 `C:\JDK` 아래에서 Java 21 설치 경로를 자동으로 찾아 `JAVA_HOME`으로 설정한다.
+Node는 nvm으로 24 버전을 선택한다. 스크립트는 JDK 설치 위치에서 Java 21을 자동으로 찾아 실행 프로세스에만 `JAVA_HOME`을 설정하고, Maven은 프로젝트 Wrapper를 사용한다. 전역 `JAVA_HOME`이나 Maven 경로를 수정할 필요가 없다.
 
 ```bat
 nvm install 24
@@ -22,10 +22,10 @@ nvm use 24
 scripts\develop.bat
 ```
 
-JDK를 자동으로 찾지 못하면 `JDK_HOME`을 직접 지정해서 실행한다.
+JDK를 자동으로 찾지 못하면 `PROJECT_JDK_HOME`에 설치 경로를 지정한다.
 
 ```bat
-set JDK_HOME=C:\JDK\OpenJDK\jdk-21.0.2
+set PROJECT_JDK_HOME=C:\JDK\OpenJDK\jdk-21.0.2
 scripts\develop.bat
 ```
 
@@ -54,18 +54,15 @@ npm -v
 
 ### 3.2 Backend 실행
 
-PowerShell 예시:
+Windows 자동 개발 스크립트는 저장된 전역 `JAVA_HOME`을 수정하지 않고 설치 경로에서 JDK 21을 찾아 해당 실행에만 사용한다. 직접 실행할 때도 같은 resolver로 현재 PowerShell 프로세스에만 Java 21을 지정한다. Maven은 `backend/mvnw.cmd`가 프로젝트 고정 버전을 자동으로 준비하므로 Maven 설치 경로를 설정할 필요가 없다.
 
 ```powershell
-$jdk = Get-ChildItem C:\JDK -Filter javac.exe -Recurse |
-  Where-Object { (& $_.FullName -version 2>&1) -match '^javac 21\.' } |
-  Select-Object -First 1
-$env:JAVA_HOME = Split-Path (Split-Path $jdk.FullName -Parent) -Parent
+$env:JAVA_HOME = & .\scripts\resolve-java-home.ps1
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 
 cd backend
-mvn clean package -DskipTests
-mvn spring-boot:run "-Dspring-boot.run.profiles=local"
+.\mvnw.cmd clean package -DskipTests
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
 local 프로필의 기본 DB 접속값:
@@ -122,7 +119,7 @@ scripts\build.bat
 
 ```powershell
 cd backend
-mvn clean package -DskipTests
+.\mvnw.cmd clean package -DskipTests
 
 cd ..\frontend
 nvm use 24
@@ -138,7 +135,7 @@ npm run build
 
 ```powershell
 java -version
-mvn -v
+scripts\build.bat
 ```
 
 두 명령 모두 Java 21 경로를 가리켜야 한다.
@@ -170,5 +167,5 @@ Backend:
 
 ```powershell
 cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local" "-Dspring-boot.run.arguments=--server.port=8081"
 ```

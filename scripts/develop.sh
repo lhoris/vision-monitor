@@ -2,6 +2,11 @@
 
 # Vision Monitor VMS Local Development Script
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/resolve-java-home.sh"
+resolve_java_home || exit 1
+
 echo "=========================================="
 echo "Vision Monitor VMS - Development Setup"
 echo "=========================================="
@@ -28,11 +33,6 @@ if ! command -v node &> /dev/null; then
 fi
 
 # Check Maven
-if ! command -v mvn &> /dev/null; then
-    echo -e "${RED}✗ Maven is not installed${NC}"
-    exit 1
-fi
-
 echo -e "${GREEN}✓ All prerequisites are met${NC}"
 echo ""
 
@@ -76,7 +76,7 @@ echo -e "${BLUE}⚙️  Backend setup...${NC}"
 cd backend
 if [ ! -f ".maven-setup-done" ]; then
     echo "Installing Maven dependencies..."
-    mvn clean install -DskipTests
+    ./mvnw clean install -DskipTests
     touch .maven-setup-done
 fi
 cd ..
@@ -90,7 +90,7 @@ echo ""
 # Start Backend
 echo -e "${YELLOW}Starting Spring Boot Backend (port 8080)...${NC}"
 cd backend
-mvn spring-boot:run &
+./mvnw spring-boot:run &
 BACKEND_PID=$!
 cd ..
 
