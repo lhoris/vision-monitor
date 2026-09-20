@@ -95,13 +95,17 @@ describe('layoutService', () => {
     expect(localStorage.getItem('layout:personalization:admin')).toContain('"activeTab":"tab-1"')
   })
 
-  it('uses local layout for mock users without calling backend', async () => {
+  it('uses the backend API for tester layouts', async () => {
     const layout = createLayout()
     localStorage.setItem('authUsername', 'tester')
-    localStorage.setItem('layout:personalization:tester', JSON.stringify(layout))
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: layout,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
 
     await expect(layoutService.getMyLayout()).resolves.toEqual(layout)
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/layouts/me')
   })
 
   it('returns null when saveLayout fails', async () => {
@@ -123,13 +127,17 @@ describe('layoutService', () => {
     expect(mockedApiClient.put).toHaveBeenCalledWith('/layouts/me', layout)
   })
 
-  it('saves mock user layout locally without calling backend', async () => {
+  it('saves tester layout through the backend API', async () => {
     const layout = createLayout()
     localStorage.setItem('authUsername', 'tester1')
+    mockedApiClient.put.mockResolvedValue({
+      success: true,
+      data: layout,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
 
     await expect(layoutService.saveMyLayout(layout)).resolves.toEqual(layout)
-    expect(mockedApiClient.put).not.toHaveBeenCalled()
-    expect(localStorage.getItem('layout:personalization:tester1')).toContain('"activeTab":"tab-1"')
+    expect(mockedApiClient.put).toHaveBeenCalledWith('/layouts/me', layout)
   })
 
   it('returns null when updateLayout fails', async () => {

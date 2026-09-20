@@ -100,4 +100,15 @@ describe('authSlice', () => {
       permissions: ['admin:access'],
     })
   })
+
+  it('does not infer administrator access from the tester username', async () => {
+    vi.resetModules()
+    localStorage.setItem('authToken', 'demo-token')
+    localStorage.setItem('authUsername', 'tester')
+
+    const { default: freshAuthReducer } = await import('../authSlice')
+    const state = freshAuthReducer(undefined, { type: '@@INIT' })
+
+    expect(state.user).toMatchObject({ username: 'tester', role: 'user', permissions: [] })
+  })
 })

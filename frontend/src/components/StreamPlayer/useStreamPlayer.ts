@@ -163,6 +163,15 @@ export function useStreamPlayer(
       setError(playerError)
       console.error('Player error:', playerError)
     })
+    player.on('reconnecting', () => {
+      if (isCurrentLifecycle(token)) setIsLoading(true)
+    })
+    player.on('reconnected', () => {
+      if (!isCurrentLifecycle(token)) return
+      setError(null)
+      setIsLoading(false)
+      setState(player.getState())
+    })
 
     if (player instanceof HLSPlayer) {
       player.on('durationchange', (data) => {

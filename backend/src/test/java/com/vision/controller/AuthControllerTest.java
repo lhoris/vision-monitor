@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.LoginRequest;
 import com.vision.dto.LoginResponse;
+import com.vision.dto.ChangePasswordRequest;
+import com.vision.dto.MyProfileDto;
+import com.vision.config.AuthSessionInterceptor;
 import com.vision.exception.ApiException;
 import com.vision.exception.GlobalExceptionHandler;
 import com.vision.service.AuthService;
@@ -18,6 +21,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,5 +67,31 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.error").value("AUTH_FAILED"))
                 .andExpect(jsonPath("$.message").value("Invalid username or password"));
+    }
+
+    @Test
+    void returnsOnlyTheAuthenticatedUsersProfile() throws Exception {
+        AuthenticatedUserDto authenticatedUser = new AuthenticatedUserDto(1L, "tester", "admin", List.of("admin:access"));
+        when(authService.getMyProfile("tester")).thenReturn(new MyProfileDto(1L, "tester", "Test User", "admin", "tester@example.com", "01012345678"));
+
+        mockMvc.perform(get("/api/auth/profile")
+                        .requestAttr(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE, authenticatedUser))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.username").value("tester"))
+                .andExpect(jsonPath("$.data.name").value("Test User"))
+                .andExpect(jsonPath("$.data.email").value("tester@example.com"))
+                .andExpect(jsonPath("$.data.phone").value("01012345678"));
+    }
+
+    @Test
+    void changesPasswordForTheAuthenticatedSessionIdentity() throws Exception {
+        AuthenticatedUserDto authenticatedUser = new AuthenticatedUserDto(1L, "tester", "admin", List.of("admin:access"));
+        mockMvc.perform(post("/api/auth/password")
+                        .requestAttr(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE, authenticatedUser)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ChangePasswordRequest("old-password", "new-password-1"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+        verify(authService).changePassword("tester", new ChangePasswordRequest("old-password", "new-password-1"));
     }
 }

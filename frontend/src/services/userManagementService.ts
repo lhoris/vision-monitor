@@ -1,6 +1,5 @@
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
-import { userManagementMockAdapter } from './userManagementMockAdapter'
 import type { UserAccount, UserDangerAction, UserListResponse, UserMutationRequest } from '@/types/userManagement'
 
 export interface UserManagementService {
@@ -10,14 +9,6 @@ export interface UserManagementService {
   updateUser(userId: number, input: UserMutationRequest): Promise<UserAccount>
   resetPassword(userId: number): Promise<UserAccount>
   dangerAction(userId: number, action: UserDangerAction, keepPersonalization: boolean): Promise<UserAccount>
-}
-
-function currentUsername(): string {
-  return localStorage.getItem('authUsername') ?? ''
-}
-
-function isMockAdmin(): boolean {
-  return currentUsername() === 'tester'
 }
 
 function actualApiService(): UserManagementService {
@@ -55,19 +46,11 @@ function actualApiService(): UserManagementService {
 
 const actualApi = actualApiService()
 
-function selectedService(): UserManagementService {
-  return actualApi
-}
-
 export const userManagementService: UserManagementService = {
-  listUsers: () => isMockAdmin() ? userManagementMockAdapter.listUsers().then((result) => result.data) : selectedService().listUsers(),
-  getUser: (userId) => isMockAdmin() ? userManagementMockAdapter.getUser(userId).then((result) => result.data) : selectedService().getUser(userId),
-  createUser: (input) => isMockAdmin() ? userManagementMockAdapter.createUser(input, currentUsername()).then((result) => result.data) : selectedService().createUser(input),
-  updateUser: (userId, input) => isMockAdmin() ? userManagementMockAdapter.updateUser(userId, input, currentUsername()).then((result) => result.data) : selectedService().updateUser(userId, input),
-  resetPassword: (userId) => selectedService().resetPassword(userId),
-  dangerAction: (userId, action, keepPersonalization) => isMockAdmin() ? userManagementMockAdapter.dangerAction(userId, action, currentUsername(), keepPersonalization).then((result) => result.data) : selectedService().dangerAction(userId, action, keepPersonalization),
-}
-
-export function resetUserManagementMock(): void {
-  userManagementMockAdapter.reset()
+  listUsers: (filters) => actualApi.listUsers(filters),
+  getUser: (userId) => actualApi.getUser(userId),
+  createUser: (input) => actualApi.createUser(input),
+  updateUser: (userId, input) => actualApi.updateUser(userId, input),
+  resetPassword: (userId) => actualApi.resetPassword(userId),
+  dangerAction: (userId, action, keepPersonalization) => actualApi.dangerAction(userId, action, keepPersonalization),
 }

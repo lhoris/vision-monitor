@@ -261,7 +261,7 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   } = useStreamPlayer(containerRef, source, {
     reconnect: {
       enabled: true,
-      maxAttempts: 5,
+      maxAttempts: 0,
       initialDelay: 1000,
       maxDelay: 30000,
       backoffFactor: 2,

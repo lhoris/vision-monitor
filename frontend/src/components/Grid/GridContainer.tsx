@@ -55,6 +55,10 @@ export function updateTemporarySourcePositions(
   )
 }
 
+export function sortCameraPositionsByGridOrder(positions: CameraPosition[]): CameraPosition[] {
+  return [...positions].sort((left, right) => left.row - right.row || left.col - right.col)
+}
+
 export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
@@ -160,12 +164,13 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     const params = new URLSearchParams({ mode: 'live' })
 
     if (activeTab && activeSubTab) {
-      const currentCameraIds = activeSubTab.cameraPositions.map((position) => position.cameraId)
+      const orderedPositions = sortCameraPositionsByGridOrder(activeSubTab.cameraPositions)
+      const currentCameraIds = orderedPositions.map((position) => position.cameraId)
       params.set('tabId', activeTab.id)
       params.set('subTabId', activeSubTab.id)
       params.set('cameraIds', currentCameraIds.join(','))
 
-      const currentNameOverrides = activeSubTab.cameraPositions.reduce<Record<number, string>>((overrides, position) => {
+      const currentNameOverrides = orderedPositions.reduce<Record<number, string>>((overrides, position) => {
         const override = position.displayName
         if (override) {
           overrides[position.cameraId] = override
@@ -177,7 +182,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         params.set('cameraNames', JSON.stringify(currentNameOverrides))
       }
 
-      const currentTemporarySources = activeSubTab.cameraPositions.reduce<Record<number, TemporaryVideoSource>>((sources, position) => {
+      const currentTemporarySources = orderedPositions.reduce<Record<number, TemporaryVideoSource>>((sources, position) => {
         if (position.source) {
           sources[position.cameraId] = position.source
         }
@@ -356,7 +361,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   })
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-0 h-full flex-col bg-gray-50 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <TabsBar
           tabs={layout.tabs}
@@ -386,12 +391,14 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         />
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4">
         <div
-          className="grid gap-4 auto-fit"
+          data-testid="live-grid"
+          className="grid h-full min-h-0 w-full"
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${activeSubTab.gridConfig.cols}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${activeSubTab.gridConfig.rows}, minmax(0, 1fr))`,
             gap: `${activeSubTab.gridConfig.gapSize}px`,
           }}
         >

@@ -73,6 +73,7 @@ export interface LayoutState {
 export type LayoutPersistStatus =
   | 'idle'
   | 'loading'
+  | 'pending'
   | 'saving'
   | 'saved'
   | 'saveFailed'

@@ -326,6 +326,14 @@ public class UserManagementService {
         if (request == null || request.username() == null || request.username().isBlank()) throw new ApiException("VALIDATION_ERROR", "사용자 ID는 필수입니다.");
         if (request.name() == null || request.name().isBlank()) throw new ApiException("VALIDATION_ERROR", "사용자 이름은 필수입니다.");
         if (!update && request.username().trim().length() < 2) throw new ApiException("VALIDATION_ERROR", "사용자 ID는 2자 이상이어야 합니다.");
+        String email = valueOrNull(request.email());
+        String phone = valueOrNull(request.phone());
+        if (email != null && (email.length() > 254 || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))) {
+            throw new ApiException("VALIDATION_ERROR", "Invalid email address");
+        }
+        if (phone != null && phone.length() > 50) {
+            throw new ApiException("VALIDATION_ERROR", "Phone number must be 50 characters or fewer");
+        }
         normalizeAccountStatus(request.accountStatus());
         normalizeEmploymentStatus(request.employmentStatus());
     }

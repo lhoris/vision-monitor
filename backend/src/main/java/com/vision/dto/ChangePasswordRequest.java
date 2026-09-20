@@ -1,4 +1,4 @@
 package com.vision.dto;
 
-public record ChangePasswordRequest(String newPassword) {
+public record ChangePasswordRequest(String currentPassword, String newPassword) {
 }

@@ -135,7 +135,13 @@ export abstract class StreamPlayer {
    * 자동 재연결 로직
    */
   protected attemptReconnect(): void {
-    if (this.reconnectAttempts >= this.reconnectConfig.maxAttempts) {
+    if (this.reconnectTimer) {
+      return
+    }
+
+    // maxAttempts <= 0 means that a live source should keep retrying with
+    // backoff until the player is destroyed or the connection recovers.
+    if (this.reconnectConfig.maxAttempts > 0 && this.reconnectAttempts >= this.reconnectConfig.maxAttempts) {
       console.error('Max reconnection attempts reached')
       return
     }
@@ -150,10 +156,13 @@ export abstract class StreamPlayer {
     this.emit('reconnecting', { attempt: this.reconnectAttempts, delay })
 
     this.reconnectTimer = setTimeout(() => {
-      console.log(`Attempting reconnection (${this.reconnectAttempts}/${this.reconnectConfig.maxAttempts})`)
+      this.reconnectTimer = null
+      const maxAttemptsLabel = this.reconnectConfig.maxAttempts > 0
+        ? `/${this.reconnectConfig.maxAttempts}`
+        : ''
+      console.log(`Attempting reconnection (${this.reconnectAttempts}${maxAttemptsLabel})`)
       this.play()
         .then(() => {
-          this.reconnectAttempts = 0
           this.emit('reconnected', {})
         })
         .catch(() => {

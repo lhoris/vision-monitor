@@ -278,11 +278,19 @@ const layoutSlice = createSlice({
       }
     },
 
+    replaceLayout: (state, action: PayloadAction<Layout>) => {
+      setLayoutAndActiveTab(state, action.payload)
+    },
+
     /**
      * 에러 초기화
      */
     clearError: (state) => {
       state.error = null
+      state.persistError = null
+    },
+    markLayoutPending: (state) => {
+      state.persistStatus = 'pending'
       state.persistError = null
     },
     resetLayoutState: () => initialState,
@@ -404,7 +412,9 @@ export const {
   reorderSubTabs,
   updateGridConfig,
   updateCameraPositions,
+  replaceLayout,
   clearError,
+  markLayoutPending,
   resetLayoutState,
   markLayoutSavedLocally,
 } = layoutSlice.actions

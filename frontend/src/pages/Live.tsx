@@ -5,11 +5,14 @@
 import { useEffect, useState } from 'react'
 import { GridContainer } from '@/components/Grid'
 import { useAppSelector, useAppDispatch } from '@/store'
-import { fetchMyLayout } from '@/store/slices/layoutSlice'
-import { createMockCameras } from '@/mocks/liveMonitoring'
+import { fetchMyLayout, replaceLayout } from '@/store/slices/layoutSlice'
 import { usePersistLayout } from '@/hooks/usePersistLayout'
 import LayoutPersistStatus from '@/components/Grid/LayoutPersistStatus'
-import { videoSourceService } from '@/services/videoSourceService'
+import {
+  reconcileLegacyCameraIds,
+  videoSourceService,
+  videoSourcesToCameras,
+} from '@/services/videoSourceService'
 import type { VideoSource } from '@/types/videoSource'
 
 export function Live() {
@@ -17,7 +20,7 @@ export function Live() {
   const username = useAppSelector((state) => state.auth.user?.username)
   const restoredForUser = useAppSelector((state) => state.layout.restoredForUser)
   const loading = useAppSelector((state) => state.layout.loading)
-  const mockCameras = createMockCameras()
+  const layout = useAppSelector((state) => state.layout.layout)
   const [videoSources, setVideoSources] = useState<VideoSource[]>([])
   usePersistLayout()
 
@@ -39,6 +42,15 @@ export function Live() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!layout || videoSources.length === 0) return
+
+    const reconciledLayout = reconcileLegacyCameraIds(layout, videoSources)
+    if (reconciledLayout !== layout) {
+      dispatch(replaceLayout(reconciledLayout))
+    }
+  }, [dispatch, layout, videoSources])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -51,9 +63,9 @@ export function Live() {
   }
 
   return (
-    <div className="relative flex-1 flex flex-col h-screen">
+    <div className="relative flex min-h-0 flex-1 flex-col h-full">
       <LayoutPersistStatus />
-      <GridContainer cameras={mockCameras} videoSources={videoSources} />
+      <GridContainer cameras={videoSourcesToCameras(videoSources)} videoSources={videoSources} />
     </div>
   )
 }

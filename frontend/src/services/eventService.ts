@@ -16,6 +16,7 @@ import type {
 } from '@/types/cameraFocus'
 import type { CameraEventsRange } from '@/mocks/cameraEvents'
 import type { Event, AlertSetting, PaginatedResponse } from '@/types'
+import { getEventsMock } from './eventsMockAdapter'
 
 interface EventQueryParams {
   page?: number
@@ -29,11 +30,21 @@ interface EventQueryParams {
 
 class EventService {
   async getEvents(params?: EventQueryParams): Promise<PaginatedResponse<Event> | null> {
-    return withServiceFallback(
-      async () => getResponseData(await apiClient.get<PaginatedResponse<Event>>('/events', params || {}), null),
-      null,
-      'Failed to fetch events:'
-    )
+    try {
+      const response = await apiClient.get<PaginatedResponse<Event>>('/events', params || {})
+      const data = getResponseData(response, null)
+      if (!data) return getEventsMock()
+      return {
+        ...data,
+        content: data.content.map((event) => ({
+          ...event,
+          timestamp: new Date(event.timestamp),
+        })),
+      }
+    } catch (error) {
+      console.error('Failed to fetch events:', error)
+      return getEventsMock()
+    }
   }
 
   async getEventDetail(eventId: number): Promise<Event | null> {

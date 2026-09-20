@@ -1,5 +1,7 @@
 import { createDefaultMetadataProfile } from '@/mocks/metadataQueryRegistry'
 import type { MetadataLayoutProfile, MetadataSectionConfig } from '@/types/metadataConfig'
+import { apiClient } from './api'
+import { getResponseData } from './serviceUtils'
 
 const STORAGE_PREFIX = 'metadata-layout:'
 
@@ -15,6 +17,20 @@ function normalizeProfile(value: unknown, userId: string, sourceId: string): Met
 }
 
 export async function getMetadataProfile(userId: string, sourceId: string): Promise<MetadataLayoutProfile> {
+  try {
+    const response = await apiClient.get<MetadataLayoutProfile>(`/metadata/profiles/${encodeURIComponent(sourceId)}`)
+    const data = getResponseData(response, null)
+    if (data && Array.isArray(data.sections)) {
+      return {
+        userId,
+        sourceId,
+        sections: data.sections as MetadataSectionConfig[],
+        updatedAt: data.updatedAt ?? new Date().toISOString(),
+      }
+    }
+  } catch {
+    // Local storage and fixture fallback preserve the current Mock-First flow.
+  }
   const raw = localStorage.getItem(storageKey(userId, sourceId))
   if (raw) {
     try {

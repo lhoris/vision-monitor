@@ -40,7 +40,7 @@ export function ModelManagement() {
     try {
       const updated = await controlProcess(id, action)
       setProcesses((current) => current.map((item) => item.id === id ? updated : item))
-      setNotice(`${process.modelName} 프로세스를 ${actionLabel}했습니다. (Mock)`)
+      setNotice(`${process.modelName} 프로세스를 ${actionLabel}했습니다.`)
     } catch (controlError) {
       setError(controlError instanceof Error ? controlError.message : '프로세스 조작에 실패했습니다.')
     } finally {
@@ -53,7 +53,7 @@ export function ModelManagement() {
     const updated = await updateSettings(settingsProcess.id, { serverIp, pythonProjectPath })
     setProcesses((current) => current.map((item) => item.id === updated.id ? updated : item))
     setSettingsProcess(null)
-    setNotice('모델 설정을 저장했습니다. (Mock)')
+    setNotice('모델 설정을 저장했습니다.')
   }
 
   const openLogs = async (process: ModelProcess) => {
@@ -65,14 +65,14 @@ export function ModelManagement() {
     const created = await createProcess(input)
     setProcesses((current) => [...current, created])
     setCreateOpen(false)
-    setNotice('신규 모델을 추가했습니다. (Mock)')
+    setNotice('신규 모델을 추가했습니다.')
   }
 
   const saveNewArea = async (name: string) => {
     const created = await createProcessArea(name)
     setAreas((current) => [...current, created])
     setCreateAreaOpen(false)
-    setNotice(`공정 '${created.name}'을 추가했습니다. (Mock)`)
+    setNotice(`공정 '${created.name}'을 추가했습니다.`)
   }
 
   return <div className="flex h-full min-h-0 flex-col gap-4 bg-gray-50 p-6 dark:bg-gray-900">

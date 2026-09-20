@@ -3,7 +3,7 @@
  * 알람 필터링, 테이블, 상세 패널
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Card,
   CardBody,
@@ -14,54 +14,32 @@ import {
 import { useAppSelector, useAppDispatch } from '@/store'
 import { setFilter, acknowledgeEvent } from '@/store/slices/eventSlice'
 import type { Event } from '@/types'
+import { eventService } from '@/services/eventService'
 
-// Mock alarm data
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    cameraId: 1,
-    type: 'motion_detected',
-    severity: 'low',
-    description: 'Motion detected in area A',
-    timestamp: new Date(Date.now() - 5 * 60 * 1000),
-    acknowledged: false,
-  },
-  {
-    id: 2,
-    cameraId: 2,
-    type: 'camera_offline',
-    severity: 'high',
-    description: 'Camera 2 went offline',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    acknowledged: false,
-  },
-  {
-    id: 3,
-    cameraId: 3,
-    type: 'tampering_detected',
-    severity: 'critical',
-    description: 'Tampering detected on camera lens',
-    timestamp: new Date(Date.now() - 1 * 60 * 1000),
-    acknowledged: false,
-  },
-  {
-    id: 4,
-    cameraId: 1,
-    type: 'motion_detected',
-    severity: 'medium',
-    description: 'Sustained motion detected',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    acknowledged: true,
-  },
-]
+// The adapter keeps the screen usable until the event API is available.
+import { eventsMock } from '@/services/eventsMockAdapter'
 
 export function Events() {
   const dispatch = useAppDispatch()
   const filter = useAppSelector((state) => state.event.filter)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [events, setEvents] = useState<Event[]>(mockEvents)
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
 
   const cameras = useAppSelector((state) => state.camera.cameras)
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    void eventService.getEvents({ page: 0, size: 100 }).then((response) => {
+      if (!active) return
+      setEvents(response?.content ?? eventsMock)
+      setLoading(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const cameraOptions = cameras.map((c) => ({
     value: c.id.toString(),
@@ -259,7 +237,13 @@ export function Events() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {filteredEvents.length === 0 ? (
+                    {loading ? (
+                      <tr>
+                        <td colSpan={5} className="text-center px-4 py-8 text-gray-600 dark:text-gray-400">
+                          Loading alarms...
+                        </td>
+                      </tr>
+                    ) : filteredEvents.length === 0 ? (
                       <tr>
                         <td
                           colSpan={5}

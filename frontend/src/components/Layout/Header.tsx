@@ -10,6 +10,8 @@ import type { ThemeMode } from '@/store/slices/uiSlice'
 import { saveThemePreference } from '@/store/slices/layoutSlice'
 import { logoutUser } from '@/store/slices/authSlice'
 import { useAppBranding } from '@/hooks/useAppBranding'
+import { AccountCenterModal } from './AccountCenterModal'
+import type { AccountTab } from './AccountCenterModal'
 
 const themeOptions: Array<{
   id: ThemeMode
@@ -61,12 +63,14 @@ export function Header() {
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const notifications = useAppSelector((state) => state.ui.notifications)
   const user = useAppSelector((state) => state.auth.user)
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [accountModalOpen, setAccountModalOpen] = useState(false)
+  const [accountModalTab, setAccountModalTab] = useState<AccountTab>('profile')
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [themeMenuOpen, setThemeMenuOpen] = useState(false)
-  const profileMenuRef = useRef<HTMLDivElement>(null)
   const languageMenuRef = useRef<HTMLDivElement>(null)
   const themeMenuRef = useRef<HTMLDivElement>(null)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
   const selectedTheme = themeOptions.find((theme) => theme.id === themeMode) ?? themeOptions[1]
   const selectedThemeLabel = getThemeLabel(selectedTheme.id, i18n.language)
 
@@ -77,7 +81,8 @@ export function Header() {
   }
 
   const handleLogout = () => {
-    setProfileMenuOpen(false)
+    setAccountMenuOpen(false)
+    setAccountModalOpen(false)
     dispatch(logoutUser())
     navigate('/login')
   }
@@ -90,8 +95,8 @@ export function Header() {
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setProfileMenuOpen(false)
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false)
       }
       if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
         setLanguageMenuOpen(false)
@@ -101,14 +106,21 @@ export function Header() {
       }
     }
 
-    if (profileMenuOpen || languageMenuOpen || themeMenuOpen) {
+    if (accountMenuOpen || languageMenuOpen || themeMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
     return undefined
-  }, [profileMenuOpen, languageMenuOpen, themeMenuOpen])
+  }, [accountMenuOpen, languageMenuOpen, themeMenuOpen])
+
+  const openAccountTab = (tab: AccountTab) => {
+    setAccountMenuOpen(false)
+    setAccountModalTab(tab)
+    setAccountModalOpen(true)
+  }
 
   return (
+    <>
     <header className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-800/50 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
       <div className="flex items-center justify-between h-14 px-6">
         {/* Left */}
@@ -268,10 +280,13 @@ export function Header() {
           <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
 
           {/* Profile Menu */}
-          <div className="relative" ref={profileMenuRef}>
+          <div className="relative" ref={accountMenuRef}>
             <button
-              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              onClick={() => setAccountMenuOpen((open) => !open)}
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label={t('account.open')}
+              aria-expanded={accountMenuOpen}
+              aria-haspopup="menu"
               title={`${user?.username || 'User'}`}
             >
               <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
@@ -282,19 +297,13 @@ export function Header() {
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:inline">
                 {user?.username}
               </span>
-              <svg
-                className={`w-4 h-4 text-gray-500 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              <svg className={`h-4 w-4 text-gray-500 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m6 9 6 6 6-6" />
               </svg>
             </button>
 
-            {/* Dropdown Menu */}
-            {profileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 animate-in fade-in-0 zoom-in-95 origin-top-right">
+            {accountMenuOpen && (
+              <div role="menu" className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 z-50 animate-in fade-in-0 zoom-in-95 origin-top-right">
                 {/* Profile Header */}
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -308,22 +317,21 @@ export function Header() {
                 {/* Menu Items */}
                 <div className="py-2">
                   <button
-                    onClick={() => {
-                      setProfileMenuOpen(false)
-                      // 프로필 페이지로 이동 (나중에 구현)
-                    }}
+                    role="menuitem"
+                    onClick={() => openAccountTab('profile')}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>My Profile</span>
+                    <span>{t('account.menu.profile')}</span>
                   </button>
 
                   <button
+                    role="menuitem"
                     onClick={() => {
-                      setProfileMenuOpen(false)
-                      // 설정 페이지로 이동
+                      setAccountMenuOpen(false)
+                      navigate('/settings')
                     }}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
                   >
@@ -331,26 +339,25 @@ export function Header() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <span>Settings</span>
+                    <span>{t('navigation.settings')}</span>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setProfileMenuOpen(false)
-                      // 도움말 페이지로 이동
-                    }}
+                    role="menuitem"
+                    onClick={() => openAccountTab('help')}
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Help & Support</span>
+                    <span>{t('account.menu.help')}</span>
                   </button>
                 </div>
 
                 {/* Separator */}
                 <div className="border-t border-gray-200 dark:border-gray-700 py-2">
                   <button
+                    role="menuitem"
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-3"
                   >
@@ -366,5 +373,7 @@ export function Header() {
         </div>
       </div>
     </header>
+    <AccountCenterModal isOpen={accountModalOpen} initialTab={accountModalTab} onClose={() => setAccountModalOpen(false)} onLogout={handleLogout} />
+    </>
   )
 }

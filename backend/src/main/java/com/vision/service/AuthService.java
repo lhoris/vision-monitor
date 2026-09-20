@@ -4,6 +4,7 @@ import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.LoginRequest;
 import com.vision.dto.LoginResponse;
 import com.vision.dto.ChangePasswordRequest;
+import com.vision.dto.MyProfileDto;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -15,11 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.HexFormat;
+import java.util.Locale;
+
 
 @Service
 public class AuthService {
@@ -32,21 +30,32 @@ public class AuthService {
     private final UserAccountRepository userRepository;
     private final AuthorizationRepository authorizationRepository;
     private final UserAuthorizationRepository userAuthorizationRepository;
+    private final AuthSessionService sessionService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     public AuthService(
             UserAccountRepository userRepository,
             AuthorizationRepository authorizationRepository,
-            UserAuthorizationRepository userAuthorizationRepository
+            UserAuthorizationRepository userAuthorizationRepository,
+            AuthSessionService sessionService
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
+        this.sessionService = sessionService;
+    }
+
+    public AuthService(
+            UserAccountRepository userRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository
+    ) {
+        this(userRepository, authorizationRepository, userAuthorizationRepository, new AuthSessionService(userRepository));
     }
 
     public AuthService(UserAccountRepository userRepository) {
-        this(userRepository, null, null);
+        this(userRepository, null, null, new AuthSessionService(userRepository));
     }
 
     @Transactional(readOnly = true)
@@ -69,20 +78,54 @@ public class AuthService {
 
         user.setRole(isAdministrator(user) ? "ADMIN" : "USER");
 
-        return new LoginResponse(AuthenticatedUserDto.from(user), createDevToken(user), passwordChangeRequired);
+        return new LoginResponse(AuthenticatedUserDto.from(user), sessionService.createSession(user), passwordChangeRequired);
     }
 
     @Transactional
     public void changePassword(String username, ChangePasswordRequest request) {
         String normalizedUsername = normalize(username);
+        String currentPassword = request == null ? null : request.currentPassword();
         String newPassword = request == null ? null : request.newPassword();
         if (normalizedUsername == null || newPassword == null || newPassword.length() < 8) {
             throw new ApiException("PASSWORD_INVALID", "비밀번호는 8자 이상이어야 합니다.");
         }
         UserAccount user = userRepository.findByUsernameIgnoreCase(normalizedUsername).orElseThrow(this::authFailed);
         if (!canLogin(user)) throw authFailed();
+        String existingHash = user.getPasswordHash();
+        if (existingHash != null && !existingHash.isBlank()
+                && (currentPassword == null || !passwordEncoder.matches(currentPassword, existingHash))) {
+            throw new ApiException("CURRENT_PASSWORD_INVALID", "현재 비밀번호가 올바르지 않습니다.");
+        }
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public MyProfileDto getMyProfile(String username) {
+        String normalizedUsername = normalize(username);
+        if (normalizedUsername == null) throw authFailed();
+        UserAccount user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
+                .filter(this::canLogin)
+                .orElseThrow(this::authFailed);
+        return MyProfileDto.from(user, resolveRole(user));
+    }
+
+    private String resolveRole(UserAccount user) {
+        if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) {
+            String role = user.getRole() == null ? "USER" : user.getRole().toUpperCase(Locale.ROOT);
+            return switch (role) {
+                case "ADMIN", "MANAGER", "USER" -> role;
+                default -> "USER";
+            };
+        }
+        var roleCodes = userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
+                .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
+                .filter(auth -> auth != null && !"Y".equalsIgnoreCase(auth.getDataEndStatus()))
+                .map(auth -> auth.getCode() == null ? "" : auth.getCode().toUpperCase(Locale.ROOT))
+                .toList();
+        if (roleCodes.contains("ADMIN")) return "ADMIN";
+        if (roleCodes.contains("MANAGER")) return "MANAGER";
+        return "USER";
     }
 
     private boolean isAdministrator(UserAccount user) {
@@ -112,13 +155,4 @@ public class AuthService {
         return trimmed.isEmpty() ? null : trimmed;
     }
 
-    private String createDevToken(UserAccount user) {
-        String input = user.getId() + ":" + user.getUsername() + ":" + Instant.now();
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return "dev-auth-token-" + HexFormat.of().formatHex(digest.digest(input.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 digest is not available", exception);
-        }
-    }
 }

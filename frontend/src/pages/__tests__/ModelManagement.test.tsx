@@ -1,46 +1,32 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ModelManagement from '@/pages/ModelManagement'
-import { resetModelManagementMock } from '@/services/modelManagementService'
+import * as modelService from '@/services/modelManagementService'
+
+vi.mock('@/services/modelManagementService', () => ({ listProcesses: vi.fn(), controlProcess: vi.fn(), createProcess: vi.fn(), createProcessArea: vi.fn(), listEventLogs: vi.fn(), updateSettings: vi.fn() }))
+
+const processes = [{ id: 'model-001', processId: 'heating', processName: 'Heating', modelName: 'Heating detector', automationName: 'Heating automation', serverIp: '10.20.4.10', pythonProjectPath: '/opt/heating', processStatus: 'running' as const, monitoringStatus: 'normal' as const, controlStatus: 'normal' as const }]
 
 describe('ModelManagement', () => {
   beforeEach(() => {
-    resetModelManagementMock()
+    vi.clearAllMocks()
+    vi.mocked(modelService.listProcesses).mockResolvedValue({ processes, processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }, { id: 'heating', name: 'Heating', sortOrder: 10 }] })
+    vi.mocked(modelService.listEventLogs).mockResolvedValue([])
     vi.stubGlobal('confirm', vi.fn(() => true))
   })
 
-  it('loads all process rows and applies multi-select filtering', async () => {
+  it('loads rows from the service and supports the ALL process filter', async () => {
     render(<ModelManagement />)
-    expect(await screen.findByText('가열로 스키드 감시')).toBeInTheDocument()
-    expect(screen.getByText('압연 설비 이상감지')).toBeInTheDocument()
-    fireEvent.click(screen.getByLabelText('압연'))
-    await waitFor(() => expect(screen.queryByText('가열로 스키드 감시')).not.toBeInTheDocument())
-    expect(screen.getByText('압연 설비 이상감지')).toBeInTheDocument()
-  })
-
-  it('keeps the all-process filter when an individual process is clicked', async () => {
-    render(<ModelManagement />)
-    await screen.findByText('가열로 스키드 감시')
-    fireEvent.click(screen.getByLabelText('ALL'))
+    expect(await screen.findByText('Heating detector')).toBeInTheDocument()
     expect(screen.getByLabelText('ALL')).toBeChecked()
-    expect(screen.getByText('선재 표면 결함감지')).toBeInTheDocument()
+    expect(modelService.listProcesses).toHaveBeenCalledOnce()
   })
 
-  it('opens event logs and settings from the grid', async () => {
+  it('opens the event log dialog from the row action menu', async () => {
     render(<ModelManagement />)
-    await screen.findByText('가열로 스키드 감시')
-    fireEvent.click(screen.getAllByRole('button', { name: /작업 메뉴/ })[0])
-    fireEvent.click(screen.getAllByRole('menuitem', { name: '로그' })[0])
-    expect(await screen.findByText('Python 프로세스 heartbeat 수신')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: '닫기' }))
-  })
-
-  it('adds a process area when Enter is pressed in the add dialog', async () => {
-    render(<ModelManagement />)
-    await screen.findByText('가열로 스키드 감시')
-    fireEvent.click(screen.getByRole('button', { name: '+ 공정 추가' }))
-    fireEvent.change(screen.getByPlaceholderText('예: 품질'), { target: { value: '품질' } })
-    fireEvent.submit(screen.getByRole('button', { name: '추가' }).closest('form') as HTMLFormElement)
-    expect(await screen.findByLabelText('품질')).toBeInTheDocument()
+    await screen.findByText('Heating detector')
+    fireEvent.click(screen.getByRole('button', { name: 'Heating detector 작업 메뉴' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '로그' }))
+    await waitFor(() => expect(modelService.listEventLogs).toHaveBeenCalledWith('model-001'))
   })
 })

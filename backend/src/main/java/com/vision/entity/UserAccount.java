@@ -40,6 +40,12 @@ public class UserAccount {
     @Column(name = "USER_NAME", length = 100)
     private String name;
 
+    @Column(name = "USER_EMAIL", length = 254)
+    private String email;
+
+    @Column(name = "USER_PHONE", length = 50)
+    private String phone;
+
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
 
@@ -61,10 +67,8 @@ public class UserAccount {
 
     // Transitional API fields are intentionally not persisted in the new master table.
     @Transient private String displayName;
-    @Transient private String email;
     @Transient private String department;
     @Transient private String position;
-    @Transient private String phone;
     @Transient @Builder.Default private String role = "USER";
     @Transient @Builder.Default private Boolean enabled = true;
     @Transient @Builder.Default private String accountStatus = "active";

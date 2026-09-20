@@ -1,13 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
-import { resetUserManagementMock } from '@/services/userManagementService'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/services/api', () => ({
+  apiClient: {
+    get: vi.fn().mockResolvedValue({ success: true, data: { items: [], total: 0, roles: [] } }),
+    post: vi.fn(),
+    put: vi.fn(),
+  },
+}))
+
 import { UserManagement } from '../UserManagement'
 
 describe('UserManagement page', () => {
   beforeEach(() => {
     localStorage.clear()
     localStorage.setItem('authUsername', 'tester')
-    resetUserManagementMock()
   })
 
   it('shows the full-width grid workflow without the always-visible detail panel', async () => {

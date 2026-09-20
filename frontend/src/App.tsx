@@ -10,24 +10,27 @@ import { AppLayout } from '@/components/Layout'
 import Login from '@/pages/Login'
 import Live from '@/pages/Live'
 import CameraFocus from '@/pages/CameraFocus'
-import Playback from '@/pages/Playback'
+import RecordingEntry from '@/pages/RecordingEntry'
 import Events from '@/pages/Events'
 import Settings from '@/pages/Settings'
 import AdminPlaceholder from '@/pages/AdminPlaceholder'
+import { VideoManagement } from '@/pages/VideoManagement'
 import { store } from '@/store'
 import { useEffect } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
+import { validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
 
-function AppRoutes() {
+export function AppRoutes() {
   const dispatch = useAppDispatch()
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
   const user = useAppSelector((state) => state.auth.user)
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const commonCodeStatus = useAppSelector((state) => state.commonCode.status)
+  const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
   const canAccessAdminRoutes = user?.role === 'admin' || Boolean(user?.permissions?.includes('admin:access'))
 
   useEffect(() => {
@@ -46,6 +49,12 @@ function AppRoutes() {
     }
   }, [commonCodeStatus, dispatch, isAuthenticated])
 
+  useEffect(() => {
+    if (isAuthenticated && sessionStatus === 'idle') {
+      void dispatch(validateAuthSession())
+    }
+  }, [dispatch, isAuthenticated, sessionStatus])
+
   if (!isAuthenticated) {
     return (
       <Routes>
@@ -59,11 +68,7 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
-        element={
-          <AppLayout>
-            <Navigate to="/live" replace />
-          </AppLayout>
-        }
+        element={<Navigate to="/live" replace />}
       />
       <Route
         path="/live"
@@ -85,7 +90,7 @@ function AppRoutes() {
         path="/playback"
         element={
           <AppLayout>
-            <Playback />
+            <RecordingEntry />
           </AppLayout>
         }
       />
@@ -104,6 +109,16 @@ function AppRoutes() {
             <Settings />
           </AppLayout>
         }
+      />
+      <Route
+        path="/admin/videos"
+        element={canAccessAdminRoutes ? (
+          <AppLayout>
+            <VideoManagement />
+          </AppLayout>
+        ) : (
+          <Navigate to="/live" replace />
+        )}
       />
       <Route
         path="/admin/*"

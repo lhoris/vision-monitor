@@ -10,7 +10,7 @@ export function Input({ label, error, icon, className, ...props }: InputProps) {
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+        <label htmlFor={props.id} className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
           {label}
         </label>
       )}

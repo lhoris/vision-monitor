@@ -112,6 +112,8 @@ describe('usePersistLayout', () => {
       await Promise.resolve()
     })
 
+    expect(store.getState().layout.persistStatus).toBe('pending')
+
     act(() => {
       vi.advanceTimersByTime(25)
     })
@@ -122,6 +124,14 @@ describe('usePersistLayout', () => {
 
     expect(mockedLayoutService.saveMyLayout).toHaveBeenCalledTimes(1)
     expect(mockedLayoutService.saveMyLayout).toHaveBeenCalledWith(expect.objectContaining({ activeTab: 'tab-2' }))
+
+    await act(async () => {
+      vi.advanceTimersByTime(100)
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(mockedLayoutService.saveMyLayout).toHaveBeenCalledTimes(1)
   })
 
   it('keeps layout state when save fails', async () => {

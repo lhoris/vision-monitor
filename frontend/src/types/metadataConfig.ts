@@ -1,4 +1,5 @@
 export type MetadataSectionType = 'text' | 'grid' | 'chart'
+export type MetadataTextDisplayMode = 'free' | 'label_value'
 export type MetadataResultFieldType = 'string' | 'number' | 'boolean' | 'datetime'
 export type MetadataSectionStatus = 'loading' | 'success' | 'empty' | 'error' | 'stale'
 
@@ -63,6 +64,7 @@ export interface MetadataSectionConfig {
   id: string
   title: string
   type: MetadataSectionType
+  textDisplayMode?: MetadataTextDisplayMode
   order: number
   visible: boolean
   queryId?: string

@@ -8,7 +8,41 @@
     "close": "닫기",
     "online": "온라인",
     "offline": "오프라인",
-    "error": "오류"
+    "error": "오류",
+    "loading": "불러오는 중..."
+  },
+  "account": {
+    "dialogTitle": "계정 센터", "dialogTabs": "계정 메뉴", "open": "계정 정보 열기", "logout": "로그아웃",
+    "menu": { "profile": "내 프로필", "settings": "개인 설정", "help": "도움말 및 지원" },
+    "roles": { "admin": "최고 관리자", "manager": "관리자", "user": "사용자" },
+    "profile": {
+      "title": "내 프로필", "subtitle": "계정 정보와 비밀번호를 관리합니다.", "accountInfo": "계정 정보",
+      "loginId": "로그인 ID", "name": "이름", "role": "권한", "userNumber": "사용자 번호",
+      "notRegistered": "등록되지 않음", "contactAdmin": "이름 및 연락처 변경은 관리자에게 문의하세요.",
+      "loadError": "프로필 정보를 불러오지 못했습니다.", "changePassword": "비밀번호 변경",
+      "passwordHint": "현재 비밀번호를 확인한 후 새 비밀번호를 설정합니다. 8자 이상 입력하세요.",
+      "currentPassword": "현재 비밀번호", "newPassword": "새 비밀번호", "confirmPassword": "새 비밀번호 확인",
+      "updatePassword": "비밀번호 변경", "passwordTooShort": "새 비밀번호는 8자 이상이어야 합니다.",
+      "passwordMismatch": "새 비밀번호가 일치하지 않습니다.", "passwordChanged": "비밀번호를 변경했습니다.",
+      "passwordError": "비밀번호 변경에 실패했습니다."
+    },
+    "settings": {
+      "title": "개인 설정", "subtitle": "이 계정에서 사용할 기본 화면을 설정합니다.",
+      "landingPage": "로그인 후 첫 화면", "landingPageHint": "로그인 후 기본 주소로 접속할 때 선택한 화면이 열립니다.",
+      "live": "라이브 대시보드", "playback": "녹화", "events": "알람",
+      "saved": "개인 설정을 저장했습니다.", "saveError": "설정을 저장하지 못했습니다. 다시 시도하세요."
+    },
+    "help": {
+      "title": "도움말 및 지원", "subtitle": "자주 사용하는 기능 안내와 시스템 정보를 확인합니다.",
+      "quickGuide": "빠른 사용 안내", "guideLive": "라이브 메뉴에서 공정과 설비를 선택해 카메라 영상을 확인합니다.",
+      "guidePlayback": "녹화 메뉴에서 카메라와 시간 범위를 선택해 저장 영상을 재생합니다.",
+      "guideEvents": "알람 메뉴에서 탐지 알람을 조회하고 처리 상태를 확인합니다.",
+      "guideProfile": "계정 메뉴의 내 프로필에서 비밀번호를 변경할 수 있습니다.",
+      "faq": "자주 묻는 질문", "faqStreamQuestion": "영상이 재생되지 않아요.",
+      "faqStreamAnswer": "카메라 연결 상태와 영상 주소를 확인하고, 문제가 계속되면 관리자에게 문의하세요.",
+      "faqPasswordQuestion": "비밀번호를 잊어버렸어요.", "faqPasswordAnswer": "관리자에게 비밀번호 초기화를 요청하세요.",
+      "systemInfo": "시스템 정보", "version": "애플리케이션 버전", "environment": "실행 환경", "supportContact": "지원 연락처"
+    }
   },
   "header": {
     "title": "AI 영상통합 플랫폼",
@@ -72,6 +106,13 @@
     "backToLive": "라이브로 돌아가기"
   },
   "settings": {
+    "notificationSubtitle": "알람 알림을 받을 방법을 선택합니다.",
+    "accountEmail": "계정 이메일",
+    "accountPhone": "계정 연락처",
+    "contactNotRegistered": "등록되지 않음",
+    "loadError": "알림 설정을 불러오지 못했습니다.",
+    "saved": "알림 설정을 저장했습니다.",
+    "saveError": "알림 설정을 저장하지 못했습니다.",
     "title": "설정",
     "subtitle": "카메라 및 시스템 환경설정을 관리합니다.",
     "cameras": "카메라",

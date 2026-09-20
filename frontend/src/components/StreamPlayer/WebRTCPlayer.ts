@@ -204,7 +204,10 @@ export class WebRTCPlayer extends StreamPlayer {
         this.emit('reconnected', {})
         break
       case 'disconnected':
-        this.emit('reconnecting', { attempt: 1, delay: 1000 })
+        this.handleError({
+          type: 'NETWORK_ERROR',
+          message: 'WebRTC connection disconnected',
+        })
         break
       case 'failed':
         this.handleError({
@@ -266,12 +269,18 @@ export class WebRTCPlayer extends StreamPlayer {
 
       this.emit('loadend', {})
     } catch (error) {
-      this.handleError({
-        type: 'NETWORK_ERROR',
-        message: 'Failed to establish WebRTC connection',
-        original: error as Error,
-      })
+      await this.resetConnection()
       throw error
+    }
+  }
+
+  private async resetConnection(): Promise<void> {
+    const client = this.whepClient
+    this.whepClient = null
+    this.peerConnection = null
+
+    if (client) {
+      await client.disconnect()
     }
   }
 
@@ -287,7 +296,8 @@ export class WebRTCPlayer extends StreamPlayer {
       this.setState('loading')
       this.emit('loadstart', {})
 
-      if (!this.peerConnection) {
+      if (!this.peerConnection || ['failed', 'closed', 'disconnected'].includes(this.peerConnection.connectionState)) {
+        await this.resetConnection()
         await this.setupWebRTC()
       }
 
@@ -295,7 +305,7 @@ export class WebRTCPlayer extends StreamPlayer {
       this.cancelReconnect()
     } catch (error) {
       this.handleError({
-        type: 'ABORT_ERROR',
+        type: 'NETWORK_ERROR',
         message: 'Failed to play WebRTC stream',
         original: error as Error,
       })
@@ -421,9 +431,7 @@ export class WebRTCPlayer extends StreamPlayer {
     if (this.whepClient) {
       await this.whepClient.disconnect()
       this.whepClient = null
-    }
-
-    if (this.peerConnection) {
+    } else if (this.peerConnection) {
       this.peerConnection.removeEventListener('track', this.handlePeerTrack)
       this.peerConnection.removeEventListener(
         'connectionstatechange',
@@ -432,6 +440,8 @@ export class WebRTCPlayer extends StreamPlayer {
       this.peerConnection.close()
       this.peerConnection = null
     }
+
+    this.peerConnection = null
 
     this.videoElement = null
     this.listeners.clear()

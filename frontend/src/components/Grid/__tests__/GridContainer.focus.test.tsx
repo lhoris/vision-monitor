@@ -24,9 +24,34 @@ function LocationProbe() {
 }
 
 describe('GridContainer focus routing', () => {
+  it('keeps the selected layout row and column capacity', () => {
+    const layout = createMockLayout('2026-08-15T00:00:00.000Z')
+    layout.activeTab = 'tab-2'
+    layout.tabs[1].subTabs[0].gridConfig = { rows: 2, cols: 4, layout: 'grid', gapSize: 8 }
+
+    store.dispatch(fetchUserLayout.fulfilled(layout, '', 1))
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/live']}>
+          <GridContainer userId={1} cameras={createMockCameras()} />
+        </MemoryRouter>
+      </Provider>
+    )
+
+    const grid = screen.getByTestId('live-grid')
+    expect(grid).toHaveStyle({
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+    })
+    expect(screen.getAllByTestId('camera-tile')).toHaveLength(2)
+    expect(screen.getAllByTestId('add-camera-tile')).toHaveLength(6)
+  })
+
   it('passes only the current subtab camera ids to the focus view', async () => {
     const layout = createMockLayout('2026-08-15T00:00:00.000Z')
     layout.activeTab = 'tab-2'
+    layout.tabs[1].subTabs[0].cameraPositions.reverse()
 
     store.dispatch(fetchUserLayout.fulfilled(layout, '', 1))
 

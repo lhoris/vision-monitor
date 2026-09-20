@@ -79,7 +79,7 @@ describe('DraggableCell focus action', () => {
     )
   })
 
-  it('uses the same overall aspect ratio for camera and add-camera cells', () => {
+  it('fills the grid cell without forcing its own aspect ratio', () => {
     const { rerender } = render(
       <DraggableCell
         cellId="cell-0"
@@ -90,7 +90,7 @@ describe('DraggableCell focus action', () => {
       />
     )
 
-    expect(screen.getByTestId('camera-tile')).toHaveClass('aspect-video')
+    expect(screen.getByTestId('camera-tile')).toHaveClass('h-full', 'min-h-0')
 
     rerender(
       <DraggableCell
@@ -101,7 +101,7 @@ describe('DraggableCell focus action', () => {
       />
     )
 
-    expect(screen.getByTestId('add-camera-tile')).toHaveClass('aspect-video')
+    expect(screen.getByTestId('add-camera-tile')).toHaveClass('h-full', 'min-h-0')
   })
 
   it('renames the visible camera title from the context menu', () => {

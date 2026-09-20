@@ -10,7 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import com.vision.config.AuthSessionInterceptor;
+import com.vision.dto.AuthenticatedUserDto;
+import com.vision.dto.MyProfileDto;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,12 +28,26 @@ public class AuthController {
         return ApiResponse.success(authService.login(request));
     }
 
+    @GetMapping("/session")
+    public ApiResponse<AuthenticatedUserDto> session(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
+    ) {
+        return ApiResponse.success(user);
+    }
+
+    @GetMapping("/profile")
+    public ApiResponse<MyProfileDto> profile(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
+    ) {
+        return ApiResponse.success(authService.getMyProfile(user.username()));
+    }
+
     @PostMapping("/password")
     public ApiResponse<Void> changePassword(
-            @RequestHeader("X-Actor-Username") String username,
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
             @RequestBody ChangePasswordRequest request
     ) {
-        authService.changePassword(username, request);
+        authService.changePassword(user.username(), request);
         return ApiResponse.success(null);
     }
 }

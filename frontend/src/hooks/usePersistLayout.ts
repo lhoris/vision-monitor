@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store'
-import { saveMyLayout } from '@/store/slices/layoutSlice'
+import { markLayoutPending, saveMyLayout } from '@/store/slices/layoutSlice'
 import type { Layout } from '@/types/layout'
 
 const DEFAULT_DEBOUNCE_MS = 500
@@ -55,8 +55,19 @@ export function usePersistLayout(debounceMs = DEFAULT_DEBOUNCE_MS) {
     if (persistStatus === 'saveFailed' && snapshot === lastAttemptSnapshotRef.current) {
       return
     }
+    if (persistStatus === 'saving' && snapshot === lastAttemptSnapshotRef.current) {
+      return
+    }
+    if (persistStatus === 'saved' && snapshot === lastAttemptSnapshotRef.current) {
+      return
+    }
+
+    if (persistStatus !== 'pending' && persistStatus !== 'saving') {
+      dispatch(markLayoutPending())
+    }
 
     timerRef.current = window.setTimeout(() => {
+      timerRef.current = null
       lastAttemptSnapshotRef.current = snapshot
       dispatch(saveMyLayout(layout)).then((action) => {
         if (saveMyLayout.fulfilled.match(action)) {

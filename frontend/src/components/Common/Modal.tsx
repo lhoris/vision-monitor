@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { useEffect, useId, type ReactNode } from 'react'
 
 interface ModalProps {
   isOpen: boolean
@@ -6,6 +6,7 @@ interface ModalProps {
   title?: string
   children: ReactNode
   className?: string
+  bodyClassName?: string
 }
 
 export function Modal({
@@ -14,19 +15,35 @@ export function Modal({
   title,
   children,
   className,
+  bodyClassName,
 }: ModalProps) {
+  const titleId = useId()
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
+        role="presentation"
         className="absolute inset-0 bg-black opacity-50"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
         className={`
           relative bg-white dark:bg-gray-800
           rounded-lg shadow-xl max-w-lg w-full mx-4
@@ -36,7 +53,7 @@ export function Modal({
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 id={titleId} className="text-xl font-semibold text-gray-900 dark:text-white">
               {title}
             </h2>
             <button
@@ -62,7 +79,7 @@ export function Modal({
         )}
 
         {/* Body */}
-        <div className="px-6 py-4">{children}</div>
+        <div className={`px-6 py-4 ${bodyClassName || ''}`}>{children}</div>
       </div>
     </div>
   )

@@ -1,217 +1,63 @@
-# 기능 명세서: 모델 관리
-
-**기능 브랜치**: `009-model-management`
-
-**작성일**: 2026-08-17
-
-**마지막 개정일**: 2026-09-17
-
-**상태**: 초안
-
-**변경 추적**: 문서 변경 이력은 Git 커밋 이력을 기준으로 한다.
-
-**입력**: 관리자 메뉴의 통신 및 모델 수정 원문 캡처와 후속 요구사항에 따라 "모델 관리" 기능명세서 갱신
-
-> **기능 개요 - Agent 요약**
->
-> 모델 관리는 관리자 권한 사용자가 AI 모델 프로세스의 생존 상태, 제어 연동 상태, 모델 서버 IP, Python 프로젝트 경로, 모니터링 이벤트 로그를 한 화면에서 확인하고 관리하는 운영 기능이다. 화면 상단의 공정 선택 UI는 페이지 전환 탭이 아니라 다중 선택 필터이며, 선택된 공정에 속한 모델 프로세스만 그리드에 표시한다. MVP 범위는 화면 퍼블리싱과 mock 데이터 기반 상호작용이며, 실제 프로세스 제어, Agent 연동, DB 갱신은 후속 구현 범위로 둔다.
-
-## 1. 참고 이미지 및 원문 자료
-
-| 상태 | 자료 | 설명 | 비고 |
-|------|------|------|------|
-| active | [모델 관리 원문 캡처](assets/model-management-original.png) | 관리자 메뉴 통신 및 모델 수정 화면. 모델별 모니터링 현황, 제어 연동, 이벤트 로그, 서버 주소 관리, 모델 재가동, 모델 추가 요구가 표시됨 | 최신 기준 자료 |
-
-## 2. 기능 요구사항 *(필수)*
-
-### 기능 요구사항
-
-- **FR-001**: 관리자 권한 사용자는 모델 관리 화면에 진입할 수 있어야 한다.
-- **FR-002**: 관리자 권한이 없는 사용자는 모델 관리 메뉴와 화면에 접근할 수 없어야 한다.
-- **FR-003**: 시스템은 모델 관리 화면 상단에 공정 다중 선택 필터를 제공해야 한다.
-- **FR-004**: 시스템은 `ALL` 선택 시 모든 공정의 모델 프로세스를 조회하는 상태로 표시해야 한다.
-- **FR-005**: 사용자가 개별 공정을 하나 이상 선택하면 시스템은 선택된 공정에 속한 모델 프로세스만 표시해야 한다.
-- **FR-006**: `ALL`이 선택된 상태에서 개별 공정을 추가로 선택하더라도 시스템은 전체 공정 조회 상태를 유지해야 한다.
-- **FR-007**: 시스템은 모델 프로세스 목록을 그리드 형태로 표시해야 한다.
-- **FR-008**: 시스템은 모델별 공정, 조업 자동화 기술명 또는 모델명, 모니터링 현황, 제어 연동 상태, 서버 IP, Python 프로젝트 경로를 표시해야 한다.
-- **FR-009**: 모니터링 현황은 모델이 실행되는 VM의 Agent가 DB에 갱신한 Python 프로세스 alive 상태를 기준으로 표시해야 한다.
-- **FR-010**: 제어 연동 상태는 AI 추론 결과를 장비 제어 쪽으로 전달하는 통신 성공/실패 상태가 DB에 저장된 값을 기준으로 표시해야 한다.
-- **FR-011**: MVP 화면 퍼블리싱에서는 모니터링 현황과 제어 연동 상태를 mock 데이터로 표시해야 한다.
-- **FR-012**: 시스템은 각 모델의 모니터링 이벤트 로그를 단순 조회할 수 있는 팝업을 제공해야 한다.
-- **FR-013**: 시스템은 각 모델의 모델 서버 IP와 Python 프로젝트 경로를 수정할 수 있는 UI를 제공해야 한다.
-- **FR-014**: 시스템은 각 모델 프로세스에 대해 시작, 정지, 재시작 조작 UI를 제공해야 한다.
-- **FR-015**: MVP 화면 퍼블리싱에서는 시작, 정지, 재시작 조작을 실제 프로세스 제어 없이 mock 상태 변경으로 처리해야 한다.
-- **FR-016**: 시스템은 신규 모델을 추가할 수 있는 UI를 제공해야 한다.
-- **FR-017**: 신규 모델 등록 시 공정, 모델명 또는 조업 자동화 기술명, 모델 서버 IP, Python 프로젝트 경로를 입력할 수 있어야 한다.
-- **FR-018**: 시스템은 모델 프로세스 상태를 정상, 중지, 오류, 확인 중처럼 운영자가 구분 가능한 상태로 표시해야 한다.
-- **FR-019**: 시스템은 모니터링 현황과 제어 연동 상태를 정상, 실패, 확인 중처럼 운영자가 구분 가능한 상태로 표시해야 한다.
-- **FR-020**: 시스템은 목록이 비어 있거나 조건에 맞는 모델이 없을 때 빈 상태를 명확히 표시해야 한다.
-
-## 3. 제외 범위 *(필수)*
-
-- 실제 Python 프로세스 시작, 정지, 재시작 API 호출은 제외한다.
-- VM Agent 구현과 프로세스 alive 상태 DB 갱신 로직은 제외한다.
-- 제어 연동 통신 호출과 성공/실패 상태 DB 저장 로직은 제외한다.
-- 실제 DB schema 설계와 Spring Boot API 구현은 화면 퍼블리싱 MVP 범위에서 제외한다.
-- 모델 배포, 버전 교체, 학습, 성능 리포트, 추론 로그 분석은 제외한다.
-- 모니터링 이벤트 로그 다운로드, 확인 처리, 통계 분석은 제외한다.
-
-## 4. UI/UX 요구사항
-
-- **UX-001**: 공정 선택 UI는 화면 전환용 탭이 아니며, 다중 선택 필터처럼 보여야 한다.
-- **UX-002**: `ALL`은 전체 조회를 의미하는 빠른 선택 옵션으로 보여야 한다.
-- **UX-003**: 개별 공정은 여러 개를 동시에 선택할 수 있어야 한다.
-- **UX-004**: `공정 추가`는 공정 필터가 아니라 공정 마스터 추가 액션으로 구분되어야 한다.
-- **UX-005**: 모델 목록은 프로젝트 표준 그리드 형태를 따라야 한다.
-- **UX-006**: 상태 값은 색상 indicator와 텍스트를 함께 제공해 의미를 혼동하지 않도록 해야 한다.
-- **UX-007**: 이벤트 로그는 현재 화면 맥락을 유지할 수 있도록 팝업으로 표시해야 한다.
-- **UX-008**: 시작, 정지, 재시작 조작은 대상 모델을 확인할 수 있는 짧은 확인 절차를 제공해야 한다.
-- **UX-009**: 서버 IP와 Python 프로젝트 경로 수정은 어떤 모델의 설정을 바꾸는지 명확해야 한다.
-- **UX-010**: theme1, theme2, theme3에서 상태 indicator, 그리드, 팝업 내용이 읽을 수 있어야 한다.
-
-## 5. 필요한 정보
-
-- 공정 목록과 공정별 선택 상태
-- 모델명 또는 조업 자동화 기술명
-- 모델이 속한 공정
-- 모델 서버 IP
-- Python 프로젝트 경로
-- Python 프로세스 alive 상태
-- 제어 연동 통신 상태
-- 최근 상태 갱신 시각
-- 모니터링 이벤트 로그 목록
-- 관리자 권한 여부
-
-## 6. 사용자 시나리오 및 테스트 *(필수)*
-
-### 사용자 스토리 1 - 공정별 모델 프로세스 조회 (우선순위: P1)
-
-관리자는 공정 다중 선택 필터를 사용해 관심 공정의 모델 프로세스만 확인한다.
-
-**관련 기능 요구사항**: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008
-
-**이 우선순위의 이유**: 모델 관리의 시작점은 운영자가 대상 공정과 모델 프로세스를 빠르게 식별하는 것이다.
-
-**독립 테스트**: 공정 선택 상태에 따라 그리드에 표시되는 모델 목록이 달라지는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 관리자 권한 사용자가 로그인되어 있다, **When** 모델 관리 메뉴를 선택한다, **Then** 공정 선택 필터와 모델 프로세스 그리드가 표시된다.
-2. **Given** 모델 관리 화면이 표시되어 있다, **When** 사용자가 `ALL`을 선택한다, **Then** 모든 공정의 모델 프로세스가 표시된다.
-3. **Given** 모델 관리 화면이 표시되어 있다, **When** 사용자가 `가열`과 `압연`을 선택한다, **Then** 가열과 압연 공정에 속한 모델 프로세스만 표시된다.
-4. **Given** `ALL`이 선택되어 있다, **When** 사용자가 개별 공정을 추가로 선택한다, **Then** 전체 공정 조회 상태가 유지된다.
-
-### 사용자 스토리 2 - 모니터링 및 제어 연동 상태 확인 (우선순위: P1)
-
-관리자는 모델별 Python 프로세스 alive 상태와 제어 연동 상태를 확인한다.
-
-**관련 기능 요구사항**: FR-008, FR-009, FR-010, FR-011, FR-018, FR-019
-
-**이 우선순위의 이유**: 모델 프로세스 생존 여부와 제어 연동 상태는 운영 장애 판단에 직접 영향을 준다.
-
-**독립 테스트**: mock 데이터에 따라 모니터링 현황과 제어 연동 상태가 올바른 상태 indicator와 텍스트로 표시되는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 모델 프로세스 목록이 있다, **When** 화면이 표시된다, **Then** 각 모델의 모니터링 현황과 제어 연동 상태가 표시된다.
-2. **Given** 특정 모델의 Python 프로세스 alive 상태가 실패로 mock 처리되어 있다, **When** 그리드를 확인한다, **Then** 해당 모델의 모니터링 현황이 실패 상태로 표시된다.
-3. **Given** 특정 모델의 제어 연동 상태가 실패로 mock 처리되어 있다, **When** 그리드를 확인한다, **Then** 해당 모델의 제어 연동 상태가 실패 상태로 표시된다.
-
-### 사용자 스토리 3 - 모델 설정 수정 (우선순위: P1)
-
-관리자는 모델 서버 IP와 Python 프로젝트 경로를 확인하고 수정한다.
-
-**관련 기능 요구사항**: FR-013, FR-017
-
-**이 우선순위의 이유**: 모델이 실행되는 위치와 프로젝트 경로는 프로세스 관리의 필수 설정이다.
-
-**독립 테스트**: 특정 모델의 설정 수정 UI를 열고 서버 IP와 Python 프로젝트 경로를 mock 저장할 수 있는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 모델 목록이 표시되어 있다, **When** 사용자가 특정 모델의 설정 수정을 선택한다, **Then** 서버 IP와 Python 프로젝트 경로를 수정할 수 있는 UI가 표시된다.
-2. **Given** 사용자가 서버 IP와 Python 프로젝트 경로를 수정했다, **When** 저장한다, **Then** 그리드에 변경된 값이 반영된다.
-
-### 사용자 스토리 4 - 모델 프로세스 조작 (우선순위: P2)
-
-관리자는 모델 프로세스를 시작, 정지, 재시작하는 조작을 mock으로 수행한다.
-
-**관련 기능 요구사항**: FR-014, FR-015, FR-018
-
-**이 우선순위의 이유**: 조작 버튼의 위치와 피드백은 화면 퍼블리싱 단계에서 먼저 검증되어야 한다.
-
-**독립 테스트**: 시작, 정지, 재시작 조작 시 확인 절차와 mock 상태 변경이 표시되는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 중지 상태의 모델이 있다, **When** 사용자가 시작을 요청한다, **Then** 확인 절차 후 mock 상태가 실행 중으로 변경된다.
-2. **Given** 실행 중 상태의 모델이 있다, **When** 사용자가 정지를 요청한다, **Then** 확인 절차 후 mock 상태가 중지로 변경된다.
-3. **Given** 실행 중 상태의 모델이 있다, **When** 사용자가 재시작을 요청한다, **Then** 확인 절차 후 재시작 중 상태와 완료 상태가 표시된다.
-
-### 사용자 스토리 5 - 모니터링 이벤트 로그 조회 (우선순위: P2)
-
-관리자는 특정 모델의 모니터링 이벤트 로그를 팝업으로 단순 조회한다.
-
-**관련 기능 요구사항**: FR-012
-
-**이 우선순위의 이유**: 운영자는 상태 이상을 확인한 뒤 관련 이벤트 로그를 빠르게 확인해야 한다.
-
-**독립 테스트**: 이벤트 로그 팝업이 열리고 mock 로그 목록이 표시되는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 모델 목록이 표시되어 있다, **When** 사용자가 특정 모델의 이벤트 로그를 선택한다, **Then** 이벤트 로그 팝업이 열린다.
-2. **Given** 이벤트 로그 팝업이 열려 있다, **When** 로그가 없다, **Then** 빈 상태가 표시된다.
-
-### 사용자 스토리 6 - 신규 모델 추가 (우선순위: P2)
-
-관리자는 신규 모델을 추가하고 목록에서 확인한다.
-
-**관련 기능 요구사항**: FR-016, FR-017
-
-**이 우선순위의 이유**: 원문 요구사항에 신규 모델 삽입 활용이 포함되어 있으며, 운영 화면 구조상 추가 흐름이 필요하다.
-
-**독립 테스트**: 신규 모델 추가 UI에서 필수 값을 입력하고 mock 목록에 추가되는지 확인한다.
-
-**허용 시나리오**:
-
-1. **Given** 모델 관리 화면이 표시되어 있다, **When** 사용자가 모델 추가를 선택한다, **Then** 신규 모델 입력 UI가 표시된다.
-2. **Given** 사용자가 필수 값을 입력했다, **When** 저장한다, **Then** 신규 모델이 그리드에 표시된다.
-
-### 엣지 케이스
-
-- 모델 목록이 비어 있으면 빈 상태를 표시해야 한다.
-- 선택한 공정에 해당하는 모델이 없으면 조건에 맞는 모델 없음 상태를 표시해야 한다.
-- 서버 IP가 비어 있거나 형식이 명확히 잘못된 경우 저장 전 오류를 표시해야 한다.
-- Python 프로젝트 경로가 비어 있으면 저장 전 오류를 표시해야 한다.
-- 상태 갱신 시각이 없으면 미수신 상태로 표시해야 한다.
-- 이벤트 로그가 없으면 팝업 안에 빈 상태를 표시해야 한다.
-- mock 조작 중인 모델에는 동시에 다른 조작을 실행할 수 없어야 한다.
-
-## 7. 성공 기준 *(필수)*
-
-### 측정 가능한 결과
-
-- **SC-001**: 관리자는 2번 이하의 조작으로 모델 관리 화면에 진입할 수 있다.
-- **SC-002**: 관리자는 3초 이내에 모델별 모니터링 현황과 제어 연동 상태를 구분할 수 있다.
-- **SC-003**: 관리자는 공정 다중 선택 후 1초 이내에 필터링된 모델 목록을 확인할 수 있다.
-- **SC-004**: 관리자는 특정 모델의 서버 IP와 Python 프로젝트 경로를 화면에서 확인하고 수정할 수 있다.
-- **SC-005**: 관리자는 특정 모델의 이벤트 로그 팝업을 열어 mock 로그를 확인할 수 있다.
-- **SC-006**: 시작, 정지, 재시작 조작은 실제 프로세스 제어 없이 mock 상태 변화로 표현된다.
-- **SC-007**: 비관리자는 메뉴와 화면 내용을 볼 수 없다.
-
-## 8. 가정 및 미정 사항
-
-### 가정
-
-- 우선 구현 범위는 화면 퍼블리싱이며, 데이터와 조작 결과는 mock으로 처리한다.
-- 모니터링 현황의 실제 기준 데이터는 VM Agent가 DB에 갱신하는 Python 프로세스 alive 상태다.
-- 제어 연동 상태의 실제 기준 데이터는 AI 추론 결과 전달 통신 성공/실패를 DB에 저장한 상태다.
-- 모델 서버 주소 관리는 서버 IP와 Python 프로젝트 경로를 중심으로 한다.
-- 이벤트 로그 관리는 MVP에서 단순 조회만 제공한다.
-
-### 미정 사항
-
-- 실제 DB schema와 API 계약은 plan/tasks 단계에서 별도 정의한다.
-- 실제 Agent 상태 수집 주기와 상태 만료 기준은 후속 연동 범위에서 정한다.
-- 제어 연동 대상 시스템별 상세 오류 코드 체계는 후속 연동 범위에서 정한다.
+# Model Management Specification
+
+## Overview
+
+The administrator's Model Management screen monitors AI model Python processes and the control integration used to send AI inference results to equipment. The screen reads persisted status values from the database. VM Agents update process-alive status, and the control integration records communication success or failure.
+
+## Functional Requirements
+
+- FR-001: Administrators can access Model Management. Non-administrators cannot use the administrator menu.
+- FR-002: The process selector is a multi-select filter, not a tab navigation.
+- FR-003: `ALL` is shown as the first synthetic option and displays every model process.
+- FR-004: Selecting one or more process areas displays only matching model processes. Selecting an individual area while `ALL` is selected keeps the `ALL` view.
+- FR-005: Process areas are user-maintainable through the `PROCESS_AREA` common code. No process-area table is required.
+- FR-006: The grid displays process, automation name, model name, monitoring status, control-integration status, server IP, Python project path, and last status update.
+- FR-007: Monitoring status represents the Python process alive state persisted by a VM Agent.
+- FR-008: Control-integration status represents the latest persisted success/failure state of the equipment-control communication.
+- FR-009: Administrators can open a model's read-only monitoring event log in a popup.
+- FR-010: Administrators can edit the model server IP and Python project path.
+- FR-011: Administrators can request start, stop, and restart actions for a model process. The current implementation persists the requested process state; actual VM process execution is a follow-up integration.
+- FR-012: Administrators can add a model process with a process area, model name, automation name, server IP, and Python project path.
+- FR-013: Empty or invalid IP/path values are rejected with a visible validation error.
+- FR-014: Empty process results show an explicit empty state.
+
+## Data and API
+
+- `TB_M26_MODEL_PROCESS` stores configuration and latest process, monitoring, and control statuses.
+- `TB_M26_MODEL_EVENT_LOG` stores read-only monitoring/control events.
+- `PROCESS_AREA_CODE` logically references the `PROCESS_AREA` common-code detail.
+- `MODEL_PROCESS_ID` in the event log is a logical reference only.
+- No physical foreign-key constraints are created.
+- All tables contain the standard audit columns used by this project.
+- The frontend uses the API service only; there is no runtime Mock fallback.
+
+### Endpoints
+
+- `GET /api/model-processes?processAreas=...`
+- `POST /api/model-processes`
+- `PUT /api/model-processes/{id}/settings`
+- `POST /api/model-processes/{id}/actions/{start|stop|restart}`
+- `GET /api/model-processes/{id}/event-logs`
+
+## UI Rules
+
+- The process selector must remain visually distinct from tabs.
+- Status badges include both text and color; color alone is insufficient.
+- Actions are grouped under the row action menu.
+- Settings and event logs open as dialogs without losing the current filter.
+- Event logs are read-only in this scope.
+
+## Out of Scope
+
+- VM Agent implementation and heartbeat ingestion endpoint.
+- Actual remote Python process execution.
+- Actual equipment-control protocol implementation.
+- Event-log download, acknowledgement, analytics, and dashboards.
+
+## Acceptance Criteria
+
+- A logged-in administrator can load database-backed process rows and common-code process areas.
+- Filtering with `ALL` and multiple individual areas follows the rules above.
+- Updating settings, requesting a process action, adding a process, and opening logs use the corresponding API endpoint.
+- No physical FK constraint is present for the logical relationships.
+- Frontend tests, backend tests, and the frontend production build pass.

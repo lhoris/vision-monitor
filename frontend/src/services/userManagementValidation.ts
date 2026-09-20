@@ -9,17 +9,16 @@ export function validateUserMutation(
 ): UserValidationErrors {
   const errors: UserValidationErrors = {}
   const username = (input.username ?? '').trim()
-  const email = (input.email ?? '').trim() || 'unused@example.com'
+  const email = (input.email ?? '').trim()
 
   if (!username) errors.username = '사용자 ID를 입력하세요.'
   if (!input.name.trim()) errors.name = '이름을 입력하세요.'
   if (!input.displayName.trim()) errors.displayName = '표시명을 입력하세요.'
   if (!input.roleIds.length) errors.roleIds = '역할을 하나 이상 선택하세요.'
-  if (!email || !/^\S+@\S+\.\S+$/.test(email)) errors.email = '올바른 이메일 형식을 입력하세요.'
+  if (email && (email.length > 254 || !/^\S+@\S+\.\S+$/.test(email))) errors.email = '올바른 이메일 형식을 입력하세요.'
 
-  // REMARKS and email are optional in TB_M26_USER.
+  // Display name is optional in the persisted account schema.
   delete errors.displayName
-  delete errors.email
 
   if (users.some((user) => user.username === username && user.id !== editingUserId)) {
     errors.username = '이미 사용 중인 사용자 ID입니다.'

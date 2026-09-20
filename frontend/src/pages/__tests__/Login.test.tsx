@@ -35,8 +35,8 @@ describe('Login', () => {
     renderLogin()
 
     expect(screen.getByLabelText('USER ID')).toHaveValue('tester')
-    expect(screen.getByLabelText('PASSWORD')).toHaveValue('tester123')
+    expect(screen.getByLabelText('PASSWORD')).toHaveValue('tester1@#')
     expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester')
-    expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester123')
+    expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester1@#')
   })
 })

@@ -8,7 +8,41 @@
     "close": "Close",
     "online": "Online",
     "offline": "Offline",
-    "error": "Error"
+    "error": "Error",
+    "loading": "Loading..."
+  },
+  "account": {
+    "dialogTitle": "Account Center", "dialogTabs": "Account sections", "open": "Open account center", "logout": "Sign out",
+    "menu": { "profile": "My Profile", "settings": "Personal Settings", "help": "Help & Support" },
+    "roles": { "admin": "Administrator", "manager": "Manager", "user": "User" },
+    "profile": {
+      "title": "My Profile", "subtitle": "Manage your account information and password.", "accountInfo": "Account Information",
+      "loginId": "Login ID", "name": "Name", "role": "Role", "userNumber": "User Number",
+      "notRegistered": "Not provided", "contactAdmin": "Contact an administrator to update your name or contact information.",
+      "loadError": "Unable to load profile information.", "changePassword": "Change Password",
+      "passwordHint": "Verify your current password, then enter a new password of at least 8 characters.",
+      "currentPassword": "Current Password", "newPassword": "New Password", "confirmPassword": "Confirm New Password",
+      "updatePassword": "Update Password", "passwordTooShort": "The new password must be at least 8 characters.",
+      "passwordMismatch": "The new passwords do not match.", "passwordChanged": "Password changed successfully.",
+      "passwordError": "Unable to change password."
+    },
+    "settings": {
+      "title": "Personal Settings", "subtitle": "Choose the default screen for this account.",
+      "landingPage": "First screen after login", "landingPageHint": "The selected screen opens when you visit the application root after login.",
+      "live": "Live Dashboard", "playback": "Recording", "events": "Alarms",
+      "saved": "Personal settings saved.", "saveError": "Unable to save settings. Please try again."
+    },
+    "help": {
+      "title": "Help & Support", "subtitle": "Find quick guides and system information.",
+      "quickGuide": "Quick Guide", "guideLive": "Select a process and equipment in Live to view camera streams.",
+      "guidePlayback": "Select a camera and time range in Recording to play saved footage.",
+      "guideEvents": "Review detected alarms and their handling status in Alarms.",
+      "guideProfile": "Change your password from My Profile in the account menu.",
+      "faq": "Frequently Asked Questions", "faqStreamQuestion": "A video stream will not play.",
+      "faqStreamAnswer": "Check the camera connection and stream address. Contact an administrator if the issue continues.",
+      "faqPasswordQuestion": "I forgot my password.", "faqPasswordAnswer": "Ask an administrator to reset your password.",
+      "systemInfo": "System Information", "version": "Application Version", "environment": "Environment", "supportContact": "Support Contact"
+    }
   },
   "header": {
     "title": "AI Video Integration Platform",
@@ -72,6 +106,13 @@
     "backToLive": "Back to Live"
   },
   "settings": {
+    "notificationSubtitle": "Choose how you receive alarm notifications.",
+    "accountEmail": "Account email",
+    "accountPhone": "Account phone",
+    "contactNotRegistered": "Not registered",
+    "loadError": "Unable to load notification settings.",
+    "saved": "Notification settings saved.",
+    "saveError": "Unable to save notification settings.",
     "title": "Settings",
     "subtitle": "Manage cameras and system preferences",
     "cameras": "Cameras",

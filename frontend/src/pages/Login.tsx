@@ -19,6 +19,8 @@ import './loginTemplates.css'
 type LoginTemplateId = 1 | 2 | 3
 
 export const ACTIVE_LOGIN_TEMPLATE = 2 as LoginTemplateId
+const DEMO_USERNAME = 'tester'
+const DEMO_PASSWORD = 'tester1@#'
 
 interface LoginFormProps {
   username: string
@@ -92,8 +94,8 @@ function DemoCredentials() {
   return (
     <div className="vm-login-demo" aria-label="Demo Credentials">
       <strong>Demo Credentials</strong>
-      <span>Username: <code>tester</code></span>
-      <span>Password: <code>tester123</code></span>
+      <span>Username: <code>{DEMO_USERNAME}</code></span>
+      <span>Password: <code>{DEMO_PASSWORD}</code></span>
     </div>
   )
 }
@@ -279,8 +281,8 @@ export const Login: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const loading = useAppSelector((state) => state.auth.loading)
-  const [username, setUsername] = useState('tester')
-  const [password, setPassword] = useState('tester123')
+  const [username, setUsername] = useState(DEMO_USERNAME)
+  const [password, setPassword] = useState(DEMO_PASSWORD)
   const [error, setError] = useState('')
   const [passwordChangeRequired, setPasswordChangeRequired] = useState(false)
   const [newPassword, setNewPassword] = useState('')
@@ -300,7 +302,7 @@ export const Login: React.FC = () => {
       if (result.passwordChangeRequired) {
         setPasswordChangeRequired(true)
       } else {
-        navigate('/live')
+        navigate('/')
       }
     } catch (loginError) {
       setError(typeof loginError === 'string' ? loginError : 'Invalid username or password')
@@ -320,7 +322,7 @@ export const Login: React.FC = () => {
     try {
       await authService.changePassword(newPassword)
       setPasswordChangeRequired(false)
-      navigate('/live')
+      navigate('/')
     } catch (changeError) {
       setError(changeError instanceof Error ? changeError.message : '비밀번호 변경에 실패했습니다.')
     }

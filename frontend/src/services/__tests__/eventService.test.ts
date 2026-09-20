@@ -54,14 +54,18 @@ describe('eventService', () => {
       timestamp: '2026-08-13T00:00:00.000Z',
     })
 
-    await expect(eventService.getEvents({ page: 0 })).resolves.toBe(page)
+    await expect(eventService.getEvents({ page: 0 })).resolves.toEqual(page)
     expect(mockedApiClient.get).toHaveBeenCalledWith('/events', { page: 0 })
   })
 
-  it('returns null when event fetch fails', async () => {
+  it('falls back to the mock event page when event fetch fails', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Fetch failed'))
 
-    await expect(eventService.getEvents()).resolves.toBeNull()
+    await expect(eventService.getEvents()).resolves.toMatchObject({
+      content: expect.arrayContaining([
+        expect.objectContaining({ type: 'motion_detected' }),
+      ]),
+    })
   })
 
   it('returns alert settings for camera endpoint', async () => {

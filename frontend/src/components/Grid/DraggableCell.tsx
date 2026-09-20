@@ -139,7 +139,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onContextMenu={handleContextMenu}
-      className={`group flex aspect-video min-w-0 flex-col overflow-hidden rounded-lg border-2 bg-gray-900 transition-all duration-200 ${
+      className={`group flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border-2 bg-gray-900 transition-all duration-200 ${
         isDragOver
           ? 'border-blue-500 bg-blue-900 shadow-xl opacity-90'
           : 'border-gray-600 hover:border-blue-400 hover:shadow-md opacity-100'
@@ -188,8 +188,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <LiveStreamPlayer
           camera={{ ...effectiveCamera, name: displayName }}
           className="h-full w-full"
-          autoplay={isTemporary}
-          muted={isTemporary}
+          autoplay
+          muted
           onStateChange={isTemporary ? onTemporaryStatusChange : undefined}
           onError={isTemporary ? (() => onTemporaryStatusChange?.('error')) : undefined}
         />
@@ -282,7 +282,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     <button
       data-testid="add-camera-tile"
       onClick={onAddCamera}
-      className="relative flex aspect-video w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-900 transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
+      className="relative flex h-full min-h-0 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-dashed border-gray-600 bg-gray-900 transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
       title="Click to add camera"
       aria-label="Add camera to this cell"
     >

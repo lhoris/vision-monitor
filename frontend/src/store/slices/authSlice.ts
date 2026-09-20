@@ -18,6 +18,7 @@ interface AuthState {
   user: User | null
   loading: boolean
   error: string | null
+  sessionStatus: 'idle' | 'checking' | 'valid' | 'invalid'
 }
 
 const AUTH_TOKEN_KEY = 'authToken'
@@ -63,8 +64,8 @@ function readStoredUser(): User | null {
   return {
     id: 0,
     username,
-    role: username === 'tester' ? 'admin' : 'user',
-    permissions: username === 'tester' ? ['admin:access'] : [],
+    role: 'user',
+    permissions: [],
   }
 }
 
@@ -78,6 +79,7 @@ function createInitialState(): AuthState {
       user: null,
       loading: false,
       error: null,
+      sessionStatus: 'invalid',
     }
   }
 
@@ -86,6 +88,7 @@ function createInitialState(): AuthState {
     user,
     loading: false,
     error: null,
+    sessionStatus: 'idle',
   }
 }
 
@@ -114,6 +117,21 @@ export const loginUser = createAsyncThunk(
   }
 )
 
+export const validateAuthSession = createAsyncThunk(
+  'auth/validateAuthSession',
+  async (_, { rejectWithValue }) => {
+    try {
+      const user = await authService.getCurrentSession()
+      localStorage.setItem(AUTH_USERNAME_KEY, user.username)
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
+      return user
+    } catch (error) {
+      removeStoredAuth()
+      return rejectWithValue(error instanceof Error ? error.message : 'Authentication session is invalid')
+    }
+  }
+)
+
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
   removeStoredAuth()
 })
@@ -126,6 +144,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.error = null
+      state.sessionStatus = 'invalid'
       removeStoredAuth()
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
@@ -143,6 +162,7 @@ const authSlice = createSlice({
         state.isAuthenticated = true
         state.user = action.payload.user
         state.error = null
+        state.sessionStatus = 'valid'
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
@@ -151,11 +171,28 @@ const authSlice = createSlice({
         state.error = typeof action.payload === 'string'
           ? action.payload
           : 'Invalid username or password'
+        state.sessionStatus = 'invalid'
+      })
+      .addCase(validateAuthSession.pending, (state) => {
+        state.sessionStatus = 'checking'
+      })
+      .addCase(validateAuthSession.fulfilled, (state, action) => {
+        state.isAuthenticated = true
+        state.user = action.payload
+        state.sessionStatus = 'valid'
+        state.error = null
+      })
+      .addCase(validateAuthSession.rejected, (state, action) => {
+        state.isAuthenticated = false
+        state.user = null
+        state.sessionStatus = 'invalid'
+        state.error = typeof action.payload === 'string' ? action.payload : null
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.isAuthenticated = false
         state.user = null
         state.error = null
+        state.sessionStatus = 'invalid'
       })
   },
 })

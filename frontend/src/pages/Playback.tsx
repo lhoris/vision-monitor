@@ -6,6 +6,8 @@
 import { useState } from 'react'
 import { Card, CardBody, CardHeader, Button, Input, Select } from '@/components/Common'
 import { useAppSelector } from '@/store'
+import { useCameraPlayback } from '@/hooks/useCameraPlayback'
+import { StreamPlayer as StreamPlayerComponent } from '@/components/StreamPlayer'
 
 export function Playback() {
   const cameras = useAppSelector((state) => state.camera.cameras)
@@ -18,6 +20,12 @@ export function Playback() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [currentTime, setCurrentTime] = useState(0)
+  const [playbackRequested, setPlaybackRequested] = useState(false)
+
+  const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
+    cameraId: selectedCameraId === '' ? null : selectedCameraId,
+    enabled: playbackRequested,
+  })
 
   const cameraOptions = cameras.map((c) => ({
     value: c.id,
@@ -25,46 +33,47 @@ export function Playback() {
   }))
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="flex min-h-full flex-col gap-4 p-4 lg:h-full lg:min-h-0 lg:overflow-hidden lg:p-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="shrink-0">
+        <h1 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white lg:text-3xl">
           Playback
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           View recorded footage from cameras
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid min-h-0 grid-cols-1 gap-4 lg:flex-1 lg:grid-cols-4 lg:gap-6 lg:overflow-hidden">
         {/* Main Playback Area */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="min-h-0 lg:col-span-3 lg:flex lg:min-h-0 lg:flex-col">
           {/* Video Player */}
-          <Card>
-            <div className="w-full bg-black aspect-video flex items-center justify-center">
-              <svg
-                className="w-16 h-16 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
+          <Card className="lg:flex lg:h-full lg:min-h-0 lg:flex-col">
+              <div className="flex aspect-video w-full shrink-0 items-center justify-center bg-black lg:h-[min(56vh,36rem)] lg:aspect-auto">
+                {playbackLoading ? (
+                  <span className="text-sm text-gray-300">Loading recording...</span>
+                ) : playbackSession ? (
+                  <StreamPlayerComponent
+                    source={{
+                      url: playbackSession.playbackUrl,
+                      protocol: playbackSession.playbackProtocol === 'hls' ? 'hls' : 'unknown',
+                      label: `Camera ${playbackSession.cameraId} recording`,
+                    }}
+                    autoplay
+                    muted={false}
+                    controls
+                    className="h-full w-full"
+                    onTimeUpdate={(time) => setCurrentTime(time)}
+                  />
+                ) : (
+                  <div className="text-center text-sm text-gray-400">
+                    {playbackError ? 'Recording is unavailable for this range.' : 'Select a camera and load playback.'}
+                  </div>
+                )}
+              </div>
 
             {/* Playback Controls */}
-            <CardBody className="space-y-4">
+            <CardBody className="shrink-0 space-y-3 p-4 lg:space-y-2">
               {/* Timeline */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
@@ -167,8 +176,18 @@ export function Playback() {
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-4">
-                <Button className="w-full">Load Playback</Button>
-                <Button variant="secondary" className="w-full">
+                <Button
+                  className="w-full"
+                  disabled={selectedCameraId === ''}
+                  onClick={() => {
+                    setCurrentTime(0)
+                    setPlaybackRequested(false)
+                    window.setTimeout(() => setPlaybackRequested(true), 0)
+                  }}
+                >
+                  Load Playback
+                </Button>
+                <Button variant="secondary" className="w-full" disabled={!playbackSession}>
                   Download
                 </Button>
               </div>

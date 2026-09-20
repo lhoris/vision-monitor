@@ -8,19 +8,11 @@ import type { Layout, Tab, SubTab, GridConfig } from '@/types/layout'
 
 const LOCAL_LAYOUT_PREFIX = 'layout:personalization:'
 
-function getCurrentUsername(): string {
-  return localStorage.getItem('authUsername') || 'anonymous'
-}
-
-function isMockUser(username = getCurrentUsername()): boolean {
-  return username === 'tester' || username === 'tester1'
-}
-
-function getLocalLayoutKey(username = getCurrentUsername()): string {
+function getLocalLayoutKey(username = localStorage.getItem('authUsername') || 'anonymous'): string {
   return `${LOCAL_LAYOUT_PREFIX}${username}`
 }
 
-function readLocalLayout(username = getCurrentUsername()): Layout | null {
+function readLocalLayout(username = localStorage.getItem('authUsername') || 'anonymous'): Layout | null {
   const raw = localStorage.getItem(getLocalLayoutKey(username))
   if (!raw) return null
   try {
@@ -31,7 +23,7 @@ function readLocalLayout(username = getCurrentUsername()): Layout | null {
   }
 }
 
-function writeLocalLayout(layout: Layout, username = getCurrentUsername()): Layout {
+function writeLocalLayout(layout: Layout, username = localStorage.getItem('authUsername') || 'anonymous'): Layout {
   localStorage.setItem(getLocalLayoutKey(username), JSON.stringify(layout))
   return layout
 }
@@ -83,10 +75,6 @@ export function createDefaultLayout(userId: number): Layout {
 
 class LayoutService {
   async getMyLayout(): Promise<Layout | null> {
-    if (isMockUser()) {
-      return readLocalLayout() ?? createDefaultLayout(1)
-    }
-
     return withServiceFallback(
       async () => {
         const response = await apiClient.get<Layout | null>('/layouts/me')
@@ -114,10 +102,6 @@ class LayoutService {
   }
 
   async saveMyLayout(layout: Layout): Promise<Layout | null> {
-    if (isMockUser()) {
-      return writeLocalLayout(layout)
-    }
-
     return withServiceFallback(
       async () => {
         const response = await apiClient.put<Layout>('/layouts/me', layout)

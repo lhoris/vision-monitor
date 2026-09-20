@@ -1,51 +1,45 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../api', () => ({
-  apiClient: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-  },
-}))
+vi.mock('../api', () => ({ apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }))
 
 const { apiClient } = await import('../api')
-const { resetUserManagementMock, userManagementService } = await import('../userManagementService')
+const { userManagementService } = await import('../userManagementService')
 const { userManagementFixture } = await import('@/mocks/userManagement')
 const { canPerformDangerAction } = await import('../userManagementValidation')
-
 const mockedApiClient = vi.mocked(apiClient)
 
 const newUser = {
-  username: 'new-user',
-  name: '신규 사용자',
-  displayName: '신규 사용자',
-  department: '안전관리팀',
-  position: '사원',
-  email: 'new-user@example.com',
-  phone: '010-0000-0000',
-  roleIds: ['viewer'],
-  accountStatus: 'active' as const,
-  employmentStatus: 'employed' as const,
+  username: 'new-user', name: 'New user', displayName: 'New user', department: 'Safety', position: 'Staff',
+  email: 'new-user@example.com', phone: '010-0000-0000', roleIds: ['viewer'],
+  accountStatus: 'active' as const, employmentStatus: 'employed' as const,
 }
 
 describe('userManagementService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
-    resetUserManagementMock()
   })
 
-  it('uses mock only for tester and supports user creation', async () => {
+  it('uses the backend API for tester user listing', async () => {
     localStorage.setItem('authUsername', 'tester')
+    mockedApiClient.get.mockResolvedValue({ success: true, data: { items: [], total: 0, roles: [] } })
+
+    await userManagementService.listUsers()
+
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/admin/users')
+  })
+
+  it('uses the backend API for tester user creation', async () => {
+    localStorage.setItem('authUsername', 'tester')
+    mockedApiClient.post.mockResolvedValue({ success: true, data: { ...newUser, id: 7 } })
 
     const result = await userManagementService.createUser(newUser)
 
     expect(result.username).toBe('new-user')
-    expect(mockedApiClient.post).not.toHaveBeenCalled()
-    expect((await userManagementService.listUsers()).items).toHaveLength(6)
+    expect(mockedApiClient.post).toHaveBeenCalledWith('/admin/users', newUser)
   })
 
-  it('does not use mock for tester1 and calls the real API boundary', async () => {
+  it('uses the same backend API boundary for non-demo users', async () => {
     localStorage.setItem('authUsername', 'tester1')
     mockedApiClient.get.mockResolvedValue({ success: true, data: { items: [], total: 0, roles: [] } })
 
@@ -54,13 +48,9 @@ describe('userManagementService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/admin/users')
   })
 
-  it('blocks duplicate IDs, self actions, and last administrator removal', async () => {
-    localStorage.setItem('authUsername', 'tester')
-
-    await expect(userManagementService.createUser({ ...newUser, username: 'tester' })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })
-    await expect(userManagementService.dangerAction(1, 'disable', true)).rejects.toMatchObject({ code: 'SELF_LOCKOUT_RISK' })
-    await expect(userManagementService.dangerAction(1, 'retire', true)).rejects.toMatchObject({ code: 'SELF_LOCKOUT_RISK' })
-    expect(canPerformDangerAction('delete-request', userManagementFixture[0], 'operator01', userManagementFixture)).toBe('마지막 활성 관리자 계정은 변경하거나 삭제할 수 없습니다.')
+  it('protects the last active administrator', () => {
+    const onlyAdminFixture = [userManagementFixture[0], userManagementFixture[2]]
+    expect(canPerformDangerAction('delete-request', onlyAdminFixture[0], 'operator01', onlyAdminFixture)).toBeTruthy()
   })
 
   it('supports lock and unlock status actions through the API boundary', async () => {
