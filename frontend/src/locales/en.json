@@ -61,7 +61,7 @@
       "cameraCreate": "Add Camera",
       "videos": "Video Management",
       "commonCodes": "Common Code Management",
-      "accessManagement": "Access Permission Management",
+      "systemManagement": "System Management",
       "users": "User Management"
     }
   },

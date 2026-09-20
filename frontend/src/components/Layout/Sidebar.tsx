@@ -13,7 +13,7 @@ interface NavItem {
 }
 
 interface NavGroup {
-  labelKey?: string
+  labelKey: string
   items: NavItem[]
 }
 
@@ -79,13 +79,13 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { path: '/admin/model-management', labelKey: 'navigation.admin.modelRestart', icon: <ModelIcon /> },
       { path: '/admin/videos', labelKey: 'navigation.admin.videos', icon: <CameraIcon /> },
-      { path: '/admin/common-codes', labelKey: 'navigation.admin.commonCodes', icon: <SettingsIcon /> },
     ],
   },
   {
-    labelKey: 'navigation.admin.accessManagement',
+    labelKey: 'navigation.admin.systemManagement',
     items: [
       { path: '/admin/users', labelKey: 'navigation.admin.users', icon: <UserAccessIcon /> },
+      { path: '/admin/common-codes', labelKey: 'navigation.admin.commonCodes', icon: <SettingsIcon /> },
     ],
   },
 ]
@@ -159,9 +159,9 @@ export function Sidebar() {
                 {t('navigation.admin.title')}
               </p>
               {adminNavGroups.map((group) => (
-                <div key={group.labelKey} className="space-y-2">
+                <div key={group.labelKey} role="group" aria-label={t(group.labelKey)} className="space-y-2">
                   <p className="px-3 text-xs font-semibold text-gray-400">
-                    {group.labelKey ? t(group.labelKey) : ''}
+                    {t(group.labelKey)}
                   </p>
                   <div className="space-y-1">
                     {group.items.map(renderItem)}

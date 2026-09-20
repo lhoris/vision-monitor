@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter } from 'react-router-dom'
@@ -49,12 +49,13 @@ describe('Sidebar admin navigation', () => {
     renderSidebar()
 
     expect(screen.getByText('관리자 메뉴')).toBeInTheDocument()
-    expect(screen.getByText('통신 및 모델 설정')).toBeInTheDocument()
-    expect(screen.getByText('모델 관리')).toBeInTheDocument()
-    expect(screen.getByText('영상 관리')).toBeInTheDocument()
-    expect(screen.getByText('공통코드 관리')).toBeInTheDocument()
-    expect(screen.getByText('접속 권한 관리')).toBeInTheDocument()
-    expect(screen.getByText('사용자 관리')).toBeInTheDocument()
+    const communicationGroup = within(screen.getByRole('group', { name: '통신 및 모델 설정' }))
+    const systemGroup = within(screen.getByRole('group', { name: '시스템 관리' }))
+    expect(communicationGroup.getByText('모델 관리')).toBeInTheDocument()
+    expect(communicationGroup.getByText('영상 관리')).toBeInTheDocument()
+    expect(communicationGroup.queryByText('공통코드 관리')).not.toBeInTheDocument()
+    expect(systemGroup.getByText('사용자 관리')).toBeInTheDocument()
+    expect(systemGroup.getByText('공통코드 관리')).toBeInTheDocument()
 
     expect(screen.queryByText('모니터링 통신 현황')).not.toBeInTheDocument()
     expect(screen.queryByText('제어 연동 통신 현황')).not.toBeInTheDocument()
@@ -129,7 +130,7 @@ describe('Sidebar admin navigation', () => {
     expect(screen.getByText('알람')).toBeInTheDocument()
     expect(screen.queryByText('관리자 메뉴')).not.toBeInTheDocument()
     expect(screen.queryByText('통신 및 모델 설정')).not.toBeInTheDocument()
-    expect(screen.queryByText('접속 권한 관리')).not.toBeInTheDocument()
+    expect(screen.queryByText('시스템 관리')).not.toBeInTheDocument()
     expect(screen.queryByText('사용자 관리')).not.toBeInTheDocument()
   })
 })
