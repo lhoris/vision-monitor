@@ -93,11 +93,15 @@ sudo systemctl status visionmonitor-backend
 
 기본 배포 경로는 저장소 아래 `deploy\app`, `deploy\www`, `deploy\logs`입니다. 다른 루트는 `DEPLOY_DIR` 환경 변수로 지정할 수 있습니다. Windows Nginx 1.30.5 실행 파일과 공식 배포 파일은 저장소의 `nginx/windows/runtime`에 포함되어 있어 별도 다운로드가 필요 없습니다. `nginx/windows/nginx.conf.template`에서 실제 배포 경로에 맞는 설정을 생성합니다. 기본 포트는 `8088`이며 `NGINX_PORT`로 바꿀 수 있습니다. 공식 배포본의 라이선스 고지는 `nginx/windows/runtime/docs`에 포함되어 있습니다.
 
+프로젝트 내부 Nginx만 graceful shutdown하려면 `scripts\stop-nginx.bat`을 실행합니다. 이 스크립트는 PID가 프로젝트 런타임의 `nginx.exe`와 일치하는지 검사하며 다른 Nginx 프로세스는 종료하지 않습니다.
+
+배포된 backend와 Nginx는 배포 터미널과 분리된 숨김 프로세스로 실행됩니다. 배포 터미널에서 `Ctrl+C`를 눌러도 이미 시작된 서비스는 계속 실행되며, Nginx는 위 종료 스크립트로 중지합니다.
+
 Windows용 Nginx는 내부 테스트/Windows 배포 편의 런타임입니다. 공식 문서는 Windows 빌드를 beta로 분류합니다. Linux 운영에서는 systemd와 배포판 Nginx를 사용하고, 저장소의 `nginx/linux/vision-monitor.conf`를 운영 Nginx 설정으로 적용합니다.
 
 ## 실패 시 점검
 
 1. backend JAR와 frontend dist가 같은 커밋에서 빌드됐는지 확인합니다.
-2. Linux는 unit의 이름/실행 경로/EnvironmentFile과 `systemctl status`를 확인합니다. Windows는 `deploy\logs\backend.log`를 확인합니다.
+2. Linux는 unit의 이름/실행 경로/EnvironmentFile과 `systemctl status`를 확인합니다. Windows는 표준 출력을 `deploy\logs\backend.log`, 오류 출력을 `deploy\logs\backend-error.log`에서 확인합니다.
 3. Flyway 오류가 있으면 DB 연결, 계정의 DDL 권한, migration 이력을 확인합니다. migration 이력이나 checksum을 수동으로 지우거나 수정하지 않습니다.
 4. frontend는 열리지만 API가 실패하면 Nginx `/api` 프록시, backend 포트, 빌드 시 `VITE_API_URL` 설정을 확인합니다.

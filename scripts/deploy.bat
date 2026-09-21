@@ -107,9 +107,11 @@ if errorlevel 1 (
 
 echo.
 echo Starting backend...
-pushd "%DEPLOY_DIR%"
-start "vision-monitor-backend" /B "%JAVA_EXE%" -jar "%BACKEND_JAR%" > "%LOG_DIR%\backend.log" 2>&1
-popd
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-backend.ps1" -JavaPath "%JAVA_EXE%" -JarPath "%BACKEND_JAR%" -WorkingDirectory "%DEPLOY_DIR%" -LogDirectory "%LOG_DIR%"
+if errorlevel 1 (
+  echo Backend could not be started. Check %LOG_DIR%\backend-error.log.
+  exit /b 1
+)
 
 echo Waiting for backend readiness...
 for /L %%I in (1,1,45) do (
@@ -130,7 +132,13 @@ echo Nginx executable: %NGINX_HOME%\nginx.exe
 echo Nginx config: %NGINX_CONF%
 echo Nginx static root: %WEB_DIR%
 "%NGINX_HOME%\nginx.exe" -p "%NGINX_PREFIX%" -c "%NGINX_CONF%" -s reload >nul 2>nul
-if errorlevel 1 start "vision-monitor-nginx" /B "%NGINX_HOME%\nginx.exe" -p "%NGINX_PREFIX%" -c "%NGINX_CONF%"
+if errorlevel 1 (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start-nginx.ps1" -NginxHome "%NGINX_HOME%" -Prefix "%NGINX_PREFIX%" -ConfigPath "%NGINX_CONF%"
+  if errorlevel 1 (
+    echo Project-managed Nginx could not be started. Check %NGINX_HOME%\logs\error.log.
+    exit /b 1
+  )
+)
 
 echo Verifying HTML, static assets, and API proxy...
 for /L %%I in (1,1,30) do (
