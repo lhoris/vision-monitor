@@ -1,11 +1,17 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DraggableCell } from '../DraggableCell'
+import i18n from '@/i18n'
 import type { Camera } from '@/types/camera'
+import type { TemporaryVideoSource } from '@/types/streamPlayer'
 
 vi.mock('@/components/StreamPlayer/LiveStreamPlayer', () => ({
   LiveStreamPlayer: () => <div data-testid="live-stream-player" />,
 }))
+
+beforeEach(async () => {
+  await i18n.changeLanguage('en')
+})
 
 const camera: Camera = {
   id: 1,
@@ -18,6 +24,33 @@ const camera: Camera = {
 }
 
 describe('DraggableCell focus action', () => {
+  it('localizes the video context menu in Korean', async () => {
+    await i18n.changeLanguage('ko')
+    const source: TemporaryVideoSource = {
+      id: 'temp-1',
+      url: 'https://media.example.local/live',
+      protocol: 'webrtc',
+      displayName: '임시 영상',
+      playbackStatus: 'idle',
+    }
+    render(
+      <DraggableCell
+        cellId="cell-0"
+        index={0}
+        temporarySource={source}
+        positionId={-1}
+        onAddCamera={vi.fn()}
+        onRemoveCamera={vi.fn()}
+        onEditTemporarySource={vi.fn()}
+      />
+    )
+
+    fireEvent.contextMenu(screen.getByRole('heading', { name: '임시 영상' }))
+
+    expect(screen.getByRole('button', { name: '주소 수정' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '영상 제거' })).toBeInTheDocument()
+  })
+
   it('calls focus action for a camera cell without removing add-camera behavior', () => {
     const onFocusCamera = vi.fn()
 
@@ -147,7 +180,7 @@ describe('DraggableCell focus action', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add camera to this cell' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Video' }))
 
     expect(onAddCamera).toHaveBeenCalledTimes(1)
   })

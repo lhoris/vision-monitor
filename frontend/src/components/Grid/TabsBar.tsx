@@ -94,9 +94,9 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-3">
-        <div className="flex items-center gap-2 overflow-x-auto">
+    <div className="border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950">
+      <div className="px-4 pt-2 sm:px-6">
+        <div className="flex min-h-11 items-end gap-1 overflow-x-auto">
           {/* Tabs */}
           {tabs.map((tab, index) => (
             <div
@@ -107,12 +107,12 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group px-14 py-2.5 rounded-full cursor-pointer whitespace-nowrap text-xl font-medium
-                transition-all duration-200 flex items-center justify-center gap-2
+              className={`relative group flex shrink-0 cursor-pointer items-center gap-2 rounded-t-md border px-5 py-2 text-base font-medium whitespace-nowrap
+                transition-colors duration-150
                 ${
                   activeTabId === tab.id
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 dark:shadow-black/40 border-transparent'
-                    : 'bg-gray-100 hover:bg-gray-200/80 text-gray-600 hover:text-gray-900 border border-gray-200/80 dark:bg-white/5 dark:hover:bg-white/10 dark:text-gray-400 dark:hover:text-gray-100 dark:border-white/10 dark:hover:border-white/20'
+                    ? 'before:absolute before:inset-x-3 before:bottom-0 before:h-0.5 before:bg-cyan-400 border-slate-700 bg-slate-800 text-white shadow-sm dark:border-slate-600 dark:bg-slate-800'
+                    : 'border-transparent bg-transparent text-gray-600 hover:border-gray-300 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800 dark:hover:text-white'
                 }
                 ${dragOverIndex === index && draggedFromIndex !== index ? 'ring-2 ring-blue-400' : ''}
                 ${draggedFromIndex === index ? 'opacity-40' : ''}
@@ -230,12 +230,12 @@ export const TabsBar: React.FC<TabsBarProps> = ({
             </div>
           ) : (
             <button
+              type="button"
               onClick={() => setShowAddTabInput(true)}
-              className="px-4 py-2 rounded-t-lg text-gray-600 dark:text-gray-400
-                         hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="shrink-0 self-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
               title="Add new tab"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </button>

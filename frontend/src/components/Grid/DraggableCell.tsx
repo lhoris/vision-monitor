@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Camera } from '@/types/camera'
 import type { PlayerState, TemporaryVideoSource } from '@/types/streamPlayer'
 import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
@@ -42,6 +43,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   onDrop,
   isDragging: _isDragging = false,
 }) => {
+  const { t } = useTranslation()
   const [isDragOver, setIsDragOver] = useState(false)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [displayName, setDisplayName] = useState(camera?.name ?? temporarySource?.displayName ?? '')
@@ -213,19 +215,19 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
                 onClick={handleEditSourceClick}
                 className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
               >
-                주소 수정
+                {t('live.contextMenu.editAddress')}
               </button>
             ) : <button
               onClick={handleRenameClick}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
             >
-              Rename
+              {t('live.contextMenu.renameTitle')}
             </button>}
             <button
               onClick={handleDeleteClick}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 hover:bg-opacity-50 dark:text-red-400 dark:hover:bg-red-900"
             >
-              Remove
+              {t('live.contextMenu.removeVideo')}
             </button>
           </div>
         </>
@@ -283,8 +285,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       data-testid="add-camera-tile"
       onClick={onAddCamera}
       className="relative flex h-full min-h-0 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-dashed border-gray-600 bg-gray-900 transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
-      title="Click to add camera"
-      aria-label="Add camera to this cell"
+      title={t('live.clickToAddVideo')}
+      aria-label={t('live.addVideo')}
     >
       <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-900 transition-colors group-hover:bg-blue-800">
         <svg className="h-7 w-7 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,8 +298,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
           />
         </svg>
       </div>
-      <p className="text-sm font-medium text-gray-300">Add Camera</p>
-      <p className="text-xs text-gray-400">Click to add</p>
+      <p className="text-sm font-medium text-gray-300">{t('live.addVideo')}</p>
+      <p className="text-xs text-gray-400">{t('live.clickToAddVideo')}</p>
     </button>
   )
 }

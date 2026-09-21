@@ -68,6 +68,13 @@
   "live": {
     "title": "Live Monitoring",
     "subtitle": "Real-time camera feeds",
+    "addVideo": "Add Video",
+    "clickToAddVideo": "Click to add",
+    "contextMenu": {
+      "editAddress": "Edit URL",
+      "renameTitle": "Rename",
+      "removeVideo": "Remove"
+    },
     "addCameraDialog": {
       "title": "Add Video",
       "subtitle": "Choose a managed video source or enter a video URL.",

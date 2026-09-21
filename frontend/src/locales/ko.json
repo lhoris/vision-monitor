@@ -68,6 +68,13 @@
   "live": {
     "title": "라이브 모니터링",
     "subtitle": "실시간 카메라 피드",
+    "addVideo": "영상 추가",
+    "clickToAddVideo": "클릭하여 추가",
+    "contextMenu": {
+      "editAddress": "주소 수정",
+      "renameTitle": "이름 변경",
+      "removeVideo": "영상 제거"
+    },
     "addCameraDialog": {
       "title": "영상 추가",
       "subtitle": "관리 중인 영상 소스를 선택하거나 영상 주소를 직접 입력하세요.",

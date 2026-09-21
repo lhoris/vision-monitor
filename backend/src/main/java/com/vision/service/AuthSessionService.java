@@ -2,6 +2,8 @@ package com.vision.service;
 
 import com.vision.dto.AuthenticatedUserDto;
 import com.vision.entity.UserAccount;
+import com.vision.repository.AuthorizationRepository;
+import com.vision.repository.UserAuthorizationRepository;
 import com.vision.repository.UserAccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +21,19 @@ public class AuthSessionService {
 
     private static final Duration SESSION_TTL = Duration.ofHours(8);
     private final UserAccountRepository userRepository;
+    private final AuthorizationRepository authorizationRepository;
+    private final UserAuthorizationRepository userAuthorizationRepository;
     private final SecureRandom secureRandom = new SecureRandom();
     private final Map<String, Session> sessions = new ConcurrentHashMap<>();
 
-    public AuthSessionService(UserAccountRepository userRepository) {
+    public AuthSessionService(
+            UserAccountRepository userRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository
+    ) {
         this.userRepository = userRepository;
+        this.authorizationRepository = authorizationRepository;
+        this.userAuthorizationRepository = userAuthorizationRepository;
     }
 
     public String createSession(UserAccount user) {
@@ -46,7 +56,18 @@ public class AuthSessionService {
 
         return userRepository.findByUsernameIgnoreCase(session.username())
                 .filter(this::canLogin)
-                .map(AuthenticatedUserDto::from);
+                .map(user -> AuthenticatedUserDto.from(user, isAdministrator(user)));
+    }
+
+    private boolean isAdministrator(UserAccount user) {
+        if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) {
+            return "ADMIN".equalsIgnoreCase(user.getRole());
+        }
+        return userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
+                .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
+                .anyMatch(auth -> auth != null
+                        && "ADMIN".equalsIgnoreCase(auth.getCode())
+                        && !"Y".equalsIgnoreCase(auth.getDataEndStatus()));
     }
 
     private boolean canLogin(UserAccount user) {

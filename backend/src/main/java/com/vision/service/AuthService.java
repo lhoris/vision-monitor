@@ -51,11 +51,12 @@ public class AuthService {
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository
     ) {
-        this(userRepository, authorizationRepository, userAuthorizationRepository, new AuthSessionService(userRepository));
+        this(userRepository, authorizationRepository, userAuthorizationRepository,
+                new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository));
     }
 
     public AuthService(UserAccountRepository userRepository) {
-        this(userRepository, null, null, new AuthSessionService(userRepository));
+        this(userRepository, null, null, new AuthSessionService(userRepository, null, null));
     }
 
     @Transactional(readOnly = true)
