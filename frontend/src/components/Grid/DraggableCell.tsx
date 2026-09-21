@@ -253,6 +253,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
                     {Array.from({ length: maxCols }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} {t('live.contextMenu.columns')}</option>)}
                   </select>
                 </div>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('live.contextMenu.overlappingVideosRemoved')}</p>
                 {resizeError ? <p role="alert" className="mt-1 text-xs text-red-600">{t('live.contextMenu.playerSizeUnavailable')}</p> : null}
                 <button type="button" onClick={() => {
                   if (onResize(resizeRows, resizeCols)) setContextMenu(null)

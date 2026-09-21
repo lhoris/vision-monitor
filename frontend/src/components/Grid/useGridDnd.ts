@@ -28,18 +28,19 @@ export function resizeCameraPosition(
     return positions
   }
 
-  const overlaps = positions.some((position) => {
+  const overlaps = (position: CameraPosition) => {
     if (position.cameraId === cameraId) return false
     const otherRowSpan = position.rowSpan || 1
     const otherColSpan = position.colSpan || 1
     return target.row < position.row + otherRowSpan && target.row + rowSpan > position.row &&
       target.col < position.col + otherColSpan && target.col + colSpan > position.col
-  })
-  if (overlaps) return positions
+  }
 
-  return positions.map((position) => position.cameraId === cameraId
-    ? { ...position, rowSpan, colSpan }
-    : position)
+  return positions
+    .filter((position) => !overlaps(position))
+    .map((position) => position.cameraId === cameraId
+      ? { ...position, rowSpan, colSpan }
+      : position)
 }
 
 export function getCellCoordinates(cellIndex: number, colsPerRow: number): CellCoordinates {

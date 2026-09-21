@@ -62,12 +62,13 @@ describe('grid position helpers', () => {
     ])
   })
 
-  it('rejects a player size that overlaps another camera or exceeds the grid', () => {
-    expect(resizeCameraPosition(positions, 1, 1, 2, 3, 3)).toBe(positions)
-    expect(resizeCameraPosition(positions, 1, 2, 1, 3, 3)).toEqual([
-      { ...positions[0], rowSpan: 2, colSpan: 1 },
-      positions[1],
+  it('removes other camera placements covered by the resized player', () => {
+    expect(resizeCameraPosition(positions, 1, 1, 2, 3, 3)).toEqual([
+      { ...positions[0], rowSpan: 1, colSpan: 2 },
     ])
+  })
+
+  it('rejects a player size that exceeds the grid', () => {
     expect(resizeCameraPosition(positions, 1, 4, 1, 3, 3)).toBe(positions)
   })
 })

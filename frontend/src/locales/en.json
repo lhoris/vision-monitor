@@ -80,7 +80,8 @@
       "playerColumns": "Player column span",
       "rows": "rows",
       "columns": "cols",
-      "playerSizeUnavailable": "The selected area overlaps another video or exceeds the grid."
+      "overlappingVideosRemoved": "Videos covered by this area will be removed from this layout.",
+      "playerSizeUnavailable": "The selected player size could not be applied."
     },
     "addCameraDialog": {
       "title": "Add Video",

@@ -80,7 +80,8 @@
       "playerColumns": "플레이어 열 크기",
       "rows": "행",
       "columns": "열",
-      "playerSizeUnavailable": "선택한 영역이 다른 영상과 겹치거나 그리드를 벗어납니다."
+      "overlappingVideosRemoved": "영역에 겹치는 영상은 이 레이아웃에서 제거됩니다.",
+      "playerSizeUnavailable": "선택한 플레이어 크기를 적용할 수 없습니다."
     },
     "addCameraDialog": {
       "title": "영상 추가",
