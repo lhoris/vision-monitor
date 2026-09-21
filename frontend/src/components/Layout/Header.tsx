@@ -12,6 +12,7 @@ import { logoutUser } from '@/store/slices/authSlice'
 import { useAppBranding } from '@/hooks/useAppBranding'
 import { AccountCenterModal } from './AccountCenterModal'
 import type { AccountTab } from './AccountCenterModal'
+import { getEventDescription, getEventTypeLabel } from '@/utils/eventPresentation'
 
 const themeOptions: Array<{
   id: ThemeMode
@@ -61,16 +62,19 @@ export function Header() {
   const { i18n, t } = useTranslation()
   const branding = useAppBranding()
   const themeMode = useAppSelector((state) => state.ui.themeMode)
-  const notifications = useAppSelector((state) => state.ui.notifications)
+  const events = useAppSelector((state) => state.event.events)
   const user = useAppSelector((state) => state.auth.user)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [accountModalOpen, setAccountModalOpen] = useState(false)
   const [accountModalTab, setAccountModalTab] = useState<AccountTab>('profile')
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [themeMenuOpen, setThemeMenuOpen] = useState(false)
+  const [alarmMenuOpen, setAlarmMenuOpen] = useState(false)
   const languageMenuRef = useRef<HTMLDivElement>(null)
   const themeMenuRef = useRef<HTMLDivElement>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
+  const alarmMenuRef = useRef<HTMLDivElement>(null)
+  const openAlarms = events.filter((event) => !event.acknowledged)
   const selectedTheme = themeOptions.find((theme) => theme.id === themeMode) ?? themeOptions[1]
   const selectedThemeLabel = getThemeLabel(selectedTheme.id, i18n.language)
 
@@ -104,14 +108,17 @@ export function Header() {
       if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
         setThemeMenuOpen(false)
       }
+      if (alarmMenuRef.current && !alarmMenuRef.current.contains(event.target as Node)) {
+        setAlarmMenuOpen(false)
+      }
     }
 
-    if (accountMenuOpen || languageMenuOpen || themeMenuOpen) {
+    if (accountMenuOpen || languageMenuOpen || themeMenuOpen || alarmMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
     return undefined
-  }, [accountMenuOpen, languageMenuOpen, themeMenuOpen])
+  }, [accountMenuOpen, alarmMenuOpen, languageMenuOpen, themeMenuOpen])
 
   const openAccountTab = (tab: AccountTab) => {
     setAccountMenuOpen(false)
@@ -252,8 +259,16 @@ export function Header() {
           </div>
 
           {/* Notifications */}
-          <div className="relative group">
-            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Notifications">
+          <div className="relative" ref={alarmMenuRef}>
+            <button
+              type="button"
+              onClick={() => setAlarmMenuOpen((open) => !open)}
+              className="relative rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+              title={t('events.notificationButton', { count: openAlarms.length })}
+              aria-label={t('events.notificationButton', { count: openAlarms.length })}
+              aria-expanded={alarmMenuOpen}
+              aria-haspopup="dialog"
+            >
               <svg
                 className="w-5 h-5 text-gray-700 dark:text-gray-300"
                 fill="none"
@@ -267,13 +282,56 @@ export function Header() {
                   d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                 />
               </svg>
-              {notifications.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              {openAlarms.length > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 min-w-4 rounded-full bg-rose-600 px-1 text-center text-[10px] font-bold leading-4 text-white">
+                  {openAlarms.length > 99 ? '99+' : openAlarms.length}
+                </span>
               )}
-              <div className="absolute top-full mt-2 right-0 hidden group-hover:block bg-gray-900 dark:bg-gray-950 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-50">
-                {notifications.length > 0 ? `${notifications.length} alert(s)` : 'No alerts'}
-              </div>
             </button>
+            {alarmMenuOpen && (
+              <section
+                role="dialog"
+                aria-label={t('events.notificationsTitle')}
+                className="absolute right-0 z-50 mt-2 w-[min(24rem,calc(100vw-1.5rem))] overflow-hidden rounded-md border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-900"
+              >
+                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                  <h2 className="text-sm font-semibold text-gray-900 dark:text-white">{t('events.notificationsTitle')}</h2>
+                  <span className="text-xs tabular-nums text-gray-500 dark:text-gray-400">{openAlarms.length}</span>
+                </div>
+                {openAlarms.length ? (
+                  <ul className="max-h-80 divide-y divide-gray-100 overflow-y-auto dark:divide-gray-800">
+                    {openAlarms.slice(0, 5).map((event) => (
+                      <li key={event.id}>
+                        <button
+                          type="button"
+                          onClick={() => { setAlarmMenuOpen(false); navigate('/events') }}
+                          className="block w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:hover:bg-gray-800 dark:focus:bg-gray-800"
+                        >
+                          <span className="flex items-center justify-between gap-3">
+                            <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{getEventTypeLabel(event.type, t)}</span>
+                            <span className={`shrink-0 text-[10px] font-bold uppercase ${event.severity === 'critical' ? 'text-rose-600 dark:text-rose-400' : event.severity === 'high' ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                              {t(`events.severities.${event.severity}`)}
+                            </span>
+                          </span>
+                          <span className="mt-1 block line-clamp-2 text-xs leading-5 text-gray-600 dark:text-gray-300">
+                            {getEventDescription(event, i18n.resolvedLanguage ?? i18n.language, t)}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">{t('events.noUnacknowledged')}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => { setAlarmMenuOpen(false); navigate('/events') }}
+                  className="w-full border-t border-gray-200 px-4 py-2.5 text-left text-sm font-semibold text-blue-700 hover:bg-gray-50 dark:border-gray-700 dark:text-blue-300 dark:hover:bg-gray-800"
+                >
+                  {t('events.viewAlarmList')}
+                </button>
+              </section>
+            )}
           </div>
 
           {/* Separator */}

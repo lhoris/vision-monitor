@@ -63,7 +63,11 @@ describe('eventService', () => {
 
     await expect(eventService.getEvents()).resolves.toMatchObject({
       content: expect.arrayContaining([
-        expect.objectContaining({ type: 'motion_detected' }),
+        expect.objectContaining({
+          type: 'cooling_bed_temperature_high',
+          description: '공냉대 온도 상한 초과',
+          metadata: expect.objectContaining({ coilId: 'C260921-014' }),
+        }),
       ]),
     })
   })

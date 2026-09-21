@@ -66,6 +66,30 @@ describe('Sidebar admin navigation', () => {
     expect(screen.queryByText('메뉴 접근 권한 관리')).not.toBeInTheDocument()
   })
 
+  it('restores admin navigation when the session returns uppercase role and permission codes', () => {
+    store.dispatch(
+      loginUser.fulfilled(
+        {
+          user: {
+            id: 1,
+            username: 'admin',
+            role: 'ADMIN',
+            permissions: ['ADMIN:ACCESS'],
+          },
+          token: 'admin-session-token',
+        },
+        'request-id',
+        { username: 'admin', password: 'admin' }
+      )
+    )
+
+    renderSidebar()
+
+    expect(screen.getByText('관리자 메뉴')).toBeInTheDocument()
+    expect(screen.getByText('모델 관리')).toBeInTheDocument()
+    expect(screen.getByText('사용자 관리')).toBeInTheDocument()
+  })
+
   it('uses APP_BRANDING common code values for the sidebar title', () => {
     store.dispatch(mergeCommonCodes({
       version: 'test-branding',

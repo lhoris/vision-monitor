@@ -12,6 +12,8 @@ import commonCodeReducer from '@/store/slices/commonCodeSlice'
 import cameraReducer from '@/store/slices/cameraSlice'
 import eventReducer from '@/store/slices/eventSlice'
 
+const { getEvents } = vi.hoisted(() => ({ getEvents: vi.fn().mockResolvedValue(null) }))
+vi.mock('@/services/eventService', () => ({ eventService: { getEvents } }))
 vi.mock('@/components/Layout', () => ({ AppLayout: ({ children }: { children: React.ReactNode }) => <>{children}</> }))
 vi.mock('@/pages/Live', () => ({ default: () => <h1>Live Dashboard</h1> }))
 

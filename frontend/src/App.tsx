@@ -16,9 +16,10 @@ import Settings from '@/pages/Settings'
 import AdminPlaceholder from '@/pages/AdminPlaceholder'
 import { VideoManagement } from '@/pages/VideoManagement'
 import { store } from '@/store'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
-import { validateAuthSession } from '@/store/slices/authSlice'
+import { fetchEvents } from '@/store/slices/eventSlice'
+import { hasAdminAccess, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import '@/styles/global.css'
@@ -31,7 +32,8 @@ export function AppRoutes() {
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const commonCodeStatus = useAppSelector((state) => state.commonCode.status)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
-  const canAccessAdminRoutes = user?.role === 'admin' || Boolean(user?.permissions?.includes('admin:access'))
+  const eventFetchStarted = useRef(false)
+  const canAccessAdminRoutes = hasAdminAccess(user)
 
   useEffect(() => {
     document.documentElement.dataset.theme = themeMode
@@ -54,6 +56,17 @@ export function AppRoutes() {
       void dispatch(validateAuthSession())
     }
   }, [dispatch, isAuthenticated, sessionStatus])
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      eventFetchStarted.current = false
+      return
+    }
+    if (!eventFetchStarted.current) {
+      eventFetchStarted.current = true
+      void dispatch(fetchEvents({ page: 0, pageSize: 100 }))
+    }
+  }, [dispatch, isAuthenticated])
 
   if (!isAuthenticated) {
     return (

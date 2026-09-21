@@ -1,11 +1,13 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { store } from '@/store'
+import type { Event } from '@/types'
 import i18n from '@/i18n'
 import { Header } from '@/components/Layout/Header'
+import { acknowledgeEvent, fetchEvents } from '@/store/slices/eventSlice'
 
 vi.mock('@/services/authService', () => ({
   authService: {
@@ -33,6 +35,13 @@ function renderHeader() {
 }
 
 describe('Header account menu', () => {
+  afterEach(() => {
+    cleanup()
+    store.dispatch(fetchEvents.fulfilled({
+      content: [], totalElements: 0, totalPages: 0, currentPage: 0, pageSize: 100,
+    }, 'header-test-reset', undefined))
+  })
+
   it('opens the original menu first and opens profile/help only when selected', async () => {
     await i18n.changeLanguage('en')
     renderHeader()
@@ -60,5 +69,32 @@ describe('Header account menu', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /^Settings$/ }))
     expect(screen.getByTestId('current-path')).toHaveTextContent('/settings')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('shows unacknowledged alarms in the bell menu and opens the alarm list', async () => {
+    await i18n.changeLanguage('en')
+    const alarm: Event = {
+      id: 71,
+      cameraId: 1,
+      type: 'cooling_bed_temperature_high',
+      severity: 'critical',
+      description: 'Cooling bed high temperature',
+      timestamp: new Date('2026-09-21T09:00:00Z'),
+      acknowledged: false,
+      metadata: { descriptionEn: 'Coil C260921-014 exceeded its cooling-bed temperature limit.' },
+    }
+    store.dispatch(fetchEvents.fulfilled({
+      content: [alarm], totalElements: 1, totalPages: 1, currentPage: 0, pageSize: 100,
+    }, 'header-test', undefined))
+    renderHeader()
+
+    fireEvent.click(screen.getByRole('button', { name: '1 unacknowledged alarms' }))
+    expect(screen.getByRole('dialog', { name: 'Unacknowledged Alarms' })).toHaveTextContent('Cooling Bed Temperature Above Limit')
+    expect(screen.getByRole('dialog', { name: 'Unacknowledged Alarms' })).toHaveTextContent('Coil C260921-014 exceeded')
+
+    fireEvent.click(screen.getByRole('button', { name: 'View alarm list' }))
+    expect(screen.getByTestId('current-path')).toHaveTextContent('/events')
+
+    store.dispatch(acknowledgeEvent(alarm.id))
   })
 })

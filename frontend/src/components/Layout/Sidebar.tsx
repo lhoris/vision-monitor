@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { toggleSidebar } from '@/store/slices/uiSlice'
 import { useAppBranding } from '@/hooks/useAppBranding'
-import type { User } from '@/store/slices/authSlice'
 import type { ReactNode } from 'react'
+import { hasAdminAccess } from '@/store/slices/authSlice'
 
 interface NavItem {
   path: string
@@ -90,10 +90,6 @@ const adminNavGroups: NavGroup[] = [
   },
 ]
 
-function canAccessAdminMenu(user: User | null): boolean {
-  return user?.role === 'admin' || Boolean(user?.permissions?.includes('admin:access'))
-}
-
 export function Sidebar() {
   const { t } = useTranslation()
   const branding = useAppBranding()
@@ -101,7 +97,7 @@ export function Sidebar() {
   const dispatch = useAppDispatch()
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen)
   const user = useAppSelector((state) => state.auth.user)
-  const showAdminMenu = canAccessAdminMenu(user)
+  const showAdminMenu = hasAdminAccess(user)
 
   const handleNavigate = () => {
     if (window.innerWidth < 768) {

@@ -9,8 +9,13 @@ import { fetchCommonCodes } from './commonCodeSlice'
 export interface User {
   id: number
   username: string
-  role?: 'admin' | 'operator' | 'user'
+  role?: string
   permissions?: string[]
+}
+
+export function hasAdminAccess(user: User | null | undefined): boolean {
+  return user?.role?.toLowerCase() === 'admin'
+    || Boolean(user?.permissions?.some((permission) => permission.toLowerCase() === 'admin:access'))
 }
 
 interface AuthState {

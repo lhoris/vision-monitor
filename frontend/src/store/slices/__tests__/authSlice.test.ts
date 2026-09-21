@@ -79,26 +79,27 @@ describe('authSlice', () => {
     expect(localStorage.getItem('authUser')).toBeNull()
   })
 
-  it('restores auth state from stored token and user on initialization', async () => {
+  it('restores administrator access from stored session regardless of role casing', async () => {
     vi.resetModules()
     localStorage.setItem('authToken', 'dev-auth-token-admin')
     localStorage.setItem('authUsername', 'admin')
     localStorage.setItem('authUser', JSON.stringify({
       id: 1,
       username: 'admin',
-      role: 'admin',
-      permissions: ['admin:access'],
+      role: 'ADMIN',
+      permissions: ['ADMIN:ACCESS'],
     }))
 
-    const { default: freshAuthReducer } = await import('../authSlice')
+    const { default: freshAuthReducer, hasAdminAccess } = await import('../authSlice')
     const state = freshAuthReducer(undefined, { type: '@@INIT' })
 
     expect(state.isAuthenticated).toBe(true)
     expect(state.user).toMatchObject({
       username: 'admin',
-      role: 'admin',
-      permissions: ['admin:access'],
+      role: 'ADMIN',
+      permissions: ['ADMIN:ACCESS'],
     })
+    expect(hasAdminAccess(state.user)).toBe(true)
   })
 
   it('does not infer administrator access from the tester username', async () => {
