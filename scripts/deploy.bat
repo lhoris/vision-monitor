@@ -24,7 +24,7 @@ if errorlevel 1 exit /b 1
 
 if not exist "%FRONTEND_DIST%\index.html" (
   echo Frontend artifact not found: %FRONTEND_DIST%\index.html
-  echo Run scripts\build.bat first, then run scripts\deploy.bat.
+  echo Build on the internet-connected PC and copy frontend\dist before deployment.
   exit /b 1
 )
 
@@ -36,7 +36,7 @@ for %%F in ("%BACKEND_DIR%\target\vision-monitor-*.jar") do if exist "%%~fF" (
 )
 if not "%JAR_COUNT%"=="1" (
   echo Expected exactly one backend JAR, found %JAR_COUNT%.
-  echo Run scripts\build.bat first, then run scripts\deploy.bat.
+  echo Build on the internet-connected PC and copy backend\target before deployment.
   exit /b 1
 )
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup-nginx.ps1" -InstallDirectory "%NGINX_HOME%" >nul
