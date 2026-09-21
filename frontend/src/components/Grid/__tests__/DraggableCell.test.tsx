@@ -206,9 +206,8 @@ describe('DraggableCell focus action', () => {
     fireEvent.mouseEnter(screen.getByRole('button', { name: '2x3' }))
     expect(screen.getByRole('button', { name: '2x3' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: '2x2' }))
-    expect(screen.getByRole('button', { name: '2x2' })).toHaveAttribute('aria-pressed', 'true')
-    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
 
     expect(onResize).toHaveBeenCalledWith(2, 2)
+    expect(screen.queryByRole('button', { name: '2x2' })).not.toBeInTheDocument()
   })
 })

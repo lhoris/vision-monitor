@@ -272,7 +272,13 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
                         title={`${rows} × ${cols}`}
                         onMouseEnter={() => setResizePreview({ rows, cols })}
                         onFocus={() => setResizePreview({ rows, cols })}
-                        onClick={() => { setResizeRows(rows); setResizeCols(cols); setResizePreview(null) }}
+                        onClick={() => {
+                          if (onResize(rows, cols)) {
+                            setContextMenu(null)
+                          } else {
+                            setResizeError(true)
+                          }
+                        }}
                         className={`h-6 w-6 rounded-sm border transition-colors focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 ${highlighted ? 'border-blue-600 bg-blue-500 dark:border-blue-300 dark:bg-blue-400' : 'border-gray-300 bg-gray-100 hover:border-blue-400 dark:border-gray-600 dark:bg-gray-700'} ${selected ? 'ring-1 ring-blue-700 dark:ring-blue-200' : ''}`}
                       />
                     )
@@ -280,10 +286,6 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
                 </div>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('live.contextMenu.overlappingVideosRemoved')}</p>
                 {resizeError ? <p role="alert" className="mt-1 text-xs text-red-600">{t('live.contextMenu.playerSizeUnavailable')}</p> : null}
-                <button type="button" onClick={() => {
-                  if (onResize(resizeRows, resizeCols)) setContextMenu(null)
-                  else setResizeError(true)
-                }} className="mt-2 w-full rounded bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700">{t('common.apply')}</button>
               </div>
             ) : null}
             <button
