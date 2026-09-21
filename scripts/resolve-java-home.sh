@@ -4,7 +4,6 @@ resolve_java_home() {
   local candidate compiler version root
   local -a candidates=()
   candidates+=("${PROJECT_JDK_HOME:-}" "${JDK_HOME:-}" "${JAVA_HOME:-}")
-  candidates+=("$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)/.tools/jdk-21")
 
   if command -v javac >/dev/null 2>&1; then
     compiler="$(readlink -f "$(command -v javac)")"

@@ -5,10 +5,6 @@ $candidates = [System.Collections.Generic.List[string]]::new()
 foreach ($value in @($env:PROJECT_JAVA_HOME, $env:JRE_HOME, $env:JAVA_HOME)) {
   if (-not [string]::IsNullOrWhiteSpace($value)) { $candidates.Add($value) }
 }
-$candidates.Add((Join-Path $repoRoot 'runtime\java-21'))
-$candidates.Add((Join-Path $repoRoot 'runtime\jdk-21'))
-$candidates.Add((Join-Path $repoRoot '.tools\jre-21'))
-$candidates.Add((Join-Path $repoRoot '.tools\jdk-21'))
 
 foreach ($registryPath in @(
   'HKLM:\SOFTWARE\JavaSoft\Java Runtime Environment',

@@ -150,7 +150,7 @@ describe('Sidebar admin navigation', () => {
     renderSidebar()
 
     expect(screen.getByText('라이브')).toBeInTheDocument()
-    expect(screen.getByText('녹화')).toBeInTheDocument()
+    expect(screen.queryByText('녹화')).not.toBeInTheDocument()
     expect(screen.getByText('알람')).toBeInTheDocument()
     expect(screen.queryByText('관리자 메뉴')).not.toBeInTheDocument()
     expect(screen.queryByText('통신 및 모델 설정')).not.toBeInTheDocument()
