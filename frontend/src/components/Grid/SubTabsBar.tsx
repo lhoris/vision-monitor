@@ -4,7 +4,9 @@
  */
 
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { SubTab } from '@/types/layout'
+import { ConfirmDialog } from '@/components/Common'
 
 interface SubTabsBarProps {
   subTabs: SubTab[]
@@ -27,6 +29,8 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   onReorderSubTabs,
   layoutSelector,
 }) => {
+  const { t } = useTranslation()
+  const [pendingRemoval, setPendingRemoval] = useState<SubTab | null>(null)
   const [showAddSubTabInput, setShowAddSubTabInput] = useState(false)
   const [newSubTabName, setNewSubTabName] = useState('')
   const [editingSubTabId, setEditingSubTabId] = useState<string | null>(null)
@@ -164,10 +168,11 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
-                    onRemoveSubTab(subTab.id)
+                    setPendingRemoval(subTab)
                   }}
+                  aria-label={t('live.removeSubTabAction')}
                   className="text-red-500 hover:text-red-600 dark:text-red-400"
-                  title="Remove subtab"
+                  title={t('live.removeSubTabAction')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -241,6 +246,19 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
           )}
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={Boolean(pendingRemoval)}
+        title={t('live.removeSubTabTitle')}
+        message={t('live.removeSubTabMessage', { name: pendingRemoval?.name ?? '' })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={() => {
+          if (pendingRemoval) onRemoveSubTab(pendingRemoval.id)
+          setPendingRemoval(null)
+        }}
+        onCancel={() => setPendingRemoval(null)}
+      />
     </div>
   )
 }

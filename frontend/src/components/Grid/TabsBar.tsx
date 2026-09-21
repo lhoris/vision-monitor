@@ -4,7 +4,9 @@
  */
 
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Tab, SubTab } from '@/types/layout'
+import { ConfirmDialog } from '@/components/Common'
 
 interface TabsBarProps {
   tabs: Tab[]
@@ -25,6 +27,8 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   onRenameTab,
   onReorderTabs,
 }) => {
+  const { t } = useTranslation()
+  const [pendingRemoval, setPendingRemoval] = useState<Tab | null>(null)
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [showAddTabInput, setShowAddTabInput] = useState(false)
@@ -172,11 +176,12 @@ export const TabsBar: React.FC<TabsBarProps> = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        onRemoveTab(tab.id)
+                        setPendingRemoval(tab)
                       }}
+                      aria-label={t('live.removeProcessTabAction')}
                       className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-600
                                  dark:text-red-400 dark:hover:text-red-300 transition-opacity"
-                      title="Remove tab"
+                      title={t('live.removeProcessTabAction')}
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -242,6 +247,19 @@ export const TabsBar: React.FC<TabsBarProps> = ({
           )}
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={Boolean(pendingRemoval)}
+        title={t('live.removeProcessTabTitle')}
+        message={t('live.removeProcessTabMessage', { name: pendingRemoval?.name ?? '' })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={() => {
+          if (pendingRemoval) onRemoveTab(pendingRemoval.id)
+          setPendingRemoval(null)
+        }}
+        onCancel={() => setPendingRemoval(null)}
+      />
     </div>
   )
 }

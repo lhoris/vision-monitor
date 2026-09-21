@@ -1,8 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TabsBar } from '../TabsBar'
 import { SubTabsBar } from '../SubTabsBar'
 import type { Tab } from '@/types/layout'
+import i18n from '@/i18n'
+
+beforeEach(async () => {
+  await i18n.changeLanguage('en')
+})
 
 const tabs: Tab[] = [{
   id: 'process-a',

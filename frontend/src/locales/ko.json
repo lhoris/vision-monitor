@@ -71,6 +71,12 @@
     "subtitle": "실시간 카메라 피드",
     "addVideo": "영상 추가",
     "clickToAddVideo": "클릭하여 추가",
+    "removeProcessTabAction": "공정 탭 삭제",
+    "removeProcessTabTitle": "공정 탭 삭제 확인",
+    "removeProcessTabMessage": "'{{name}}' 공정 탭과 그 안의 모든 세부공정 및 영상 배치를 삭제할까요?",
+    "removeSubTabAction": "세부공정 탭 삭제",
+    "removeSubTabTitle": "세부공정 탭 삭제 확인",
+    "removeSubTabMessage": "'{{name}}' 세부공정 탭과 그 안의 영상 배치를 삭제할까요?",
     "contextMenu": {
       "editAddress": "주소 수정",
       "renameTitle": "이름 변경",

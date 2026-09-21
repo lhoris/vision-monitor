@@ -71,6 +71,12 @@
     "subtitle": "Real-time camera feeds",
     "addVideo": "Add Video",
     "clickToAddVideo": "Click to add",
+    "removeProcessTabAction": "Remove process tab",
+    "removeProcessTabTitle": "Remove process tab?",
+    "removeProcessTabMessage": "Remove the '{{name}}' process tab, including all its equipment tabs and video placements?",
+    "removeSubTabAction": "Remove equipment tab",
+    "removeSubTabTitle": "Remove equipment tab?",
+    "removeSubTabMessage": "Remove the '{{name}}' equipment tab and its video placements?",
     "contextMenu": {
       "editAddress": "Edit URL",
       "renameTitle": "Rename",
