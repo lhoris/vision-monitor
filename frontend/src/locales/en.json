@@ -171,6 +171,14 @@
     "title": "Playback",
     "subtitle": "View recorded videos"
   },
+  "recordingEntry": {
+    "title": "Recording",
+    "selectVideoDescription": "Select a video source to view its recordings.",
+    "videoSourceSelection": "Select Video",
+    "loadingVideoSources": "Loading video sources...",
+    "noManagedVideoSources": "No managed video sources are registered.",
+    "viewRecording": "View Recording"
+  },
   "events": {
     "title": "Alarms",
     "subtitle": "Review video, AI detection, and system alarms and track their handling status.",
