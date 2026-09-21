@@ -5,6 +5,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
+    "apply": "Apply",
     "close": "Close",
     "online": "Online",
     "offline": "Offline",
@@ -73,7 +74,13 @@
     "contextMenu": {
       "editAddress": "Edit URL",
       "renameTitle": "Rename",
-      "removeVideo": "Remove"
+      "removeVideo": "Remove",
+      "playerSize": "Player area",
+      "playerRows": "Player row span",
+      "playerColumns": "Player column span",
+      "rows": "rows",
+      "columns": "cols",
+      "playerSizeUnavailable": "The selected area overlaps another video or exceeds the grid."
     },
     "addCameraDialog": {
       "title": "Add Video",

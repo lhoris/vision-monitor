@@ -4,6 +4,7 @@ import {
   moveCameraPosition,
   placeCameraAtCell,
   removeCameraPosition,
+  resizeCameraPosition,
 } from '../useGridDnd'
 import type { CameraPosition } from '@/types/layout'
 
@@ -53,5 +54,20 @@ describe('grid position helpers', () => {
     expect(removeCameraPosition(positions, 1)).toEqual([
       { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
     ])
+  })
+
+  it('resizes a player across available cells', () => {
+    expect(resizeCameraPosition([positions[0]], 1, 2, 2, 3, 3)).toEqual([
+      { ...positions[0], rowSpan: 2, colSpan: 2 },
+    ])
+  })
+
+  it('rejects a player size that overlaps another camera or exceeds the grid', () => {
+    expect(resizeCameraPosition(positions, 1, 1, 2, 3, 3)).toBe(positions)
+    expect(resizeCameraPosition(positions, 1, 2, 1, 3, 3)).toEqual([
+      { ...positions[0], rowSpan: 2, colSpan: 1 },
+      positions[1],
+    ])
+    expect(resizeCameraPosition(positions, 1, 4, 1, 3, 3)).toBe(positions)
   })
 })

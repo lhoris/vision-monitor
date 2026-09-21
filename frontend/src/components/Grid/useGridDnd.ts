@@ -15,6 +15,33 @@ export interface CellCoordinates {
   col: number
 }
 
+export function resizeCameraPosition(
+  positions: CameraPosition[],
+  cameraId: number,
+  rowSpan: number,
+  colSpan: number,
+  rows: number,
+  cols: number
+): CameraPosition[] {
+  const target = positions.find((position) => position.cameraId === cameraId)
+  if (!target || rowSpan < 1 || colSpan < 1 || target.row + rowSpan > rows || target.col + colSpan > cols) {
+    return positions
+  }
+
+  const overlaps = positions.some((position) => {
+    if (position.cameraId === cameraId) return false
+    const otherRowSpan = position.rowSpan || 1
+    const otherColSpan = position.colSpan || 1
+    return target.row < position.row + otherRowSpan && target.row + rowSpan > position.row &&
+      target.col < position.col + otherColSpan && target.col + colSpan > position.col
+  })
+  if (overlaps) return positions
+
+  return positions.map((position) => position.cameraId === cameraId
+    ? { ...position, rowSpan, colSpan }
+    : position)
+}
+
 export function getCellCoordinates(cellIndex: number, colsPerRow: number): CellCoordinates {
   return {
     row: Math.floor(cellIndex / colsPerRow),
@@ -26,7 +53,8 @@ export function moveCameraPosition(
   positions: CameraPosition[],
   cameraId: number,
   targetCellIndex: number,
-  colsPerRow: number
+  colsPerRow: number,
+  rowsPerGrid = Number.POSITIVE_INFINITY
 ): CameraPosition[] {
   const target = getCellCoordinates(targetCellIndex, colsPerRow)
   const draggedCameraPosition = positions.find((position) => position.cameraId === cameraId)
@@ -41,6 +69,27 @@ export function moveCameraPosition(
       position.col === target.col &&
       position.cameraId !== cameraId
   )
+
+  const draggedRowSpan = draggedCameraPosition.rowSpan || 1
+  const draggedColSpan = draggedCameraPosition.colSpan || 1
+  if (targetCameraPosition) {
+    if (draggedRowSpan !== 1 || draggedColSpan !== 1 ||
+      (targetCameraPosition.rowSpan || 1) !== 1 || (targetCameraPosition.colSpan || 1) !== 1) {
+      return positions
+    }
+  } else {
+    if (target.row + draggedRowSpan > rowsPerGrid || target.col + draggedColSpan > colsPerRow) {
+      return positions
+    }
+    const overlaps = positions.some((position) => {
+      if (position.cameraId === cameraId) return false
+      return target.row < position.row + (position.rowSpan || 1) &&
+        target.row + draggedRowSpan > position.row &&
+        target.col < position.col + (position.colSpan || 1) &&
+        target.col + draggedColSpan > position.col
+    })
+    if (overlaps) return positions
+  }
 
   return positions.map((position) => {
     if (position.cameraId === cameraId) {

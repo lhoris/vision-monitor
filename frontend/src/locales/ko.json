@@ -5,6 +5,7 @@
     "delete": "삭제",
     "edit": "편집",
     "add": "추가",
+    "apply": "적용",
     "close": "닫기",
     "online": "온라인",
     "offline": "오프라인",
@@ -73,7 +74,13 @@
     "contextMenu": {
       "editAddress": "주소 수정",
       "renameTitle": "이름 변경",
-      "removeVideo": "영상 제거"
+      "removeVideo": "영상 제거",
+      "playerSize": "플레이어 영역",
+      "playerRows": "플레이어 행 크기",
+      "playerColumns": "플레이어 열 크기",
+      "rows": "행",
+      "columns": "열",
+      "playerSizeUnavailable": "선택한 영역이 다른 영상과 겹치거나 그리드를 벗어납니다."
     },
     "addCameraDialog": {
       "title": "영상 추가",

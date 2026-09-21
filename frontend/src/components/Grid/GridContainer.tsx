@@ -28,6 +28,7 @@ import {
   moveCameraPosition,
   placeCameraAtCell,
   removeCameraPosition,
+  resizeCameraPosition,
 } from './useGridDnd'
 import type { CameraPosition, Tab, SubTab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
@@ -132,7 +133,8 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         activeSubTab.cameraPositions,
         draggedCameraId,
         cellIndex,
-        activeSubTab.gridConfig.cols
+        activeSubTab.gridConfig.cols,
+        activeSubTab.gridConfig.rows
       )
     )
     setDraggedCameraId(null)
@@ -336,6 +338,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }
 
   const totalCells = activeSubTab.gridConfig.rows * activeSubTab.gridConfig.cols
+  const positions = activeSubTab.cameraPositions
   const cameraMap = new Map(
     cameras.map((camera) => [
       camera.id,
@@ -349,6 +352,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     const position = activeSubTab.cameraPositions.find(
       (cameraPosition) => cameraPosition.row === row && cameraPosition.col === col
     )
+    const covered = !position && activeSubTab.cameraPositions.some((cameraPosition) =>
+      row >= cameraPosition.row && row < cameraPosition.row + (cameraPosition.rowSpan || 1) &&
+      col >= cameraPosition.col && col < cameraPosition.col + (cameraPosition.colSpan || 1)
+    )
+    if (covered) return null
     const baseCamera = position ? cameraMap.get(position.cameraId) : undefined
     const camera = baseCamera && position?.displayName
       ? { ...baseCamera, name: position.displayName }
@@ -368,8 +376,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       positionId: position?.cameraId,
       camera,
       temporarySource,
+      rowSpan: position?.rowSpan || 1,
+      colSpan: position?.colSpan || 1,
     }
-  })
+  }).filter((cell): cell is NonNullable<typeof cell> => cell !== null)
 
   return (
     <div className="flex min-h-0 h-full flex-col bg-gray-50 dark:bg-gray-900">
@@ -423,6 +433,23 @@ export const GridContainer: React.FC<GridContainerProps> = ({
               positionId={cell.positionId}
               camera={cell.camera}
               temporarySource={cell.temporarySource}
+              rowSpan={cell.rowSpan}
+              colSpan={cell.colSpan}
+              maxRows={activeSubTab.gridConfig.rows - cell.row}
+              maxCols={activeSubTab.gridConfig.cols - cell.col}
+              onResize={cell.positionId !== undefined ? (rowSpan, colSpan) => {
+                const resized = resizeCameraPosition(
+                  positions,
+                  cell.positionId as number,
+                  rowSpan,
+                  colSpan,
+                  activeSubTab.gridConfig.rows,
+                  activeSubTab.gridConfig.cols
+                )
+                if (resized === positions) return false
+                updateActiveSubTabPositions(resized)
+                return true
+              } : undefined}
               onAddCamera={() => handleAddCamera(cell.id)}
               onRemoveCamera={() => {
                 if (cell.camera || cell.temporarySource) {
@@ -444,6 +471,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({
               onTemporaryStatusChange={cell.temporarySource && cell.positionId !== undefined ? (status) => handleTemporaryStatusChange(cell.positionId as number, status) : undefined}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
+              style={{
+                gridRow: `${cell.row + 1} / span ${cell.rowSpan}`,
+                gridColumn: `${cell.col + 1} / span ${cell.colSpan}`,
+              }}
             />
           ))}
         </div>

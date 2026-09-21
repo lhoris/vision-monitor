@@ -19,11 +19,17 @@ interface DraggableCellProps {
   onFocusCamera?: (cameraId: number) => void
   onRenameCamera?: (cameraId: number, name: string) => void
   onEditTemporarySource?: () => void
+  onResize?: (rowSpan: number, colSpan: number) => boolean
+  rowSpan?: number
+  colSpan?: number
+  maxRows?: number
+  maxCols?: number
   onTemporaryStatusChange?: (status: PlayerState) => void
   onDragStart?: (cameraId: number) => void
   onDragOver?: (e: React.DragEvent) => void
   onDrop?: (cellIndex: number) => void
   isDragging?: boolean
+  style?: React.CSSProperties
 }
 
 export const DraggableCell: React.FC<DraggableCellProps> = ({
@@ -37,11 +43,17 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   onFocusCamera,
   onRenameCamera,
   onEditTemporarySource,
+  onResize,
+  rowSpan = 1,
+  colSpan = 1,
+  maxRows = 1,
+  maxCols = 1,
   onTemporaryStatusChange,
   onDragStart,
   onDragOver,
   onDrop,
   isDragging: _isDragging = false,
+  style,
 }) => {
   const { t } = useTranslation()
   const [isDragOver, setIsDragOver] = useState(false)
@@ -49,6 +61,9 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   const [displayName, setDisplayName] = useState(camera?.name ?? temporarySource?.displayName ?? '')
   const [renameDraft, setRenameDraft] = useState(camera?.name ?? temporarySource?.displayName ?? '')
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+  const [resizeRows, setResizeRows] = useState(rowSpan)
+  const [resizeCols, setResizeCols] = useState(colSpan)
+  const [resizeError, setResizeError] = useState(false)
 
   useEffect(() => {
     setDisplayName(camera?.name ?? temporarySource?.displayName ?? '')
@@ -95,6 +110,9 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
+    setResizeRows(rowSpan)
+    setResizeCols(colSpan)
+    setResizeError(false)
     setContextMenu({ x: e.clientX, y: e.clientY })
   }
 
@@ -137,6 +155,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   return effectiveCamera ? (
     <article
       data-testid="camera-tile"
+      style={style}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -223,6 +242,24 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             >
               {t('live.contextMenu.renameTitle')}
             </button>}
+            {effectiveCamera && onResize ? (
+              <div className="border-t border-gray-200 px-3 py-2 dark:border-gray-700">
+                <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">{t('live.contextMenu.playerSize')}</p>
+                <div className="flex items-center gap-2">
+                  <select aria-label={t('live.contextMenu.playerRows')} value={resizeRows} onChange={(event) => setResizeRows(Number(event.target.value))} className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                    {Array.from({ length: maxRows }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} {t('live.contextMenu.rows')}</option>)}
+                  </select>
+                  <select aria-label={t('live.contextMenu.playerColumns')} value={resizeCols} onChange={(event) => setResizeCols(Number(event.target.value))} className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
+                    {Array.from({ length: maxCols }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} {t('live.contextMenu.columns')}</option>)}
+                  </select>
+                </div>
+                {resizeError ? <p role="alert" className="mt-1 text-xs text-red-600">{t('live.contextMenu.playerSizeUnavailable')}</p> : null}
+                <button type="button" onClick={() => {
+                  if (onResize(resizeRows, resizeCols)) setContextMenu(null)
+                  else setResizeError(true)
+                }} className="mt-2 w-full rounded bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-700">{t('common.apply')}</button>
+              </div>
+            ) : null}
             <button
               onClick={handleDeleteClick}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 hover:bg-opacity-50 dark:text-red-400 dark:hover:bg-red-900"
@@ -283,6 +320,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   ) : (
     <button
       data-testid="add-camera-tile"
+      style={style}
       onClick={onAddCamera}
       className="relative flex h-full min-h-0 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-dashed border-gray-600 bg-gray-900 transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
       title={t('live.clickToAddVideo')}
