@@ -126,16 +126,19 @@ echo Backend is ready.
 
 echo.
 echo Starting project-managed Nginx on port %NGINX_PORT%...
+echo Nginx executable: %NGINX_HOME%\nginx.exe
+echo Nginx config: %NGINX_CONF%
+echo Nginx static root: %WEB_DIR%
 "%NGINX_HOME%\nginx.exe" -p "%NGINX_PREFIX%" -c "%NGINX_CONF%" -s reload >nul 2>nul
 if errorlevel 1 start "vision-monitor-nginx" /B "%NGINX_HOME%\nginx.exe" -p "%NGINX_PREFIX%" -c "%NGINX_CONF%"
 
-echo Waiting for frontend readiness...
+echo Verifying HTML, static assets, and API proxy...
 for /L %%I in (1,1,30) do (
-  powershell -NoProfile -ExecutionPolicy Bypass -Command "$code = 0; try { $r = Invoke-WebRequest -Uri 'http://127.0.0.1:%NGINX_PORT%/' -UseBasicParsing -TimeoutSec 2; $code = [int]$r.StatusCode } catch { if ($_.Exception.Response) { $code = [int]$_.Exception.Response.StatusCode } }; if ($code -ge 200 -and $code -lt 300) { exit 0 } else { exit 1 }" >nul 2>nul
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0check-nginx.ps1" -BaseUrl "http://127.0.0.1:%NGINX_PORT%" -ApiPath "/api/common-codes/bootstrap" >nul 2>nul
   if not errorlevel 1 goto :frontend_ready
   timeout /t 1 /nobreak >nul
 )
-echo Frontend did not become ready at http://127.0.0.1:%NGINX_PORT%/.
+echo Nginx validation failed for HTML, static assets, or API proxy at http://127.0.0.1:%NGINX_PORT%/.
 echo Check Nginx logs under %NGINX_HOME%\logs.
 exit /b 1
 
