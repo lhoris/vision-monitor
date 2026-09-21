@@ -5,6 +5,8 @@ import reducer, {
   normalizeLayout,
   removeSubTab,
   removeTab,
+  renameTab,
+  renameSubTab,
   resetLayoutState,
   saveMyLayout,
   setActiveTab,
@@ -86,6 +88,22 @@ describe('layoutSlice', () => {
 
     expect(state.activeTab).toBe('tab-1')
     expect(state.layout?.activeTab).toBe('tab-1')
+  })
+
+  it('renames a process tab', () => {
+    const state = reducer(stateWithLayout(), renameTab({ tabId: 'tab-1', name: '가열 공정' }))
+
+    expect(state.layout?.tabs[0].name).toBe('가열 공정')
+  })
+
+  it('renames a detail tab', () => {
+    const state = reducer(stateWithLayout(), renameSubTab({
+      tabId: 'tab-1',
+      subTabId: 'subtab-1',
+      name: '가열 1라인',
+    }))
+
+    expect(state.layout?.tabs[0].subTabs[0].name).toBe('가열 1라인')
   })
 
   it('keeps slice and layout active tab in sync', () => {

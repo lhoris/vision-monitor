@@ -176,6 +176,13 @@ const layoutSlice = createSlice({
       }
     },
 
+    renameTab: (state, action: PayloadAction<{ tabId: string; name: string }>) => {
+      const tab = state.layout?.tabs.find((item) => item.id === action.payload.tabId)
+      if (tab && action.payload.name.trim()) {
+        tab.name = action.payload.name.trim()
+      }
+    },
+
     /**
      * 상위 탭 (공정) 제거
      */
@@ -228,6 +235,14 @@ const layoutSlice = createSlice({
             tab.activeSubTab = tab.subTabs[0]?.id || ''
           }
         }
+      }
+    },
+
+    renameSubTab: (state, action: PayloadAction<{ tabId: string; subTabId: string; name: string }>) => {
+      const tab = state.layout?.tabs.find((item) => item.id === action.payload.tabId)
+      const subTab = tab?.subTabs.find((item) => item.id === action.payload.subTabId)
+      if (subTab && action.payload.name.trim()) {
+        subTab.name = action.payload.name.trim()
       }
     },
 
@@ -405,10 +420,12 @@ export const {
   setActiveTab,
   setActiveSubTab,
   addTab,
+  renameTab,
   removeTab,
   reorderTabs,
   addSubTab,
   removeSubTab,
+  renameSubTab,
   reorderSubTabs,
   updateGridConfig,
   updateCameraPositions,

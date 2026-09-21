@@ -12,6 +12,7 @@ interface SubTabsBarProps {
   onSubTabChange: (subTabId: string) => void
   onAddSubTab: (subTab: SubTab) => void
   onRemoveSubTab: (subTabId: string) => void
+  onRenameSubTab: (subTabId: string, newName: string) => void
   onReorderSubTabs?: (fromIndex: number, toIndex: number) => void
   layoutSelector?: React.ReactNode
 }
@@ -22,11 +23,14 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   onSubTabChange,
   onAddSubTab,
   onRemoveSubTab,
+  onRenameSubTab,
   onReorderSubTabs,
   layoutSelector,
 }) => {
   const [showAddSubTabInput, setShowAddSubTabInput] = useState(false)
   const [newSubTabName, setNewSubTabName] = useState('')
+  const [editingSubTabId, setEditingSubTabId] = useState<string | null>(null)
+  const [editingSubTabName, setEditingSubTabName] = useState('')
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
@@ -50,6 +54,13 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
       setNewSubTabName('')
       setShowAddSubTabInput(false)
     }
+  }
+
+  const handleRenameSubTabSubmit = (subTabId: string) => {
+    const name = editingSubTabName.trim()
+    if (name) onRenameSubTab(subTabId, name)
+    setEditingSubTabId(null)
+    setEditingSubTabName('')
   }
 
   const handleDragStart = (index: number, e: React.DragEvent) => {
@@ -103,8 +114,53 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
                 ${draggedFromIndex === index ? 'opacity-50' : ''}
               `}
             >
-              <span>{subTab.name}</span>
-              {subTabs.length > 1 && (
+              {editingSubTabId === subTab.id ? (
+                <>
+                  <input
+                    autoFocus
+                    type="text"
+                    aria-label="세부공정 이름"
+                    value={editingSubTabName}
+                    onChange={(event) => setEditingSubTabName(event.target.value)}
+                    onKeyDown={(event) => {
+                      event.stopPropagation()
+                      if (event.key === 'Enter') handleRenameSubTabSubmit(subTab.id)
+                      if (event.key === 'Escape') {
+                        setEditingSubTabId(null)
+                        setEditingSubTabName('')
+                      }
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                    className="w-32 rounded border border-blue-400 bg-white px-2 py-1 text-sm text-gray-900 dark:bg-gray-700 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    aria-label="세부공정 이름 저장"
+                    title="이름 저장"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      handleRenameSubTabSubmit(subTab.id)
+                    }}
+                    className="text-green-600 hover:text-green-700 dark:text-green-400"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                <span
+                  onDoubleClick={(event) => {
+                    event.stopPropagation()
+                    setEditingSubTabId(subTab.id)
+                    setEditingSubTabName(subTab.name)
+                  }}
+                >
+                  {subTab.name}
+                </span>
+              )}
+              {editingSubTabId !== subTab.id && subTabs.length > 1 && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation()

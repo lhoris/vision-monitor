@@ -33,11 +33,10 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const handleRenameSubmit = (tabId: string) => {
-    if (editingName.trim() && onRenameTab) {
-      onRenameTab(tabId, editingName.trim())
-      setEditingTabId(null)
-      setEditingName('')
-    }
+    const name = editingName.trim()
+    if (name && onRenameTab) onRenameTab(tabId, name)
+    setEditingTabId(null)
+    setEditingName('')
   }
 
   const handleDragStart = (index: number, e: React.DragEvent) => {
@@ -120,24 +119,45 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               `}
             >
               {editingTabId === tab.id ? (
-                <input
-                  autoFocus
-                  type="text"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  onBlur={() => handleRenameSubmit(tab.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                <>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={(e) => {
+                      e.stopPropagation()
+                      if (e.key === 'Enter') {
+                        handleRenameSubmit(tab.id)
+                      } else if (e.key === 'Escape') {
+                        setEditingTabId(null)
+                        setEditingName('')
+                      }
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-2 py-1 rounded border border-blue-400 bg-white dark:bg-gray-700
+                               text-gray-900 dark:text-white text-sm"
+                  />
+                  <button
+                    type="button"
+                    aria-label="이름 저장"
+                    title="이름 저장"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={(event) => {
+                      event.stopPropagation()
                       handleRenameSubmit(tab.id)
-                    } else if (e.key === 'Escape') {
-                      setEditingTabId(null)
-                      setEditingName('')
-                    }
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="px-2 py-1 rounded border border-blue-400 bg-white dark:bg-gray-700
-                             text-gray-900 dark:text-white text-sm"
-                />
+                    }}
+                    className={`shrink-0 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${
+                      activeTabId === tab.id
+                        ? 'text-white hover:text-cyan-200'
+                        : 'text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200'
+                    }`}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
+                </>
               ) : (
                 <>
                   <span

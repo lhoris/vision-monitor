@@ -2,7 +2,7 @@
  * Custom Hook for Grid Layout Management (2중 탭 구조)
  */
 
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { setActiveTab, setActiveSubTab, updateGridConfig } from '@/store/slices/layoutSlice'
 import type { Tab, SubTab, GridConfig } from '@/types/layout'
@@ -11,7 +11,7 @@ import type { GridDimensions } from './types'
 const GRID_OPTIONS: GridDimensions[] = [
   { rows: 2, cols: 3, label: '2x3' },
   { rows: 3, cols: 3, label: '3x3' },
-  { rows: 3, cols: 2, label: '3x2' },
+  { rows: 3, cols: 4, label: '3x4' },
   { rows: 2, cols: 4, label: '2x4' },
   { rows: 4, cols: 2, label: '4x2' },
   { rows: 4, cols: 4, label: '4x4' },
@@ -21,7 +21,6 @@ export function useGridLayout() {
   const dispatch = useAppDispatch()
   const layout = useAppSelector((state) => state.layout.layout)
   const activeTabId = useAppSelector((state) => state.layout.activeTab)
-  const [gridOptions] = useState<GridDimensions[]>(GRID_OPTIONS)
 
   // 현재 활성 상위 탭
   const activeTab = layout?.tabs.find((tab) => tab.id === activeTabId) as Tab | undefined
@@ -96,7 +95,7 @@ export function useGridLayout() {
     activeTab,
     activeTabId,
     activeSubTab,
-    gridOptions,
+    gridOptions: GRID_OPTIONS,
     getTotalCells,
     getCurrentGridLabel,
     handleSetActiveTab,

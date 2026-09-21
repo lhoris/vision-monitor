@@ -9,10 +9,12 @@ import {
   setActiveTab,
   setActiveSubTab,
   addTab,
+  renameTab,
   removeTab,
   reorderTabs,
   addSubTab,
   removeSubTab,
+  renameSubTab,
   reorderSubTabs,
   updateCameraPositions,
 } from '@/store/slices/layoutSlice'
@@ -276,6 +278,10 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     dispatch(removeTab(tabId))
   }
 
+  const handleRenameTab = (tabId: string, name: string) => {
+    dispatch(renameTab({ tabId, name }))
+  }
+
   const handleReorderTabs = (fromIndex: number, toIndex: number) => {
     dispatch(reorderTabs({ fromIndex, toIndex }))
   }
@@ -293,6 +299,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       return
     }
     dispatch(removeSubTab({ tabId: activeTab.id, subTabId }))
+  }
+
+  const handleRenameSubTab = (subTabId: string, name: string) => {
+    if (!activeTabId) return
+    dispatch(renameSubTab({ tabId: activeTabId, subTabId, name }))
   }
 
   const handleReorderSubTabs = (fromIndex: number, toIndex: number) => {
@@ -369,6 +380,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
           onTabChange={(tabId) => dispatch(setActiveTab(tabId))}
           onAddTab={handleAddTab}
           onRemoveTab={handleRemoveTab}
+          onRenameTab={handleRenameTab}
           onReorderTabs={handleReorderTabs}
         />
 
@@ -380,6 +392,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
           }
           onAddSubTab={handleAddSubTab}
           onRemoveSubTab={handleRemoveSubTab}
+          onRenameSubTab={handleRenameSubTab}
           onReorderSubTabs={handleReorderSubTabs}
           layoutSelector={
             <LayoutSelector
