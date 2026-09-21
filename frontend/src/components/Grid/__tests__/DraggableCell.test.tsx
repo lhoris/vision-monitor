@@ -184,4 +184,31 @@ describe('DraggableCell focus action', () => {
 
     expect(onAddCamera).toHaveBeenCalledTimes(1)
   })
+
+  it('selects a player span from a hoverable cell picker', () => {
+    const onResize = vi.fn(() => true)
+    render(
+      <DraggableCell
+        cellId="cell-0"
+        index={0}
+        camera={camera}
+        rowSpan={1}
+        colSpan={1}
+        maxRows={3}
+        maxCols={4}
+        onResize={onResize}
+        onAddCamera={vi.fn()}
+        onRemoveCamera={vi.fn()}
+      />
+    )
+
+    fireEvent.contextMenu(screen.getByRole('heading', { name: 'Entry Zone CAM-01' }))
+    fireEvent.mouseEnter(screen.getByRole('button', { name: '2x3' }))
+    expect(screen.getByRole('button', { name: '2x3' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '2x2' }))
+    expect(screen.getByRole('button', { name: '2x2' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    expect(onResize).toHaveBeenCalledWith(2, 2)
+  })
 })

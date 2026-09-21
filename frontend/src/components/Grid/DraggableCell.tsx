@@ -63,6 +63,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
   const [resizeRows, setResizeRows] = useState(rowSpan)
   const [resizeCols, setResizeCols] = useState(colSpan)
+  const [resizePreview, setResizePreview] = useState<{ rows: number; cols: number } | null>(null)
   const [resizeError, setResizeError] = useState(false)
 
   useEffect(() => {
@@ -112,6 +113,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     e.preventDefault()
     setResizeRows(rowSpan)
     setResizeCols(colSpan)
+    setResizePreview(null)
     setResizeError(false)
     setContextMenu({ x: e.clientX, y: e.clientY })
   }
@@ -244,14 +246,37 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             </button>}
             {effectiveCamera && onResize ? (
               <div className="border-t border-gray-200 px-3 py-2 dark:border-gray-700">
-                <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">{t('live.contextMenu.playerSize')}</p>
-                <div className="flex items-center gap-2">
-                  <select aria-label={t('live.contextMenu.playerRows')} value={resizeRows} onChange={(event) => setResizeRows(Number(event.target.value))} className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                    {Array.from({ length: maxRows }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} {t('live.contextMenu.rows')}</option>)}
-                  </select>
-                  <select aria-label={t('live.contextMenu.playerColumns')} value={resizeCols} onChange={(event) => setResizeCols(Number(event.target.value))} className="min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
-                    {Array.from({ length: maxCols }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} {t('live.contextMenu.columns')}</option>)}
-                  </select>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="text-xs font-medium text-gray-700 dark:text-gray-200">{t('live.contextMenu.playerSize')}</p>
+                  <span aria-live="polite" className="text-xs tabular-nums text-blue-700 dark:text-blue-300">{(resizePreview ?? { rows: resizeRows, cols: resizeCols }).rows} × {(resizePreview ?? { rows: resizeRows, cols: resizeCols }).cols}</span>
+                </div>
+                <div
+                  role="group"
+                  aria-label={t('live.contextMenu.playerSize')}
+                  className="mx-auto grid w-fit gap-1"
+                  style={{ gridTemplateColumns: `repeat(${maxCols}, 24px)` }}
+                  onMouseLeave={() => setResizePreview(null)}
+                >
+                  {Array.from({ length: maxRows * maxCols }, (_, index) => {
+                    const rows = Math.floor(index / maxCols) + 1
+                    const cols = index % maxCols + 1
+                    const displayed = resizePreview ?? { rows: resizeRows, cols: resizeCols }
+                    const highlighted = rows <= displayed.rows && cols <= displayed.cols
+                    const selected = rows <= resizeRows && cols <= resizeCols
+                    return (
+                      <button
+                        key={`${rows}-${cols}`}
+                        type="button"
+                        aria-label={`${rows}x${cols}`}
+                        aria-pressed={selected}
+                        title={`${rows} × ${cols}`}
+                        onMouseEnter={() => setResizePreview({ rows, cols })}
+                        onFocus={() => setResizePreview({ rows, cols })}
+                        onClick={() => { setResizeRows(rows); setResizeCols(cols); setResizePreview(null) }}
+                        className={`h-6 w-6 rounded-sm border transition-colors focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 ${highlighted ? 'border-blue-600 bg-blue-500 dark:border-blue-300 dark:bg-blue-400' : 'border-gray-300 bg-gray-100 hover:border-blue-400 dark:border-gray-600 dark:bg-gray-700'} ${selected ? 'ring-1 ring-blue-700 dark:ring-blue-200' : ''}`}
+                      />
+                    )
+                  })}
                 </div>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{t('live.contextMenu.overlappingVideosRemoved')}</p>
                 {resizeError ? <p role="alert" className="mt-1 text-xs text-red-600">{t('live.contextMenu.playerSizeUnavailable')}</p> : null}
