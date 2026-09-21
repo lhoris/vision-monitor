@@ -165,7 +165,7 @@ exit /b 0
 
 :setup_java
 set "RESOLVED_JAVA_HOME="
-for /f "usebackq delims=" %%J in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0resolve-java-home.ps1"`) do set "RESOLVED_JAVA_HOME=%%J"
+for /f "usebackq delims=" %%J in (`powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0resolve-java-runtime.ps1"`) do set "RESOLVED_JAVA_HOME=%%J"
 if not defined RESOLVED_JAVA_HOME exit /b 1
 set "JAVA_HOME=%RESOLVED_JAVA_HOME%"
 set "PATH=%JAVA_HOME%\bin;%PATH%"

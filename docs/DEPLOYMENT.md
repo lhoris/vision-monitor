@@ -89,7 +89,7 @@ sudo systemctl status visionmonitor-backend
 
 ## Windows 배포
 
-`scripts/deploy.bat`은 이미 생성된 산출물만 배포합니다. 배포 전에 `scripts\build.bat`을 실행합니다. frontend 산출물과 정확히 하나의 backend JAR가 없으면 중단합니다. 포트 8080 점유 프로세스가 Vision Monitor JAR가 아니면 종료하지 않습니다. backend 준비 후 프로젝트 내부 Nginx 실행 파일·설정·정적 root 경로를 출력하고, `/`, 빌드된 JS/CSS asset, `/api/common-codes/bootstrap` 프록시 응답까지 확인합니다. `/api` 경로는 backend로 전달하고 나머지는 `deploy\www`의 정적 파일과 SPA 경로로 처리합니다. 정적 asset 파일이 없으면 HTML 대신 404를 반환합니다.
+`scripts/deploy.bat`은 이미 생성된 산출물만 배포합니다. 배포 전에 `scripts\build.bat`을 실행합니다. 폐쇄망 배포 PC에는 Java 21 runtime만 필요하며 JDK, Maven, Node.js/npm은 필요하지 않습니다. Java는 설치 경로 또는 PATH에서 자동 탐색하고, 배포 과정에서는 어떤 파일도 다운로드하거나 설치하지 않습니다. frontend 산출물과 정확히 하나의 backend JAR가 없으면 중단합니다. 포트 8080 점유 프로세스가 Vision Monitor JAR가 아니면 종료하지 않습니다. backend 준비 후 프로젝트 내부 Nginx 실행 파일·설정·정적 root 경로를 출력하고, `/`, 빌드된 JS/CSS asset, `/api/common-codes/bootstrap` 프록시 응답까지 확인합니다. `/api` 경로는 backend로 전달하고 나머지는 `deploy\www`의 정적 파일과 SPA 경로로 처리합니다. 정적 asset 파일이 없으면 HTML 대신 404를 반환합니다.
 
 기본 배포 경로는 저장소 아래 `deploy\app`, `deploy\www`, `deploy\logs`입니다. 다른 루트는 `DEPLOY_DIR` 환경 변수로 지정할 수 있습니다. Windows Nginx 1.30.5 실행 파일과 공식 배포 파일은 저장소의 `nginx/windows/runtime`에 포함되어 있어 별도 다운로드가 필요 없습니다. `nginx/windows/nginx.conf.template`에서 실제 배포 경로에 맞는 설정을 생성합니다. 기본 포트는 `8088`이며 `NGINX_PORT`로 바꿀 수 있습니다. 공식 배포본의 라이선스 고지는 `nginx/windows/runtime/docs`에 포함되어 있습니다.
 
