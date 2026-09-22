@@ -103,7 +103,7 @@ describe('DraggableCell focus action', () => {
       />
     )
 
-    expect(screen.getByTitle('Drag to move camera')).toHaveClass('camera-tile-header')
+    expect(screen.getByTestId('camera-tile').querySelector('.camera-tile-header')).toHaveClass('camera-tile-header')
     expect(screen.getByRole('heading', { name: 'Entry Zone CAM-01' })).toHaveClass('camera-tile-header__title')
     expect(screen.getByRole('button', { name: 'Entry Zone CAM-01 확대 보기' })).toHaveClass(
       'opacity-0',

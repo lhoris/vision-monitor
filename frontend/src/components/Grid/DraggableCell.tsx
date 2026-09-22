@@ -172,13 +172,11 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         draggable
         onDragStart={handleDragStart}
             className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
-        title="Drag to move camera"
       >
         <div className="flex min-w-0 items-center gap-2">
           <span
             className={`h-3 w-3 shrink-0 rounded-full ${getStatusDotClass(effectiveCamera.status)}`}
             aria-label={`Status: ${effectiveCamera.status}`}
-            title={effectiveCamera.status}
           />
           <div className="min-w-0">
             <h3 className="camera-tile-header__title truncate text-base font-medium leading-none">{displayName}</h3>
