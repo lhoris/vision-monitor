@@ -43,6 +43,14 @@ describe('authService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/auth/session')
   })
 
+  it('revokes the current session through the backend on logout', async () => {
+    mockedApiClient.post.mockResolvedValue({ success: true, data: null })
+
+    await authService.logout()
+
+    expect(mockedApiClient.post).toHaveBeenCalledWith('/auth/logout')
+  })
+
   it('loads the authenticated users own profile from the backend', async () => {
     mockedApiClient.get.mockResolvedValue({
       success: true,

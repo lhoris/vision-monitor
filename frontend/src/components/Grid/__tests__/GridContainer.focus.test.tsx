@@ -107,7 +107,7 @@ describe('GridContainer focus routing', () => {
     )
 
     fireEvent.contextMenu(screen.getByRole('heading', { name: 'Camera 1' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+    fireEvent.click(screen.getByRole('button', { name: 'live.contextMenu.renameTitle' }))
     fireEvent.change(screen.getByLabelText('Title'), {
       target: { value: '공냉대 진입부' },
     })

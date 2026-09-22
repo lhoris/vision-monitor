@@ -4,6 +4,7 @@ import authReducer, { loginUser, logout, logoutUser } from '../authSlice'
 vi.mock('@/services/authService', () => ({
   authService: {
     login: vi.fn(),
+    logout: vi.fn(),
   },
 }))
 
@@ -74,9 +75,24 @@ describe('authSlice', () => {
     const logoutAction = await logoutUser()(vi.fn(), vi.fn(), undefined)
     authReducer(loggedOutState, logoutAction)
 
+    expect(mockedAuthService.logout).toHaveBeenCalled()
     expect(localStorage.getItem('authToken')).toBeNull()
     expect(localStorage.getItem('authUsername')).toBeNull()
     expect(localStorage.getItem('authUser')).toBeNull()
+  })
+
+  it('clears local authentication even when server logout fails', async () => {
+    localStorage.setItem('authToken', 'token')
+    localStorage.setItem('authUsername', 'admin')
+    localStorage.setItem('authUser', JSON.stringify({ id: 1, username: 'admin' }))
+    mockedAuthService.logout.mockRejectedValue(new Error('Network unavailable'))
+
+    const logoutAction = await logoutUser()(vi.fn(), vi.fn(), undefined)
+    const state = authReducer(undefined, logoutAction)
+
+    expect(logoutAction.type).toContain('/fulfilled')
+    expect(state.isAuthenticated).toBe(false)
+    expect(localStorage.getItem('authToken')).toBeNull()
   })
 
   it('restores administrator access from stored session regardless of role casing', async () => {

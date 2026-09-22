@@ -94,4 +94,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
         verify(authService).changePassword("tester", new ChangePasswordRequest("old-password", "new-password-1"));
     }
+
+    @Test
+    void revokesBearerSessionOnLogout() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer session-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(authService).logout("session-token");
+    }
 }

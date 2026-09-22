@@ -9,6 +9,7 @@ export const eventsMock: Event[] = [
     description: '공냉대 온도 상한 초과',
     timestamp: new Date(Date.now() - 2 * 60_000),
     acknowledged: false,
+    processCode: 'COOLING', processName: '냉각', modelName: 'Cooling Bed Temperature Monitor', location: '공냉대 출구', judgment: 'NG',
     metadata: {
       coilId: 'C260921-014',
       measuredTemperatureC: 786,
@@ -25,6 +26,7 @@ export const eventsMock: Event[] = [
     description: '공냉대 온도 상승 대응으로 롤링 속도 상향',
     timestamp: new Date(Date.now() - 8 * 60_000),
     acknowledged: false,
+    processCode: 'ROLLING', processName: '압연', modelName: 'Rolling Speed Control Model', location: '압연기 PLC', judgment: 'OK',
     metadata: {
       coilId: 'C260921-014',
       previousSpeedMps: 0.52,
@@ -41,6 +43,7 @@ export const eventsMock: Event[] = [
     description: '진입 구간 소재 정체 감지',
     timestamp: new Date(Date.now() - 18 * 60_000),
     acknowledged: false,
+    processCode: 'HEATING', processName: '가열', modelName: 'Entry Zone Jam Monitor', location: '공냉대 Entry Zone', judgment: 'NG',
     metadata: {
       coilId: 'C260921-018',
       stoppedDurationSeconds: 42,
@@ -56,6 +59,7 @@ export const eventsMock: Event[] = [
     description: '소재 규격 편차 감지',
     timestamp: new Date(Date.now() - 27 * 60_000),
     acknowledged: true,
+    processCode: 'ROLLING', processName: '압연', modelName: 'Dimension Inspection Model', location: '압연기 출측', judgment: 'NG',
     metadata: {
       coilId: 'C260921-011',
       targetDiameterMm: 22,
@@ -72,6 +76,7 @@ export const eventsMock: Event[] = [
     description: '제어 연동 통신 실패',
     timestamp: new Date(Date.now() - 35 * 60_000),
     acknowledged: false,
+    processCode: 'ROLLING', processName: '압연', modelName: 'Control Integration Monitor', location: '압연기 PLC', judgment: 'NG',
     metadata: {
       equipment: '압연기 PLC',
       descriptionKo: '압연기 PLC 제어 연동 통신에 실패해 속도 변경 명령을 전달하지 못했습니다. PLC 연결 상태를 확인하고 필요 시 현장 조치하세요.',
@@ -86,6 +91,7 @@ export const eventsMock: Event[] = [
     description: '정정 구역 카메라 연결 끊김',
     timestamp: new Date(Date.now() - 55 * 60_000),
     acknowledged: true,
+    processCode: 'FINISHING', processName: '정정', modelName: 'Camera Connection Monitor', location: '정정 구역 출측', judgment: 'NG',
     metadata: {
       cameraName: '정정 구역 출측 카메라',
       descriptionKo: '정정 구역 출측 카메라와 3분 이상 통신이 끊겼습니다. 카메라 전원과 네트워크 연결을 확인하세요.',

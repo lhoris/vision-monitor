@@ -9,6 +9,7 @@ import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.AuthorizationRepository;
+import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAuthorizationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,14 +50,11 @@ public class AuthService {
     public AuthService(
             UserAccountRepository userRepository,
             AuthorizationRepository authorizationRepository,
-            UserAuthorizationRepository userAuthorizationRepository
+            UserAuthorizationRepository userAuthorizationRepository,
+            AuthSessionRepository authSessionRepository
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
-                new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository));
-    }
-
-    public AuthService(UserAccountRepository userRepository) {
-        this(userRepository, null, null, new AuthSessionService(userRepository, null, null));
+                new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository));
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +78,10 @@ public class AuthService {
         user.setRole(isAdministrator(user) ? "ADMIN" : "USER");
 
         return new LoginResponse(AuthenticatedUserDto.from(user), sessionService.createSession(user), passwordChangeRequired);
+    }
+
+    public void logout(String token) {
+        sessionService.revokeSession(token);
     }
 
     @Transactional

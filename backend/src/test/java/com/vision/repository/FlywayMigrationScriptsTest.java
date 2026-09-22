@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlywayMigrationScriptsTest {
 
@@ -36,6 +37,17 @@ class FlywayMigrationScriptsTest {
     @Test
     void removedLegacyMigrationIsNotPresent() throws IOException {
         assertFalse(Files.exists(MIGRATION_DIR.resolve("V012__move_legacy_tables_to_tb_m26.sql")), "Removed legacy migration V012 must not be present");
+    }
+
+    @Test
+    void authSessionMigrationFollowsSessionTableRules() throws IOException {
+        String normalized = Files.readString(MIGRATION_DIR.resolve("V022__create_m26_auth_session.sql"))
+                .toUpperCase(Locale.ROOT);
+
+        assertFalse(normalized.contains("FOREIGN KEY"), "Auth session migration must not define foreign keys");
+        assertFalse(normalized.contains("UNIQUE"), "Auth session migration must not define unique constraints");
+        assertFalse(normalized.contains("KEY IX_"), "Auth session migration must not define secondary indexes");
+        assertTrue(normalized.indexOf("CREATED_OBJECT_TYPE") < normalized.indexOf("AUTH_SESSION_ID"));
     }
 
     private java.util.List<String> legacyViolations(Path path) {

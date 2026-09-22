@@ -12,6 +12,25 @@
   box-sizing: border-box;
 }
 
+/* Alarm history keeps the process column first for the operator's scan path. */
+main table.min-w-\[1050px\] {
+  display: block;
+  min-width: 1050px;
+}
+
+main table.min-w-\[1050px\] thead,
+main table.min-w-\[1050px\] tbody,
+main table.min-w-\[1050px\] tr {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) minmax(110px, 0.9fr) minmax(150px, 1.25fr) minmax(150px, 1.2fr) minmax(180px, 1.5fr) minmax(70px, 0.6fr) minmax(70px, 0.6fr) minmax(100px, 0.8fr);
+  min-width: 1050px;
+}
+
+main table.min-w-\[1050px\] th:nth-child(1),
+main table.min-w-\[1050px\] td:nth-child(1) { order: 2; }
+main table.min-w-\[1050px\] th:nth-child(2),
+main table.min-w-\[1050px\] td:nth-child(2) { order: 1; }
+
 html,
 body {
   font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;

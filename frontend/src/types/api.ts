@@ -27,6 +27,15 @@ export interface Event {
   timestamp: Date
   acknowledged: boolean
   metadata?: Record<string, unknown>
+  processCode?: string
+  processName?: string
+  modelName?: string
+  location?: string
+  judgment?: 'OK' | 'NG'
+  acknowledgementByUser?: Record<string, {
+    acknowledged: boolean
+    acknowledgedAt?: Date
+  }>
 }
 
 export interface AlertSetting {

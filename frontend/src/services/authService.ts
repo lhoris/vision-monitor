@@ -61,6 +61,10 @@ class AuthService {
     if (!user) throw new Error('Authentication session is invalid')
     return user
   }
+
+  async logout(): Promise<void> {
+    await apiClient.post('/auth/logout')
+  }
 }
 
 export const authService = new AuthService()

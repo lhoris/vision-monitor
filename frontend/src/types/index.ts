@@ -8,6 +8,7 @@ export type { Event } from './api'
 export type { Layout, Tab, GridConfig } from './layout'
 export * from './streamPlayer'
 export * from './cameraFocus'
+export * from './alarm'
 
 // Re-export all types
 export * from './camera'

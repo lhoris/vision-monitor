@@ -19,7 +19,7 @@ const source: TemporaryVideoSource = {
   id: 'temporary-1',
   url: 'https://media.test/live.m3u8',
   protocol: 'hls',
-  displayName: '외부 영상',
+  displayName: 'External video',
   playbackStatus: 'idle',
 }
 
@@ -42,16 +42,16 @@ describe('TemporaryVideoTile', () => {
       />
     )
 
-    expect(screen.getByRole('heading', { name: '외부 영상' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'External video' })).toBeInTheDocument()
     fireEvent.click(screen.getByTestId('live-stream-player'))
     expect(onStatusChange).toHaveBeenCalledWith('playing')
 
-    fireEvent.contextMenu(screen.getByRole('heading', { name: '외부 영상' }))
-    fireEvent.click(screen.getByRole('button', { name: '주소 수정' }))
+    fireEvent.contextMenu(screen.getByRole('heading', { name: 'External video' }))
+    fireEvent.click(screen.getByRole('button', { name: 'live.contextMenu.editAddress' }))
     expect(onEdit).toHaveBeenCalledTimes(1)
 
-    fireEvent.contextMenu(screen.getByRole('heading', { name: '외부 영상' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    fireEvent.contextMenu(screen.getByRole('heading', { name: 'External video' }))
+    fireEvent.click(screen.getByRole('button', { name: 'live.contextMenu.removeVideo' }))
     expect(onRemove).toHaveBeenCalledTimes(1)
   })
 

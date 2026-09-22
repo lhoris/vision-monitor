@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import com.vision.config.AuthSessionInterceptor;
@@ -35,6 +36,12 @@ public class AuthController {
         return ApiResponse.success(user);
     }
 
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(HttpServletRequest request) {
+        authService.logout(extractBearerToken(request.getHeader("Authorization")));
+        return ApiResponse.success(null);
+    }
+
     @GetMapping("/profile")
     public ApiResponse<MyProfileDto> profile(
             @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
@@ -49,5 +56,10 @@ public class AuthController {
     ) {
         authService.changePassword(user.username(), request);
         return ApiResponse.success(null);
+    }
+
+    private String extractBearerToken(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) return null;
+        return authorization.substring("Bearer ".length()).trim();
     }
 }

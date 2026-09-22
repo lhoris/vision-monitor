@@ -61,7 +61,7 @@ describe('Events', () => {
     renderEvents()
 
     expect(screen.getByRole('button', { name: 'Motion Detected' })).toBeInTheDocument()
-    expect(screen.getByText('Unacknowledged Critical')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Query' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'All' }))
     fireEvent.click(screen.getByRole('button', { name: 'Motion Detected' }))
     expect(screen.getByText(/does not issue equipment-control commands/i)).toBeInTheDocument()

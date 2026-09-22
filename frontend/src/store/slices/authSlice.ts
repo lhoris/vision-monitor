@@ -138,7 +138,13 @@ export const validateAuthSession = createAsyncThunk(
 )
 
 export const logoutUser = createAsyncThunk('auth/logoutUser', async () => {
-  removeStoredAuth()
+  try {
+    await authService.logout()
+  } catch {
+    // Local sign-out must still complete when the server is unreachable.
+  } finally {
+    removeStoredAuth()
+  }
 })
 
 const authSlice = createSlice({
