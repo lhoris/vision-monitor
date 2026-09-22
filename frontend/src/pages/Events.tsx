@@ -362,8 +362,8 @@ export function Events() {
               <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead className="sticky top-0 z-10 bg-gray-50 text-xs font-semibold text-gray-500 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-3">{t("events.category")}</th>
                     <th className="px-3 py-3">{t("events.process")}</th>
+                    <th className="px-3 py-3">{t("events.category")}</th>
                     <th className="px-3 py-3">{t("events.time")}</th>
                     <th className="px-3 py-3">{t("events.location")}</th>
                     <th className="px-3 py-3">{t("events.aiModel")}</th>
@@ -400,6 +400,7 @@ export function Events() {
                           onClick={() => setSelectedId(event.id)}
                           className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/70 ${selected?.id === event.id ? "bg-blue-50/70 dark:bg-blue-950/30" : ""}`}
                         >
+                          <td className="px-3 py-3">{event.processName ?? "-"}</td>
                           <td className="px-3 py-3">
                             <button
                               type="button"
@@ -414,9 +415,6 @@ export function Events() {
                             <p className="mt-1 max-w-[220px] truncate text-xs text-gray-500">
                               {description(event)}
                             </p>
-                          </td>
-                          <td className="px-3 py-3">
-                            {event.processName ?? "-"}
                           </td>
                           <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums">
                             {dateTime(event.timestamp)}
@@ -491,7 +489,7 @@ export function Events() {
                     </div>
                   ) : clip?.playbackUrl ? (
                     <video
-                      className="h-full w-full"
+                      className="h-full w-full object-contain"
                       src={clip.playbackUrl}
                       controls
                       autoPlay
