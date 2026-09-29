@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AuthSessionServiceTest {
@@ -68,6 +70,7 @@ class AuthSessionServiceTest {
         assertThat(resolved).get().extracting("username").isEqualTo("admin");
         assertThat(resolved).get().extracting("role").isEqualTo("admin");
         assertThat(resolved).get().extracting("permissions").isEqualTo(of("admin:access"));
+        verify(sessionRepository, times(1)).save(any(AuthSession.class));
     }
 
     @Test

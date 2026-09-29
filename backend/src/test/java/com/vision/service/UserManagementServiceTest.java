@@ -1,6 +1,7 @@
 package com.vision.service;
 
 import com.vision.entity.UserAccount;
+import com.vision.dto.UserMutationRequest;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,13 +9,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementServiceTest {
@@ -61,6 +66,25 @@ class UserManagementServiceTest {
         ApiException exception = assertThrows(ApiException.class, () -> service.changeStatus("admin", 1L, "retire", null));
 
         assertEquals("SELF_LOCKOUT_RISK", exception.getCode());
+    }
+
+    @Test
+    void createsNewUsersWithTheirUsernameAsTheInitialPassword() {
+        UserAccount admin = user(1L, "admin", "ADMIN");
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.existsByUsernameIgnoreCase("pd0a5661")).thenReturn(false);
+        when(userRepository.save(any(UserAccount.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserMutationRequest request = new UserMutationRequest(
+                "pd0a5661", "PD User", null, null, null, null, null,
+                List.of("USER"), "active", "employed", false
+        );
+
+        service.createUser("admin", request);
+
+        org.mockito.ArgumentCaptor<UserAccount> captor = org.mockito.ArgumentCaptor.forClass(UserAccount.class);
+        org.mockito.Mockito.verify(userRepository).save(captor.capture());
+        assertTrue(new BCryptPasswordEncoder().matches("pd0a5661", captor.getValue().getPasswordHash()));
     }
 
     private UserAccount user(Long id, String username, String role) {

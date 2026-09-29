@@ -131,6 +131,19 @@ class AuthServiceTest {
     }
 
     @Test
+    void migratesLegacyFoundationPasswordWhenUsernameIsUsed() {
+        UserAccount account = user("pd0a5661", "USER");
+        account.setPasswordHash("$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a");
+        when(userRepository.findByUsernameIgnoreCase("pd0a5661")).thenReturn(Optional.of(account));
+
+        LoginResponse response = service.login(new LoginRequest("pd0a5661", "pd0a5661"));
+
+        assertEquals("pd0a5661", response.user().username());
+        assertTrue(encoder.matches("pd0a5661", account.getPasswordHash()));
+        verify(userRepository).save(account);
+    }
+
+    @Test
     void rejectsDisabledLockedAndRetiredAccountsWithGenericAuthFailure() {
         UserAccount disabled = user("disabled", "ADMIN");
         disabled.setPasswordHash(encoder.encode("admin"));

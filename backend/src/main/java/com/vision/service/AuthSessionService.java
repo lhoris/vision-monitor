@@ -61,7 +61,7 @@ public class AuthSessionService {
         return token;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<AuthenticatedUserDto> resolveUser(String token) {
         if (token == null || token.isBlank()) return Optional.empty();
 
@@ -72,8 +72,8 @@ public class AuthSessionService {
         if (session.isEmpty()) return Optional.empty();
 
         AuthSession activeSession = session.get();
-        activeSession.setLastAccessedTimestamp(now);
-        sessionRepository.save(activeSession);
+        // Authentication validation must remain read-only because parallel API requests
+        // can resolve the same bearer session at the same time.
 
         return userRepository.findById(activeSession.getUserId())
                 .filter(this::canLogin)

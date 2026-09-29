@@ -27,6 +27,7 @@ public class AuthService {
     private static final String EMPLOYED = "employed";
     private static final String AUTH_FAILED = "AUTH_FAILED";
     private static final String AUTH_FAILED_MESSAGE = "Invalid username or password";
+    private static final String LEGACY_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
 
     private final UserAccountRepository userRepository;
     private final AuthorizationRepository authorizationRepository;
@@ -71,8 +72,17 @@ public class AuthService {
             throw authFailed();
         }
         boolean passwordChangeRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
-        if (!passwordChangeRequired && (password == null || password.isBlank() || !passwordEncoder.matches(password, user.getPasswordHash()))) {
-            throw authFailed();
+        if (!passwordChangeRequired) {
+            boolean passwordMatches = password != null
+                    && !password.isBlank()
+                    && passwordEncoder.matches(password, user.getPasswordHash());
+            boolean legacyUsernamePassword = LEGACY_FOUNDATION_PASSWORD_HASH.equals(user.getPasswordHash())
+                    && username.equals(password);
+            if (!passwordMatches && !legacyUsernamePassword) throw authFailed();
+            if (legacyUsernamePassword) {
+                user.setPasswordHash(passwordEncoder.encode(username));
+                userRepository.save(user);
+            }
         }
 
         user.setRole(isAdministrator(user) ? "ADMIN" : "USER");

@@ -18,6 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +42,7 @@ public class UserManagementService {
     private static final String ROLE_MANAGER = "MANAGER";
     private static final String ROLE_USER = "USER";
     private static final String USER_ROLE_CODE = "USER_ROLE";
-    private static final String DEFAULT_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final UserAccountRepository userRepository;
     private final AuthorizationRepository authorizationRepository;
@@ -113,7 +115,7 @@ public class UserManagementService {
         }
         UserAccount user = UserAccount.builder()
                 .username(request.username().trim())
-                .passwordHash(DEFAULT_FOUNDATION_PASSWORD_HASH)
+                .passwordHash(defaultPasswordHash(request.username().trim()))
                 .name(request.name().trim())
                 .remarks(valueOrNull(request.displayName()))
                 .email(valueOrNull(request.email()))
@@ -128,7 +130,7 @@ public class UserManagementService {
                 .updatedBy(actor.getUsername())
                 .build();
         if (Boolean.TRUE.equals(request.resetPassword())) {
-            user.setPasswordHash(DEFAULT_FOUNDATION_PASSWORD_HASH);
+            user.setPasswordHash(defaultPasswordHash(user.getUsername()));
         }
         UserAccount saved = userRepository.save(user);
         syncUserAuthorization(saved, saved.getRole());
@@ -150,7 +152,7 @@ public class UserManagementService {
         user.setName(request.name().trim());
         user.setRemarks(valueOrNull(request.displayName()));
         if (Boolean.TRUE.equals(request.resetPassword())) {
-            user.setPasswordHash(DEFAULT_FOUNDATION_PASSWORD_HASH);
+            user.setPasswordHash(defaultPasswordHash(user.getUsername()));
         }
         user.setEmail(valueOrNull(request.email()));
         user.setDepartment(valueOrNull(request.department()));
@@ -408,6 +410,10 @@ public class UserManagementService {
 
     private String valueOrNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String defaultPasswordHash(String username) {
+        return passwordEncoder.encode(username);
     }
 
     private String firstNonBlank(String... values) {
