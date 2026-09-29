@@ -69,6 +69,7 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { path: '/admin/model-management', labelKey: 'navigation.admin.modelRestart', icon: <ModelIcon /> },
       { path: '/admin/videos', labelKey: 'navigation.admin.videos', icon: <CameraIcon /> },
+      { path: '/admin/query-management', labelKey: 'navigation.admin.queries', icon: <SettingsIcon /> },
     ],
   },
   {

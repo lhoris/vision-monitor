@@ -14,19 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class MetadataQueryService {
-    private static final Pattern PARAMETER = Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)");
-    private static final Pattern FORBIDDEN = Pattern.compile("\\b(insert|update|delete|drop|alter|create|truncate|replace|merge|call|grant|revoke)\\b", Pattern.CASE_INSENSITIVE);
-
     private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper objectMapper;
+    private final MetadataQueryValidationService validation;
 
     @Transactional(readOnly = true)
     public List<MetadataQuerySummaryDto> list() {
@@ -59,7 +54,7 @@ public class MetadataQueryService {
             );
         });
 
-        String sql = validateSql((String) definition.get("sql"));
+        String sql = validation.sql((String) definition.get("sql"));
         Map<String, Object> parameters = request == null || request.parameters() == null
                 ? Map.of() : request.parameters();
         if (request != null && request.sourceId() != null) {
@@ -71,20 +66,8 @@ public class MetadataQueryService {
         return new MetadataQueryResultDto(queryCode, parseSchema((String) definition.get("schema")), rows, Instant.now());
     }
 
-    private String validateSql(String sql) {
-        String normalized = sql == null ? "" : sql.trim();
-        String upper = normalized.toUpperCase(Locale.ROOT);
-        if (normalized.isBlank() || !(upper.startsWith("SELECT ") || upper.startsWith("SELECT\n") || upper.startsWith("WITH "))) {
-            throw new ApiException("METADATA_QUERY_INVALID", "Only read-only metadata queries are allowed");
-        }
-        if (normalized.contains(";") || normalized.contains("--") || normalized.contains("/*") || FORBIDDEN.matcher(normalized).find()) {
-            throw new ApiException("METADATA_QUERY_INVALID", "The metadata query contains a forbidden statement");
-        }
-        return normalized;
-    }
-
     private void validateParameters(String sql, Map<String, Object> parameters) {
-        Matcher matcher = PARAMETER.matcher(sql);
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(":([A-Za-z][A-Za-z0-9_]*)").matcher(sql);
         while (matcher.find()) {
             if (!parameters.containsKey(matcher.group(1))) {
                 throw new ApiException("METADATA_QUERY_INVALID", "A required query parameter is missing");
