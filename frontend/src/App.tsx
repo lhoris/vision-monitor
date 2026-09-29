@@ -21,7 +21,7 @@ import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
 import { fetchEvents } from '@/store/slices/eventSlice'
 import { hasAdminAccess, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
-import i18n from '@/i18n'
+import i18n, { getUserLanguage } from '@/i18n'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
 
@@ -34,6 +34,13 @@ export function AppRoutes() {
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
   const eventFetchStarted = useRef(false)
   const canAccessAdminRoutes = hasAdminAccess(user)
+
+  useEffect(() => {
+    const language = getUserLanguage(user?.username)
+    if (i18n.language !== language) {
+      void i18n.changeLanguage(language)
+    }
+  }, [user?.username])
 
   useEffect(() => {
     document.documentElement.dataset.theme = themeMode

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { saveUserLanguage, type SupportedLanguage } from '@/i18n'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
   toggleSidebar,
@@ -91,8 +92,9 @@ export function Header() {
     navigate('/login')
   }
 
-  const handleLanguageChange = async (lang: 'en' | 'ko') => {
+  const handleLanguageChange = async (lang: SupportedLanguage) => {
     await i18n.changeLanguage(lang)
+    saveUserLanguage(user?.username, lang)
     setLanguageMenuOpen(false)
   }
 
