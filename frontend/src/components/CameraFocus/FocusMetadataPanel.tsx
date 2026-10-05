@@ -35,11 +35,16 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
   useEffect(() => {
     let disposed = false
     profileChangedRef.current = false
-    void Promise.all([getMetadataProfile(userId, sourceId), listMetadataQueries()]).then(([nextProfile, nextQueries]) => {
-      if (disposed) return
-      if (!profileChangedRef.current) setProfile(nextProfile)
-      setQueries(nextQueries)
+    void getMetadataProfile(userId, sourceId).then((nextProfile) => {
+      if (!disposed && !profileChangedRef.current) setProfile(nextProfile)
     })
+    void listMetadataQueries()
+      .then((nextQueries) => {
+        if (!disposed) setQueries(nextQueries)
+      })
+      .catch(() => {
+        if (!disposed) setQueries([])
+      })
     return () => { disposed = true }
   }, [sourceId, userId])
 

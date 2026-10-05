@@ -1,16 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { post } = vi.hoisted(() => ({ post: vi.fn() }))
+const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
 
 vi.mock('../api', () => ({
-  apiClient: { post },
+  apiClient: { get, post },
 }))
 
-import { executeMetadataQuery } from '../metadataQueryService'
+import { executeMetadataQuery, listMetadataQueries } from '../metadataQueryService'
 
 describe('metadataQueryService', () => {
   beforeEach(() => {
+    get.mockReset()
     post.mockReset()
+  })
+
+  it('loads query definitions from the backend catalog', async () => {
+    get.mockResolvedValue({
+      data: [{ queryCode: 'Q_STATUS', queryName: 'Status', useStatus: 'Y' }],
+    })
+
+    await expect(listMetadataQueries()).resolves.toEqual([expect.objectContaining({ queryId: 'Q_STATUS', enabled: true })])
+    expect(get).toHaveBeenCalledWith('/metadata/queries')
   })
 
   it('forwards the abort signal to the metadata query request', async () => {
@@ -40,5 +50,12 @@ describe('metadataQueryService', () => {
     await expect(executeMetadataQuery({ queryId: 'Q_STATUS', sourceId: '12', signal: controller.signal }))
       .rejects.toMatchObject({ name: 'AbortError' })
     expect(post).not.toHaveBeenCalled()
+  })
+
+  it('propagates backend query failures instead of returning fixture data', async () => {
+    post.mockRejectedValue({ code: 'METADATA_QUERY_NOT_FOUND', message: 'Query not found' })
+
+    await expect(executeMetadataQuery({ queryId: 'Q_UNKNOWN', sourceId: '12' }))
+      .rejects.toMatchObject({ code: 'METADATA_QUERY_NOT_FOUND' })
   })
 })
