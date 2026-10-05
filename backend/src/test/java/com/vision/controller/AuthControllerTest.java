@@ -70,6 +70,19 @@ class AuthControllerTest {
     }
 
     @Test
+    void doesNotExposeUnexpectedExceptionDetails() throws Exception {
+        when(authService.login(any())).thenThrow(new IllegalStateException("database password=secret"));
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new LoginRequest("admin", "admin"))))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("INTERNAL_ERROR"))
+                .andExpect(jsonPath("$.message").value("An unexpected error occurred"))
+                .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
     void returnsOnlyTheAuthenticatedUsersProfile() throws Exception {
         AuthenticatedUserDto authenticatedUser = new AuthenticatedUserDto(1L, "tester", "admin", List.of("admin:access"));
         when(authService.getMyProfile("tester")).thenReturn(new MyProfileDto(1L, "tester", "Test User", "admin", "tester@example.com", "01012345678"));

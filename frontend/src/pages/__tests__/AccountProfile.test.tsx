@@ -16,7 +16,8 @@ function renderProfile() {
 }
 
 describe('AccountProfile', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en')
     vi.clearAllMocks()
     vi.mocked(authService.getMyProfile).mockResolvedValue({ id: 4, username: 'tester', name: 'Test User', role: 'admin', email: 'tester@example.com', phone: '01012345678' })
     vi.mocked(authService.changePassword).mockResolvedValue()

@@ -12,7 +12,8 @@ vi.mock('@/services/userAlertPreferenceService', () => ({
 describe('Settings', () => {
   const renderSettings = () => render(<I18nextProvider i18n={i18n}><Settings /></I18nextProvider>)
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en')
     vi.clearAllMocks()
     get.mockResolvedValue({ email: 'operator@example.com', phone: '01012345678', emailEnabled: false, smsEnabled: false })
     save.mockImplementation(async (input) => ({ email: 'operator@example.com', phone: '01012345678', ...input }))

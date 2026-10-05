@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '@/i18n'
 import { AddCameraDialog } from '../AddCameraDialog'
@@ -38,6 +38,10 @@ const videoSources: VideoSource[] = [
 ]
 
 describe('AddCameraDialog', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en')
+  })
+
   it('switches to direct source mode and uses WebRTC as the default protocol', () => {
     const onAddDirectSource = vi.fn()
 
