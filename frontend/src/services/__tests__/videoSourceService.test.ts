@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { reconcileLegacyCameraIds, videoSourceToCamera, videoSourcesToCameras } from '../videoSourceService'
-import { createMockLayout } from '@/mocks/liveMonitoring'
+import { createMockLayout } from '@/test/fixtures/liveMonitoring'
 import type { VideoSource } from '@/types/videoSource'
 
 const activeSource: VideoSource = {

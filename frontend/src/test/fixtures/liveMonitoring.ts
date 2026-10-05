@@ -2,8 +2,6 @@ import type { Camera } from '@/types/camera'
 import type { CameraPosition, Layout } from '@/types/layout'
 import { buildCameraStreamPageUrl } from '@/streaming/config'
 
-const DEFAULT_CAMERA_COUNT = 7
-
 const defaultCameraPositions: CameraPosition[] = [
   { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
   { cameraId: 2, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
@@ -18,10 +16,9 @@ function cloneDefaultCameraPositions(): CameraPosition[] {
   return defaultCameraPositions.map((position) => ({ ...position }))
 }
 
-export function createMockCameras(count = DEFAULT_CAMERA_COUNT): Camera[] {
+export function createMockCameras(count = 7): Camera[] {
   return Array.from({ length: count }, (_, index) => {
     const cameraNumber = index + 1
-
     return {
       id: cameraNumber,
       name: `Camera ${cameraNumber}`,
@@ -37,6 +34,25 @@ export function createMockCameras(count = DEFAULT_CAMERA_COUNT): Camera[] {
 }
 
 export function createMockLayout(now = new Date().toISOString()): Layout {
+  const subTabs = (name: string): Layout['tabs'][number]['subTabs'] => [
+    {
+      id: 'subtab-1',
+      name,
+      gridConfig: { rows: 3, cols: 3, layout: 'grid', gapSize: 8 },
+      cameraPositions: cloneDefaultCameraPositions(),
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: 'subtab-2',
+      name: 'Equipment 2',
+      gridConfig: { rows: 3, cols: 3, layout: 'grid', gapSize: 8 },
+      cameraPositions: cloneDefaultCameraPositions(),
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]
+
   return {
     id: 1,
     userId: 1,
@@ -44,24 +60,7 @@ export function createMockLayout(now = new Date().toISOString()): Layout {
       {
         id: 'tab-1',
         name: 'Production Line A',
-        subTabs: [
-          {
-            id: 'subtab-1',
-            name: 'Equipment 1',
-            gridConfig: { rows: 3, cols: 3, layout: 'grid', gapSize: 8 },
-            cameraPositions: cloneDefaultCameraPositions(),
-            createdAt: now,
-            updatedAt: now,
-          },
-          {
-            id: 'subtab-2',
-            name: 'Equipment 2',
-            gridConfig: { rows: 3, cols: 3, layout: 'grid', gapSize: 8 },
-            cameraPositions: cloneDefaultCameraPositions(),
-            createdAt: now,
-            updatedAt: now,
-          },
-        ],
+        subTabs: subTabs('Equipment 1'),
         activeSubTab: 'subtab-1',
         createdAt: now,
         updatedAt: now,

@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import layoutReducer, { fetchMyLayout, saveMyLayout } from '@/store/slices/layoutSlice'
-import { createMockLayout } from '@/mocks/liveMonitoring'
+import { createMockLayout } from '@/test/fixtures/liveMonitoring'
 import LayoutPersistStatus from '../LayoutPersistStatus'
 
 function renderStatus(store: ReturnType<typeof createStore>) {

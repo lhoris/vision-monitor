@@ -3,7 +3,7 @@ import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { GridContainer } from '../GridContainer'
-import { createMockCameras, createMockLayout } from '@/mocks/liveMonitoring'
+import { createMockCameras, createMockLayout } from '@/test/fixtures/liveMonitoring'
 import { store } from '@/store'
 import { fetchUserLayout } from '@/store/slices/layoutSlice'
 
