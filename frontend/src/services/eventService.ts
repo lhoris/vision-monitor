@@ -3,7 +3,6 @@
  */
 
 import { apiClient } from './api'
-import { acknowledgeEventMock, getEventDetailMock } from './eventDetailMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
 import type {
@@ -46,7 +45,10 @@ class EventService {
 
   async getEventDetail(eventId: number): Promise<Event | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.get<Event>(`/events/${eventId}`), null),
+      async () => {
+        const event = getResponseData(await apiClient.get<Event>(`/events/${eventId}`), null)
+        return event ? normalizeEvent(event) : null
+      },
       null,
       'Failed to fetch event detail:'
     )
@@ -118,11 +120,50 @@ class EventService {
   }
 
   async getFocusEventDetail(eventId: number): Promise<ApiResponse<EventDetailDto>> {
-    return getEventDetailMock(eventId)
+    const event = await this.getEventDetail(eventId)
+    if (!event) {
+      return {
+        success: false,
+        error: 'EVENT_DETAIL_UNAVAILABLE',
+        message: 'Event detail is unavailable.',
+        timestamp: new Date().toISOString(),
+      }
+    }
+    const occurredAt = event.timestamp.toISOString()
+    return {
+      success: true,
+      data: {
+        ...toCameraEventDto(event),
+        playbackHint: {
+          from: new Date(event.timestamp.getTime() - 10_000).toISOString(),
+          to: new Date(event.timestamp.getTime() + 20_000).toISOString(),
+          seekAt: occurredAt,
+        },
+      },
+      timestamp: new Date().toISOString(),
+    }
   }
 
   async acknowledgeFocusEvent(eventId: number): Promise<ApiResponse<AcknowledgeEventDto>> {
-    return acknowledgeEventMock(eventId)
+    const event = await this.acknowledgeEvent(eventId)
+    if (!event) {
+      return {
+        success: false,
+        error: 'EVENT_ACKNOWLEDGE_UNAVAILABLE',
+        message: 'Event acknowledgement is unavailable.',
+        timestamp: new Date().toISOString(),
+      }
+    }
+    return {
+      success: true,
+      data: {
+        eventId: event.id,
+        status: 'acknowledged',
+        acknowledgedBy: 0,
+        acknowledgedAt: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+    }
   }
 
   async acknowledgeEvent(eventId: number): Promise<Event | null> {
@@ -208,16 +249,24 @@ class EventService {
 export const eventService = new EventService()
 
 function toCameraEventDto(event: Event): CameraEventListDto['content'][number] {
+  const occurredAt = event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp)
   return {
     eventId: event.id,
     cameraId: event.cameraId,
     eventType: event.type,
     severity: event.severity === 'critical' ? 'critical' : event.severity === 'high' ? 'warning' : 'info',
     title: event.description,
-    occurredAt: event.timestamp.toISOString(),
+    occurredAt: occurredAt.toISOString(),
     endedAt: null,
     status: event.acknowledged ? 'acknowledged' : 'active',
     metadata: event.metadata ?? {},
+  }
+}
+
+function normalizeEvent(event: Event): Event {
+  return {
+    ...event,
+    timestamp: event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp),
   }
 }
 

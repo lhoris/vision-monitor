@@ -29,6 +29,20 @@ describe('focusApiService', () => {
           },
         })
       }
+      if (url === '/events/50001') {
+        return Promise.resolve({
+          data: {
+            id: 50001,
+            cameraId: 1,
+            type: 'entry_zone_jam',
+            severity: 'high',
+            description: 'Entry zone event',
+            timestamp: new Date('2026-08-15T08:55:00+09:00'),
+            acknowledged: false,
+            metadata: {},
+          },
+        })
+      }
       return Promise.resolve({
         data: {
           id: 1,
@@ -86,6 +100,6 @@ describe('focusApiService', () => {
     const response = await focusApiService.getEventDetail(50001)
 
     expect(response.success).toBe(true)
-    expect(response.data?.playbackHint?.seekAt).toBe('2026-08-15T08:54:50+09:00')
+    expect(response.data?.playbackHint?.seekAt).toBe('2026-08-14T23:55:00.000Z')
   })
 })

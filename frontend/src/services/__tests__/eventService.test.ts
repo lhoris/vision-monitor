@@ -136,19 +136,32 @@ describe('eventService', () => {
     })
   })
 
-  it('returns focus event detail from the mock adapter boundary', async () => {
+  it('maps event detail from the API to the focus detail contract', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: event,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
     const response = await eventService.getFocusEventDetail(50001)
 
     expect(response.success).toBe(true)
-    expect(response.data?.playbackHint?.seekAt).toBe('2026-08-15T08:54:50+09:00')
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
+    expect(response.data?.eventId).toBe(1)
+    expect(response.data?.playbackHint?.seekAt).toBe('2026-08-13T00:00:00.000Z')
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/events/50001')
   })
 
-  it('acknowledges focus event with the POST mock contract boundary', async () => {
+  it('acknowledges focus event through the API contract', async () => {
+    mockedApiClient.put.mockResolvedValue({
+      success: true,
+      data: event,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
     const response = await eventService.acknowledgeFocusEvent(50001)
 
     expect(response.success).toBe(true)
     expect(response.data?.status).toBe('acknowledged')
-    expect(mockedApiClient.put).not.toHaveBeenCalled()
+    expect(mockedApiClient.put).toHaveBeenCalledWith('/events/50001/acknowledge', {})
   })
 })
