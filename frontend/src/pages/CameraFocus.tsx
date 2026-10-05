@@ -5,7 +5,7 @@ import { useActiveCameraAlerts } from '@/hooks/useActiveCameraAlerts'
 import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
 import { useCameraPlayback } from '@/hooks/useCameraPlayback'
 import { createMockCameras } from '@/mocks/liveMonitoring'
-import { focusApiService } from '@/services'
+import { cameraService, focusApiService } from '@/services'
 import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
@@ -22,6 +22,7 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
+  const [catalogCameras, setCatalogCameras] = useState<Camera[] | null>(null)
   const temporarySources = useMemo(
     () => parseTemporarySources(searchParams.get('temporarySources')),
     [searchParams]
@@ -30,8 +31,22 @@ export default function CameraFocus() {
     () => parseCameraNameOverrides(searchParams.get('cameraNames')),
     [searchParams]
   )
+
+  useEffect(() => {
+    let cancelled = false
+
+    void cameraService.getAllCameras().then((cameras) => {
+      if (!cancelled && cameras.length > 0) setCatalogCameras(cameras)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const cameraList = useMemo(() => {
-    const allCameras = createMockCameras()
+    // Keep the fixture list only when the real catalog is not available yet.
+    const allCameras = catalogCameras?.length ? catalogCameras : createMockCameras()
     const cameraIds = parseCameraIds(searchParams.get('cameraIds'))
     const applyNameOverride = (cameraItem: ReturnType<typeof createMockCameras>[number]) => {
       const override = cameraNameOverrides[cameraItem.id]
@@ -60,7 +75,7 @@ export default function CameraFocus() {
       const cameraItem = cameraMap.get(id)
       return cameraItem ? [applyNameOverride(cameraItem)] : []
     })
-  }, [cameraNameOverrides, searchParams, temporarySources])
+  }, [cameraNameOverrides, catalogCameras, searchParams, temporarySources])
   const displayCamera = useMemo(() => {
     if (!camera) {
       return null
