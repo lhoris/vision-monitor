@@ -46,8 +46,13 @@ export default function CameraFocus() {
 
   const cameraList = useMemo(() => {
     // Keep the fixture list only when the real catalog is not available yet.
-    const allCameras = catalogCameras?.length ? catalogCameras : createMockCameras()
     const cameraIds = parseCameraIds(searchParams.get('cameraIds'))
+    const routeCameraId = Number(cameraId)
+    const requestedIds = cameraIds.length > 0
+      ? cameraIds
+      : Number.isSafeInteger(routeCameraId) && routeCameraId !== 0 ? [routeCameraId] : []
+    const catalogMatchesRoute = catalogCameras?.some((cameraItem) => requestedIds.includes(cameraItem.id)) ?? false
+    const allCameras = catalogMatchesRoute ? catalogCameras ?? [] : createMockCameras()
     const applyNameOverride = (cameraItem: ReturnType<typeof createMockCameras>[number]) => {
       const override = cameraNameOverrides[cameraItem.id]
       return override ? { ...cameraItem, name: override } : cameraItem
@@ -258,6 +263,7 @@ export default function CameraFocus() {
       selectedEventId={routeState.selectedEventId}
       alerts={visibleAlerts}
       camera={focusCamera}
+      selectedCameraId={routeState.cameraId}
       cameraList={cameraList}
       liveStream={liveStream}
       liveLoading={liveLoading}

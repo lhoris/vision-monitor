@@ -63,12 +63,31 @@ describe('cameraService', () => {
     await expect(cameraService.deleteCamera(1)).resolves.toBe(false)
   })
 
-  it('returns focus metadata from the mock adapter boundary', async () => {
+  it('maps camera details from the API to the focus contract', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: { ...camera, recordingEnabled: true, alerts: 2 },
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
     const response = await cameraService.getCameraFocus(1)
 
     expect(response.success).toBe(true)
     expect(response.data?.cameraId).toBe(1)
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
+    expect(response.data?.cameraName).toBe('Camera 1')
+    expect(response.data?.recordingEnabled).toBe(true)
+    expect(response.data?.recentEventSummary.openCount).toBe(2)
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
+  })
+
+  it('keeps the focus fixture when the camera detail API is unavailable', async () => {
+    mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
+
+    const response = await cameraService.getCameraFocus(1)
+
+    expect(response.success).toBe(true)
+    expect(response.data?.cameraId).toBe(1)
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 
   it('returns live stream data from the mock adapter boundary', async () => {

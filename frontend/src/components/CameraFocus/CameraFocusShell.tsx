@@ -19,6 +19,7 @@ interface CameraFocusShellProps {
   selectedEventId?: number
   alerts?: ActiveAlertDto[]
   camera: CameraFocusDto | null
+  selectedCameraId?: number | null
   cameraList?: Camera[]
   liveStream?: LiveStreamDto | null
   liveLoading?: boolean
@@ -42,6 +43,7 @@ export function CameraFocusShell({
   selectedEventId,
   alerts = [],
   camera,
+  selectedCameraId = null,
   cameraList = [],
   liveStream,
   liveLoading,
@@ -83,7 +85,7 @@ export function CameraFocusShell({
         {cameraList.length > 0 ? (
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="카메라 목록">
             {cameraList.map((cameraItem) => {
-              const isSelected = camera?.cameraId === cameraItem.id
+              const isSelected = (camera?.cameraId ?? selectedCameraId) === cameraItem.id
 
               return (
                 <button

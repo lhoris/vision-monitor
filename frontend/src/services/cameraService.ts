@@ -31,6 +31,14 @@ class CameraService {
   }
 
   async getCameraFocus(cameraId: number): Promise<ApiResponse<CameraFocusDto>> {
+    const camera = await this.getCameraDetail(cameraId)
+    if (camera) {
+      return {
+        success: true,
+        data: toCameraFocus(camera),
+        timestamp: new Date().toISOString(),
+      }
+    }
     return getCameraFocusMock(cameraId)
   }
 
@@ -95,6 +103,38 @@ class CameraService {
       OFFLINE_HEALTH,
       `Failed to check camera health for ${cameraId}:`
     )
+  }
+}
+
+function toCameraFocus(camera: CameraDetail): CameraFocusDto {
+  const status: CameraFocusDto['status'] = camera.status === 'online'
+    ? 'online'
+    : camera.status === 'error'
+      ? 'error'
+      : 'offline'
+
+  return {
+    cameraId: camera.id,
+    cameraName: camera.name,
+    processType: 'unknown',
+    zoneName: camera.zone,
+    lineName: camera.location,
+    location: camera.location,
+    status,
+    recordingEnabled: Boolean(camera.recordingEnabled),
+    capabilities: {
+      live: Boolean(camera.streamUrl),
+      recording: Boolean(camera.recordingEnabled),
+      ptz: false,
+      overlay: false,
+    },
+    lastSeenAt: camera.lastSeen ? new Date(camera.lastSeen).toISOString() : null,
+    recentEventSummary: {
+      lastEventId: null,
+      lastSeverity: null,
+      lastOccurredAt: null,
+      openCount: camera.alerts ?? 0,
+    },
   }
 }
 
