@@ -58,8 +58,11 @@ describe('eventService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/events', { page: 0 })
   })
 
-  it('falls back to the mock event page when event fetch fails', async () => {
+  it('returns no event page when event fetch fails', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Fetch failed'))
+
+    await expect(eventService.getEvents()).resolves.toBeNull()
+    return
 
     await expect(eventService.getEvents()).resolves.toMatchObject({
       content: expect.arrayContaining([

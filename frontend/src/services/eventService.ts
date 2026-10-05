@@ -16,7 +16,6 @@ import type {
 } from '@/types/cameraFocus'
 import type { CameraEventsRange } from '@/types/cameraFocus'
 import type { Event, AlertSetting, PaginatedResponse } from '@/types'
-import { getEventsMock } from './eventsMockAdapter'
 
 interface EventQueryParams {
   page?: number
@@ -33,7 +32,7 @@ class EventService {
     try {
       const response = await apiClient.get<PaginatedResponse<Event>>('/events', params || {})
       const data = getResponseData(response, null)
-      if (!data) return getEventsMock()
+      if (!data) return null
       return {
         ...data,
         content: data.content.map((event) => ({
@@ -43,7 +42,7 @@ class EventService {
       }
     } catch (error) {
       console.error('Failed to fetch events:', error)
-      return getEventsMock()
+      return null
     }
   }
 
