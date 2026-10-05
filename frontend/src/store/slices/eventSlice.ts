@@ -182,6 +182,10 @@ const eventSlice = createSlice({
             pageSize: action.payload.pageSize,
             total: action.payload.totalElements,
           }
+        } else {
+          state.events = []
+          state.pagination.total = 0
+          state.error = 'EVENTS_UNAVAILABLE'
         }
       })
       .addCase(fetchEvents.rejected, (state, action) => {

@@ -26,7 +26,7 @@ function userKey(userId: number | undefined, username: string | undefined) {
 
 export function Events() {
   const { t, i18n } = useTranslation();
-  const { filter, events, loading } = useAppSelector((state) => state.event);
+  const { filter, events, loading, error } = useAppSelector((state) => state.event);
   const cameras = useAppSelector((state) => state.camera.cameras);
   const user = useAppSelector((state) => state.auth.user);
   const currentUserKey = userKey(user?.id, user?.username);
@@ -299,6 +299,14 @@ export function Events() {
         >
           {notice}
         </button>
+      )}
+      {error && (
+        <div
+          role="alert"
+          className="rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+        >
+          {t("events.fetchError", "알람 목록을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.")}
+        </div>
       )}
       <section
         className={`grid min-h-0 flex-1 overflow-hidden rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 ${gridCollapsed ? "xl:grid-cols-[48px_minmax(0,1fr)]" : "xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]"}`}
