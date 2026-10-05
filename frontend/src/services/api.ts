@@ -101,6 +101,7 @@ class ApiClient {
         code: response?.code || response?.error || 'UNKNOWN_ERROR',
         message: response?.message || error.message,
         details: response?.details,
+        status: error.response?.status,
       }
     }
     return {

@@ -5,11 +5,13 @@
 
 import { useCallback, useState } from 'react'
 import type { AxiosError } from 'axios'
+import type { ApiError } from '@/types/api'
 
 interface UseAPIOptions {
   retries?: number
   onError?: (error: Error | AxiosError) => void
   onSuccess?: () => void
+  shouldRetry?: (error: unknown) => boolean
 }
 
 interface APIState {
@@ -18,11 +20,27 @@ interface APIState {
   retryCount: number
 }
 
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504])
+
+export function isRetryableAPIError(error: unknown): boolean {
+  const candidate = error as Partial<ApiError> & { code?: string }
+  if (typeof candidate.status === 'number') return RETRYABLE_STATUS_CODES.has(candidate.status)
+  return ['NETWORK_ERROR', 'ERR_NETWORK', 'ECONNABORTED', 'ETIMEDOUT', 'TIMEOUT'].includes(candidate.code ?? '')
+}
+
+function normalizeError(error: unknown): Error | AxiosError {
+  if (error instanceof Error) return error
+  const message = typeof error === 'object' && error !== null && 'message' in error
+    ? String((error as { message?: unknown }).message)
+    : String(error)
+  return new Error(message)
+}
+
 /**
  * API 호출 시 에러 처리, 재시도, 로딩 상태를 관리하는 훅
  */
 export function useAPI(options?: UseAPIOptions) {
-  const { retries = 3, onError, onSuccess } = options || {}
+  const { retries = 3, onError, onSuccess, shouldRetry = isRetryableAPIError } = options || {}
   const [state, setState] = useState<APIState>({
     loading: false,
     error: null,
@@ -41,7 +59,7 @@ export function useAPI(options?: UseAPIOptions) {
         onSuccess?.()
         return result
       } catch (error) {
-        const apiError = error instanceof Error ? error : new Error(String(error))
+        const apiError = normalizeError(error)
         setState((prev) => ({
           ...prev,
           loading: false,
@@ -67,8 +85,8 @@ export function useAPI(options?: UseAPIOptions) {
           onSuccess?.()
           return result
         } catch (error) {
-          if (attempt === maxRetries) {
-            const apiError = error instanceof Error ? error : new Error(String(error))
+          if (!shouldRetry(error) || attempt === maxRetries) {
+            const apiError = normalizeError(error)
             setState((prev) => ({
               ...prev,
               loading: false,
@@ -84,7 +102,7 @@ export function useAPI(options?: UseAPIOptions) {
       }
       return null
     },
-    [retries, onError, onSuccess]
+    [retries, onError, onSuccess, shouldRetry]
   )
 
   /**
