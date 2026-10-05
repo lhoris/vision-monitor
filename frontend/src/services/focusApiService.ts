@@ -10,8 +10,7 @@ import type {
   LiveStreamDto,
   PlaybackSessionDto,
 } from '@/types/cameraFocus'
-import type { CameraEventsRange } from '@/mocks/cameraEvents'
-import type { CameraPlaybackRange } from '@/mocks/cameraPlayback'
+import type { CameraEventsRange, CameraPlaybackRange } from '@/types/cameraFocus'
 
 class FocusApiService {
   async getCameraFocus(cameraId: number): Promise<ApiResponse<CameraFocusDto>> {

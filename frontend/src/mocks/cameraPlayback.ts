@@ -3,12 +3,6 @@ import type { PlaybackSessionDto } from '@/types/cameraFocus'
 export const CAMERA_PLAYBACK_MOCK_TIMESTAMP = '2026-08-15T09:00:00+09:00'
 export const FORBIDDEN_CAMERA_PLAYBACK_ID = 403
 
-export interface CameraPlaybackRange {
-  from: string
-  to: string
-  eventId?: number
-}
-
 export const cameraPlaybackFixtures: Record<number, PlaybackSessionDto> = {
   1: {
     cameraId: 1,

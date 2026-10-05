@@ -14,7 +14,7 @@ import type {
   CameraEventListDto,
   EventDetailDto,
 } from '@/types/cameraFocus'
-import type { CameraEventsRange } from '@/mocks/cameraEvents'
+import type { CameraEventsRange } from '@/types/cameraFocus'
 import type { Event, AlertSetting, PaginatedResponse } from '@/types'
 import { getEventsMock } from './eventsMockAdapter'
 

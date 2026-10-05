@@ -1,9 +1,8 @@
 import type { ApiResponse } from '@/types/api'
-import type { PlaybackSessionDto } from '@/types/cameraFocus'
+import type { CameraPlaybackRange, PlaybackSessionDto } from '@/types/cameraFocus'
 import {
   CAMERA_PLAYBACK_MOCK_TIMESTAMP,
   FORBIDDEN_CAMERA_PLAYBACK_ID,
-  type CameraPlaybackRange,
   findCameraPlaybackFixture,
 } from '@/mocks/cameraPlayback'
 

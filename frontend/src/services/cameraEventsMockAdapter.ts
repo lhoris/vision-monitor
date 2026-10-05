@@ -1,9 +1,8 @@
 import type { ApiResponse } from '@/types/api'
-import type { CameraEventListDto } from '@/types/cameraFocus'
+import type { CameraEventListDto, CameraEventsRange } from '@/types/cameraFocus'
 import {
   CAMERA_EVENTS_MOCK_TIMESTAMP,
   FORBIDDEN_CAMERA_EVENTS_ID,
-  type CameraEventsRange,
   findCameraEventFixtures,
 } from '@/mocks/cameraEvents'
 

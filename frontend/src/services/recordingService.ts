@@ -1,7 +1,6 @@
 import { getCameraPlaybackMock } from './cameraPlaybackMockAdapter'
 import type { ApiResponse } from '@/types/api'
-import type { PlaybackSessionDto } from '@/types/cameraFocus'
-import type { CameraPlaybackRange } from '@/mocks/cameraPlayback'
+import type { CameraPlaybackRange, PlaybackSessionDto } from '@/types/cameraFocus'
 
 class RecordingService {
   async getCameraPlayback(

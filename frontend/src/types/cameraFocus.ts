@@ -75,6 +75,12 @@ export interface PlaybackSessionDto {
   timelineSegments: TimelineSegmentDto[]
 }
 
+export interface CameraPlaybackRange {
+  from: string
+  to: string
+  eventId?: number
+}
+
 export type CameraEventSeverity = 'info' | 'warning' | 'critical'
 
 export type CameraEventStatus = 'active' | 'ended' | 'acknowledged'
@@ -96,6 +102,13 @@ export interface CameraEventListDto {
   page: number
   size: number
   totalElements: number
+}
+
+export interface CameraEventsRange {
+  from: string
+  to: string
+  severity?: string
+  status?: string
 }
 
 export type ActiveAlertSeverity = 'warning' | 'critical'

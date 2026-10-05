@@ -3,13 +3,6 @@ import type { CameraEventDto } from '@/types/cameraFocus'
 export const CAMERA_EVENTS_MOCK_TIMESTAMP = '2026-08-15T09:00:00+09:00'
 export const FORBIDDEN_CAMERA_EVENTS_ID = 403
 
-export interface CameraEventsRange {
-  from: string
-  to: string
-  severity?: string
-  status?: string
-}
-
 export const cameraEventFixtures: Record<number, CameraEventDto[]> = {
   1: [
     {

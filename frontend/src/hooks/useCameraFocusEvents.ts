@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { focusApiService } from '@/services'
-import type { CameraEventDto } from '@/types/cameraFocus'
-import type { CameraEventsRange } from '@/mocks/cameraEvents'
+import type { CameraEventDto, CameraEventsRange } from '@/types/cameraFocus'
 
 interface UseCameraFocusEventsOptions {
   cameraId: number | null
