@@ -43,6 +43,37 @@ describe('focusApiService', () => {
           },
         })
       }
+      if (url === '/cameras/1/playback') {
+        return Promise.resolve({
+          success: true,
+          data: {
+            cameraId: 1,
+            playbackUrl: 'https://media.test/playback/camera-1.m3u8',
+            playbackProtocol: 'hls',
+            sessionId: 'session-1',
+            expiresAt: '2026-08-15T09:15:00+09:00',
+            availableFrom: '2026-08-15T08:00:00+09:00',
+            availableTo: '2026-08-15T09:00:00+09:00',
+            seekable: true,
+            preRollSeconds: 10,
+            timelineSegments: [
+              {
+                from: '2026-08-15T08:00:00+09:00',
+                to: '2026-08-15T08:30:00+09:00',
+                status: 'available',
+                seekable: true,
+              },
+              {
+                from: '2026-08-15T08:30:00+09:00',
+                to: '2026-08-15T08:35:00+09:00',
+                status: 'gap',
+                seekable: false,
+              },
+            ],
+          },
+          timestamp: '2026-08-15T09:00:00+09:00',
+        })
+      }
       return Promise.resolve({
         data: {
           id: 1,

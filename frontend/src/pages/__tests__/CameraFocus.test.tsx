@@ -71,6 +71,24 @@ describe('CameraFocus page shell', () => {
           ],
         })
       }
+      if (url === '/cameras/1/playback') {
+        return Promise.resolve({
+          success: true,
+          data: {
+            cameraId: 1,
+            playbackUrl: 'https://media.test/playback/camera-1.m3u8',
+            playbackProtocol: 'hls',
+            sessionId: 'session-1',
+            expiresAt: '2026-08-15T09:15:00+09:00',
+            availableFrom: '2026-08-15T08:00:00+09:00',
+            availableTo: '2026-08-15T09:00:00+09:00',
+            seekable: true,
+            preRollSeconds: 10,
+            timelineSegments: [],
+          },
+          timestamp: '2026-08-15T09:00:00+09:00',
+        })
+      }
       const match = url.match(/^\/cameras\/(\d+)$/)
       if (!match) return Promise.reject(new Error('offline'))
       const id = Number(match[1])
@@ -187,7 +205,7 @@ describe('CameraFocus page shell', () => {
 
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'true')
     expect(await screen.findByTestId('focus-playback-player')).toHaveTextContent(
-      'hls:https://media.example.local/playback/session/playback-cam-1-20260815-0800/index.m3u8'
+      'hls:https://media.test/playback/camera-1.m3u8'
     )
   })
 
