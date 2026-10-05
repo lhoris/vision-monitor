@@ -31,6 +31,7 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
   const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [pendingConfirmation, setPendingConfirmation] = useState<{ type: 'restore' } | { type: 'remove'; section: MetadataSectionConfig } | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     let disposed = false
@@ -49,7 +50,15 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
   }, [sourceId, userId])
 
   async function persist(nextProfile: MetadataLayoutProfile) {
-    setProfile(await saveMetadataProfile(nextProfile))
+    setSaveError(null)
+    try {
+      setProfile(await saveMetadataProfile(nextProfile))
+      return true
+    } catch {
+      setProfile(nextProfile)
+      setSaveError('메타데이터 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      return false
+    }
   }
 
   async function moveSection(targetId: string) {
@@ -74,7 +83,8 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
     const exists = profile.sections.some((item) => item.id === section.id)
     const sections = exists ? profile.sections.map((item) => item.id === section.id ? section : item) : [...profile.sections, { ...section, order: profile.sections.length }]
     profileChangedRef.current = true
-    await persist({ ...profile, sections })
+    const saved = await persist({ ...profile, sections })
+    if (!saved) return
     setIsEditorOpen(false)
     setEditingSection(undefined)
   }
@@ -92,6 +102,8 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
       if (pendingConfirmation.type === 'restore') await restoreDefaults()
       else await removeSection(pendingConfirmation.section.id)
       setPendingConfirmation(null)
+    } catch {
+      setSaveError('메타데이터 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
     } finally {
       setIsConfirming(false)
     }
@@ -117,6 +129,7 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
         </div>
       </div>
       <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">영상소스별 섹션을 드래그해 순서를 변경할 수 있습니다.</p>
+      {saveError ? <p role="alert" className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
       {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? '카메라 정보 접근 권한이 없습니다.' : '카메라 정보를 불러오지 못했습니다.'}</p> : null}
       <div className="mt-4 space-y-3">
         {!error && sections.map((section) => (
