@@ -43,6 +43,9 @@ public class VideoSource {
     @Column(name = "STATUS", length = 20)
     private String status;
 
+    @Column(name = "DATA_END_STATUS", length = 1)
+    private String dataEndStatus;
+
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
 

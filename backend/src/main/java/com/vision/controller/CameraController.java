@@ -1,7 +1,9 @@
 package com.vision.controller;
 
 import com.vision.dto.CameraDto;
+import com.vision.service.CameraQueryService;
 import com.vision.util.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,7 +14,9 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/cameras")
+@RequiredArgsConstructor
 public class CameraController {
+    private final CameraQueryService cameraQueryService;
 
     /**
      * GET /api/cameras - 모든 카메라 조회
@@ -21,7 +25,7 @@ public class CameraController {
     @GetMapping
     public ApiResponse<List<CameraDto>> getAllCameras() {
         // TODO: Phase 3에서 구현
-        return ApiResponse.success(List.of());
+        return ApiResponse.success(cameraQueryService.list());
     }
 
     /**
@@ -31,7 +35,7 @@ public class CameraController {
     @GetMapping("/{id}")
     public ApiResponse<CameraDto> getCamera(@PathVariable Long id) {
         // TODO: Phase 3에서 구현
-        return ApiResponse.success(null);
+        return ApiResponse.success(cameraQueryService.get(id));
     }
 
     /**
