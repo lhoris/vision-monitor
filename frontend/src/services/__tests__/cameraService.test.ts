@@ -80,13 +80,13 @@ describe('cameraService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 
-  it('keeps the focus fixture when the camera detail API is unavailable', async () => {
+  it('returns an unavailable response when the camera detail API is unavailable', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
 
     const response = await cameraService.getCameraFocus(1)
 
-    expect(response.success).toBe(true)
-    expect(response.data?.cameraId).toBe(1)
+    expect(response.success).toBe(false)
+    expect(response.error).toBe('CAMERA_UNAVAILABLE')
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 
@@ -123,14 +123,13 @@ describe('cameraService', () => {
     await Promise.all([focusRequest, streamRequest])
   })
 
-  it('keeps the live stream fixture when the camera detail API is unavailable', async () => {
+  it('returns an unavailable response when the camera detail API is unavailable', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
 
     const response = await cameraService.getCameraLiveStream(1)
 
-    expect(response.success).toBe(true)
-    expect(response.data?.cameraId).toBe(1)
-    expect(response.data?.streamUrl).toBe('http://220.81.187.50:1984/stream.html?src=video_high1')
+    expect(response.success).toBe(false)
+    expect(response.error).toBe('CAMERA_UNAVAILABLE')
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 })

@@ -1,4 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const { get } = vi.hoisted(() => ({
+  get: vi.fn(),
+}))
+
+vi.mock('@/services/api', () => ({
+  apiClient: { get },
+}))
+
 import { focusApiService } from '../focusApiService'
 
 const RANGE = {
@@ -7,6 +16,22 @@ const RANGE = {
 }
 
 describe('focusApiService', () => {
+  beforeEach(() => {
+    get.mockResolvedValue({
+      data: {
+        id: 1,
+        name: 'Entry Zone CAM-01',
+        location: 'Line 1',
+        zone: 'Entry Zone',
+        streamUrl: 'https://media.test/camera-1.m3u8',
+        streamProtocol: 'hls',
+        status: 'online',
+        recordingEnabled: true,
+        lastSeen: '2026-10-05T00:00:00Z',
+      },
+    })
+  })
+
   it('exposes camera focus metadata through the focus facade', async () => {
     const response = await focusApiService.getCameraFocus(1)
 

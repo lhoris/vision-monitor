@@ -44,7 +44,25 @@ function renderRoute(initialEntry: string) {
 
 describe('CameraFocus page shell', () => {
   beforeEach(() => {
-    get.mockRejectedValue(new Error('offline'))
+    get.mockImplementation((url: string) => {
+      if (url === '/cameras') return Promise.reject(new Error('catalog unavailable'))
+      const match = url.match(/^\/cameras\/(\d+)$/)
+      if (!match) return Promise.reject(new Error('offline'))
+      const id = Number(match[1])
+      return Promise.resolve({
+        data: {
+          id,
+          name: id === 1 ? 'Entry Zone CAM-01' : 'Entry Zone CAM-02',
+          location: 'Line 1',
+          zone: 'Entry Zone',
+          streamUrl: `https://media.test/camera-${id}.m3u8`,
+          streamProtocol: 'hls',
+          status: 'online',
+          recordingEnabled: true,
+          lastSeen: '2026-10-05T00:00:00Z',
+        },
+      })
+    })
     post.mockImplementation(async (url: string) => {
       const queryCode = decodeURIComponent(url.split('/').at(-2) ?? '')
       const rows = queryCode === 'camera.info'

@@ -3,8 +3,6 @@
  */
 
 import { apiClient } from './api'
-import { getCameraFocusMock } from './cameraFocusMockAdapter'
-import { getCameraLiveStreamMock } from './cameraLiveStreamMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
 import type { Camera, CameraDetail } from '@/types/camera'
@@ -47,7 +45,7 @@ class CameraService {
         timestamp: new Date().toISOString(),
       }
     }
-    return getCameraFocusMock(cameraId)
+    return failureResponse('Camera detail is unavailable')
   }
 
   async getCameraLiveStream(cameraId: number): Promise<ApiResponse<LiveStreamDto>> {
@@ -59,7 +57,7 @@ class CameraService {
         timestamp: new Date().toISOString(),
       }
     }
-    return getCameraLiveStreamMock(cameraId)
+    return failureResponse('Live stream details are unavailable')
   }
 
   async getCameraStatus(cameraId: number): Promise<string> {
@@ -119,6 +117,15 @@ class CameraService {
       OFFLINE_HEALTH,
       `Failed to check camera health for ${cameraId}:`
     )
+  }
+}
+
+function failureResponse<T>(message: string): ApiResponse<T> {
+  return {
+    success: false,
+    error: 'CAMERA_UNAVAILABLE',
+    message,
+    timestamp: new Date().toISOString(),
   }
 }
 
