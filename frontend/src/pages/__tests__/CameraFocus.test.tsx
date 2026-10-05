@@ -45,7 +45,32 @@ function renderRoute(initialEntry: string) {
 describe('CameraFocus page shell', () => {
   beforeEach(() => {
     get.mockImplementation((url: string) => {
-      if (url === '/cameras') return Promise.reject(new Error('catalog unavailable'))
+      if (url === '/cameras') {
+        return Promise.resolve({
+          data: [
+            {
+              id: 1,
+              name: 'Entry Zone CAM-01',
+              location: 'Line 1',
+              zone: 'Entry Zone',
+              streamUrl: 'https://media.test/camera-1.m3u8',
+              streamProtocol: 'hls',
+              status: 'online',
+              recordingEnabled: true,
+            },
+            {
+              id: 2,
+              name: 'Entry Zone CAM-02',
+              location: 'Line 1',
+              zone: 'Entry Zone',
+              streamUrl: 'https://media.test/camera-2.m3u8',
+              streamProtocol: 'hls',
+              status: 'online',
+              recordingEnabled: true,
+            },
+          ],
+        })
+      }
       const match = url.match(/^\/cameras\/(\d+)$/)
       if (!match) return Promise.reject(new Error('offline'))
       const id = Number(match[1])
@@ -78,11 +103,11 @@ describe('CameraFocus page shell', () => {
     renderRoute('/live/cameras/1?mode=live&cameraIds=1%2C2')
 
     expect(screen.getByRole('heading', { name: '화면 확대 보기' })).toBeInTheDocument()
-    expect(screen.getByRole('tablist', { name: '카메라 목록' })).toBeInTheDocument()
+    expect(await screen.findByRole('tablist', { name: '카메라 목록' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /라이브로 돌아가기|Back to Live/ })).toBeInTheDocument()
     expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Camera 1' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tab', { name: 'Camera 2' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Entry Zone CAM-01' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Camera 7' })).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: '실시간' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'false')
@@ -109,7 +134,7 @@ describe('CameraFocus page shell', () => {
     renderRoute(`/live/cameras/1?mode=live&cameraIds=1%2C2&cameraNames=${cameraNames}`)
 
     expect(await screen.findByRole('tab', { name: '공냉대 진입부' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tab', { name: 'Camera 2' })).toBeInTheDocument()
+    expect(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' })).toBeInTheDocument()
     expect(screen.getAllByText('공냉대 진입부').length).toBeGreaterThanOrEqual(1)
   })
 
@@ -149,12 +174,12 @@ describe('CameraFocus page shell', () => {
   it('changes the focused camera when a camera tab is selected', async () => {
     renderRoute('/live/cameras/1?mode=live&tabId=tab-2&subTabId=subtab-b-1&cameraIds=1%2C2')
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Camera 2' }))
+    fireEvent.click(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' }))
 
     expect(await screen.findByTestId('location')).toHaveTextContent(
       '/live/cameras/2?mode=live&tabId=tab-2&subTabId=subtab-b-1&cameraIds=1%2C2'
     )
-    expect(await screen.findByRole('tab', { name: 'Camera 2' })).toHaveAttribute('aria-selected', 'true')
+    expect(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' })).toHaveAttribute('aria-selected', 'true')
   })
 
   it('renders recording playback session for selected event route state', async () => {
@@ -177,7 +202,7 @@ describe('CameraFocus page shell', () => {
   it('clears a selected event when moving to another focused camera', async () => {
     renderRoute('/live/cameras/1?mode=recording&eventId=50001')
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Camera 2' }))
+    fireEvent.click(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' }))
 
     expect(await screen.findByTestId('location')).toHaveTextContent('/live/cameras/2?mode=recording')
     expect(screen.queryByTestId('location')).not.toHaveTextContent('eventId=50001')

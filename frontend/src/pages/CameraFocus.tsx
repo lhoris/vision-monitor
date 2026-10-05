@@ -4,7 +4,6 @@ import { CameraFocusShell } from '@/components/CameraFocus'
 import { useActiveCameraAlerts } from '@/hooks/useActiveCameraAlerts'
 import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
 import { useCameraPlayback } from '@/hooks/useCameraPlayback'
-import { createMockCameras } from '@/mocks/liveMonitoring'
 import { cameraService, focusApiService } from '@/services'
 import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
@@ -45,15 +44,9 @@ export default function CameraFocus() {
   }, [])
 
   const cameraList = useMemo(() => {
-    // Keep the fixture list only when the real catalog is not available yet.
     const cameraIds = parseCameraIds(searchParams.get('cameraIds'))
-    const routeCameraId = Number(cameraId)
-    const requestedIds = cameraIds.length > 0
-      ? cameraIds
-      : Number.isSafeInteger(routeCameraId) && routeCameraId !== 0 ? [routeCameraId] : []
-    const catalogMatchesRoute = catalogCameras?.some((cameraItem) => requestedIds.includes(cameraItem.id)) ?? false
-    const allCameras = catalogMatchesRoute ? catalogCameras ?? [] : createMockCameras()
-    const applyNameOverride = (cameraItem: ReturnType<typeof createMockCameras>[number]) => {
+    const allCameras = catalogCameras ?? []
+    const applyNameOverride = (cameraItem: Camera) => {
       const override = cameraNameOverrides[cameraItem.id]
       return override ? { ...cameraItem, name: override } : cameraItem
     }
