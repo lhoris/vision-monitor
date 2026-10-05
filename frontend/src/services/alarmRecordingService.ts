@@ -1,3 +1,4 @@
+import { apiClient } from './api'
 import type { AlarmOffsetConfig, AlarmRecordingClip } from '@/types'
 import type { Event } from '@/types'
 
@@ -5,6 +6,17 @@ const DEFAULT_OFFSETS: AlarmOffsetConfig = {
   beforeSeconds: 10,
   afterSeconds: 20,
   source: 'alarm-rule',
+}
+
+interface AlarmRecordingClipResponse {
+  status: AlarmRecordingClip['status']
+  requestedFrom: string
+  requestedTo: string
+  availableFrom?: string
+  availableTo?: string
+  playbackUrl?: string
+  downloadUrl?: string
+  message?: string
 }
 
 export function getAlarmOffsetConfig(): AlarmOffsetConfig {
@@ -18,28 +30,23 @@ export async function getAlarmRecordingClip(
   const requestedFrom = new Date(event.timestamp.getTime() - config.beforeSeconds * 1000)
   const requestedTo = new Date(event.timestamp.getTime() + config.afterSeconds * 1000)
 
-  if (event.id === 6) {
-    return {
-      status: 'unavailable',
-      requestedFrom,
-      requestedTo,
-      message: 'No recording is available for this alarm.',
+  try {
+    const response = await apiClient.get<AlarmRecordingClipResponse>(`/recordings/events/${event.id}/clip`, {
+      cameraId: event.cameraId,
+      from: requestedFrom.toISOString(),
+      to: requestedTo.toISOString(),
+      beforeSeconds: config.beforeSeconds,
+      afterSeconds: config.afterSeconds,
+    })
+
+    if (!response.success || !response.data) {
+      return unavailableClip(requestedFrom, requestedTo, response.message)
     }
-  }
 
-  const availableFrom = event.id === 3
-    ? new Date(event.timestamp.getTime() - 4 * 1000)
-    : requestedFrom
-
-  return {
-    status: event.id === 3 ? 'partial' : 'available',
-    requestedFrom,
-    requestedTo,
-    availableFrom,
-    availableTo: requestedTo,
-    playbackUrl: 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAA==',
-    downloadUrl: `data:text/plain;charset=utf-8,Mock alarm clip ${event.id}`,
-    message: event.id === 3 ? 'Only part of the requested range is available.' : undefined,
+    return normalizeClip(response.data, requestedFrom, requestedTo)
+  } catch (error) {
+    console.error('Failed to fetch alarm recording clip:', error)
+    return unavailableClip(requestedFrom, requestedTo)
   }
 }
 
@@ -49,4 +56,27 @@ export async function downloadAlarmRecordingClip(event: Event, config?: AlarmOff
     throw new Error(clip.message ?? 'The alarm clip is not available.')
   }
   return clip
+}
+
+function normalizeClip(
+  clip: AlarmRecordingClipResponse,
+  fallbackFrom: Date,
+  fallbackTo: Date,
+): AlarmRecordingClip {
+  return {
+    ...clip,
+    requestedFrom: new Date(clip.requestedFrom || fallbackFrom.toISOString()),
+    requestedTo: new Date(clip.requestedTo || fallbackTo.toISOString()),
+    availableFrom: clip.availableFrom ? new Date(clip.availableFrom) : undefined,
+    availableTo: clip.availableTo ? new Date(clip.availableTo) : undefined,
+  }
+}
+
+function unavailableClip(requestedFrom: Date, requestedTo: Date, message?: string): AlarmRecordingClip {
+  return {
+    status: 'unavailable',
+    requestedFrom,
+    requestedTo,
+    message: message ?? 'No recording is available for this alarm.',
+  }
 }
