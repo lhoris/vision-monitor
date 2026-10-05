@@ -22,6 +22,7 @@ public class CameraDto {
     private String location;
     private String zone;
     private String streamUrl;
+    private String streamProtocol;
     private String status;
     private String resolution;
     private Integer fps;

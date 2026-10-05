@@ -33,6 +33,7 @@ class CameraQueryServiceTest {
         assertThat(result).singleElement().satisfies(camera -> {
             assertThat(camera.getId()).isEqualTo(10L);
             assertThat(camera.getStreamUrl()).isEqualTo("http://example.test/whep");
+            assertThat(camera.getStreamProtocol()).isEqualTo("webrtc");
             assertThat(camera.getStatus()).isEqualTo("online");
         });
     }

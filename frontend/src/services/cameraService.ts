@@ -43,6 +43,14 @@ class CameraService {
   }
 
   async getCameraLiveStream(cameraId: number): Promise<ApiResponse<LiveStreamDto>> {
+    const camera = await this.getCameraDetail(cameraId)
+    if (camera) {
+      return {
+        success: true,
+        data: toLiveStream(camera),
+        timestamp: new Date().toISOString(),
+      }
+    }
     return getCameraLiveStreamMock(cameraId)
   }
 
@@ -134,6 +142,35 @@ function toCameraFocus(camera: CameraDetail): CameraFocusDto {
       lastSeverity: null,
       lastOccurredAt: null,
       openCount: camera.alerts ?? 0,
+    },
+  }
+}
+
+function toLiveStream(camera: CameraDetail): LiveStreamDto {
+  const protocol: LiveStreamDto['streamProtocol'] = camera.streamProtocol === 'hls'
+    ? 'hls'
+    : camera.streamProtocol === 'webrtc'
+      ? 'webrtc'
+      : camera.streamProtocol === 'rtsp'
+        ? 'rtsp_bridge'
+        : 'unknown'
+  const status: LiveStreamDto['status'] = camera.status === 'online'
+    ? 'active'
+    : camera.status === 'error'
+      ? 'error'
+      : 'inactive'
+
+  return {
+    cameraId: camera.id,
+    streamUrl: camera.streamUrl,
+    streamProtocol: protocol,
+    expiresAt: null,
+    status,
+    resolution: camera.resolution ?? null,
+    fps: camera.fps ?? null,
+    metadata: {
+      provider: 'video-source',
+      latencyClass: status === 'active' ? 'live' : 'unknown',
     },
   }
 }

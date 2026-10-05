@@ -90,12 +90,31 @@ describe('cameraService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 
-  it('returns live stream data from the mock adapter boundary', async () => {
+  it('maps the camera detail API to the live stream contract', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: { ...camera, streamProtocol: 'webrtc', status: 'online' },
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
+    const response = await cameraService.getCameraLiveStream(1)
+
+    expect(response.success).toBe(true)
+    expect(response.data?.cameraId).toBe(1)
+    expect(response.data?.streamUrl).toBe(camera.streamUrl)
+    expect(response.data?.streamProtocol).toBe('webrtc')
+    expect(response.data?.status).toBe('active')
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
+  })
+
+  it('keeps the live stream fixture when the camera detail API is unavailable', async () => {
+    mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
+
     const response = await cameraService.getCameraLiveStream(1)
 
     expect(response.success).toBe(true)
     expect(response.data?.cameraId).toBe(1)
     expect(response.data?.streamUrl).toBe('http://220.81.187.50:1984/stream.html?src=video_high1')
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 })

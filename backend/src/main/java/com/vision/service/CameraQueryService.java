@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 
 /** Read-only camera projection backed by the managed video-source catalog. */
 @Service
@@ -39,6 +40,7 @@ public class CameraQueryService {
                 .location(source.getLocation())
                 .zone(source.getZone())
                 .streamUrl(source.getUrl())
+                .streamProtocol(source.getProtocol() == null ? null : source.getProtocol().toLowerCase(Locale.ROOT))
                 .status("ACTIVE".equalsIgnoreCase(source.getStatus()) ? "online" : "offline")
                 .recordingEnabled(false)
                 .createdAt(source.getCreatedAt())
