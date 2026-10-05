@@ -14,6 +14,8 @@ const OFFLINE_STATUS = 'offline'
 const OFFLINE_HEALTH = { online: false }
 
 class CameraService {
+  private readonly detailRequests = new Map<number, Promise<CameraDetail | null>>()
+
   async getAllCameras(): Promise<Camera[]> {
     return withServiceFallback(
       async () => getResponseData(await apiClient.get<Camera[]>('/cameras'), []),
@@ -23,11 +25,17 @@ class CameraService {
   }
 
   async getCameraDetail(cameraId: number): Promise<CameraDetail | null> {
-    return withServiceFallback(
+    const existingRequest = this.detailRequests.get(cameraId)
+    if (existingRequest) return existingRequest
+
+    const request = withServiceFallback(
       async () => getResponseData(await apiClient.get<CameraDetail>(`/cameras/${cameraId}`), null),
       null,
       `Failed to fetch camera detail for ${cameraId}:`
     )
+    this.detailRequests.set(cameraId, request)
+    request.finally(() => this.detailRequests.delete(cameraId)).catch(() => undefined)
+    return request
   }
 
   async getCameraFocus(cameraId: number): Promise<ApiResponse<CameraFocusDto>> {

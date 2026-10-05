@@ -107,6 +107,22 @@ describe('cameraService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1')
   })
 
+  it('shares an in-flight camera detail request across focus consumers', async () => {
+    let resolveRequest: ((value: unknown) => void) | undefined
+    mockedApiClient.get.mockReturnValue(new Promise((resolve) => { resolveRequest = resolve }))
+
+    const focusRequest = cameraService.getCameraFocus(1)
+    const streamRequest = cameraService.getCameraLiveStream(1)
+    expect(mockedApiClient.get).toHaveBeenCalledTimes(1)
+
+    resolveRequest?.({
+      success: true,
+      data: { ...camera, streamProtocol: 'webrtc', status: 'online' },
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+    await Promise.all([focusRequest, streamRequest])
+  })
+
   it('keeps the live stream fixture when the camera detail API is unavailable', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
 
