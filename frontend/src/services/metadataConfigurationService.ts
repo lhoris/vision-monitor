@@ -3,19 +3,6 @@ import type { MetadataLayoutProfile, MetadataSectionConfig } from '@/types/metad
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
 
-const STORAGE_PREFIX = 'metadata-layout:'
-
-function storageKey(userId: string, sourceId: string) {
-  return `${STORAGE_PREFIX}${userId}:${sourceId}`
-}
-
-function normalizeProfile(value: unknown, userId: string, sourceId: string): MetadataLayoutProfile | null {
-  if (!value || typeof value !== 'object') return null
-  const profile = value as Partial<MetadataLayoutProfile>
-  if (profile.userId !== userId || profile.sourceId !== sourceId || !Array.isArray(profile.sections)) return null
-  return { userId, sourceId, sections: profile.sections as MetadataSectionConfig[], updatedAt: typeof profile.updatedAt === 'string' ? profile.updatedAt : new Date().toISOString() }
-}
-
 export async function getMetadataProfile(userId: string, sourceId: string): Promise<MetadataLayoutProfile> {
   try {
     const response = await apiClient.get<MetadataLayoutProfile>(`/metadata/profiles/${encodeURIComponent(sourceId)}`)
@@ -29,16 +16,7 @@ export async function getMetadataProfile(userId: string, sourceId: string): Prom
       }
     }
   } catch {
-    // Local storage and fixture fallback preserve the current Mock-First flow.
-  }
-  const raw = localStorage.getItem(storageKey(userId, sourceId))
-  if (raw) {
-    try {
-      const profile = normalizeProfile(JSON.parse(raw), userId, sourceId)
-      if (profile) return profile
-    } catch {
-      localStorage.removeItem(storageKey(userId, sourceId))
-    }
+    // A missing profile uses the structural default until it is first saved to the database.
   }
   return createDefaultMetadataProfile(userId, sourceId)
 }

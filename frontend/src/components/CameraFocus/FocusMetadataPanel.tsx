@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
 import { listMetadataQueries } from '@/services/metadataQueryService'
-import { createDefaultMetadataProfile, metadataQueryRegistry } from '@/mocks/metadataQueryRegistry'
+import { createDefaultMetadataProfile } from '@/mocks/metadataQueryRegistry'
 import { getMetadataProfile, resetMetadataProfile, saveMetadataProfile } from '@/services/metadataConfigurationService'
 import type { MetadataLayoutProfile, MetadataQueryDefinition, MetadataSectionConfig } from '@/types/metadataConfig'
 import { ConfirmDialog } from '@/components/Common'
@@ -23,7 +23,7 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
   const sourceId = String(camera?.cameraId ?? '1')
   const userId = currentUserId()
   const [profile, setProfile] = useState<MetadataLayoutProfile>(() => createDefaultMetadataProfile(userId, sourceId))
-  const [queries, setQueries] = useState<MetadataQueryDefinition[]>(() => metadataQueryRegistry.filter((query) => query.enabled))
+  const [queries, setQueries] = useState<MetadataQueryDefinition[]>([])
   const [draggedSection, setDraggedSection] = useState<string | null>(null)
   const draggedSectionRef = useRef<string | null>(null)
   const profileChangedRef = useRef(false)
