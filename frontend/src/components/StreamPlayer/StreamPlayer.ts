@@ -22,6 +22,7 @@ export abstract class StreamPlayer {
   protected reconnectConfig: ReconnectConfig
   protected reconnectAttempts: number = 0
   protected reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  protected destroyed = false
 
   constructor(url: string, reconnectConfig?: ReconnectConfig) {
     this.url = url
@@ -135,7 +136,7 @@ export abstract class StreamPlayer {
    * 자동 재연결 로직
    */
   protected attemptReconnect(): void {
-    if (this.reconnectTimer) {
+    if (this.destroyed || this.reconnectTimer) {
       return
     }
 
@@ -180,6 +181,11 @@ export abstract class StreamPlayer {
       this.reconnectTimer = null
     }
     this.reconnectAttempts = 0
+  }
+
+  protected markDestroyed(): void {
+    this.destroyed = true
+    this.cancelReconnect()
   }
 
   /**

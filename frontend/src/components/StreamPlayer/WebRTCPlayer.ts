@@ -421,7 +421,7 @@ export class WebRTCPlayer extends StreamPlayer {
    * 리소스 해제
    */
   async destroy(): Promise<void> {
-    this.cancelReconnect()
+    this.markDestroyed()
 
     if (this.videoElement) {
       this.teardownVideoElement()

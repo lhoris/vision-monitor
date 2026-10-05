@@ -229,7 +229,7 @@ export class RTSPPlayer extends StreamPlayer {
    * 리소스 해제
    */
   destroy(): void {
-    this.cancelReconnect()
+    this.markDestroyed()
 
     if (this.jsmpegPlayer) {
       this.jsmpegPlayer.stop()

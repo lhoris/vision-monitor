@@ -55,6 +55,7 @@ class MockStreamPlayer extends StreamPlayer {
   }
 
   destroy(): void {
+    this.markDestroyed()
     this.listeners.clear()
   }
 }
@@ -158,5 +159,16 @@ describe('StreamPlayer', () => {
     player.destroy()
 
     expect(player['listeners'].size).toBe(0)
+  })
+
+  it('does not schedule reconnection after destroy', () => {
+    vi.useFakeTimers()
+    const reconnectSpy = vi.spyOn(player, 'play')
+    player['markDestroyed']()
+    player['handleError']({ type: 'NETWORK_ERROR', message: 'Connection failed' })
+    vi.advanceTimersByTime(1000)
+
+    expect(reconnectSpy).not.toHaveBeenCalled()
+    vi.useRealTimers()
   })
 })

@@ -359,7 +359,7 @@ export class HLSPlayer extends StreamPlayer {
    * 리소스 해제
    */
   destroy(): void {
-    this.cancelReconnect()
+    this.markDestroyed()
     this.manifestParsed = false
     this.playPending = false
 
