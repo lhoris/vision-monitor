@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FocusMetadataPanel } from '../FocusMetadataPanel'
 import type { CameraFocusDto } from '@/types/cameraFocus'
+
+const { get, put } = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn() }))
+vi.mock('@/services/api', () => ({ apiClient: { get, put } }))
 
 const camera: CameraFocusDto = {
   cameraId: 1,
@@ -28,8 +31,19 @@ const camera: CameraFocusDto = {
 }
 
 describe('FocusMetadataPanel', () => {
+  let savedProfile: { sourceId: string; sections: unknown[]; updatedAt: string } | null
+
   beforeEach(() => {
     localStorage.clear()
+    savedProfile = null
+    get.mockImplementation((url: string) => {
+      if (url.startsWith('/metadata/profiles/') && savedProfile) return Promise.resolve({ data: savedProfile })
+      return Promise.reject(new Error('offline'))
+    })
+    put.mockImplementation(async (_url: string, body: { sections: unknown[] }) => {
+      savedProfile = { sourceId: '1', sections: body.sections, updatedAt: '2026-10-05T00:00:00Z' }
+      return { data: savedProfile }
+    })
   })
 
   it('renders camera focus metadata', () => {

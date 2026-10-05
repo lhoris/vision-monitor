@@ -45,12 +45,13 @@ export async function getMetadataProfile(userId: string, sourceId: string): Prom
 
 export async function saveMetadataProfile(profile: MetadataLayoutProfile): Promise<MetadataLayoutProfile> {
   const next = { ...profile, updatedAt: new Date().toISOString(), sections: profile.sections.map((section, index) => ({ ...section, order: index })) }
-  localStorage.setItem(storageKey(profile.userId, profile.sourceId), JSON.stringify(next))
-  return next
+  const response = await apiClient.put<MetadataLayoutProfile>(`/metadata/profiles/${encodeURIComponent(profile.sourceId)}`, { sections: next.sections })
+  const data = getResponseData(response, null)
+  if (!data || !Array.isArray(data.sections)) throw new Error('Metadata profile was not saved')
+  return { ...data, userId: profile.userId, sourceId: profile.sourceId }
 }
 
 export async function resetMetadataProfile(userId: string, sourceId: string): Promise<MetadataLayoutProfile> {
   const profile = createDefaultMetadataProfile(userId, sourceId)
-  localStorage.removeItem(storageKey(userId, sourceId))
-  return profile
+  return saveMetadataProfile(profile)
 }
