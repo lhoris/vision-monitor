@@ -29,7 +29,8 @@ export async function executeMetadataQuery(input: { queryId: string; sourceId: s
     const sourceId = Number(input.sourceId) || input.sourceId
     const response = await apiClient.post<MetadataQueryResult>(
       `/metadata/queries/${encodeURIComponent(input.queryId)}/execute`,
-      { sourceId, parameters: { sourceId } }
+      { sourceId, parameters: { sourceId } },
+      { signal: input.signal }
     )
     const data = getResponseData(response, null)
     if (data) return data

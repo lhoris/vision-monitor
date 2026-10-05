@@ -9,6 +9,10 @@ import type { ApiResponse, ApiError } from '@/types'
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 const REQUEST_TIMEOUT = 30000
 
+interface RequestOptions {
+  signal?: AbortSignal
+}
+
 class ApiClient {
   private client: AxiosInstance
 
@@ -67,9 +71,9 @@ class ApiClient {
     }
   }
 
-  async post<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
+  async post<T>(url: string, data?: unknown, options?: RequestOptions): Promise<ApiResponse<T>> {
     try {
-      const response = await this.client.post<ApiResponse<T>>(url, data)
+      const response = await this.client.post<ApiResponse<T>>(url, data, { signal: options?.signal })
       return response.data
     } catch (error) {
       throw this.handleError(error)
