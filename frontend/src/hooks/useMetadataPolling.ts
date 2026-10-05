@@ -1,20 +1,14 @@
 import { useEffect, useState } from 'react'
 import { executeMetadataQuery } from '@/services/metadataQueryService'
-import { getMockQueryResult } from '@/mocks/metadataQueryRegistry'
 import type { MetadataPollingState, MetadataQueryError, MetadataQueryResult, MetadataSectionConfig } from '@/types/metadataConfig'
 
-function initialStateFor(section: MetadataSectionConfig, sourceId: string): MetadataPollingState {
+function initialStateFor(section: MetadataSectionConfig): MetadataPollingState {
   if (!section.queryId) return { status: 'success', result: null, error: null }
-  try {
-    const result = getMockQueryResult(section.queryId, sourceId)
-    return { status: result.rows.length ? 'success' : 'empty', result, error: null }
-  } catch {
-    return { status: 'loading', result: null, error: null }
-  }
+  return { status: 'loading', result: null, error: null }
 }
 
 export function useMetadataPolling(section: MetadataSectionConfig, sourceId: string, active = true): MetadataPollingState {
-  const [state, setState] = useState<MetadataPollingState>(() => initialStateFor(section, sourceId))
+  const [state, setState] = useState<MetadataPollingState>(() => initialStateFor(section))
 
   useEffect(() => {
     let disposed = false

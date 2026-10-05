@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CameraFocus from '../CameraFocus'
+
+const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
+vi.mock('@/services/api', () => ({ apiClient: { get, post } }))
 
 vi.mock('@/components/StreamPlayer/StreamPlayerComponent', () => ({
   StreamPlayerComponent: ({ source }: { source: { url: string; protocol: string; label?: string } }) => (
@@ -40,6 +43,19 @@ function renderRoute(initialEntry: string) {
 }
 
 describe('CameraFocus page shell', () => {
+  beforeEach(() => {
+    get.mockRejectedValue(new Error('offline'))
+    post.mockImplementation(async (url: string) => {
+      const queryCode = decodeURIComponent(url.split('/').at(-2) ?? '')
+      const rows = queryCode === 'camera.info'
+        ? [{ label: 'Video Name', value: 'Entry Zone CAM-01' }, { label: 'Process', value: 'Cooling' }, { label: 'Zone', value: 'Entry Zone' }]
+        : queryCode === 'camera.status'
+          ? [{ label: 'Status', value: 'online' }]
+          : []
+      return { data: { queryId: queryCode, schema: [], rows, fetchedAt: '2026-10-05T00:00:00Z' } }
+    })
+  })
+
   it('renders live focus view with the source grid camera list', async () => {
     renderRoute('/live/cameras/1?mode=live&cameraIds=1%2C2')
 

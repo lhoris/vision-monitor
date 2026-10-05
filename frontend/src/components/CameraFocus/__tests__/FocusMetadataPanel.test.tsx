@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FocusMetadataPanel } from '../FocusMetadataPanel'
 import type { CameraFocusDto } from '@/types/cameraFocus'
 
-const { get, put } = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn() }))
-vi.mock('@/services/api', () => ({ apiClient: { get, put } }))
+const { get, post, put } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }))
+vi.mock('@/services/api', () => ({ apiClient: { get, post, put } }))
 
 const camera: CameraFocusDto = {
   cameraId: 1,
@@ -44,16 +44,25 @@ describe('FocusMetadataPanel', () => {
       savedProfile = { sourceId: '1', sections: body.sections, updatedAt: '2026-10-05T00:00:00Z' }
       return { data: savedProfile }
     })
+    post.mockImplementation(async (url: string) => {
+      const queryCode = decodeURIComponent(url.split('/').at(-2) ?? '')
+      const rows = queryCode === 'camera.info'
+        ? [{ label: 'Video Name', value: 'Entry Zone CAM-01' }, { label: 'Process', value: '냉각' }, { label: 'Zone', value: 'Entry Zone' }]
+        : queryCode === 'camera.status'
+          ? [{ label: 'Status', value: 'online' }]
+          : []
+      return { data: { queryId: queryCode, schema: [], rows, fetchedAt: '2026-10-05T00:00:00Z' } }
+    })
   })
 
-  it('renders camera focus metadata', () => {
+  it('renders camera focus metadata', async () => {
     render(<FocusMetadataPanel camera={camera} />)
 
-    expect(screen.getByText('Entry Zone CAM-01')).toBeInTheDocument()
+    expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
     expect(screen.getByText('냉각')).toBeInTheDocument()
     expect(screen.getByText('Entry Zone')).toBeInTheDocument()
-    expect(screen.getByText('online')).toBeInTheDocument()
-    expect(screen.getByText('최근 알람')).toBeInTheDocument()
+    expect(await screen.findByText('online')).toBeInTheDocument()
+    expect(screen.getByText('표시할 데이터가 없습니다.')).toBeInTheDocument()
   })
 
   it('uses dash fallback for missing camera values', () => {
