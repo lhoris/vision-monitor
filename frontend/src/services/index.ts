@@ -5,16 +5,6 @@
 export { apiClient } from './api'
 export { cameraService } from './cameraService'
 export {
-  CAMERA_FOCUS_ENDPOINT_TEMPLATE,
-  buildCameraFocusEndpoint,
-  getCameraFocusMock,
-} from './cameraFocusMockAdapter'
-export {
-  CAMERA_LIVE_STREAM_ENDPOINT_TEMPLATE,
-  buildCameraLiveStreamEndpoint,
-  getCameraLiveStreamMock,
-} from './cameraLiveStreamMockAdapter'
-export {
   CAMERA_PLAYBACK_ENDPOINT_TEMPLATE,
   buildCameraPlaybackEndpoint,
   getCameraPlaybackMock,
