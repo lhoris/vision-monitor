@@ -32,6 +32,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             case "DUPLICATE_USERNAME", "DUPLICATE_CODE", "DUPLICATE_CODE_VALUE", "LAST_ADMIN_RISK", "SELF_LOCKOUT_RISK", "VERSION_CONFLICT", "USERNAME_IMMUTABLE" -> HttpStatus.CONFLICT;
             case "VALIDATION_ERROR", "CONFIRMATION_REQUIRED", "INVALID_LAYOUT" -> HttpStatus.UNPROCESSABLE_ENTITY;
             case "LAYOUT_SAVE_FAILED" -> HttpStatus.INTERNAL_SERVER_ERROR;
+            case "RECORDING_UNAVAILABLE" -> HttpStatus.SERVICE_UNAVAILABLE;
             default -> HttpStatus.BAD_REQUEST;
         };
     }
