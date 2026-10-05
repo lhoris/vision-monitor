@@ -1,7 +1,7 @@
 import type { ApiResponse } from '@/types/api'
 
 export function getResponseData<T>(response: ApiResponse<T>, fallback: T): T {
-  return response.data || fallback
+  return response.data ?? fallback
 }
 
 export async function withServiceFallback<T>(

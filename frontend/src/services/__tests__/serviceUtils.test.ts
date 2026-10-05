@@ -10,6 +10,12 @@ describe('serviceUtils', () => {
     expect(getResponseData({ success: true, timestamp: 'now' }, 'fallback')).toBe('fallback')
   })
 
+  it('preserves valid falsy response data', () => {
+    expect(getResponseData({ success: true, data: false, timestamp: 'now' }, true)).toBe(false)
+    expect(getResponseData({ success: true, data: 0, timestamp: 'now' }, 1)).toBe(0)
+    expect(getResponseData({ success: true, data: '', timestamp: 'now' }, 'fallback')).toBe('')
+  })
+
   it('returns operation result', async () => {
     await expect(withServiceFallback(() => Promise.resolve(1), 0, 'failed')).resolves.toBe(1)
   })
