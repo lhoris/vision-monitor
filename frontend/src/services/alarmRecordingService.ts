@@ -4,7 +4,7 @@ import type { Event } from '@/types'
 const DEFAULT_OFFSETS: AlarmOffsetConfig = {
   beforeSeconds: 10,
   afterSeconds: 20,
-  source: 'mock',
+  source: 'alarm-rule',
 }
 
 export function getAlarmOffsetConfig(): AlarmOffsetConfig {

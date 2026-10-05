@@ -5,7 +5,7 @@ export type AlarmClipStatus = 'loading' | 'available' | 'partial' | 'unavailable
 export interface AlarmOffsetConfig {
   beforeSeconds: number
   afterSeconds: number
-  source: 'mock' | 'alarm-rule'
+  source: 'alarm-rule'
 }
 
 export interface AlarmRecordingClip {
