@@ -3,7 +3,6 @@
  */
 
 import { apiClient } from './api'
-import { getActiveCameraAlertsMock } from './cameraAlertsMockAdapter'
 import { acknowledgeEventMock, getEventDetailMock } from './eventDetailMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
@@ -99,7 +98,23 @@ class EventService {
   }
 
   async getActiveCameraAlerts(cameraId: number): Promise<ApiResponse<ActiveAlertDto[]>> {
-    return getActiveCameraAlertsMock(cameraId)
+    const result = await this.getCameraEvents(cameraId, { status: 'active' })
+    if (!result) {
+      return {
+        success: false,
+        error: 'CAMERA_ALERTS_UNAVAILABLE',
+        message: 'Active camera alerts are unavailable.',
+        timestamp: new Date().toISOString(),
+      }
+    }
+    return {
+      success: true,
+      data: result.content
+        .filter((event) => event.severity === 'high' || event.severity === 'critical')
+        .filter((event) => !event.acknowledged)
+        .map(toActiveAlertDto),
+      timestamp: new Date().toISOString(),
+    }
   }
 
   async getFocusEventDetail(eventId: number): Promise<ApiResponse<EventDetailDto>> {
@@ -202,6 +217,20 @@ function toCameraEventDto(event: Event): CameraEventListDto['content'][number] {
     occurredAt: event.timestamp.toISOString(),
     endedAt: null,
     status: event.acknowledged ? 'acknowledged' : 'active',
+    metadata: event.metadata ?? {},
+  }
+}
+
+function toActiveAlertDto(event: Event): ActiveAlertDto {
+  return {
+    alertId: event.id,
+    cameraId: event.cameraId,
+    severity: event.severity === 'critical' ? 'critical' : 'warning',
+    message: event.description,
+    location: event.location ?? '',
+    startedAt: event.timestamp.toISOString(),
+    status: 'active',
+    relatedEventId: event.id,
     metadata: event.metadata ?? {},
   }
 }

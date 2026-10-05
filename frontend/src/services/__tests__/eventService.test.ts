@@ -114,15 +114,26 @@ describe('eventService', () => {
     })
   })
 
-  it('returns active camera alerts from the mock adapter boundary', async () => {
+  it('maps active camera events to alert DTOs', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: {
+        content: [{ ...event, severity: 'high', description: 'Entry zone alert', location: 'Entry Zone' }],
+        totalElements: 1,
+        totalPages: 1,
+        currentPage: 0,
+        pageSize: 50,
+      },
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
     const response = await eventService.getActiveCameraAlerts(1)
 
     expect(response.success).toBe(true)
-    expect(response.data?.[0]).toMatchObject({
-      alertId: 90001,
-      relatedEventId: 50001,
+    expect(response.data?.[0]).toMatchObject({ alertId: 1, relatedEventId: 1, severity: 'warning' })
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1/events', {
+      status: 'active',
     })
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
   })
 
   it('returns focus event detail from the mock adapter boundary', async () => {
