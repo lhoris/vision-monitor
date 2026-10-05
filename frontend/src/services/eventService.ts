@@ -4,7 +4,6 @@
 
 import { apiClient } from './api'
 import { getActiveCameraAlertsMock } from './cameraAlertsMockAdapter'
-import { getCameraEventsMock } from './cameraEventsMockAdapter'
 import { acknowledgeEventMock, getEventDetailMock } from './eventDetailMockAdapter'
 import { getResponseData, withServiceFallback } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
@@ -73,7 +72,30 @@ class EventService {
     cameraId: number,
     range: CameraEventsRange
   ): Promise<ApiResponse<CameraEventListDto>> {
-    return getCameraEventsMock(cameraId, range)
+    const result = await this.getCameraEvents(cameraId, {
+      startDate: range.from,
+      endDate: range.to,
+      severity: range.severity,
+      status: range.status,
+    })
+    if (!result) {
+      return {
+        success: false,
+        error: 'CAMERA_EVENTS_UNAVAILABLE',
+        message: 'Camera event history is unavailable.',
+        timestamp: new Date().toISOString(),
+      }
+    }
+    return {
+      success: true,
+      data: {
+        content: result.content.map(toCameraEventDto),
+        page: result.currentPage,
+        size: result.pageSize,
+        totalElements: result.totalElements,
+      },
+      timestamp: new Date().toISOString(),
+    }
   }
 
   async getActiveCameraAlerts(cameraId: number): Promise<ApiResponse<ActiveAlertDto[]>> {
@@ -169,3 +191,17 @@ class EventService {
 }
 
 export const eventService = new EventService()
+
+function toCameraEventDto(event: Event): CameraEventListDto['content'][number] {
+  return {
+    eventId: event.id,
+    cameraId: event.cameraId,
+    eventType: event.type,
+    severity: event.severity === 'critical' ? 'critical' : event.severity === 'high' ? 'warning' : 'info',
+    title: event.description,
+    occurredAt: event.timestamp.toISOString(),
+    endedAt: null,
+    status: event.acknowledged ? 'acknowledged' : 'active',
+    metadata: event.metadata ?? {},
+  }
+}

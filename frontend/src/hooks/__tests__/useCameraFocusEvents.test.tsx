@@ -15,6 +15,19 @@ describe('useCameraFocusEvents', () => {
 
   it('loads camera events for the recording timeline range when enabled', async () => {
     const getCameraEvents = vi.spyOn(focusApiService, 'getCameraEvents')
+    getCameraEvents.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          { eventId: 50001, cameraId: 1, eventType: 'entry_zone_jam', severity: 'warning', title: 'Entry zone event', occurredAt: range.from, endedAt: null, status: 'active', metadata: {} },
+          { eventId: 50002, cameraId: 1, eventType: 'material_size_detected', severity: 'info', title: 'Material size event', occurredAt: range.to, endedAt: null, status: 'ended', metadata: {} },
+        ],
+        page: 0,
+        size: 50,
+        totalElements: 2,
+      },
+      timestamp: '2026-10-06T00:00:00.000Z',
+    })
 
     const { result } = renderHook(() =>
       useCameraFocusEvents({

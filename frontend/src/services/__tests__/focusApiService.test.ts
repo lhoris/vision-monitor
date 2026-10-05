@@ -17,18 +17,31 @@ const RANGE = {
 
 describe('focusApiService', () => {
   beforeEach(() => {
-    get.mockResolvedValue({
-      data: {
-        id: 1,
-        name: 'Entry Zone CAM-01',
-        location: 'Line 1',
-        zone: 'Entry Zone',
-        streamUrl: 'https://media.test/camera-1.m3u8',
-        streamProtocol: 'hls',
-        status: 'online',
-        recordingEnabled: true,
-        lastSeen: '2026-10-05T00:00:00Z',
-      },
+    get.mockImplementation((url: string) => {
+      if (url === '/cameras/1/events') {
+        return Promise.resolve({
+          data: {
+            content: [{ id: 50001, cameraId: 1, type: 'entry_zone_jam', severity: 'high', description: 'Entry zone event', timestamp: new Date('2026-08-15T08:55:00+09:00'), acknowledged: false, metadata: {} }],
+            totalElements: 1,
+            totalPages: 1,
+            currentPage: 0,
+            pageSize: 50,
+          },
+        })
+      }
+      return Promise.resolve({
+        data: {
+          id: 1,
+          name: 'Entry Zone CAM-01',
+          location: 'Line 1',
+          zone: 'Entry Zone',
+          streamUrl: 'https://media.test/camera-1.m3u8',
+          streamProtocol: 'hls',
+          status: 'online',
+          recordingEnabled: true,
+          lastSeen: '2026-10-05T00:00:00Z',
+        },
+      })
     })
   })
 

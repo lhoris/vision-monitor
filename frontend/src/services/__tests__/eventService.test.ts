@@ -92,19 +92,26 @@ describe('eventService', () => {
     await expect(eventService.acknowledgeEvents([1, 2])).resolves.toBe(false)
   })
 
-  it('returns camera focus events from the mock adapter boundary', async () => {
+  it('maps camera events from the API to the focus event contract', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: page,
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
     const response = await eventService.getCameraFocusEvents(1, {
       from: '2026-08-15T08:00:00+09:00',
       to: '2026-08-15T09:00:00+09:00',
     })
 
     expect(response.success).toBe(true)
-    expect(response.data?.content[0]).toMatchObject({
-      eventId: 50001,
-      cameraId: 1,
-      eventType: 'entry_zone_jam',
+    expect(response.data?.content[0]).toMatchObject({ eventId: 1, cameraId: 1, eventType: 'motion' })
+    expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras/1/events', {
+      startDate: '2026-08-15T08:00:00+09:00',
+      endDate: '2026-08-15T09:00:00+09:00',
+      severity: undefined,
+      status: undefined,
     })
-    expect(mockedApiClient.get).not.toHaveBeenCalled()
   })
 
   it('returns active camera alerts from the mock adapter boundary', async () => {
