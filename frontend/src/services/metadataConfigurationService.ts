@@ -1,4 +1,4 @@
-import { createDefaultMetadataProfile } from '@/mocks/metadataQueryRegistry'
+import { createDefaultMetadataProfile } from '@/config/metadataDefaults'
 import type { MetadataLayoutProfile, MetadataSectionConfig } from '@/types/metadataConfig'
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
 import { listMetadataQueries } from '@/services/metadataQueryService'
-import { createDefaultMetadataProfile } from '@/mocks/metadataQueryRegistry'
+import { createDefaultMetadataProfile } from '@/config/metadataDefaults'
 import { getMetadataProfile, resetMetadataProfile, saveMetadataProfile } from '@/services/metadataConfigurationService'
 import type { MetadataLayoutProfile, MetadataQueryDefinition, MetadataSectionConfig } from '@/types/metadataConfig'
 import { ConfirmDialog } from '@/components/Common'
