@@ -1,5 +1,6 @@
 import { apiClient } from './api'
 import { getResponseData, withServiceFallback } from './serviceUtils'
+import type { ApiResponse } from '@/types/api'
 import type { Camera } from '@/types/camera'
 import type { Layout } from '@/types/layout'
 import type { VideoSource, VideoSourceInput } from '@/types/videoSource'
@@ -56,15 +57,21 @@ class VideoSourceService {
   async list(): Promise<VideoSource[]> {
     return withServiceFallback(async () => getResponseData(await apiClient.get<VideoSource[]>('/video-sources'), []), [], 'Failed to fetch video sources:')
   }
-  async create(input: VideoSourceInput): Promise<VideoSource | null> {
-    return getResponseData(await apiClient.post<VideoSource>('/video-sources', input), null)
+  async create(input: VideoSourceInput): Promise<VideoSource> {
+    return requireSourceData(await apiClient.post<VideoSource>('/video-sources', input), 'Created video source was not returned')
   }
-  async update(id: number, input: VideoSourceInput): Promise<VideoSource | null> {
-    return getResponseData(await apiClient.put<VideoSource>(`/video-sources/${id}`, input), null)
+  async update(id: number, input: VideoSourceInput): Promise<VideoSource> {
+    return requireSourceData(await apiClient.put<VideoSource>(`/video-sources/${id}`, input), 'Updated video source was not returned')
   }
   async remove(id: number): Promise<void> {
     await apiClient.delete(`/video-sources/${id}`)
   }
+}
+
+function requireSourceData(response: ApiResponse<VideoSource>, message: string): VideoSource {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }
 
 export const videoSourceService = new VideoSourceService()
