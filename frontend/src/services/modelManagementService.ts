@@ -1,6 +1,7 @@
 import { commonCodeService } from './commonCodeService'
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
+import type { ApiResponse } from '@/types/api'
 import type { ModelControlAction, ModelCreateInput, ModelEventLog, ModelProcess, ModelSettingsInput, ProcessArea } from '@/types/modelManagement'
 
 export class ModelManagementError extends Error {
@@ -32,11 +33,11 @@ export async function createProcessArea(name: string): Promise<ProcessArea> {
 
 export async function updateSettings(id: string, input: ModelSettingsInput): Promise<ModelProcess> {
   validateSettings(input)
-  return getResponseData(await apiClient.put<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/settings`, input), {} as ModelProcess)
+  return requireProcessData(await apiClient.put<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/settings`, input), 'Updated model process was not returned')
 }
 
 export async function controlProcess(id: string, action: ModelControlAction): Promise<ModelProcess> {
-  return getResponseData(await apiClient.post<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/actions/${action}`), {} as ModelProcess)
+  return requireProcessData(await apiClient.post<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/actions/${action}`), 'Controlled model process was not returned')
 }
 
 export async function listEventLogs(modelProcessId: string): Promise<ModelEventLog[]> {
@@ -46,5 +47,11 @@ export async function listEventLogs(modelProcessId: string): Promise<ModelEventL
 export async function createProcess(input: ModelCreateInput): Promise<ModelProcess> {
   if (!input.processId || !input.modelName.trim() || !input.automationName.trim()) throw new ModelManagementError('VALIDATION_ERROR', '공정, 모델명, 자동화 기술명을 입력해 주세요.')
   validateSettings(input)
-  return getResponseData(await apiClient.post<ModelProcess>('/model-processes', input), {} as ModelProcess)
+  return requireProcessData(await apiClient.post<ModelProcess>('/model-processes', input), 'Created model process was not returned')
+}
+
+function requireProcessData(response: ApiResponse<ModelProcess>, message: string): ModelProcess {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }

@@ -37,6 +37,17 @@ describe('modelManagementService', () => {
     expect(created.processStatus).toBe('unknown')
   })
 
+  it('surfaces missing model responses instead of returning an empty process', async () => {
+    vi.mocked(apiClient.put).mockResolvedValue({ success: true, timestamp: '2026-10-06T00:00:00Z' })
+    await expect(updateSettings('model-001', { serverIp: '10.20.4.99', pythonProjectPath: '/opt/new/model' }))
+      .rejects.toThrow('Updated model process was not returned')
+
+    vi.mocked(apiClient.post).mockResolvedValue({ success: true, timestamp: '2026-10-06T00:00:00Z' })
+    await expect(controlProcess('model-001', 'stop')).rejects.toThrow('Controlled model process was not returned')
+    await expect(createProcess({ processId: 'heating', modelName: 'New model', automationName: 'New automation', serverIp: '10.20.4.30', pythonProjectPath: '/opt/new' }))
+      .rejects.toThrow('Created model process was not returned')
+  })
+
   it('creates a process area in the PROCESS_AREA common code', async () => {
     vi.mocked(commonCodeService.listAdmin).mockResolvedValue([{ id: 'code-process-area', code: 'PROCESS_AREA', name: 'PROCESS_AREA', details: [] }] as never)
     vi.mocked(commonCodeService.createDetail).mockResolvedValue({ value: 'QUALITY', name: 'Quality', nameKo: 'Quality', sortOrder: 0 } as never)
