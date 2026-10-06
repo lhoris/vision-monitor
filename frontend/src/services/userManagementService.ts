@@ -21,16 +21,16 @@ function actualApiService(): UserManagementService {
       return getResponseData(response, { items: [], total: 0, roles: [] })
     },
     async getUser(userId) {
-      return getResponseData(await apiClient.get<UserAccount>(`/admin/users/${userId}`), null as never)
+      return requireUserData(await apiClient.get<UserAccount>(`/admin/users/${userId}`), 'User detail was not returned')
     },
     async createUser(input) {
-      return getResponseData(await apiClient.post<UserAccount>('/admin/users', input), null as never)
+      return requireUserData(await apiClient.post<UserAccount>('/admin/users', input), 'Created user was not returned')
     },
     async updateUser(userId, input) {
-      return getResponseData(await apiClient.put<UserAccount>(`/admin/users/${userId}`, input), null as never)
+      return requireUserData(await apiClient.put<UserAccount>(`/admin/users/${userId}`, input), 'Updated user was not returned')
     },
     async resetPassword(userId) {
-      return getResponseData(await apiClient.post<UserAccount>(`/admin/users/${userId}/reset-password`), null as never)
+      return requireUserData(await apiClient.post<UserAccount>(`/admin/users/${userId}/reset-password`), 'Reset user was not returned')
     },
     async dangerAction(userId, action, keepPersonalization) {
       const endpoint = `/admin/users/${userId}/${action}`
@@ -39,9 +39,15 @@ function actualApiService(): UserManagementService {
         : action === 'delete-request'
           ? { keepPersonalization, confirmedImpact: true, reason: '사용자관리 화면 요청' }
           : { keepPersonalization }
-      return getResponseData(await apiClient.post<UserAccount>(endpoint, body), null as never)
+      return requireUserData(await apiClient.post<UserAccount>(endpoint, body), 'Updated user was not returned')
     },
   }
+}
+
+function requireUserData<T>(response: Parameters<typeof getResponseData<T>>[0], message: string): T {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }
 
 const actualApi = actualApiService()

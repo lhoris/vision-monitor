@@ -63,4 +63,10 @@ describe('userManagementService', () => {
     expect(mockedApiClient.post).toHaveBeenNthCalledWith(1, '/admin/users/2/lock', { keepPersonalization: true })
     expect(mockedApiClient.post).toHaveBeenNthCalledWith(2, '/admin/users/2/unlock', { keepPersonalization: true })
   })
+
+  it('surfaces a missing user response instead of returning null as a user', async () => {
+    mockedApiClient.put.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+
+    await expect(userManagementService.updateUser(2, newUser)).rejects.toThrow('Updated user was not returned')
+  })
 })
