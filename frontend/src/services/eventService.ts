@@ -168,7 +168,7 @@ class EventService {
 
   async acknowledgeEvent(eventId: number): Promise<Event | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.put<Event>(`/events/${eventId}/acknowledge`, {}), null),
+      async () => requireData(await apiClient.put<Event>(`/events/${eventId}/acknowledge`, {}), 'Acknowledged event was not returned'),
       null,
       'Failed to acknowledge event:'
     )
@@ -220,7 +220,7 @@ class EventService {
 
   async createAlertSetting(setting: Omit<AlertSetting, 'id'>): Promise<AlertSetting | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.post<AlertSetting>('/alerts/settings', setting), null),
+      async () => requireData(await apiClient.post<AlertSetting>('/alerts/settings', setting), 'Created alert setting was not returned'),
       null,
       'Failed to create alert setting:'
     )
@@ -228,7 +228,7 @@ class EventService {
 
   async updateAlertSetting(id: number, setting: Partial<AlertSetting>): Promise<AlertSetting | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.put<AlertSetting>(`/alerts/settings/${id}`, setting), null),
+      async () => requireData(await apiClient.put<AlertSetting>(`/alerts/settings/${id}`, setting), 'Updated alert setting was not returned'),
       null,
       'Failed to update alert setting:'
     )
@@ -244,6 +244,12 @@ class EventService {
       'Failed to delete alert setting:'
     )
   }
+}
+
+function requireData<T>(response: ApiResponse<T>, message: string): T {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }
 
 export const eventService = new EventService()

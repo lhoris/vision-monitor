@@ -92,6 +92,15 @@ describe('eventService', () => {
     await expect(eventService.acknowledgeEvents([1, 2])).resolves.toBe(false)
   })
 
+  it('returns null when an alert mutation response has no data', async () => {
+    mockedApiClient.post.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+    await expect(eventService.createAlertSetting({ cameraId: 1, eventType: 'motion', enabled: true, notificationMethod: 'in-app' }))
+      .resolves.toBeNull()
+
+    mockedApiClient.put.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+    await expect(eventService.updateAlertSetting(1, { enabled: false })).resolves.toBeNull()
+  })
+
   it('maps camera events from the API to the focus event contract', async () => {
     mockedApiClient.get.mockResolvedValue({
       success: true,
