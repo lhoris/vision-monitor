@@ -16,7 +16,7 @@ class CameraService {
 
   async getAllCameras(): Promise<Camera[]> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.get<Camera[]>('/cameras'), []),
+      async () => getResponseData(await apiClient.get<Camera[]>('/cameras'), []).map(normalizeCamera),
       [],
       'Failed to fetch all cameras:'
     )
@@ -27,7 +27,10 @@ class CameraService {
     if (existingRequest) return existingRequest
 
     const request = withServiceFallback(
-      async () => getResponseData(await apiClient.get<CameraDetail>(`/cameras/${cameraId}`), null),
+      async () => {
+        const camera = getResponseData(await apiClient.get<CameraDetail>(`/cameras/${cameraId}`), null)
+        return camera ? normalizeCamera(camera) : null
+      },
       null,
       `Failed to fetch camera detail for ${cameraId}:`
     )
@@ -74,7 +77,10 @@ class CameraService {
 
   async createCamera(camera: Omit<Camera, 'id'>): Promise<Camera | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.post<Camera>('/cameras', camera), null),
+      async () => {
+        const created = getResponseData(await apiClient.post<Camera>('/cameras', camera), null)
+        return created ? normalizeCamera(created) : null
+      },
       null,
       'Failed to create camera:'
     )
@@ -82,7 +88,10 @@ class CameraService {
 
   async updateCamera(id: number, camera: Partial<Camera>): Promise<Camera | null> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.put<Camera>(`/cameras/${id}`, camera), null),
+      async () => {
+        const updated = getResponseData(await apiClient.put<Camera>(`/cameras/${id}`, camera), null)
+        return updated ? normalizeCamera(updated) : null
+      },
       null,
       `Failed to update camera ${id}:`
     )
@@ -101,7 +110,7 @@ class CameraService {
 
   async getCamerasByZone(zone: string): Promise<Camera[]> {
     return withServiceFallback(
-      async () => getResponseData(await apiClient.get<Camera[]>('/cameras', { zone }), []),
+      async () => getResponseData(await apiClient.get<Camera[]>('/cameras', { zone }), []).map(normalizeCamera),
       [],
       `Failed to fetch cameras by zone ${zone}:`
     )
@@ -117,6 +126,13 @@ class CameraService {
       OFFLINE_HEALTH,
       `Failed to check camera health for ${cameraId}:`
     )
+  }
+}
+
+function normalizeCamera<T extends Camera>(camera: T): T {
+  return {
+    ...camera,
+    lastSeen: camera.lastSeen ? new Date(camera.lastSeen) : undefined,
   }
 }
 

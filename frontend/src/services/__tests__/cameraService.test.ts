@@ -42,6 +42,19 @@ describe('cameraService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/cameras')
   })
 
+  it('normalizes API lastSeen strings to Date values', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: [{ ...camera, lastSeen: '2026-08-13T00:00:00.000Z' }],
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
+    const cameras = await cameraService.getAllCameras()
+
+    expect(cameras[0]?.lastSeen).toBeInstanceOf(Date)
+    expect(cameras[0]?.lastSeen?.toISOString()).toBe('2026-08-13T00:00:00.000Z')
+  })
+
   it('returns empty camera list on failure', async () => {
     mockedApiClient.get.mockRejectedValue(new Error('Network failed'))
 
