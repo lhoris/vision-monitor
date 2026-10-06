@@ -10,6 +10,14 @@ describe('serviceUtils', () => {
     expect(getResponseData({ success: true, timestamp: 'now' }, 'fallback')).toBe('fallback')
   })
 
+  it('does not treat error response details as successful data', () => {
+    expect(getResponseData({ success: false, data: 'error details', timestamp: 'now' }, 'fallback')).toBe('fallback')
+  })
+
+  it('keeps compatibility with legacy response fixtures that omit success', () => {
+    expect(getResponseData({ data: 'ok', timestamp: 'now' } as never, 'fallback')).toBe('ok')
+  })
+
   it('preserves valid falsy response data', () => {
     expect(getResponseData({ success: true, data: false, timestamp: 'now' }, true)).toBe(false)
     expect(getResponseData({ success: true, data: 0, timestamp: 'now' }, 1)).toBe(0)
