@@ -76,6 +76,15 @@ describe('cameraService', () => {
     await expect(cameraService.deleteCamera(1)).resolves.toBe(false)
   })
 
+  it('returns null when a camera mutation response has no data', async () => {
+    const { id: _cameraId, ...cameraInput } = camera
+    mockedApiClient.post.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+    await expect(cameraService.createCamera(cameraInput)).resolves.toBeNull()
+
+    mockedApiClient.put.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+    await expect(cameraService.updateCamera(1, { name: 'Updated camera' })).resolves.toBeNull()
+  })
+
   it('maps camera details from the API to the focus contract', async () => {
     mockedApiClient.get.mockResolvedValue({
       success: true,

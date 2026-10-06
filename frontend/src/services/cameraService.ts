@@ -78,8 +78,7 @@ class CameraService {
   async createCamera(camera: Omit<Camera, 'id'>): Promise<Camera | null> {
     return withServiceFallback(
       async () => {
-        const created = getResponseData(await apiClient.post<Camera>('/cameras', camera), null)
-        return created ? normalizeCamera(created) : null
+        return normalizeCamera(requireCameraData(await apiClient.post<Camera>('/cameras', camera), 'Created camera was not returned'))
       },
       null,
       'Failed to create camera:'
@@ -89,8 +88,7 @@ class CameraService {
   async updateCamera(id: number, camera: Partial<Camera>): Promise<Camera | null> {
     return withServiceFallback(
       async () => {
-        const updated = getResponseData(await apiClient.put<Camera>(`/cameras/${id}`, camera), null)
-        return updated ? normalizeCamera(updated) : null
+        return normalizeCamera(requireCameraData(await apiClient.put<Camera>(`/cameras/${id}`, camera), 'Updated camera was not returned'))
       },
       null,
       `Failed to update camera ${id}:`
@@ -134,6 +132,12 @@ function normalizeCamera<T extends Camera>(camera: T): T {
     ...camera,
     lastSeen: camera.lastSeen ? new Date(camera.lastSeen) : undefined,
   }
+}
+
+function requireCameraData(response: ApiResponse<Camera>, message: string): Camera {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }
 
 function failureResponse<T>(message: string): ApiResponse<T> {
