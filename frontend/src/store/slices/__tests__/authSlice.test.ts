@@ -1,9 +1,11 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import authReducer, { loginUser, logout, logoutUser } from '../authSlice'
+import { configureStore } from '@reduxjs/toolkit'
+import authReducer, { loginUser, logout, logoutUser, validateAuthSession } from '../authSlice'
 
 vi.mock('@/services/authService', () => ({
   authService: {
     login: vi.fn(),
+    getCurrentSession: vi.fn(),
     logout: vi.fn(),
   },
 }))
@@ -93,6 +95,35 @@ describe('authSlice', () => {
     expect(logoutAction.type).toContain('/fulfilled')
     expect(state.isAuthenticated).toBe(false)
     expect(localStorage.getItem('authToken')).toBeNull()
+  })
+
+  it('does not validate the same stored session concurrently', async () => {
+    localStorage.setItem('authToken', 'token')
+    localStorage.setItem('authUsername', 'tester')
+    localStorage.setItem('authUser', JSON.stringify({ id: 1, username: 'tester', role: 'user' }))
+
+    let resolveSession: ((value: { id: number; username: string; role: string }) => void) | undefined
+    mockedAuthService.getCurrentSession.mockReturnValue(new Promise((resolve) => { resolveSession = resolve }))
+    const store = configureStore({
+      reducer: { auth: authReducer },
+      preloadedState: {
+        auth: {
+          isAuthenticated: true,
+          user: { id: 1, username: 'tester', role: 'user', permissions: [] },
+          loading: false,
+          error: null,
+          sessionStatus: 'idle' as const,
+        },
+      },
+    })
+
+    const firstValidation = store.dispatch(validateAuthSession())
+    const secondValidation = store.dispatch(validateAuthSession())
+    expect(mockedAuthService.getCurrentSession).toHaveBeenCalledTimes(1)
+
+    resolveSession?.({ id: 1, username: 'tester', role: 'user' })
+    await Promise.all([firstValidation, secondValidation])
+    expect(store.getState().auth.sessionStatus).toBe('valid')
   })
 
   it('restores administrator access from stored session regardless of role casing', async () => {

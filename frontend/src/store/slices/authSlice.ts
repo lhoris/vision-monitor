@@ -134,6 +134,12 @@ export const validateAuthSession = createAsyncThunk(
       removeStoredAuth()
       return rejectWithValue(error instanceof Error ? error.message : 'Authentication session is invalid')
     }
+  },
+  {
+    condition: (_, { getState }) => {
+      const state = getState() as { auth: AuthState }
+      return state.auth.isAuthenticated && state.auth.sessionStatus === 'idle'
+    },
   }
 )
 
