@@ -9,12 +9,20 @@ import type { ApiResponse, ApiError } from '@/types'
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 const REQUEST_TIMEOUT = 30000
 
+export function shouldHandleSessionExpiry(requestUrl: string, status: number | undefined, alreadyHandled: boolean): boolean {
+  return status === 401
+    && !alreadyHandled
+    && !requestUrl.includes('/auth/login')
+    && !requestUrl.includes('/auth/logout')
+}
+
 interface RequestOptions {
   signal?: AbortSignal
 }
 
 class ApiClient {
   private client: AxiosInstance
+  private sessionExpiryHandled = false
 
   constructor() {
     this.client = axios.create({
@@ -50,8 +58,8 @@ class ApiClient {
       (response) => response,
       (error: AxiosError) => {
         const requestUrl = error.config?.url ?? ''
-        const isLoginRequest = requestUrl.includes('/auth/login')
-        if (error.response?.status === 401 && !isLoginRequest) {
+        if (shouldHandleSessionExpiry(requestUrl, error.response?.status, this.sessionExpiryHandled)) {
+          this.sessionExpiryHandled = true
           localStorage.removeItem('authToken')
           localStorage.removeItem('authUsername')
           localStorage.removeItem('authUser')
