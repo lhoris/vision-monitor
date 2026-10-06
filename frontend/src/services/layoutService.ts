@@ -4,6 +4,7 @@
 
 import { apiClient } from './api'
 import { getResponseData, withServiceFallback } from './serviceUtils'
+import type { ApiResponse } from '@/types/api'
 import type { Layout, Tab, SubTab, GridConfig } from '@/types/layout'
 
 const LOCAL_LAYOUT_PREFIX = 'layout:personalization:'
@@ -105,8 +106,7 @@ class LayoutService {
     return withServiceFallback(
       async () => {
         const response = await apiClient.put<Layout>('/layouts/me', layout)
-        const savedLayout = getResponseData(response, null)
-        return savedLayout ? writeLocalLayout(savedLayout) : null
+        return writeLocalLayout(requireData(response, 'Saved layout was not returned'))
       },
       null,
       'Failed to save current user layout:'
@@ -121,7 +121,7 @@ class LayoutService {
     return withServiceFallback(
       async () => {
       const response = await apiClient.post<Layout>('/layouts', layout)
-        return getResponseData(response, null)
+        return requireData(response, 'Created layout was not returned')
       },
       null,
       'Failed to save layout:'
@@ -132,7 +132,7 @@ class LayoutService {
     return withServiceFallback(
       async () => {
       const response = await apiClient.put<Layout>(`/layouts/${id}`, layout)
-        return getResponseData(response, null)
+        return requireData(response, 'Updated layout was not returned')
       },
       null,
       'Failed to update layout:'
@@ -154,7 +154,7 @@ class LayoutService {
     return withServiceFallback(
       async () => {
       const response = await apiClient.post<Tab>(`/layouts/${layoutId}/tabs`, tab)
-        return getResponseData(response, null)
+        return requireData(response, 'Created layout tab was not returned')
       },
       null,
       'Failed to add tab:'
@@ -165,7 +165,7 @@ class LayoutService {
     return withServiceFallback(
       async () => {
       const response = await apiClient.put<Tab>(`/layouts/${layoutId}/tabs/${tabId}`, tab)
-        return getResponseData(response, null)
+        return requireData(response, 'Updated layout tab was not returned')
       },
       null,
       'Failed to update tab:'
@@ -182,6 +182,12 @@ class LayoutService {
       'Failed to delete tab:'
     )
   }
+}
+
+function requireData<T>(response: ApiResponse<T>, message: string): T {
+  const data = getResponseData(response, null)
+  if (!data) throw new Error(message)
+  return data
 }
 
 export const layoutService = new LayoutService()

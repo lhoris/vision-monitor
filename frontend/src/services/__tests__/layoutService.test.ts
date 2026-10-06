@@ -127,6 +127,12 @@ describe('layoutService', () => {
     expect(mockedApiClient.put).toHaveBeenCalledWith('/layouts/me', layout)
   })
 
+  it('returns null when a layout save response has no data', async () => {
+    mockedApiClient.put.mockResolvedValue({ success: true, timestamp: '2026-08-13T00:00:00.000Z' })
+
+    await expect(layoutService.saveMyLayout(createLayout())).resolves.toBeNull()
+  })
+
   it('saves tester layout through the backend API', async () => {
     const layout = createLayout()
     localStorage.setItem('authUsername', 'tester1')
