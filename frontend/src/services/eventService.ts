@@ -60,10 +60,10 @@ class EventService {
   ): Promise<PaginatedResponse<Event> | null> {
     return withServiceFallback(
       async () =>
-        getResponseData(
+        normalizeEventPage(getResponseData(
           await apiClient.get<PaginatedResponse<Event>>(`/cameras/${cameraId}/events`, params || {}),
           null
-        ),
+        )),
       null,
       'Failed to fetch camera events:'
     )
@@ -267,6 +267,14 @@ function normalizeEvent(event: Event): Event {
   return {
     ...event,
     timestamp: event.timestamp instanceof Date ? event.timestamp : new Date(event.timestamp),
+  }
+}
+
+function normalizeEventPage(page: PaginatedResponse<Event> | null): PaginatedResponse<Event> | null {
+  if (!page) return null
+  return {
+    ...page,
+    content: page.content.map(normalizeEvent),
   }
 }
 

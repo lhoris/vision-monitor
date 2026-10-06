@@ -151,6 +151,30 @@ describe('eventService', () => {
     expect(mockedApiClient.get).toHaveBeenCalledWith('/events/50001')
   })
 
+  it('normalizes string timestamps before mapping active alerts', async () => {
+    mockedApiClient.get.mockResolvedValue({
+      success: true,
+      data: {
+        content: [{
+          ...event,
+          timestamp: '2026-08-13T00:00:00.000Z',
+          severity: 'critical',
+          acknowledged: false,
+        }],
+        totalElements: 1,
+        totalPages: 1,
+        currentPage: 0,
+        pageSize: 50,
+      },
+      timestamp: '2026-08-13T00:00:00.000Z',
+    })
+
+    const response = await eventService.getActiveCameraAlerts(1)
+
+    expect(response.success).toBe(true)
+    expect(response.data?.[0]?.startedAt).toBe('2026-08-13T00:00:00.000Z')
+  })
+
   it('acknowledges focus event through the API contract', async () => {
     mockedApiClient.put.mockResolvedValue({
       success: true,
