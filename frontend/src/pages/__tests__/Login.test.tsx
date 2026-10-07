@@ -40,18 +40,18 @@ describe('Login', () => {
     expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester1@#')
   })
 
-  it('toggles the password visibility without changing the entered value', () => {
+  it('reveals the password only while the visibility button is pressed', () => {
     renderLogin()
 
     const password = screen.getByLabelText('PASSWORD')
     expect(password).toHaveAttribute('type', 'password')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show password' }))
+    const visibilityButton = screen.getByRole('button', { name: 'Show password while pressed' })
+    fireEvent.pointerDown(visibilityButton)
     expect(password).toHaveAttribute('type', 'text')
     expect(password).toHaveValue('tester1@#')
-    expect(screen.getByRole('button', { name: 'Hide password' })).toHaveAttribute('aria-pressed', 'true')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }))
+    fireEvent.pointerUp(visibilityButton)
     expect(password).toHaveAttribute('type', 'password')
   })
 })

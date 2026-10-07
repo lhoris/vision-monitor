@@ -43,7 +43,7 @@ function LoginFields({
   onSubmit,
   buttonClassName,
 }: LoginFormProps) {
-  const [showPassword, setShowPassword] = useState(false)
+  const [isPasswordRevealed, setIsPasswordRevealed] = useState(false)
 
   return (
     <form className="vm-login-form" onSubmit={onSubmit}>
@@ -65,7 +65,7 @@ function LoginFields({
         <div className="vm-password-input-wrap">
           <input
             id="login-password"
-            type={showPassword ? 'text' : 'password'}
+            type={isPasswordRevealed ? 'text' : 'password'}
             value={password}
             onChange={(event) => onPasswordChange(event.target.value)}
             placeholder="Password"
@@ -75,12 +75,27 @@ function LoginFields({
           <button
             type="button"
             className="vm-password-toggle"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
-            aria-pressed={showPassword}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => setShowPassword((visible) => !visible)}
+            aria-label="Show password while pressed"
+            onPointerDown={(event) => {
+              event.preventDefault()
+              setIsPasswordRevealed(true)
+            }}
+            onPointerUp={() => setIsPasswordRevealed(false)}
+            onPointerLeave={() => setIsPasswordRevealed(false)}
+            onPointerCancel={() => setIsPasswordRevealed(false)}
+            onKeyDown={(event) => {
+              if (event.key === ' ' || event.key === 'Enter') {
+                event.preventDefault()
+                setIsPasswordRevealed(true)
+              }
+            }}
+            onKeyUp={() => setIsPasswordRevealed(false)}
+            onBlur={() => setIsPasswordRevealed(false)}
           >
-            <span className="vm-password-eye" aria-hidden="true"><span /></span>
+            <svg className="vm-password-eye" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+              <circle cx="12" cy="12" r="2.5" />
+            </svg>
           </button>
         </div>
       </div>
