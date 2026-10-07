@@ -29,7 +29,7 @@ export function AccountCenterModal({ isOpen, initialTab, onClose, onLogout }: Ac
       isOpen={isOpen}
       onClose={onClose}
       title={t('account.dialogTitle')}
-      className="flex max-h-[calc(100vh-2rem)] max-w-5xl flex-col overflow-hidden"
+      className="!w-[min(72rem,calc(100vw-2rem))] !max-w-6xl flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden"
       bodyClassName="min-h-0 overflow-y-auto p-0"
     >
       <div className="flex min-h-0 flex-col">

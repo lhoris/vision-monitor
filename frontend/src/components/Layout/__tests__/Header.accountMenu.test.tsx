@@ -58,6 +58,7 @@ describe('Header account menu', () => {
     expect(screen.getByRole('tab', { name: /My Profile/ })).toHaveAttribute('aria-selected', 'true')
     fireEvent.click(screen.getByRole('tab', { name: /Help & Support/ }))
     expect(screen.getByRole('tabpanel')).toHaveTextContent(/Quick Guide/)
+    expect(screen.getByRole('dialog', { name: /Account Center/ })).toHaveClass('!max-w-6xl')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
