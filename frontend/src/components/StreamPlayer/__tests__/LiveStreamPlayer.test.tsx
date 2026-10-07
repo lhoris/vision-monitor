@@ -77,7 +77,7 @@ describe('LiveStreamPlayer', () => {
     )
   })
 
-  it('remounts iframe stream page after page resumes', () => {
+  it('keeps the iframe stream page mounted when page focus changes', () => {
     setVisibilityState('visible')
     render(<LiveStreamPlayer camera={camera} className="w-full h-full" />)
 
@@ -93,6 +93,6 @@ describe('LiveStreamPlayer', () => {
       document.dispatchEvent(new Event('visibilitychange'))
     })
 
-    expect(screen.getByTitle('Camera 1 stream')).not.toBe(firstIframe)
+    expect(screen.getByTitle('Camera 1 stream')).toBe(firstIframe)
   })
 })

@@ -1,6 +1,5 @@
 import type { Camera } from '@/types/camera'
 import type { PlayerError, PlayerState, StreamProtocol } from '@/types/streamPlayer'
-import { usePageResumeToken } from '@/hooks/usePageResumeToken'
 import { isStreamPageUrl } from '@/streaming/config'
 import { StreamPlayerComponent } from './StreamPlayerComponent'
 
@@ -21,12 +20,9 @@ export function LiveStreamPlayer({
   onStateChange,
   onError,
 }: LiveStreamPlayerProps) {
-  const resumeToken = usePageResumeToken()
-
   if (isStreamPageUrl(camera.streamUrl)) {
     return (
       <iframe
-        key={`${camera.id}:${camera.streamUrl}:${resumeToken}`}
         src={camera.streamUrl}
         title={`${camera.name} stream`}
         className={`border-0 ${className}`}
@@ -38,7 +34,6 @@ export function LiveStreamPlayer({
 
   return (
     <StreamPlayerComponent
-      key={`${camera.id}:${camera.streamUrl}:${resumeToken}`}
       source={{
         url: camera.streamUrl,
         protocol: (camera.streamProtocol || 'unknown') as StreamProtocol,
