@@ -47,11 +47,14 @@ describe('Login', () => {
     expect(password).toHaveAttribute('type', 'password')
 
     const visibilityButton = screen.getByRole('button', { name: 'Show password while pressed' })
+    expect(visibilityButton).toHaveAttribute('data-revealed', 'false')
     fireEvent.pointerDown(visibilityButton)
     expect(password).toHaveAttribute('type', 'text')
     expect(password).toHaveValue('tester1@#')
+    expect(visibilityButton).toHaveAttribute('data-revealed', 'true')
 
     fireEvent.pointerUp(visibilityButton)
     expect(password).toHaveAttribute('type', 'password')
+    expect(visibilityButton).toHaveAttribute('data-revealed', 'false')
   })
 })
