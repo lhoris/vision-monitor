@@ -43,6 +43,8 @@ function LoginFields({
   onSubmit,
   buttonClassName,
 }: LoginFormProps) {
+  const [showPassword, setShowPassword] = useState(false)
+
   return (
     <form className="vm-login-form" onSubmit={onSubmit}>
       <div className="vm-login-field">
@@ -60,15 +62,27 @@ function LoginFields({
 
       <div className="vm-login-field">
         <label htmlFor="login-password">PASSWORD</label>
-        <input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(event) => onPasswordChange(event.target.value)}
-          placeholder="Password"
-          autoComplete="current-password"
-          required
-        />
+        <div className="vm-password-input-wrap">
+          <input
+            id="login-password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(event) => onPasswordChange(event.target.value)}
+            placeholder="Password"
+            autoComplete="current-password"
+            required
+          />
+          <button
+            type="button"
+            className="vm-password-toggle"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-pressed={showPassword}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => setShowPassword((visible) => !visible)}
+          >
+            <span className="vm-password-eye" aria-hidden="true"><span /></span>
+          </button>
+        </div>
       </div>
 
       <div className="vm-login-options">

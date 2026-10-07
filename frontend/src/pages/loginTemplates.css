@@ -41,6 +41,60 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
+.vm-password-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.vm-password-input-wrap input {
+  padding-right: 52px;
+}
+
+.vm-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.vm-password-toggle:hover,
+.vm-password-toggle:focus-visible {
+  background: rgba(148, 163, 184, 0.16);
+  outline: none;
+}
+
+.vm-password-eye {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 12px;
+  border: 1.7px solid currentColor;
+  border-radius: 75% 15%;
+  transform: rotate(45deg);
+}
+
+.vm-password-eye span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 .vm-login-options {
   display: flex;
   align-items: center;
@@ -216,6 +270,10 @@
   background: transparent;
   color: #1b1e26;
   padding: 0;
+}
+
+.vm-type1-panel .vm-password-input-wrap input {
+  padding-right: 40px;
 }
 
 .vm-type1-panel .vm-login-field input:focus {

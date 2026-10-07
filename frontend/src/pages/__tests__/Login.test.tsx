@@ -1,7 +1,7 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 import { configureStore } from '@reduxjs/toolkit'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 import authReducer from '@/store/slices/authSlice'
 import { ACTIVE_LOGIN_TEMPLATE, Login } from '../Login'
@@ -38,5 +38,20 @@ describe('Login', () => {
     expect(screen.getByLabelText('PASSWORD')).toHaveValue('tester1@#')
     expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester')
     expect(screen.getByLabelText('Demo Credentials')).toHaveTextContent('tester1@#')
+  })
+
+  it('toggles the password visibility without changing the entered value', () => {
+    renderLogin()
+
+    const password = screen.getByLabelText('PASSWORD')
+    expect(password).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(password).toHaveAttribute('type', 'text')
+    expect(password).toHaveValue('tester1@#')
+    expect(screen.getByRole('button', { name: 'Hide password' })).toHaveAttribute('aria-pressed', 'true')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(password).toHaveAttribute('type', 'password')
   })
 })
