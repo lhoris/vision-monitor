@@ -2,7 +2,7 @@ import { commonCodeService } from './commonCodeService'
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
-import type { ModelControlAction, ModelCreateInput, ModelEventLog, ModelProcess, ModelSettingsInput, ProcessArea } from '@/types/modelManagement'
+import type { ModelControlAction, ModelCreateInput, ModelDashboard, ModelEventLog, ModelProcess, ModelSettingsInput, ModelVm, ProcessArea, VmConnectionStatus } from '@/types/modelManagement'
 
 export class ModelManagementError extends Error {
   constructor(public code: 'VALIDATION_ERROR' | 'MODEL_NOT_FOUND' | 'ACTION_BLOCKED', message: string) { super(message) }
@@ -18,6 +18,31 @@ function validateSettings(input: ModelSettingsInput) {
 export async function listProcesses(processAreas?: string[]): Promise<ModelProcessResponse> {
   const params = processAreas?.length ? { processAreas: processAreas.join(',') } : undefined
   return getResponseData(await apiClient.get<ModelProcessResponse>('/model-processes', params), { processes: [], processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }] })
+}
+
+export async function listDashboard(processAreas?: string[]): Promise<ModelDashboard> {
+  const result = await listProcesses(processAreas)
+  const grouped = new Map<string, ModelProcess[]>()
+  result.processes.forEach((process) => {
+    const key = process.serverIp || 'unknown'
+    grouped.set(key, [...(grouped.get(key) ?? []), process])
+  })
+  const vms: ModelVm[] = [...grouped.entries()].map(([hostAddress, processes]) => ({
+    vmId: `vm-${hostAddress.replace(/[^a-zA-Z0-9]/g, '-')}`,
+    vmName: processes[0]?.vmName || `AI VM ${hostAddress}`,
+    hostAddress,
+    connectionStatus: inferVmStatus(processes),
+    lastHeartbeatAt: (() => { const values = processes.map((process) => process.lastStatusAt).filter(Boolean).sort(); return values[values.length - 1] })(),
+    processes,
+  }))
+  return { vms, refreshedAt: new Date().toISOString() }
+}
+
+function inferVmStatus(processes: ModelProcess[]): VmConnectionStatus {
+  if (processes.some((process) => process.monitoringStatus === 'failed')) return 'disconnected'
+  if (processes.some((process) => process.monitoringStatus === 'checking')) return 'checking'
+  if (processes.some((process) => process.monitoringStatus === 'normal')) return 'connected'
+  return 'unknown'
 }
 
 export async function createProcessArea(name: string): Promise<ProcessArea> {

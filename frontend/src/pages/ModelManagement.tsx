@@ -1,13 +1,35 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button } from '@/components/Common'
-import { ModelCreateDialog, ModelEventLogDialog, ModelProcessGrid, ModelSettingsDialog, ProcessAreaCreateDialog, ProcessMultiSelectFilter } from '@/components/ModelManagement'
+import { Button, ConfirmDialog } from '@/components/Common'
+import { ModelCreateDialog, ModelEventLogDialog, ModelManagementFilters, ModelProcessControlDialog, ModelProcessEventLogBar, ModelProcessGrid, ModelSettingsDialog, ModelVmDashboard, ProcessAreaCreateDialog, ProcessMultiSelectFilter } from '@/components/ModelManagement'
 import { controlProcess, createProcess, createProcessArea, listEventLogs, listProcesses, updateSettings } from '@/services/modelManagementService'
-import type { ModelControlAction, ModelEventLog, ModelProcess, ModelCreateInput, ProcessArea } from '@/types/modelManagement'
+import type { ModelControlAction, ModelDashboard, ModelEventLog, ModelCreateInput, ModelProcess, ModelVm, ProcessArea, ProcessStatus } from '@/types/modelManagement'
+
+type ViewMode = 'dashboard' | 'grid'
+
+function groupProcesses(processes: ModelProcess[]): ModelDashboard {
+  const grouped = new Map<string, ModelProcess[]>()
+  processes.forEach((process) => {
+    const key = process.serverIp || 'unknown'
+    grouped.set(key, [...(grouped.get(key) ?? []), process])
+  })
+  const vms: ModelVm[] = [...grouped.entries()].map(([hostAddress, items]) => ({
+    vmId: `vm-${hostAddress.replace(/[^a-zA-Z0-9]/g, '-')}`,
+    vmName: items[0]?.vmName || `AI VM ${hostAddress}`,
+    hostAddress,
+    connectionStatus: items.some((item) => item.monitoringStatus === 'failed') ? 'disconnected' : items.some((item) => item.monitoringStatus === 'checking') ? 'checking' : items.some((item) => item.monitoringStatus === 'normal') ? 'connected' : 'unknown',
+    lastHeartbeatAt: (() => { const values = items.map((item) => item.lastStatusAt).filter(Boolean).sort(); return values[values.length - 1] })(),
+    processes: items,
+  }))
+  return { vms, refreshedAt: new Date().toISOString() }
+}
 
 export function ModelManagement() {
   const [areas, setAreas] = useState<ProcessArea[]>([])
   const [processes, setProcesses] = useState<ModelProcess[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>(['all'])
+  const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
+  const [status, setStatus] = useState<ProcessStatus | 'all'>('all')
+  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -17,6 +39,9 @@ export function ModelManagement() {
   const [logs, setLogs] = useState<ModelEventLog[]>([])
   const [createOpen, setCreateOpen] = useState(false)
   const [createAreaOpen, setCreateAreaOpen] = useState(false)
+  const [pendingAction, setPendingAction] = useState<{ process: ModelProcess; action: ModelControlAction } | null>(null)
+  const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null)
+  const [controlDialogProcessId, setControlDialogProcessId] = useState<string | null>(null)
 
   useEffect(() => {
     void listProcesses().then((result) => { setAreas(result.processAreas); setProcesses(result.processes) }).catch(() => setError('모델 목록을 불러오지 못했습니다.')).finally(() => setLoading(false))
@@ -28,23 +53,43 @@ export function ModelManagement() {
     return () => window.clearTimeout(timeoutId)
   }, [notice])
 
-  const visibleProcesses = useMemo(() => selectedIds.includes('all') ? processes : processes.filter((process) => selectedIds.includes(process.processId)), [processes, selectedIds])
+  const filteredProcesses = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return processes.filter((process) => {
+      const areaMatch = selectedIds.includes('all') || selectedIds.includes(process.processId)
+      const statusMatch = status === 'all' || process.processStatus === status
+      const searchMatch = !query || [process.serverIp, process.vmName, process.processName, process.modelName, process.automationName].some((value) => value?.toLowerCase().includes(query))
+      return areaMatch && statusMatch && searchMatch
+    })
+  }, [processes, search, selectedIds, status])
+  const dashboard = useMemo(() => groupProcesses(filteredProcesses), [filteredProcesses])
+  const selectedProcess = useMemo(() => filteredProcesses.find((process) => process.id === selectedProcessId) ?? null, [filteredProcesses, selectedProcessId])
+  const controlDialogProcess = useMemo(() => processes.find((process) => process.id === controlDialogProcessId) ?? null, [controlDialogProcessId, processes])
 
-  const runControl = async (id: string, action: ModelControlAction) => {
+  useEffect(() => {
+    if (selectedProcessId && !selectedProcess) setSelectedProcessId(null)
+  }, [selectedProcess, selectedProcessId])
+
+  const requestControl = (id: string, action: ModelControlAction) => {
     const process = processes.find((item) => item.id === id)
-    if (!process) return
+    if (process) setPendingAction({ process, action })
+  }
+
+  const runControl = async () => {
+    if (!pendingAction) return
+    const { process, action } = pendingAction
     const actionLabel = { start: '시작', stop: '정지', restart: '재시작' }[action]
-    if (!window.confirm(`${process.modelName} 프로세스를 ${actionLabel}하시겠습니까?`)) return
+    setPendingAction(null)
     setError('')
-    setBusyIds((current) => new Set(current).add(id))
+    setBusyIds((current) => new Set(current).add(process.id))
     try {
-      const updated = await controlProcess(id, action)
-      setProcesses((current) => current.map((item) => item.id === id ? updated : item))
-      setNotice(`${process.modelName} 프로세스를 ${actionLabel}했습니다.`)
+      const updated = await controlProcess(process.id, action)
+      setProcesses((current) => current.map((item) => item.id === updated.id ? updated : item))
+      setNotice(`${process.modelName} 프로세스를 ${actionLabel} 요청했습니다.`)
     } catch (controlError) {
       setError(controlError instanceof Error ? controlError.message : '프로세스 조작에 실패했습니다.')
     } finally {
-      setBusyIds((current) => { const next = new Set(current); next.delete(id); return next })
+      setBusyIds((current) => { const next = new Set(current); next.delete(process.id); return next })
     }
   }
 
@@ -56,9 +101,13 @@ export function ModelManagement() {
     setNotice('모델 설정을 저장했습니다.')
   }
 
+  const loadLogs = async (process: ModelProcess) => {
+    setLogs(await listEventLogs(process.id))
+  }
+
   const openLogs = async (process: ModelProcess) => {
     setLogProcess(process)
-    setLogs(await listEventLogs(process.id))
+    await loadLogs(process)
   }
 
   const saveNewProcess = async (input: ModelCreateInput) => {
@@ -76,16 +125,19 @@ export function ModelManagement() {
   }
 
   return <div className="flex h-full min-h-0 flex-col gap-4 bg-gray-50 p-6 dark:bg-gray-900">
-    <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-bold text-slate-900 dark:text-white">모델 관리</h1><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">Python 모델 프로세스와 제어 연동 상태를 확인합니다.</p></div><Button onClick={() => setCreateOpen(true)}>모델 추가</Button></div>
-    <section className="border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"><div className="mb-2 flex items-center justify-between"><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">공정 선택</h2><span className="text-xs text-slate-500">다중 선택 필터</span></div><ProcessMultiSelectFilter areas={areas} selectedIds={selectedIds} onChange={setSelectedIds} onAdd={() => setCreateAreaOpen(true)} /></section>
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-bold text-slate-900 dark:text-white">모델 관리</h1><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">VM과 Python AI 모델 프로세스의 운영 상태를 확인하고 제어합니다.</p></div>{viewMode === 'grid' && <Button onClick={() => setCreateOpen(true)}>모델 추가</Button>}</div>
+    <div className="flex justify-end"><div className="flex items-center gap-1 rounded border border-slate-200 bg-white p-1 text-xs dark:border-slate-600 dark:bg-slate-800"><button type="button" onClick={() => setViewMode('dashboard')} className={`rounded px-3 py-1.5 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>대시보드</button><button type="button" onClick={() => setViewMode('grid')} className={`rounded px-3 py-1.5 ${viewMode === 'grid' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>관리 그리드</button></div></div>
+    {viewMode === 'grid' && <section className="border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3"><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">운영 대상 필터</h2><span className="text-xs text-slate-500">공정은 다중 선택할 수 있습니다.</span></div><div className="space-y-3"><ProcessMultiSelectFilter areas={areas} selectedIds={selectedIds} onChange={setSelectedIds} onAdd={() => setCreateAreaOpen(true)} /><ModelManagementFilters status={status} search={search} onStatusChange={setStatus} onSearchChange={setSearch} /></div></section>}
     {notice && <div role="status" className="rounded border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{notice}</div>}
     {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
-    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : <ModelProcessGrid processes={visibleProcesses} busyIds={busyIds} onControl={(id, action) => void runControl(id, action)} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} />}
-    <div className="flex items-center justify-between text-xs text-slate-500"><span>{selectedIds.includes('all') ? 'ALL' : areas.filter((area) => selectedIds.includes(area.id)).map((area) => area.name).join(', ')}</span><span>총 {visibleProcesses.length}건</span></div>
+    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : viewMode === 'dashboard' ? <div className="flex min-h-0 flex-1 flex-col gap-3"><div className="min-h-0 flex-1"><ModelVmDashboard vms={dashboard.vms} selectedProcessId={selectedProcessId ?? undefined} onSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process) }} onDoubleSelect={(process) => setControlDialogProcessId(process.id)} /></div><ModelProcessEventLogBar process={selectedProcess} logs={logs} /></div> : <ModelProcessGrid processes={filteredProcesses} busyIds={busyIds} onControl={requestControl} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} />}
+    <div className="flex items-center justify-between text-xs text-slate-500"><span>{selectedIds.includes('all') ? 'ALL' : areas.filter((area) => selectedIds.includes(area.id)).map((area) => area.name).join(', ')}</span><span>총 {filteredProcesses.length}건 · 마지막 조회 {dashboard.refreshedAt ? new Date(dashboard.refreshedAt).toLocaleTimeString('ko-KR') : '-'}</span></div>
     <ModelSettingsDialog process={settingsProcess} onClose={() => setSettingsProcess(null)} onSave={saveSettings} />
     <ModelEventLogDialog process={logProcess} logs={logs} onClose={() => setLogProcess(null)} />
+    <ModelProcessControlDialog process={controlDialogProcess} busy={controlDialogProcess ? busyIds.has(controlDialogProcess.id) : false} onClose={() => setControlDialogProcessId(null)} onControl={(action) => { if (controlDialogProcess) requestControl(controlDialogProcess.id, action) }} onSettings={() => { if (controlDialogProcess) { setControlDialogProcessId(null); setSettingsProcess(controlDialogProcess) } }} onLogs={() => { if (controlDialogProcess) { setControlDialogProcessId(null); void openLogs(controlDialogProcess) } }} />
     {createOpen && <ModelCreateDialog areas={areas} onClose={() => setCreateOpen(false)} onSave={saveNewProcess} />}
     {createAreaOpen && <ProcessAreaCreateDialog onClose={() => setCreateAreaOpen(false)} onSave={saveNewArea} />}
+    <ConfirmDialog isOpen={Boolean(pendingAction)} title="프로세스 제어 확인" message={pendingAction ? `${pendingAction.process.modelName} 프로세스를 ${({ start: '시작', stop: '정지', restart: '재시작' }[pendingAction.action])} 요청하시겠습니까?` : ''} confirmLabel="요청" cancelLabel="취소" busy={false} onCancel={() => setPendingAction(null)} onConfirm={runControl} />
   </div>
 }
 

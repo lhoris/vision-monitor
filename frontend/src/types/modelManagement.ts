@@ -1,6 +1,8 @@
-export type ProcessStatus = 'running' | 'stopped' | 'error' | 'restarting' | 'unknown'
+export type ProcessStatus = 'running' | 'stopped' | 'starting' | 'stopping' | 'error' | 'restarting' | 'unknown'
 export type LinkStatus = 'normal' | 'failed' | 'checking' | 'unknown'
 export type ModelControlAction = 'start' | 'stop' | 'restart'
+export type VmConnectionStatus = 'connected' | 'disconnected' | 'checking' | 'unknown'
+export type ControlRequestStatus = 'requested' | 'running' | 'succeeded' | 'failed' | 'timeout'
 
 export interface ProcessArea {
   id: string
@@ -22,6 +24,23 @@ export interface ModelProcess {
   controlStatus: LinkStatus
   lastStatusAt?: string
   description?: string
+  vmName?: string
+  enabled?: boolean
+  controlRequestStatus?: ControlRequestStatus
+}
+
+export interface ModelVm {
+  vmId: string
+  vmName: string
+  hostAddress: string
+  connectionStatus: VmConnectionStatus
+  lastHeartbeatAt?: string
+  processes: ModelProcess[]
+}
+
+export interface ModelDashboard {
+  refreshedAt?: string
+  vms: ModelVm[]
 }
 
 export interface ModelEventLog {

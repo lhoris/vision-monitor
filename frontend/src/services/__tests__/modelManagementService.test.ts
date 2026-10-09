@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '@/services/api'
 import { commonCodeService } from '@/services/commonCodeService'
-import { controlProcess, createProcess, createProcessArea, listProcesses, updateSettings } from '@/services/modelManagementService'
+import { controlProcess, createProcess, createProcessArea, listDashboard, listProcesses, updateSettings } from '@/services/modelManagementService'
 
 vi.mock('@/services/api', () => ({ apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }))
 vi.mock('@/services/commonCodeService', () => ({ commonCodeService: { listAdmin: vi.fn(), createDetail: vi.fn() } }))
@@ -17,6 +17,14 @@ describe('modelManagementService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/model-processes', undefined)
     expect(result.processes).toHaveLength(1)
     expect(result.processAreas[0].isAll).toBe(true)
+  })
+
+  it('groups process rows by VM for the dashboard', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: { processes: [process, { ...process, id: 'model-002', processId: 'rolling', modelName: 'Rolling detector' }], processAreas: [] } })
+    const result = await listDashboard()
+    expect(result.vms).toHaveLength(1)
+    expect(result.vms[0].hostAddress).toBe('10.20.4.10')
+    expect(result.vms[0].processes).toHaveLength(2)
   })
 
   it('updates settings and sends process control actions to the API', async () => {

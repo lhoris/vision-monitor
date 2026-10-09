@@ -17,6 +17,7 @@ describe('ModelManagement', () => {
 
   it('loads rows from the service and supports the ALL process filter', async () => {
     render(<ModelManagement />)
+    fireEvent.click(screen.getByRole('button', { name: '관리 그리드' }))
     expect(await screen.findByText('Heating detector')).toBeInTheDocument()
     expect(screen.getByLabelText('ALL')).toBeChecked()
     expect(modelService.listProcesses).toHaveBeenCalledOnce()
@@ -24,9 +25,24 @@ describe('ModelManagement', () => {
 
   it('opens the event log dialog from the row action menu', async () => {
     render(<ModelManagement />)
+    fireEvent.click(screen.getByRole('button', { name: '관리 그리드' }))
     await screen.findByText('Heating detector')
+    fireEvent.click(screen.getByRole('button', { name: '관리 그리드' }))
     fireEvent.click(screen.getByRole('button', { name: 'Heating detector 작업 메뉴' }))
     fireEvent.click(screen.getByRole('menuitem', { name: '로그' }))
     await waitFor(() => expect(modelService.listEventLogs).toHaveBeenCalledWith('model-001'))
+  })
+
+  it('asks for confirmation before sending a process control request', async () => {
+    vi.mocked(modelService.controlProcess).mockResolvedValue({ ...process, processStatus: 'stopped' })
+    render(<ModelManagement />)
+    fireEvent.click(screen.getByRole('button', { name: '관리 그리드' }))
+    await screen.findByText('Heating detector')
+    fireEvent.click(screen.getByRole('button', { name: '관리 그리드' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Heating detector 작업 메뉴' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '정지' }))
+    expect(screen.getByRole('dialog', { name: '프로세스 제어 확인' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '요청' }))
+    await waitFor(() => expect(modelService.controlProcess).toHaveBeenCalledWith('model-001', 'stop'))
   })
 })
