@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -105,7 +106,34 @@ public class ModelProcessService {
 
     private Map<String, Object> find(Long id) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT mc.COMMAND_STATUS FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = p.MODEL_PROCESS_ID AND mc.DATA_END_STATUS = 'N' ORDER BY mc.MODEL_COMMAND_ID DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.MODEL_PROCESS_ID = :id AND p.DATA_END_STATUS = 'N'", Map.of("id", id), (rs, rowNum) -> toProcess(rs)); }
     private Map<String, Object> findLatest(String area, String modelName) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT mc.COMMAND_STATUS FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = p.MODEL_PROCESS_ID AND mc.DATA_END_STATUS = 'N' ORDER BY mc.MODEL_COMMAND_ID DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.PROCESS_AREA_CODE = :area AND p.MODEL_NAME = :name ORDER BY p.MODEL_PROCESS_ID DESC LIMIT 1", Map.of("area", area.toUpperCase(), "name", modelName), (rs, rowNum) -> toProcess(rs)); }
-    private Map<String, Object> toProcess(java.sql.ResultSet rs) throws java.sql.SQLException { Map<String, Object> item = new LinkedHashMap<>(); item.put("id", String.valueOf(rs.getLong("MODEL_PROCESS_ID"))); item.put("processId", rs.getString("PROCESS_AREA_CODE").toLowerCase()); item.put("processName", rs.getString("PROCESS_NAME") == null ? rs.getString("PROCESS_AREA_CODE") : rs.getString("PROCESS_NAME")); item.put("modelName", rs.getString("MODEL_NAME")); item.put("automationName", rs.getString("AUTOMATION_NAME")); item.put("serverIp", rs.getString("SERVER_IP")); item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH")); item.put("processStatus", rs.getString("PROCESS_STATUS").toLowerCase()); item.put("monitoringStatus", rs.getString("MONITORING_STATUS").toLowerCase()); item.put("controlStatus", rs.getString("CONTROL_STATUS").toLowerCase()); item.put("controlRequestStatus", rs.getString("CONTROL_REQUEST_STATUS") == null ? null : rs.getString("CONTROL_REQUEST_STATUS").toLowerCase()); var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP"); item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString()); item.put("description", rs.getString("DESCRIPTION")); return item; }
+    private Map<String, Object> toProcess(java.sql.ResultSet rs) throws java.sql.SQLException {
+        String processAreaCode = rs.getString("PROCESS_AREA_CODE");
+        String processName = rs.getString("PROCESS_NAME");
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("id", String.valueOf(rs.getLong("MODEL_PROCESS_ID")));
+        item.put("processId", lower(processAreaCode, "unknown"));
+        item.put("processName", processName == null || processName.isBlank() ? processAreaCode : processName);
+        item.put("modelName", rs.getString("MODEL_NAME"));
+        item.put("automationName", rs.getString("AUTOMATION_NAME"));
+        item.put("serverIp", rs.getString("SERVER_IP"));
+        item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH"));
+        item.put("processStatus", lower(rs.getString("PROCESS_STATUS"), "unknown"));
+        item.put("monitoringStatus", lower(rs.getString("MONITORING_STATUS"), "unknown"));
+        item.put("controlStatus", lower(rs.getString("CONTROL_STATUS"), "unknown"));
+        item.put("controlRequestStatus", lowerOrNull(rs.getString("CONTROL_REQUEST_STATUS")));
+        var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP");
+        item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString());
+        item.put("description", rs.getString("DESCRIPTION"));
+        return item;
+    }
+
+    private String lower(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value.toLowerCase(Locale.ROOT);
+    }
+
+    private String lowerOrNull(String value) {
+        return value == null || value.isBlank() ? null : value.toLowerCase(Locale.ROOT);
+    }
     private void validate(String processId, String modelName, String automationName, String serverIp, String path) { if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId) || modelName == null || modelName.isBlank() || automationName == null || automationName.isBlank()) throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required"); validateIpAndPath(serverIp, path); }
     private void validateIpAndPath(String serverIp, String path) { if (serverIp == null || !serverIp.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)\\.){3}(25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)))$") || path == null || path.isBlank()) throw new ApiException("VALIDATION_ERROR", "A valid server IP and Python project path are required"); }
 }
