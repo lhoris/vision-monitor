@@ -19,7 +19,7 @@ interface ModelProcessHoneycombProps {
 interface AxialCoordinate { q: number; r: number }
 
 const groupColors: Record<GroupTone, string> = { sky: '#0ea5e9', emerald: '#10b981', amber: '#f59e0b', violet: '#8b5cf6' }
-const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#0369a1', restarting: '#b45309', error: '#881337', unknown: '#475569' }
+const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#b91c1c', restarting: '#b45309', error: '#881337', unknown: '#475569' }
 
 function axialDistance({ q, r }: AxialCoordinate) { return Math.max(Math.abs(q), Math.abs(r), Math.abs(-q - r)) }
 
@@ -47,7 +47,7 @@ function shortenLabel(value: string, maxLength: number) { return value.length > 
 function getStatusBadgeClass(status: string) {
   if (status === 'running' || status === 'normal') return 'bg-emerald-400/15 text-emerald-300'
   if (status === 'error' || status === 'failed') return 'bg-rose-400/15 text-rose-300'
-  if (status === 'stopped') return 'bg-rose-400/15 text-rose-300'
+  if (status === 'stopped' || status === 'stopping') return 'bg-rose-400/15 text-rose-300'
   return 'bg-amber-400/15 text-amber-200'
 }
 
