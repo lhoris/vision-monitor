@@ -47,7 +47,6 @@ public class AuthSessionInterceptor implements HandlerInterceptor {
         request.setAttribute(AUTHENTICATED_USER_ATTRIBUTE, user.get());
         return true;
     }
-
     private String extractBearerToken(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) return null;
         return authorization.substring("Bearer ".length()).trim();

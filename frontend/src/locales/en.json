@@ -94,6 +94,7 @@
       "cameraCreate": "Add Camera",
       "videos": "Video Management",
       "commonCodes": "Common Code Management",
+      "queries": "Query Management",
       "systemManagement": "System Management",
       "users": "User Management"
     }

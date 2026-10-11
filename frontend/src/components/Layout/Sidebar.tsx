@@ -69,7 +69,6 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { path: '/admin/model-management', labelKey: 'navigation.admin.modelRestart', icon: <ModelIcon /> },
       { path: '/admin/videos', labelKey: 'navigation.admin.videos', icon: <CameraIcon /> },
-      { path: '/admin/query-management', labelKey: 'navigation.admin.queries', icon: <SettingsIcon /> },
     ],
   },
   {
@@ -77,6 +76,7 @@ const adminNavGroups: NavGroup[] = [
     items: [
       { path: '/admin/users', labelKey: 'navigation.admin.users', icon: <UserAccessIcon /> },
       { path: '/admin/common-codes', labelKey: 'navigation.admin.commonCodes', icon: <SettingsIcon /> },
+      { path: '/admin/query-management', labelKey: 'navigation.admin.queries', icon: <SettingsIcon /> },
     ],
   },
 ]

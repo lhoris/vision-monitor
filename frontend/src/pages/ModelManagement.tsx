@@ -42,6 +42,7 @@ export function ModelManagement() {
   const [pendingAction, setPendingAction] = useState<{ process: ModelProcess; action: ModelControlAction } | null>(null)
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null)
   const [controlDialogProcessId, setControlDialogProcessId] = useState<string | null>(null)
+  const [refreshingProcessId, setRefreshingProcessId] = useState<string | null>(null)
 
   useEffect(() => {
     void listProcesses().then((result) => { setAreas(result.processAreas); setProcesses(result.processes) }).catch(() => setError('모델 목록을 불러오지 못했습니다.')).finally(() => setLoading(false))
@@ -110,6 +111,22 @@ export function ModelManagement() {
     await loadLogs(process)
   }
 
+  const refreshProcess = async (processId: string) => {
+    setRefreshingProcessId(processId)
+    setError('')
+    try {
+      const result = await listProcesses()
+      setAreas(result.processAreas)
+      setProcesses(result.processes)
+      if (!result.processes.some((process) => process.id === processId)) throw new Error('모델 프로세스를 찾을 수 없습니다.')
+      setNotice('모델 프로세스 상태를 새로 조회했습니다.')
+    } catch (refreshError) {
+      setError(refreshError instanceof Error ? refreshError.message : '모델 프로세스 상태 조회에 실패했습니다.')
+    } finally {
+      setRefreshingProcessId(null)
+    }
+  }
+
   const saveNewProcess = async (input: ModelCreateInput) => {
     const created = await createProcess(input)
     setProcesses((current) => [...current, created])
@@ -124,17 +141,17 @@ export function ModelManagement() {
     setNotice(`공정 '${created.name}'을 추가했습니다.`)
   }
 
-  return <div className="flex h-full min-h-0 flex-col gap-4 bg-gray-50 p-6 dark:bg-gray-900">
+  return <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-gray-50 p-6 dark:bg-gray-900">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-bold text-slate-900 dark:text-white">모델 관리</h1><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">VM과 Python AI 모델 프로세스의 운영 상태를 확인하고 제어합니다.</p></div>{viewMode === 'grid' && <Button onClick={() => setCreateOpen(true)}>모델 추가</Button>}</div>
     <div className="flex justify-end"><div className="flex items-center gap-1 rounded border border-slate-200 bg-white p-1 text-xs dark:border-slate-600 dark:bg-slate-800"><button type="button" onClick={() => setViewMode('dashboard')} className={`rounded px-3 py-1.5 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>대시보드</button><button type="button" onClick={() => setViewMode('grid')} className={`rounded px-3 py-1.5 ${viewMode === 'grid' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>관리 그리드</button></div></div>
     {viewMode === 'grid' && <section className="border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3"><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">운영 대상 필터</h2><span className="text-xs text-slate-500">공정은 다중 선택할 수 있습니다.</span></div><div className="space-y-3"><ProcessMultiSelectFilter areas={areas} selectedIds={selectedIds} onChange={setSelectedIds} onAdd={() => setCreateAreaOpen(true)} /><ModelManagementFilters status={status} search={search} onStatusChange={setStatus} onSearchChange={setSearch} /></div></section>}
-    {notice && <div role="status" className="rounded border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{notice}</div>}
+    {notice && <div role="status" className="fixed left-1/2 top-1/2 z-[120] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-xl shadow-slate-950/20 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">{notice}</div>}
     {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
-    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : viewMode === 'dashboard' ? <div className="flex min-h-0 flex-1 flex-col gap-3"><div className="min-h-0 flex-1"><ModelVmDashboard vms={dashboard.vms} selectedProcessId={selectedProcessId ?? undefined} onSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process) }} onDoubleSelect={(process) => setControlDialogProcessId(process.id)} /></div><ModelProcessEventLogBar process={selectedProcess} logs={logs} /></div> : <ModelProcessGrid processes={filteredProcesses} busyIds={busyIds} onControl={requestControl} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} />}
+    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : viewMode === 'dashboard' ? <div className="flex min-h-0 flex-1 basis-0 flex-col gap-3 overflow-hidden"><div className="min-h-0 flex-1 basis-0 overflow-auto"><ModelVmDashboard vms={dashboard.vms} selectedProcessId={selectedProcessId ?? undefined} onSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process) }} onDoubleSelect={(process) => setControlDialogProcessId(process.id)} onContextAction={(process, action) => requestControl(process.id, action)} onAdd={() => setCreateOpen(true)} /></div><ModelProcessEventLogBar process={selectedProcess} logs={logs} /></div> : <ModelProcessGrid processes={filteredProcesses} busyIds={busyIds} onControl={requestControl} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} />}
     <div className="flex items-center justify-between text-xs text-slate-500"><span>{selectedIds.includes('all') ? 'ALL' : areas.filter((area) => selectedIds.includes(area.id)).map((area) => area.name).join(', ')}</span><span>총 {filteredProcesses.length}건 · 마지막 조회 {dashboard.refreshedAt ? new Date(dashboard.refreshedAt).toLocaleTimeString('ko-KR') : '-'}</span></div>
     <ModelSettingsDialog process={settingsProcess} onClose={() => setSettingsProcess(null)} onSave={saveSettings} />
     <ModelEventLogDialog process={logProcess} logs={logs} onClose={() => setLogProcess(null)} />
-    <ModelProcessControlDialog process={controlDialogProcess} busy={controlDialogProcess ? busyIds.has(controlDialogProcess.id) : false} onClose={() => setControlDialogProcessId(null)} onControl={(action) => { if (controlDialogProcess) requestControl(controlDialogProcess.id, action) }} onSettings={() => { if (controlDialogProcess) { setControlDialogProcessId(null); setSettingsProcess(controlDialogProcess) } }} onLogs={() => { if (controlDialogProcess) { setControlDialogProcessId(null); void openLogs(controlDialogProcess) } }} />
+    <ModelProcessControlDialog process={controlDialogProcess} busy={controlDialogProcess ? busyIds.has(controlDialogProcess.id) : false} refreshing={controlDialogProcess ? refreshingProcessId === controlDialogProcess.id : false} onClose={() => setControlDialogProcessId(null)} onControl={(action) => { if (controlDialogProcess) requestControl(controlDialogProcess.id, action) }} onRefresh={() => { if (controlDialogProcess) void refreshProcess(controlDialogProcess.id) }} onSettings={() => { if (controlDialogProcess) { setControlDialogProcessId(null); setSettingsProcess(controlDialogProcess) } }} />
     {createOpen && <ModelCreateDialog areas={areas} onClose={() => setCreateOpen(false)} onSave={saveNewProcess} />}
     {createAreaOpen && <ProcessAreaCreateDialog onClose={() => setCreateAreaOpen(false)} onSave={saveNewArea} />}
     <ConfirmDialog isOpen={Boolean(pendingAction)} title="프로세스 제어 확인" message={pendingAction ? `${pendingAction.process.modelName} 프로세스를 ${({ start: '시작', stop: '정지', restart: '재시작' }[pendingAction.action])} 요청하시겠습니까?` : ''} confirmLabel="요청" cancelLabel="취소" busy={false} onCancel={() => setPendingAction(null)} onConfirm={runControl} />

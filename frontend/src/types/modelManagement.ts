@@ -2,7 +2,7 @@ export type ProcessStatus = 'running' | 'stopped' | 'starting' | 'stopping' | 'e
 export type LinkStatus = 'normal' | 'failed' | 'checking' | 'unknown'
 export type ModelControlAction = 'start' | 'stop' | 'restart'
 export type VmConnectionStatus = 'connected' | 'disconnected' | 'checking' | 'unknown'
-export type ControlRequestStatus = 'requested' | 'running' | 'succeeded' | 'failed' | 'timeout'
+export type ControlRequestStatus = 'requested' | 'processing' | 'running' | 'succeeded' | 'failed' | 'timeout'
 
 export interface ProcessArea {
   id: string

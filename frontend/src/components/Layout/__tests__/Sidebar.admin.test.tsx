@@ -56,6 +56,8 @@ describe('Sidebar admin navigation', () => {
     expect(communicationGroup.queryByText('공통코드 관리')).not.toBeInTheDocument()
     expect(systemGroup.getByText('사용자 관리')).toBeInTheDocument()
     expect(systemGroup.getByText('공통코드 관리')).toBeInTheDocument()
+    expect(systemGroup.getByText('쿼리 관리')).toBeInTheDocument()
+    expect(communicationGroup.queryByText('쿼리 관리')).not.toBeInTheDocument()
 
     expect(screen.queryByText('모니터링 통신 현황')).not.toBeInTheDocument()
     expect(screen.queryByText('제어 연동 통신 현황')).not.toBeInTheDocument()
@@ -88,6 +90,26 @@ describe('Sidebar admin navigation', () => {
     expect(screen.getByText('관리자 메뉴')).toBeInTheDocument()
     expect(screen.getByText('모델 관리')).toBeInTheDocument()
     expect(screen.getByText('사용자 관리')).toBeInTheDocument()
+  })
+
+  it('uses the English query management label when the language is English', async () => {
+    await i18n.changeLanguage('en')
+    store.dispatch(
+      loginUser.fulfilled(
+        {
+          user: { id: 1, username: 'admin', role: 'ADMIN', permissions: ['ADMIN:ACCESS'] },
+          token: 'admin-session-token',
+        },
+        'request-id',
+        { username: 'admin', password: 'admin' }
+      )
+    )
+
+    renderSidebar()
+
+    const systemGroup = within(screen.getByRole('group', { name: 'System Management' }))
+    expect(systemGroup.getByText('Query Management')).toBeInTheDocument()
+    expect(screen.queryByText('navigation.admin.queries')).not.toBeInTheDocument()
   })
 
   it('uses APP_BRANDING common code values for the sidebar title', () => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import type { ModelProcess } from '@/types/modelManagement'
+import type { ModelControlAction, ModelProcess } from '@/types/modelManagement'
 import { linkStatusLabel, processStatusLabel } from './modelManagementUi'
 
 type GroupTone = 'sky' | 'emerald' | 'amber' | 'violet'
@@ -9,14 +9,17 @@ interface ModelProcessHoneycombProps {
   selectedProcessId?: string
   groupTone?: GroupTone
   groupToneByProcessId?: Record<string, GroupTone>
+  groupColorByProcessId?: Record<string, string>
   onSelect: (process: ModelProcess) => void
   onDoubleSelect?: (process: ModelProcess) => void
+  onContextAction?: (process: ModelProcess, action: ModelControlAction) => void
+  onAdd?: () => void
 }
 
 interface AxialCoordinate { q: number; r: number }
 
 const groupColors: Record<GroupTone, string> = { sky: '#0ea5e9', emerald: '#10b981', amber: '#f59e0b', violet: '#8b5cf6' }
-const statusColors: Record<string, string> = { running: '#6ee7b7', stopped: '#e2e8f0', starting: '#bae6fd', stopping: '#bae6fd', restarting: '#fde68a', error: '#fda4af', unknown: '#cbd5e1' }
+const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#0369a1', restarting: '#b45309', error: '#881337', unknown: '#475569' }
 
 function axialDistance({ q, r }: AxialCoordinate) { return Math.max(Math.abs(q), Math.abs(r), Math.abs(-q - r)) }
 
@@ -38,29 +41,39 @@ function handleKeyDown(event: KeyboardEvent<SVGGElement>, onSelect: () => void) 
   if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect() }
 }
 
-function getLabelFontSize(value: string, base: number, minimum: number) { return Math.max(minimum, Math.min(base, Math.floor(132 / Math.max(value.length, 1)))) }
+function getLabelFontSize(value: string, base: number, minimum: number) { return Math.max(minimum, Math.min(base, Math.floor(100 / Math.max(value.length, 1)))) }
 function shortenLabel(value: string, maxLength: number) { return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value }
 
 function getStatusBadgeClass(status: string) {
   if (status === 'running' || status === 'normal') return 'bg-emerald-400/15 text-emerald-300'
   if (status === 'error' || status === 'failed') return 'bg-rose-400/15 text-rose-300'
-  if (status === 'stopped') return 'bg-slate-400/15 text-slate-300'
+  if (status === 'stopped') return 'bg-rose-400/15 text-rose-300'
   return 'bg-amber-400/15 text-amber-200'
 }
 
-export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone = 'sky', groupToneByProcessId, onSelect, onDoubleSelect }: ModelProcessHoneycombProps) {
+export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone = 'sky', groupToneByProcessId, groupColorByProcessId, onSelect, onDoubleSelect, onContextAction, onAdd }: ModelProcessHoneycombProps) {
   const clickTimer = useRef<number | null>(null)
   const [hoveredProcess, setHoveredProcess] = useState<ModelProcess | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ process: ModelProcess; x: number; y: number } | null>(null)
   useEffect(() => () => { if (clickTimer.current) window.clearTimeout(clickTimer.current) }, [])
+  useEffect(() => {
+    if (!contextMenu) return undefined
+    const close = () => setContextMenu(null)
+    const escape = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') close() }
+    document.addEventListener('pointerdown', close)
+    document.addEventListener('keydown', escape)
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape) }
+  }, [contextMenu])
 
   const maxVisible = 18
   const hiddenCount = Math.max(0, processes.length - maxVisible)
   const visibleProcesses = hiddenCount ? [...processes.slice(0, maxVisible - 1), null] : processes
-  if (!visibleProcesses.length) return null
+  if (!visibleProcesses.length && !onAdd) return null
 
   const hexSize = 54
   const hexHeight = Math.sqrt(3) * hexSize
-  const coordinates = getCoordinates(visibleProcesses.length)
+  const cellCount = visibleProcesses.length + (onAdd ? 1 : 0)
+  const coordinates = getCoordinates(cellCount)
   const points = (x: number, y: number) => [[x + hexSize, y], [x + hexSize / 2, y + hexHeight / 2], [x - hexSize / 2, y + hexHeight / 2], [x - hexSize, y], [x - hexSize / 2, y - hexHeight / 2], [x + hexSize / 2, y - hexHeight / 2]].map(([pointX, pointY]) => `${pointX},${pointY}`).join(' ')
   const centers = coordinates.map(({ q, r }) => ({ x: hexSize * 1.5 * q, y: hexHeight * (r + q / 2) }))
   const minX = Math.min(...centers.map(({ x }) => x)) - hexSize
@@ -68,8 +81,11 @@ export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone 
   const minY = Math.min(...centers.map(({ y }) => y)) - hexHeight / 2
   const maxY = Math.max(...centers.map(({ y }) => y)) + hexHeight / 2
   const viewBox = `${minX - 12} ${minY - 12} ${maxX - minX + 24} ${maxY - minY + 24}`
+  const selectedIndex = visibleProcesses.findIndex((process) => process?.id === selectedProcessId)
+  const selectedCenter = selectedIndex >= 0 ? centers[selectedIndex] : null
 
   return <div className="relative mx-auto flex w-full justify-center overflow-visible py-3">
+    {contextMenu ? <div role="menu" aria-label={`${contextMenu.process.modelName} 프로세스 제어 메뉴`} style={{ left: contextMenu.x, top: contextMenu.y }} className="fixed z-[110] min-w-36 rounded-lg border border-slate-600 bg-slate-900 p-1 text-left text-xs text-white shadow-2xl shadow-slate-950/50"><p className="border-b border-slate-700 px-3 py-2 font-semibold text-slate-300">{contextMenu.process.modelName}</p><button type="button" role="menuitem" disabled={contextMenu.process.processStatus === 'running' || ['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'start') }} className="block w-full rounded px-3 py-2 text-left hover:bg-emerald-600/30 disabled:cursor-not-allowed disabled:opacity-40">시작</button><button type="button" role="menuitem" disabled={contextMenu.process.processStatus === 'stopped' || ['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'stop') }} className="block w-full rounded px-3 py-2 text-left hover:bg-rose-600/30 disabled:cursor-not-allowed disabled:opacity-40">중지</button><button type="button" role="menuitem" disabled={['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'restart') }} className="block w-full rounded px-3 py-2 text-left text-amber-200 hover:bg-amber-600/30 disabled:cursor-not-allowed disabled:opacity-40">재시작</button></div> : null}
     {hoveredProcess ? <div id="model-process-tooltip" role="tooltip" className="pointer-events-none absolute left-1/2 top-full z-[100] mt-2 w-64 max-w-[calc(100%-1rem)] -translate-x-1/2 rounded-lg border border-sky-300/70 bg-slate-800 p-3 text-left text-xs text-slate-100 opacity-100 shadow-[0_14px_32px_rgba(2,6,23,0.65)] ring-1 ring-slate-950/60 lg:left-[calc(50%+210px)] lg:top-1/2 lg:mt-0 lg:translate-x-0 lg:-translate-y-1/2">
       <div className="flex items-start justify-between gap-3 border-b border-slate-700 pb-2"><div className="min-w-0"><p className="truncate font-semibold text-white">{hoveredProcess.modelName}</p><p className="mt-0.5 truncate text-[11px] text-slate-400">{hoveredProcess.processName}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-semibold ${getStatusBadgeClass(hoveredProcess.processStatus)}`}>{processStatusLabel[hoveredProcess.processStatus]}</span></div>
       <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5"><dt className="text-slate-500">VM</dt><dd className="truncate text-right text-slate-200">{hoveredProcess.vmName || '-'}</dd><dt className="text-slate-500">서버 IP</dt><dd className="truncate text-right font-mono text-slate-200">{hoveredProcess.serverIp || '-'}</dd><dt className="text-slate-500">모니터링</dt><dd className="text-right"><span className={`rounded px-1.5 py-0.5 ${getStatusBadgeClass(hoveredProcess.monitoringStatus)}`}>{linkStatusLabel[hoveredProcess.monitoringStatus]}</span></dd><dt className="text-slate-500">제어 연동</dt><dd className="text-right"><span className={`rounded px-1.5 py-0.5 ${getStatusBadgeClass(hoveredProcess.controlStatus)}`}>{linkStatusLabel[hoveredProcess.controlStatus]}</span></dd></dl>
@@ -80,11 +96,13 @@ export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone 
       if (!process) return <polygon key="more" points={points(center.x, center.y)} fill="#64748b" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round" />
       const tone = groupToneByProcessId?.[process.id] ?? groupTone
       const selected = process.id === selectedProcessId
-      const modelLabel = shortenLabel(process.modelName, 14)
-      const processLabel = shortenLabel(process.processName, 13)
+      const modelLabel = shortenLabel(process.modelName, 11)
+      const processLabel = shortenLabel(process.processName, 10)
+      const statusLabel = processStatusLabel[process.processStatus]
+      const statusBadgeWidth = Math.max(48, statusLabel.length * 7 + 16)
       const selectWithClickGuard = () => { if (clickTimer.current) window.clearTimeout(clickTimer.current); clickTimer.current = window.setTimeout(() => { onSelect(process); clickTimer.current = null }, 220) }
       const openControlDialog = () => { if (clickTimer.current) window.clearTimeout(clickTimer.current); clickTimer.current = null; onDoubleSelect?.(process) }
-      return <g key={process.id} role="button" tabIndex={0} aria-label={`${process.modelName} 프로세스 선택`} aria-describedby={hoveredProcess?.id === process.id ? 'model-process-tooltip' : undefined} aria-pressed={selected} onClick={selectWithClickGuard} onDoubleClick={openControlDialog} onMouseEnter={() => setHoveredProcess(process)} onMouseLeave={() => setHoveredProcess(null)} onKeyDown={(event) => handleKeyDown(event, () => onSelect(process))} className="cursor-pointer outline-none"><polygon points={points(center.x, center.y)} fill={groupColors[tone]} stroke={selected ? '#f8fafc' : '#0f172a'} strokeWidth={selected ? 5 : 3} strokeLinejoin="round" /><text x={center.x} y={center.y - 13} textAnchor="middle" fill="white" fontSize={getLabelFontSize(modelLabel, 12, 8)} fontWeight="700">{modelLabel}</text><text x={center.x} y={center.y + 3} textAnchor="middle" fill="white" fontSize={getLabelFontSize(processLabel, 10, 7)}>{processLabel}</text><circle cx={center.x - 35} cy={center.y + 31} r="4" fill={statusColors[process.processStatus] ?? statusColors.unknown} /><text x={center.x - 27} y={center.y + 35} fill="white" fontSize="8" fontWeight="700">{processStatusLabel[process.processStatus]}</text></g>
-    })}</svg>
+      return <g key={process.id} role="button" tabIndex={0} aria-label={`${process.modelName} 프로세스 선택`} aria-describedby={hoveredProcess?.id === process.id ? 'model-process-tooltip' : undefined} aria-pressed={selected} onClick={selectWithClickGuard} onDoubleClick={openControlDialog} onContextMenu={(event) => { event.preventDefault(); setContextMenu({ process, x: Math.min(event.clientX, window.innerWidth - 160), y: Math.min(event.clientY, window.innerHeight - 150) }) }} onMouseEnter={() => setHoveredProcess(process)} onMouseLeave={() => setHoveredProcess(null)} onKeyDown={(event) => handleKeyDown(event, () => onSelect(process))} className="cursor-pointer outline-none"><polygon points={points(center.x, center.y)} fill={groupColorByProcessId?.[process.id] ?? groupColors[tone]} stroke={selected ? '#f8fafc' : '#0f172a'} strokeWidth={selected ? 5 : 3} strokeLinejoin="round" /><text x={center.x} y={center.y - 13} textAnchor="middle" fill="white" fontSize={getLabelFontSize(modelLabel, 12, 7)} fontWeight="700">{modelLabel}</text><text x={center.x} y={center.y + 3} textAnchor="middle" fill="white" fontSize={getLabelFontSize(processLabel, 10, 7)}>{processLabel}</text><rect x={center.x - statusBadgeWidth / 2} y={center.y + 20} width={statusBadgeWidth} height="16" rx="8" fill={statusBadgeColors[process.processStatus] ?? statusBadgeColors.unknown} opacity="0.95" /><text x={center.x} y={center.y + 31.5} textAnchor="middle" fill="white" fontSize="8" fontWeight="700">{statusLabel}</text></g>
+    })}{onAdd ? <g role="button" tabIndex={0} aria-label="모델 추가" onClick={onAdd} onKeyDown={(event) => handleKeyDown(event, onAdd)} className="cursor-pointer outline-none"><polygon points={points(centers[visibleProcesses.length].x, centers[visibleProcesses.length].y)} fill="#1e293b" stroke="#64748b" strokeWidth="3" strokeDasharray="7 5" strokeLinejoin="round" /><text x={centers[visibleProcesses.length].x} y={centers[visibleProcesses.length].y + 7} textAnchor="middle" fill="#cbd5e1" fontSize="28" fontWeight="300">+</text></g> : null}{selectedCenter ? <polygon points={points(selectedCenter.x, selectedCenter.y)} fill="none" stroke="#f8fafc" strokeWidth="5" strokeLinejoin="round" pointerEvents="none" /> : null}</svg>
   </div>
 }

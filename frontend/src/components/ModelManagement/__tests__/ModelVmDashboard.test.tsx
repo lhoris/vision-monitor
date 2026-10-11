@@ -5,7 +5,7 @@ import { modelManagementDashboardFixture } from '../__fixtures__/modelManagement
 
 describe('ModelVmDashboard', () => {
   it('shows VM and nested process status', () => {
-    render(<ModelVmDashboard vms={modelManagementDashboardFixture.vms} onSelect={vi.fn()} />)
+    render(<ModelVmDashboard vms={modelManagementDashboardFixture.vms} onSelect={vi.fn()} onAdd={vi.fn()} />)
     expect(screen.getByText('AI VM 01')).toBeInTheDocument()
     expect(screen.getByText('가열 감지 모델')).toBeInTheDocument()
     expect(screen.getByText('연결됨')).toBeInTheDocument()
@@ -13,13 +13,13 @@ describe('ModelVmDashboard', () => {
   })
 
   it('renders an explicit empty state', () => {
-    render(<ModelVmDashboard vms={[]} onSelect={vi.fn()} />)
-    expect(screen.getByText(/조건에 맞는 VM 또는 AI 모델 프로세스가 없습니다/)).toBeInTheDocument()
+    render(<ModelVmDashboard vms={[]} onSelect={vi.fn()} onAdd={vi.fn()} />)
+    expect(screen.getByRole('button', { name: '모델 추가' })).toBeInTheDocument()
   })
 
   it('selects a process cell', async () => {
     const onSelect = vi.fn()
-    render(<ModelVmDashboard vms={modelManagementDashboardFixture.vms} onSelect={onSelect} />)
+    render(<ModelVmDashboard vms={modelManagementDashboardFixture.vms} onSelect={onSelect} onAdd={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: '가열 감지 모델 프로세스 선택' }))
     await waitFor(() => expect(onSelect).toHaveBeenCalledWith(modelManagementDashboardFixture.vms[0].processes[0]))
   })

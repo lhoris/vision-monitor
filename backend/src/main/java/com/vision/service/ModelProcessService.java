@@ -18,6 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ModelProcessService {
     private final NamedParameterJdbcTemplate jdbc;
+    private final ModelCommandService commandService;
 
     @Transactional(readOnly = true)
     public Map<String, Object> list(String processAreas) {
@@ -34,7 +35,10 @@ public class ModelProcessService {
                 SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME,
                        p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH,
                        p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS,
-                       p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION
+                       p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION,
+                       (SELECT mc.COMMAND_STATUS FROM TB_M26_MODEL_COMMAND mc
+                        WHERE mc.MODEL_PROCESS_ID = p.MODEL_PROCESS_ID AND mc.DATA_END_STATUS = 'N'
+                        ORDER BY mc.MODEL_COMMAND_ID DESC LIMIT 1) CONTROL_REQUEST_STATUS
                 FROM TB_M26_MODEL_PROCESS p
                 LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N'
                 LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N'
@@ -86,10 +90,8 @@ public class ModelProcessService {
     }
 
     @Transactional
-    public Map<String, Object> control(Long id, String action) {
-        String status = switch (action.toLowerCase()) { case "start" -> "RUNNING"; case "stop" -> "STOPPED"; case "restart" -> "RUNNING"; default -> throw new ApiException("VALIDATION_ERROR", "Unsupported model action"); };
-        int updated = jdbc.update("UPDATE TB_M26_MODEL_PROCESS SET PROCESS_STATUS = :status, LAST_STATUS_TIMESTAMP = CURRENT_TIMESTAMP() WHERE MODEL_PROCESS_ID = :id AND DATA_END_STATUS = 'N'", Map.of("status", status, "id", id));
-        if (updated == 0) throw new ApiException("MODEL_NOT_FOUND", "Model process was not found");
+    public Map<String, Object> control(Long id, String action, String requestedBy) {
+        commandService.request(id, action, requestedBy);
         return find(id);
     }
 
@@ -101,9 +103,9 @@ public class ModelProcessService {
         });
     }
 
-    private Map<String, Object> find(Long id) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE WHERE p.MODEL_PROCESS_ID = :id AND p.DATA_END_STATUS = 'N'", Map.of("id", id), (rs, rowNum) -> toProcess(rs)); }
-    private Map<String, Object> findLatest(String area, String modelName) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE WHERE p.PROCESS_AREA_CODE = :area AND p.MODEL_NAME = :name ORDER BY p.MODEL_PROCESS_ID DESC LIMIT 1", Map.of("area", area.toUpperCase(), "name", modelName), (rs, rowNum) -> toProcess(rs)); }
-    private Map<String, Object> toProcess(java.sql.ResultSet rs) throws java.sql.SQLException { Map<String, Object> item = new LinkedHashMap<>(); item.put("id", String.valueOf(rs.getLong("MODEL_PROCESS_ID"))); item.put("processId", rs.getString("PROCESS_AREA_CODE").toLowerCase()); item.put("processName", rs.getString("PROCESS_NAME") == null ? rs.getString("PROCESS_AREA_CODE") : rs.getString("PROCESS_NAME")); item.put("modelName", rs.getString("MODEL_NAME")); item.put("automationName", rs.getString("AUTOMATION_NAME")); item.put("serverIp", rs.getString("SERVER_IP")); item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH")); item.put("processStatus", rs.getString("PROCESS_STATUS").toLowerCase()); item.put("monitoringStatus", rs.getString("MONITORING_STATUS").toLowerCase()); item.put("controlStatus", rs.getString("CONTROL_STATUS").toLowerCase()); var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP"); item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString()); item.put("description", rs.getString("DESCRIPTION")); return item; }
+    private Map<String, Object> find(Long id) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT mc.COMMAND_STATUS FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = p.MODEL_PROCESS_ID AND mc.DATA_END_STATUS = 'N' ORDER BY mc.MODEL_COMMAND_ID DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.MODEL_PROCESS_ID = :id AND p.DATA_END_STATUS = 'N'", Map.of("id", id), (rs, rowNum) -> toProcess(rs)); }
+    private Map<String, Object> findLatest(String area, String modelName) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT mc.COMMAND_STATUS FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = p.MODEL_PROCESS_ID AND mc.DATA_END_STATUS = 'N' ORDER BY mc.MODEL_COMMAND_ID DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.PROCESS_AREA_CODE = :area AND p.MODEL_NAME = :name ORDER BY p.MODEL_PROCESS_ID DESC LIMIT 1", Map.of("area", area.toUpperCase(), "name", modelName), (rs, rowNum) -> toProcess(rs)); }
+    private Map<String, Object> toProcess(java.sql.ResultSet rs) throws java.sql.SQLException { Map<String, Object> item = new LinkedHashMap<>(); item.put("id", String.valueOf(rs.getLong("MODEL_PROCESS_ID"))); item.put("processId", rs.getString("PROCESS_AREA_CODE").toLowerCase()); item.put("processName", rs.getString("PROCESS_NAME") == null ? rs.getString("PROCESS_AREA_CODE") : rs.getString("PROCESS_NAME")); item.put("modelName", rs.getString("MODEL_NAME")); item.put("automationName", rs.getString("AUTOMATION_NAME")); item.put("serverIp", rs.getString("SERVER_IP")); item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH")); item.put("processStatus", rs.getString("PROCESS_STATUS").toLowerCase()); item.put("monitoringStatus", rs.getString("MONITORING_STATUS").toLowerCase()); item.put("controlStatus", rs.getString("CONTROL_STATUS").toLowerCase()); item.put("controlRequestStatus", rs.getString("CONTROL_REQUEST_STATUS") == null ? null : rs.getString("CONTROL_REQUEST_STATUS").toLowerCase()); var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP"); item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString()); item.put("description", rs.getString("DESCRIPTION")); return item; }
     private void validate(String processId, String modelName, String automationName, String serverIp, String path) { if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId) || modelName == null || modelName.isBlank() || automationName == null || automationName.isBlank()) throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required"); validateIpAndPath(serverIp, path); }
     private void validateIpAndPath(String serverIp, String path) { if (serverIp == null || !serverIp.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)\\.){3}(25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)))$") || path == null || path.isBlank()) throw new ApiException("VALIDATION_ERROR", "A valid server IP and Python project path are required"); }
 }
