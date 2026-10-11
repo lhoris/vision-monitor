@@ -93,7 +93,7 @@ export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone 
       <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2"><dt className="text-slate-500">VM</dt><dd className="break-words text-right text-slate-200">{tooltipProcess.vmName || '-'}</dd><dt className="text-slate-500">서버 IP</dt><dd className="break-all text-right font-mono text-slate-200">{tooltipProcess.serverIp || '-'}</dd><dt className="text-slate-500">모니터링</dt><dd className="text-right"><span className={`rounded px-1.5 py-0.5 ${getStatusBadgeClass(tooltipProcess.monitoringStatus)}`}>{linkStatusLabel[tooltipProcess.monitoringStatus]}</span></dd><dt className="text-slate-500">제어 연동</dt><dd className="text-right"><span className={`rounded px-1.5 py-0.5 ${getStatusBadgeClass(tooltipProcess.controlStatus)}`}>{linkStatusLabel[tooltipProcess.controlStatus]}</span></dd></dl>
       <p className="mt-2 border-t border-slate-700 pt-2 text-[10px] text-slate-500">클릭: 이벤트 로그 · 더블클릭: 프로세스 제어</p>
     </div> : null}
-    <svg className="h-full max-h-full w-full max-w-none" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" role="group" aria-label="AI 모델 프로세스 Honeycomb"><title>AI 모델 프로세스 상태</title>{visibleProcesses.map((process, index) => {
+    <svg className="h-auto max-h-[300px] w-full max-w-[380px]" viewBox={viewBox} preserveAspectRatio="xMidYMid meet" role="group" aria-label="AI 모델 프로세스 Honeycomb"><title>AI 모델 프로세스 상태</title>{visibleProcesses.map((process, index) => {
       const center = centers[index]
       if (!process) return <polygon key="more" points={points(center.x, center.y)} fill="#64748b" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round" />
       const tone = groupToneByProcessId?.[process.id] ?? groupTone
