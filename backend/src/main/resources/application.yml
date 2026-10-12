@@ -32,16 +32,9 @@ spring:
     show-sql: false
     open-in-view: false
 
-  flyway:
-    enabled: true
-
 vision:
   model-monitoring:
     status-timeout-seconds: 30
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    sql-migration-prefix: V
-    sql-migration-suffixes: .sql
 
   output:
     ansi:

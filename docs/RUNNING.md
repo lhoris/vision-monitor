@@ -10,7 +10,7 @@
 | Maven | 3.9.16 | 프로젝트 Maven Wrapper가 버전을 자동으로 준비 |
 | Node.js | 24.x | 루트 `.nvmrc` |
 | npm | 11.x | Node 24 기본 npm 사용 |
-| MariaDB | 10.6 이상 | Flyway + MariaDB JDBC |
+| MariaDB | 10.6 이상 | 수동 SQL 적용 + MariaDB JDBC |
 
 ## 2. Windows 권장 실행 방법
 
@@ -101,11 +101,8 @@ Vite 개발 서버는 기본적으로 `http://localhost:3000`에서 실행된다
 mysql -u root -p < scripts\database-init.sql
 ```
 
-`V001__init.sql`은 더 이상 임시 monitoring 테이블을 만들지 않는 baseline marker다.
-기존 로컬 DB에 예전 `V001`이 이미 적용되어 있으면 Flyway checksum이 달라지므로
-`scripts\database-init.sql`로 `PPWIRE` DB를 재생성한 뒤 backend를 시작한다.
-
-Spring Boot 시작 시 Flyway가 `backend/src/main/resources/db/migration`의 migration을 자동 적용한다.
+Spring Boot는 시작 시 데이터베이스 DDL을 자동 적용하지 않는다.
+스키마 변경은 `docs/database/`의 SQL을 검토한 뒤 수동 적용한다.
 
 ## 5. 빌드 검증
 

@@ -155,7 +155,7 @@
 - **기술**:
   - **프레임워크**: Spring Boot 3.x
   - **ORM**: Spring Data JPA + Hibernate
-  - **마이그레이션**: Flyway
+  - **데이터베이스 변경**: 수동 SQL 검토 및 적용
   - **로깅**: SLF4J + Logback
   - **API 문서**: Springdoc OpenAPI (Swagger UI)
   - **테스트**: JUnit 5, Mockito, TestContainers
@@ -434,8 +434,7 @@ backend/
 │   ├── application.yml         # 공통 설정
 │   ├── application-dev.yml     # 개발 환경
 │   ├── application-prod.yml    # 운영 환경
-│   ├── db/migration/
-│   │   └── V001__init.sql      # Flyway 마이그레이션
+│   ├── db/                     # 애플리케이션은 DDL을 자동 실행하지 않음
 │   └── logback-spring.xml
 ├── pom.xml (또는 build.gradle)
 └── README.md

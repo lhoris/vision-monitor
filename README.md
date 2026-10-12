@@ -57,9 +57,8 @@ cd vision-monitor
 mysql -u root -p < scripts/database-init.sql
 ```
 
-마이그레이션은 Spring Boot 시작 시 Flyway가 자동으로 실행합니다.
-기존 로컬 DB에 예전 `V001` migration이 이미 적용되어 있으면 baseline이 바뀌어
-checksum이 달라지므로 `scripts/database-init.sql`로 `PPWIRE` DB를 재생성한 뒤 시작하세요.
+데이터베이스 DDL은 Spring Boot 시작 시 자동 실행하지 않습니다. 스키마 변경은
+`docs/database/`의 SQL을 검토한 뒤 DBA 또는 배포 담당자가 수동 적용합니다.
 
 ### 3. 환경 설정
 
@@ -146,7 +145,7 @@ vision-monitor/
 │   │   │   │   └── util/           # Utilities
 │   │   │   └── resources/
 │   │   │       ├── application.yml
-│   │   │       └── db/migration/   # Flyway 마이그레이션
+│   │   │       └── db/             # 애플리케이션은 DDL을 자동 실행하지 않음
 │   │   └── test/
 │   ├── pom.xml
 │   └── README.md
@@ -181,7 +180,7 @@ vision-monitor/
 - **Spring Boot 3.2** - 웹 프레임워크
 - **Spring Data JPA** - ORM
 - **MariaDB** - 관계형 데이터베이스
-- **Flyway** - 데이터베이스 마이그레이션
+- **MariaDB SQL 운영 스크립트** - 수동 검토 및 적용 방식
 - **Lombok** - 보일러플레이트 제거
 - **SpringDoc OpenAPI** - Swagger/OpenAPI
 - **JUnit 5 & Mockito** - 테스트
@@ -312,10 +311,8 @@ cd backend
 ### 마이그레이션 오류
 
 ```bash
-# Flyway 히스토리 초기화 (개발 환경만)
-cd backend
-./mvnw flyway:clean
-./mvnw flyway:migrate
+# 데이터베이스 스키마 변경
+# docs/database/의 SQL을 검토한 뒤 MariaDB 클라이언트로 수동 적용
 ```
 
 ## 📖 문서

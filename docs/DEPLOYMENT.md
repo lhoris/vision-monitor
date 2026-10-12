@@ -78,7 +78,7 @@ sudo env APP_DIR=/srv/vision WEB_DIR=/srv/www/vision LOG_DIR=/var/log/vision \
   BACKEND_SERVICE=visionmonitor-backend BACKEND_PORT=8080 bash scripts/deploy.sh
 ```
 
-준비 확인은 인증 interceptor에서 예상되는 `401` 또는 `2xx` 응답을 성공으로 처리합니다. `5xx` 또는 제한 시간 내 무응답이면 실패 처리하고 이전 JAR/frontend 파일을 복구합니다. Flyway는 backend 시작 과정에서 실행되므로 DB 연결 및 migration 오류는 다음으로 확인합니다. 파일 복구는 DB migration을 되돌리지 않습니다. DB 변경이 포함된 배포는 하위 호환 가능한 migration인지 별도로 확인해야 합니다.
+준비 확인은 인증 interceptor에서 예상되는 `401` 또는 `2xx` 응답을 성공으로 처리합니다. `5xx` 또는 제한 시간 내 무응답이면 실패 처리하고 이전 JAR/frontend 파일을 복구합니다. 데이터베이스 DDL은 backend 시작 과정에서 실행되지 않으므로, 배포 전에 `docs/database/`의 SQL을 별도로 검토하고 적용해야 합니다. 파일 복구는 DB 변경을 되돌리지 않습니다.
 
 ```bash
 sudo journalctl -u visionmonitor-backend -n 100 --no-pager
@@ -103,5 +103,5 @@ Windows용 Nginx는 내부 테스트/Windows 배포 편의 런타임입니다. �
 
 1. backend JAR와 frontend dist가 같은 커밋에서 빌드됐는지 확인합니다.
 2. Linux는 unit의 이름/실행 경로/EnvironmentFile과 `systemctl status`를 확인합니다. Windows는 표준 출력을 `deploy\logs\backend.log`, 오류 출력을 `deploy\logs\backend-error.log`에서 확인합니다.
-3. Flyway 오류가 있으면 DB 연결, 계정의 DDL 권한, migration 이력을 확인합니다. migration 이력이나 checksum을 수동으로 지우거나 수정하지 않습니다.
+3. API 오류가 있으면 DB 연결, 계정 권한, 수동 적용한 스키마 버전을 확인합니다.
 4. frontend는 열리지만 API가 실패하면 Nginx `/api` 프록시, backend 포트, 빌드 시 `VITE_API_URL` 설정을 확인합니다.
