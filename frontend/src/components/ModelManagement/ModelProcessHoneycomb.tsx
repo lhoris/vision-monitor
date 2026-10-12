@@ -7,6 +7,7 @@ type GroupTone = 'sky' | 'emerald' | 'amber' | 'violet'
 interface ModelProcessHoneycombProps {
   processes: ModelProcess[]
   selectedProcessId?: string
+  controlDialogOpen?: boolean
   groupTone?: GroupTone
   groupToneByProcessId?: Record<string, GroupTone>
   groupColorByProcessId?: Record<string, string>
@@ -51,7 +52,7 @@ function getStatusBadgeClass(status: string) {
   return 'bg-amber-400/15 text-amber-200'
 }
 
-export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone = 'sky', groupToneByProcessId, groupColorByProcessId, onSelect, onDoubleSelect, onContextAction, onAdd }: ModelProcessHoneycombProps) {
+export function ModelProcessHoneycomb({ processes, selectedProcessId, controlDialogOpen = false, groupTone = 'sky', groupToneByProcessId, groupColorByProcessId, onSelect, onDoubleSelect, onContextAction, onAdd }: ModelProcessHoneycombProps) {
   const clickTimer = useRef<number | null>(null)
   const [hoveredProcess, setHoveredProcess] = useState<ModelProcess | null>(null)
   const [tooltipSuppressed, setTooltipSuppressed] = useState(false)
@@ -85,7 +86,7 @@ export function ModelProcessHoneycomb({ processes, selectedProcessId, groupTone 
   const selectedIndex = visibleProcesses.findIndex((process) => process?.id === selectedProcessId)
   const selectedCenter = selectedIndex >= 0 ? centers[selectedIndex] : null
   const selectedProcess = processes.find((process) => process.id === selectedProcessId) ?? null
-  const tooltipProcess = tooltipSuppressed ? null : hoveredProcess ?? selectedProcess
+  const tooltipProcess = controlDialogOpen || tooltipSuppressed ? null : hoveredProcess ?? selectedProcess
 
   return <div className="relative mx-auto flex h-full min-h-[320px] w-full flex-1 items-center justify-center overflow-visible py-3">
     {contextMenu ? <div data-model-control-menu role="menu" aria-label={`${contextMenu.process.modelName} 프로세스 제어 메뉴`} style={{ left: contextMenu.x, top: contextMenu.y }} className="fixed z-[110] min-w-36 rounded-lg border border-slate-600 bg-slate-900 p-1 text-left text-xs text-white shadow-2xl shadow-slate-950/50"><p className="border-b border-slate-700 px-3 py-2 font-semibold text-slate-300">{contextMenu.process.modelName}</p><button type="button" role="menuitem" disabled={contextMenu.process.processStatus === 'running' || ['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'start') }} className="block w-full rounded px-3 py-2 text-left hover:bg-emerald-600/30 disabled:cursor-not-allowed disabled:opacity-40">시작</button><button type="button" role="menuitem" disabled={contextMenu.process.processStatus === 'stopped' || ['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'stop') }} className="block w-full rounded px-3 py-2 text-left hover:bg-rose-600/30 disabled:cursor-not-allowed disabled:opacity-40">중지</button><button type="button" role="menuitem" disabled={['requested', 'processing', 'running'].includes(contextMenu.process.controlRequestStatus ?? '')} onPointerDown={(event) => event.stopPropagation()} onClick={() => { setContextMenu(null); onContextAction?.(contextMenu.process, 'restart') }} className="block w-full rounded px-3 py-2 text-left text-amber-200 hover:bg-amber-600/30 disabled:cursor-not-allowed disabled:opacity-40">재시작</button></div> : null}
