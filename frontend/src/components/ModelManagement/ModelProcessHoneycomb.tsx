@@ -19,7 +19,7 @@ interface ModelProcessHoneycombProps {
 interface AxialCoordinate { q: number; r: number }
 
 const groupColors: Record<GroupTone, string> = { sky: '#0ea5e9', emerald: '#10b981', amber: '#f59e0b', violet: '#8b5cf6' }
-const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#b91c1c', restarting: '#b45309', error: '#881337', unknown: '#475569' }
+const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#b91c1c', restarting: '#b45309', error: '#881337', unknown: '#b45309' }
 
 function axialDistance({ q, r }: AxialCoordinate) { return Math.max(Math.abs(q), Math.abs(r), Math.abs(-q - r)) }
 
