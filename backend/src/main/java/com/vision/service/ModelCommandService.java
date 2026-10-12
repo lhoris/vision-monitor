@@ -7,15 +7,14 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 
 /** Registers administrator requests in the database queue consumed directly by the VM Agent. */
 @Service
 @RequiredArgsConstructor
 public class ModelCommandService {
-    private static final List<String> COMMAND_TYPES = List.of("START", "STOP", "RESTART");
     private final NamedParameterJdbcTemplate jdbc;
 
     @Transactional
@@ -55,7 +54,9 @@ public class ModelCommandService {
 
     private String normalizeCommandType(String action) {
         String value = action == null ? "" : action.trim().toUpperCase(Locale.ROOT);
-        if (!COMMAND_TYPES.contains(value)) throw new ApiException("VALIDATION_ERROR", "Unsupported model action");
+        if (!value.matches("[A-Z0-9][A-Z0-9_-]{0,19}")) {
+            throw new ApiException("VALIDATION_ERROR", "Invalid model command type");
+        }
         return value;
     }
 }
