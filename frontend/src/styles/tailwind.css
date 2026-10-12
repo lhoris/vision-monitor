@@ -2,41 +2,82 @@
  * Tailwind CSS
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --font-sans: "Spoqa Han Sans Neo", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-spoqa: "Spoqa Han Sans Neo", sans-serif;
+  --spacing-128: 32rem;
+  --spacing-144: 36rem;
+}
 
 /* Component Utilities */
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-primary-500 text-white rounded-md font-medium hover:bg-primary-600 transition-colors;
-  }
-
-  .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-md font-medium hover:bg-gray-300 transition-colors;
-  }
-
-  .card {
-    @apply bg-white rounded-lg shadow-md p-6 dark:bg-gray-800;
-  }
-
-  .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
-  }
-
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  }
-
-  .badge-success {
-    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
-  }
-
-  .badge-warning {
-    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
-  }
-
-  .badge-error {
-    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
-  }
+.btn-primary {
+  padding: 0.5rem 1rem;
+  background: var(--color-primary-500);
+  color: #fff;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: background-color 150ms ease;
 }
+
+.btn-primary:hover {
+  background: var(--color-primary-600);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  color: #111827;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: background-color 150ms ease;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.card {
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-500);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+}
+
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef9c3; color: #854d0e; }
+.badge-error { background: #fee2e2; color: #991b1b; }
+
+.dark .card { background: #1f2937; }
+.dark .input { background: #374151; border-color: #4b5563; color: #fff; }
+.dark .badge-success { background: #14532d; color: #bbf7d0; }
+.dark .badge-warning { background: #713f12; color: #fef08a; }
+.dark .badge-error { background: #7f1d1d; color: #fecaca; }

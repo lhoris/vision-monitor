@@ -72,10 +72,14 @@ class ModelCommandServiceTest {
     }
 
     @Test
-    void rejectsUnsupportedCommandBeforeDatabaseAccess() {
-        ApiException exception = assertThrows(ApiException.class, () -> service.request(7L, "pause", "admin"));
+    void acceptsCustomCommandType() {
+        when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
+                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22")
+        ));
+        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(0);
 
-        assertEquals("VALIDATION_ERROR", exception.getCode());
-        verify(jdbc, never()).queryForList(anyString(), anyMap());
+        service.request(7L, "custom1", "admin");
+
+        verify(jdbc).update(anyString(), any(SqlParameterSource.class));
     }
 }
