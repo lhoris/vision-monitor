@@ -7,6 +7,7 @@ set "FRONTEND_DIST=%ROOT_DIR%\frontend\dist"
 if not defined DEPLOY_DIR set "DEPLOY_DIR=%ROOT_DIR%\deploy"
 set "APP_DIR=%DEPLOY_DIR%\app"
 set "WEB_DIR=%DEPLOY_DIR%\www"
+set "LICENSE_DIR=%DEPLOY_DIR%\licenses"
 set "LOG_DIR=%DEPLOY_DIR%\logs"
 set "BACKEND_JAR=%APP_DIR%\vision-monitor.jar"
 if not defined BACKEND_PORT set "BACKEND_PORT=8080"
@@ -76,6 +77,10 @@ if not exist "%FRONTEND_DIST%\index.html" (
   echo Run scripts\build.bat on the development PC and copy the project again.
   exit /b 1
 )
+if not exist "%ROOT_DIR%\licenses\THIRD-PARTY-NOTICES.md" (
+  echo Missing open source notice file. Run scripts\build.bat on the development PC.
+  exit /b 1
+)
 set "JAR_COUNT=0"
 set "SOURCE_JAR="
 for %%F in ("%BACKEND_DIR%\target\vision-monitor-*.jar") do if exist "%%~fF" (
@@ -103,6 +108,7 @@ exit /b 0
 :prepare_nginx
 if not exist "%APP_DIR%" mkdir "%APP_DIR%"
 if not exist "%WEB_DIR%" mkdir "%WEB_DIR%"
+if not exist "%LICENSE_DIR%" mkdir "%LICENSE_DIR%"
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup-nginx.ps1" -InstallDirectory "%NGINX_HOME%" >nul
 if errorlevel 1 (
@@ -147,6 +153,12 @@ echo Installing frontend static files...
 robocopy "%FRONTEND_DIST%" "%WEB_DIR%" /MIR /R:2 /W:1 >nul
 if %ERRORLEVEL% GEQ 8 (
   echo Frontend artifact copy failed.
+  exit /b 1
+)
+echo Installing open source notices...
+robocopy "%ROOT_DIR%\licenses" "%LICENSE_DIR%" /E /R:2 /W:1 >nul
+if %ERRORLEVEL% GEQ 8 (
+  echo Open source notice copy failed.
   exit /b 1
 )
 exit /b 0

@@ -21,7 +21,7 @@ echo npm:
 call npm -v
 
 echo.
-echo [1/2] Building backend...
+echo [1/3] Building backend...
 pushd "%ROOT_DIR%\backend"
 call mvnw.cmd clean package -DskipTests
 if errorlevel 1 (
@@ -32,7 +32,7 @@ if errorlevel 1 (
 popd
 
 echo.
-echo [2/2] Building frontend...
+echo [2/3] Building frontend...
 pushd "%ROOT_DIR%\frontend"
 call npm run build
 if errorlevel 1 (
@@ -41,6 +41,14 @@ if errorlevel 1 (
   exit /b 1
 )
 popd
+
+echo.
+echo [3/3] Generating open source notices...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0generate-oss-notices.ps1"
+if errorlevel 1 (
+  echo Open source notice generation failed.
+  exit /b 1
+)
 
 if not exist "%ROOT_DIR%\frontend\dist\index.html" (
   echo Frontend build did not produce frontend\dist\index.html.
