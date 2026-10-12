@@ -4,6 +4,7 @@ import com.vision.dto.ModelProcessCreateRequest;
 import com.vision.dto.ModelProcessSettingsRequest;
 import com.vision.exception.ApiException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
 import java.util.Arrays;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -20,6 +23,9 @@ import java.util.Map;
 public class ModelProcessService {
     private final NamedParameterJdbcTemplate jdbc;
     private final ModelCommandService commandService;
+
+    @Value("${vision.model-monitoring.status-timeout-seconds:30}")
+    private long monitoringStatusTimeoutSeconds = 30;
 
     @Transactional(readOnly = true)
     public Map<String, Object> list(String processAreas) {
@@ -118,10 +124,10 @@ public class ModelProcessService {
         item.put("serverIp", rs.getString("SERVER_IP"));
         item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH"));
         item.put("processStatus", lower(rs.getString("PROCESS_STATUS"), "unknown"));
-        item.put("monitoringStatus", lower(rs.getString("MONITORING_STATUS"), "unknown"));
         item.put("controlStatus", lower(rs.getString("CONTROL_STATUS"), "unknown"));
         item.put("controlRequestStatus", lowerOrNull(rs.getString("CONTROL_REQUEST_STATUS")));
         var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP");
+        item.put("monitoringStatus", resolveMonitoringStatus(rs.getString("MONITORING_STATUS"), timestamp));
         item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString());
         item.put("description", rs.getString("DESCRIPTION"));
         return item;
@@ -133,6 +139,13 @@ public class ModelProcessService {
 
     private String lowerOrNull(String value) {
         return value == null || value.isBlank() ? null : value.toLowerCase(Locale.ROOT);
+    }
+
+    private String resolveMonitoringStatus(String storedStatus, java.sql.Timestamp lastStatusTimestamp) {
+        if (lastStatusTimestamp == null) return "unknown";
+        long elapsedSeconds = Math.max(0, Duration.between(lastStatusTimestamp.toInstant(), Instant.now()).getSeconds());
+        if (elapsedSeconds > monitoringStatusTimeoutSeconds) return "failed";
+        return lower(storedStatus, "unknown");
     }
     private void validate(String processId, String modelName, String automationName, String serverIp, String path) { if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId) || modelName == null || modelName.isBlank() || automationName == null || automationName.isBlank()) throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required"); validateIpAndPath(serverIp, path); }
     private void validateIpAndPath(String serverIp, String path) { if (serverIp == null || !serverIp.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)\\.){3}(25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)))$") || path == null || path.isBlank()) throw new ApiException("VALIDATION_ERROR", "A valid server IP and Python project path are required"); }
