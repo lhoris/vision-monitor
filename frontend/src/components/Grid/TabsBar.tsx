@@ -100,7 +100,7 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   return (
     <div className="border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950">
       <div className="px-4 pt-2 sm:px-6">
-        <div className="flex min-h-11 items-end gap-1 overflow-x-auto">
+        <div className="flex min-h-12 items-end gap-1 overflow-x-auto">
           {/* Tabs */}
           {tabs.map((tab, index) => (
             <div
@@ -111,7 +111,7 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group flex shrink-0 cursor-pointer items-center gap-2 rounded-t-md border px-5 py-2 text-base font-medium whitespace-nowrap
+              className={`relative group flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-t-md border px-5 py-2 text-[15px] font-semibold whitespace-nowrap
                 transition-colors duration-150
                 ${
                   activeTabId === tab.id
@@ -237,7 +237,7 @@ export const TabsBar: React.FC<TabsBarProps> = ({
             <button
               type="button"
               onClick={() => setShowAddTabInput(true)}
-              className="shrink-0 self-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
+              className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-md border border-gray-300 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
               title="Add new tab"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

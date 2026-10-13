@@ -93,7 +93,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
 
   return (
     <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container">
-      <div className="px-6 pt-3">
+      <div className="px-6 pt-2">
         <div className="flex items-center gap-2 justify-between">
           {/* Sub Tabs Container */}
           <div className="flex items-center gap-2 overflow-x-auto flex-1 -mb-[2px]">
@@ -107,8 +107,8 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onSubTabChange(subTab.id)}
-              className={`relative px-6 py-2.5 rounded-t-lg cursor-pointer whitespace-nowrap text-base select-none
-                transition-all duration-200 flex items-center gap-2 border-b-4 border-transparent
+              className={`relative flex min-h-9 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-t-md border-b-2 border-transparent px-4 py-2 text-sm
+                transition-all duration-200
                 ${
                   activeSubTabId === subTab.id
                     ? 'subtab-active font-bold'
