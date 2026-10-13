@@ -4,7 +4,8 @@ import com.vision.dto.ModelProcessCreateRequest;
 import com.vision.dto.ModelProcessSettingsRequest;
 import com.vision.entity.ModelProcess;
 import com.vision.exception.ApiException;
-import com.vision.mapper.ModelProcessMapper;
+import com.vision.entity.ModelCommand;
+import com.vision.repository.ModelCommandRepository;
 import com.vision.repository.ModelProcessRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,8 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ModelProcessService {
     private final ModelProcessRepository repository;
-    private final ModelProcessMapper mapper;
-    private final ModelCommandService commandService;
+    private final ModelCommandRepository commandRepository;
 
     @Value("${vision.model-monitoring.status-timeout-seconds:30}")
     private long monitoringStatusTimeoutSeconds = 30;
@@ -36,12 +36,12 @@ public class ModelProcessService {
         result.put("processAreas", listProcessAreas());
         List<String> areas = processAreas == null ? List.of() : Arrays.stream(processAreas.split(","))
                 .map(String::trim).filter(value -> !value.isBlank()).map(String::toUpperCase).toList();
-        result.put("processes", mapper.findProcesses(areas).stream().map(this::toProcess).toList());
+        result.put("processes", repository.findProcesses(areas).stream().map(this::toProcess).toList());
         return result;
     }
 
     private List<Map<String, Object>> listProcessAreas() {
-        List<Map<String, Object>> areas = mapper.findProcessAreas();
+        List<Map<String, Object>> areas = repository.findProcessAreas();
         List<Map<String, Object>> result = areas.stream().map(row -> {
             Map<String, Object> area = new LinkedHashMap<>();
             area.put("id", String.valueOf(row.get("codeValue")).toLowerCase());
@@ -84,13 +84,13 @@ public class ModelProcessService {
 
     @Transactional
     public Map<String, Object> control(Long id, String action, String requestedBy) {
-        commandService.request(id, action, requestedBy);
+        enqueueCommand(id, action);
         return find(id);
     }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> logs(Long id) {
-        return mapper.findEventLogs(id).stream().map(row -> {
+        return repository.findEventLogs(id).stream().map(row -> {
             Map<String, Object> log = new LinkedHashMap<>();
             Timestamp occurredAt = (Timestamp) row.get("occurredTimestamp");
             log.put("id", "log-" + row.get("modelEventLogId"));
@@ -103,8 +103,32 @@ public class ModelProcessService {
         }).toList();
     }
 
-    private Map<String, Object> find(Long id) { return toProcess(mapper.findProcess(id)); }
-    private Map<String, Object> findLatest(String area, String modelName) { return toProcess(mapper.findLatestProcess(area.toUpperCase(), modelName)); }
+    private Map<String, Object> find(Long id) { return toProcess(repository.findProcess(id)); }
+    private Map<String, Object> findLatest(String area, String modelName) { return toProcess(repository.findLatestProcess(area.toUpperCase(), modelName)); }
+
+    private void enqueueCommand(Long id, String action) {
+        String commandType = action == null ? "" : action.trim().toUpperCase(Locale.ROOT);
+        if (!commandType.matches("[A-Z0-9][A-Z0-9_-]{0,19}")) {
+            throw new ApiException("VALIDATION_ERROR", "Invalid model command type");
+        }
+        ModelProcess process = repository.findByIdAndDataEndStatus(id, "N")
+                .orElseThrow(() -> new ApiException("MODEL_NOT_FOUND", "The model process was not found"));
+        if (process.getAgentId() == null || process.getAgentId().isBlank()) {
+            throw new ApiException("AGENT_NOT_FOUND", "No Agent is assigned to the model process");
+        }
+        if (commandRepository.countByAgentIdAndModelProcessIdAndDataEndStatusAndCommandStatusIn(
+                process.getAgentId(), String.valueOf(id), "N", List.of("PENDING", "PROCESSING")) > 0) {
+            throw new ApiException("ACTION_BLOCKED", "An unprocessed model process command already exists");
+        }
+        ModelCommand command = new ModelCommand();
+        command.setCommandId(java.util.UUID.randomUUID().toString());
+        command.setAgentId(process.getAgentId());
+        command.setModelProcessId(String.valueOf(id));
+        command.setCommandType(commandType);
+        command.setCommandStatus("PENDING");
+        command.setCommandParameters("{}");
+        commandRepository.save(command);
+    }
     private Map<String, Object> toProcess(Map<String, Object> row) {
         String processAreaCode = (String) row.get("processAreaCode");
         String processName = (String) row.get("processName");
