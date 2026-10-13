@@ -43,6 +43,9 @@ export function AppRoutes() {
 
   useEffect(() => {
     const handleSessionExpired = () => {
+      // 로그인 화면에 이미 진입한 뒤 도착한 이전 요청의 401은 안내하지 않는다.
+      // 로그인 화면에서는 로그인 실패 메시지와 세션 만료 안내를 혼동하지 않게 한다.
+      if (window.location.pathname === '/login') return
       dispatch(logout())
       setSessionExpired(true)
     }
