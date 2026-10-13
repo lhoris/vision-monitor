@@ -255,6 +255,10 @@ html[data-theme='theme3'].dark .dark\:to-indigo-400 {
   color: var(--camera-tile-header-title);
 }
 
+.stream-player-controls {
+  border: 1px solid rgb(255 255 255 / 0.12);
+}
+
 html[data-theme='theme1'] .camera-tile-header {
   --camera-tile-header-bg: #eff6ff;
   --camera-tile-header-border: #93c5fd;

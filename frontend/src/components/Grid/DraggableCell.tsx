@@ -171,7 +171,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       <div
         draggable
         onDragStart={handleDragStart}
-            className="camera-tile-header flex h-10 shrink-0 cursor-move items-center justify-between gap-3 border-b px-3"
+            className="camera-tile-header flex h-10 shrink-0 cursor-move items-center justify-between gap-3 border-b px-4"
       >
         <div className="flex min-w-0 items-center gap-2.5">
           <span
@@ -185,7 +185,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <button
           type="button"
           onClick={handleFocusClick}
-          className="shrink-0 flex items-center justify-center p-1.5 rounded border border-sky-400 bg-sky-100 text-slate-950 opacity-0 transition-all duration-150 hover:bg-white hover:border-sky-500 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:bg-sky-950/40 dark:border-sky-500/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
+          className="mr-1 shrink-0 flex items-center justify-center rounded border border-sky-400 bg-sky-100 p-1.5 text-slate-950 opacity-0 transition-all duration-150 hover:border-sky-500 hover:bg-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:border-sky-500/50 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/60"
           aria-label={`${displayName} 확대 보기`}
           title="확대 보기"
         >
@@ -197,7 +197,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-3.5 w-3.5"
+            className="h-5 w-5"
           >
             <circle cx="8.5" cy="8.5" r="5.5" />
             <line x1="13" y1="13" x2="18" y2="18" />

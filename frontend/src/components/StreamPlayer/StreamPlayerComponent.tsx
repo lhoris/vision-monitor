@@ -70,7 +70,7 @@ const PlayerControls: React.FC<{
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-3">
+    <div className="stream-player-controls absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-black/75 p-3 shadow-lg backdrop-blur-sm">
       <div
         className="w-full h-1 bg-gray-600 rounded cursor-pointer hover:h-2 transition-all mb-3"
         onClick={handleProgressClick}
