@@ -98,9 +98,9 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   }
 
   return (
-    <div className="border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950">
-      <div className="px-4 pt-2 sm:px-6">
-        <div className="flex min-h-12 items-end gap-1 overflow-x-auto">
+    <div className="process-tabs-bar border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950">
+      <div className="process-tabs-inner px-4 pt-2 sm:px-6">
+        <div className="flex min-h-12 items-end gap-2 overflow-x-auto">
           {/* Tabs */}
           {tabs.map((tab, index) => (
             <div
@@ -111,12 +111,12 @@ export const TabsBar: React.FC<TabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onTabChange(tab.id)}
-              className={`relative group flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-t-md border px-5 py-2 text-[15px] font-semibold whitespace-nowrap
+              className={`process-tab relative group flex min-h-11 shrink-0 cursor-pointer items-center gap-2 rounded-t-md border px-6 py-2.5 text-[15px] font-semibold whitespace-nowrap
                 transition-colors duration-150
                 ${
                   activeTabId === tab.id
-                    ? 'before:absolute before:inset-x-3 before:bottom-0 before:h-0.5 before:bg-cyan-400 border-slate-700 bg-slate-800 text-white shadow-sm dark:border-slate-600 dark:bg-slate-800'
-                    : 'border-transparent bg-transparent text-gray-600 hover:border-gray-300 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800 dark:hover:text-white'
+                    ? 'process-tab--active before:absolute before:inset-x-3 before:bottom-0 before:h-0.5 before:bg-cyan-400 border-slate-700 bg-slate-800 text-white shadow-sm dark:border-slate-600 dark:bg-slate-800'
+                    : 'process-tab--inactive border-transparent bg-transparent text-gray-600 hover:border-gray-300 hover:bg-white hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:bg-gray-800 dark:hover:text-white'
                 }
                 ${dragOverIndex === index && draggedFromIndex !== index ? 'ring-2 ring-blue-400' : ''}
                 ${draggedFromIndex === index ? 'opacity-40' : ''}

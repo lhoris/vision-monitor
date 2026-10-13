@@ -92,11 +92,11 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container">
-      <div className="px-6 pt-2">
-        <div className="flex items-center gap-2 justify-between">
+    <div className="process-subtabs-bar bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container">
+      <div className="process-subtabs-inner px-6 pt-2">
+        <div className="flex items-center gap-3 justify-between">
           {/* Sub Tabs Container */}
-          <div className="flex items-center gap-2 overflow-x-auto flex-1 -mb-[2px]">
+          <div className="flex items-center gap-3 overflow-x-auto flex-1 -mb-[2px]">
             {/* Sub Tabs */}
             {subTabs.map((subTab, index) => (
             <div
@@ -107,12 +107,12 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(index, e)}
               onClick={() => onSubTabChange(subTab.id)}
-              className={`relative flex min-h-9 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-t-md border-b-2 border-transparent px-4 py-2 text-sm
+              className={`process-subtab relative flex min-h-9 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-t-md border-b-2 border-transparent px-5 py-2.5 text-sm
                 transition-all duration-200
                 ${
                   activeSubTabId === subTab.id
-                    ? 'subtab-active font-bold'
-                    : 'subtab-inactive font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-white/5'
+                    ? 'process-subtab--active subtab-active font-bold'
+                    : 'process-subtab--inactive subtab-inactive font-medium bg-transparent hover:bg-gray-100 dark:hover:bg-white/5'
                 }
                 ${dragOverIndex === index && draggedFromIndex !== index ? 'ring-2 ring-blue-400' : ''}
                 ${draggedFromIndex === index ? 'opacity-50' : ''}
