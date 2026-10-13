@@ -1,22 +1,21 @@
 package com.vision.service;
 
+import com.vision.entity.ModelCommand;
+import com.vision.entity.ModelProcess;
 import com.vision.exception.ApiException;
+import com.vision.repository.ModelCommandRepository;
+import com.vision.repository.ModelProcessRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,60 +25,65 @@ import static org.mockito.Mockito.when;
 class ModelCommandServiceTest {
 
     @Mock
-    private NamedParameterJdbcTemplate jdbc;
+    private ModelProcessRepository processRepository;
+
+    @Mock
+    private ModelCommandRepository commandRepository;
 
     private ModelCommandService service;
 
     @BeforeEach
     void setUp() {
-        service = new ModelCommandService(jdbc);
+        service = new ModelCommandService(processRepository, commandRepository);
     }
 
     @Test
     void registersRequestedCommandForExistingProcess() {
-        when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
-        ));
-        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(0);
+        when(processRepository.findActiveForUpdate(7L)).thenReturn(Optional.of(process("agent-1")));
+        when(commandRepository.countByAgentIdAndModelProcessIdAndDataEndStatusAndCommandStatusIn(
+                eq("agent-1"), eq("7"), eq("N"), any())).thenReturn(0L);
 
         service.request(7L, "start", "admin");
 
-        verify(jdbc).update(anyString(), any(SqlParameterSource.class));
+        verify(commandRepository).save(any(ModelCommand.class));
     }
 
     @Test
     void blocksSecondCommandWhilePreviousCommandIsActive() {
-        when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
-        ));
-        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(1);
+        when(processRepository.findActiveForUpdate(7L)).thenReturn(Optional.of(process("agent-1")));
+        when(commandRepository.countByAgentIdAndModelProcessIdAndDataEndStatusAndCommandStatusIn(
+                eq("agent-1"), eq("7"), eq("N"), any())).thenReturn(1L);
 
         ApiException exception = assertThrows(ApiException.class, () -> service.request(7L, "restart", "admin"));
 
         assertEquals("ACTION_BLOCKED", exception.getCode());
-        verify(jdbc, never()).update(anyString(), any(SqlParameterSource.class));
+        verify(commandRepository, never()).save(any(ModelCommand.class));
     }
 
     @Test
     void rejectsUnknownProcess() {
-        when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of());
+        when(processRepository.findActiveForUpdate(99L)).thenReturn(Optional.empty());
 
         ApiException exception = assertThrows(ApiException.class, () -> service.request(99L, "stop", "admin"));
 
         assertEquals("MODEL_NOT_FOUND", exception.getCode());
-        verify(jdbc, never()).queryForObject(anyString(), anyMap(), eq(Integer.class));
-        verify(jdbc, never()).update(anyString(), any(SqlParameterSource.class));
+        verify(commandRepository, never()).save(any(ModelCommand.class));
     }
 
     @Test
     void acceptsCustomCommandType() {
-        when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
-        ));
-        when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(0);
+        when(processRepository.findActiveForUpdate(7L)).thenReturn(Optional.of(process("agent-1")));
+        when(commandRepository.countByAgentIdAndModelProcessIdAndDataEndStatusAndCommandStatusIn(
+                eq("agent-1"), eq("7"), eq("N"), any())).thenReturn(0L);
 
         service.request(7L, "custom1", "admin");
 
-        verify(jdbc).update(anyString(), any(SqlParameterSource.class));
+        verify(commandRepository).save(any(ModelCommand.class));
+    }
+
+    private ModelProcess process(String agentId) {
+        ModelProcess process = new ModelProcess();
+        process.setAgentId(agentId);
+        return process;
     }
 }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vision.mapper.ModelProcessMapper">
+    <sql id="processColumns">
+        p.MODEL_PROCESS_ID AS modelProcessId,
+        p.PROCESS_AREA_CODE AS processAreaCode,
+        COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) AS processName,
+        p.MODEL_NAME AS modelName,
+        p.AUTOMATION_NAME AS automationName,
+        p.SERVER_IP AS serverIp,
+        p.PYTHON_PROJECT_PATH AS pythonProjectPath,
+        p.PROCESS_STATUS AS processStatus,
+        p.MONITORING_STATUS AS monitoringStatus,
+        p.CONTROL_STATUS AS controlStatus,
+        p.LAST_STATUS_TIMESTAMP AS lastStatusTimestamp,
+        p.DESCRIPTION AS description,
+        (SELECT CASE mc.COMMAND_STATUS
+                  WHEN 'PENDING' THEN 'REQUESTED'
+                  WHEN 'COMPLETED' THEN 'SUCCEEDED'
+                  ELSE mc.COMMAND_STATUS
+                END
+           FROM TB_M26_MODEL_COMMAND mc
+          WHERE mc.MODEL_PROCESS_ID = CAST(p.MODEL_PROCESS_ID AS CHAR)
+            AND mc.DATA_END_STATUS = 'N'
+          ORDER BY mc.CREATED_TIMESTAMP DESC LIMIT 1) AS controlRequestStatus
+    </sql>
+
+    <sql id="processJoins">
+        FROM TB_M26_MODEL_PROCESS p
+        LEFT JOIN TB_M26_CODE c
+          ON UPPER(c.CODE_NAME) = 'PROCESS_AREA'
+         AND c.DATA_END_STATUS = 'N'
+        LEFT JOIN TB_M26_CODE_DETAIL d
+          ON d.CODE_ID = c.CODE_ID
+         AND d.CODE_VALUE = p.PROCESS_AREA_CODE
+         AND d.DATA_END_STATUS = 'N'
+    </sql>
+
+    <select id="findProcessAreas" resultType="map">
+        SELECT d.CODE_VALUE AS codeValue,
+               COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) AS displayName,
+               d.SORT_ORDER AS sortOrder
+          FROM TB_M26_CODE c
+          JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID
+         WHERE UPPER(c.CODE_NAME) = 'PROCESS_AREA'
+           AND c.DATA_END_STATUS = 'N'
+           AND d.DATA_END_STATUS = 'N'
+         ORDER BY d.SORT_ORDER, d.CODE_DETAIL_ID
+    </select>
+
+    <select id="findProcesses" resultType="map">
+        SELECT <include refid="processColumns"/>
+        <include refid="processJoins"/>
+         WHERE p.DATA_END_STATUS = 'N'
+        <if test="areas != null and areas.size() > 0">
+           AND p.PROCESS_AREA_CODE IN
+           <foreach item="area" collection="areas" open="(" separator="," close=")">
+               #{area}
+           </foreach>
+        </if>
+         ORDER BY p.PROCESS_AREA_CODE, p.MODEL_PROCESS_ID
+    </select>
+
+    <select id="findEventLogs" resultType="map">
+        SELECT MODEL_EVENT_LOG_ID AS modelEventLogId,
+               OCCURRED_TIMESTAMP AS occurredTimestamp,
+               SEVERITY AS severity,
+               MESSAGE AS message,
+               DETECTION_SUMMARY AS detectionSummary
+          FROM TB_M26_MODEL_EVENT_LOG
+         WHERE MODEL_PROCESS_ID = #{id}
+           AND DATA_END_STATUS = 'N'
+         ORDER BY OCCURRED_TIMESTAMP DESC, MODEL_EVENT_LOG_ID DESC
+    </select>
+
+    <select id="findProcess" resultType="map">
+        SELECT <include refid="processColumns"/>
+        <include refid="processJoins"/>
+         WHERE p.MODEL_PROCESS_ID = #{id}
+           AND p.DATA_END_STATUS = 'N'
+    </select>
+
+    <select id="findLatestProcess" resultType="map">
+        SELECT <include refid="processColumns"/>
+        <include refid="processJoins"/>
+         WHERE p.PROCESS_AREA_CODE = #{area}
+           AND p.MODEL_NAME = #{name}
+         ORDER BY p.MODEL_PROCESS_ID DESC
+         LIMIT 1
+    </select>
+</mapper>

@@ -3,21 +3,22 @@ package com.vision.service;
 import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.MetadataQueryAdminDto;
 import com.vision.dto.MetadataQueryAdminRequest;
+import com.vision.entity.MetadataQuery;
 import com.vision.exception.ApiException;
+import com.vision.repository.MetadataQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class MetadataQueryAdminService {
-    private static final String PROGRAM_ID = "QUERY-MGMT";
     private final NamedParameterJdbcTemplate jdbc;
+    private final MetadataQueryRepository queryRepository;
     private final MetadataQueryValidationService validation;
 
     @Transactional(readOnly = true)
@@ -37,10 +38,9 @@ public class MetadataQueryAdminService {
                        OR (:status = 'INACTIVE' AND q.USE_STATUS = 'N' AND q.DATA_END_STATUS = 'N')
                        OR (:status = 'DELETED' AND q.DATA_END_STATUS = 'Y'))
                 ORDER BY q.QUERY_CODE
-                """, new MapSqlParameterSource()
-                .addValue("keyword", normalizedKeyword)
-                .addValue("likeKeyword", "%" + normalizedKeyword + "%")
-                .addValue("status", normalizedStatus), (rs, rowNum) -> toDto(rs));
+                """, new MapSqlParameterSource().addValue("keyword", normalizedKeyword)
+                .addValue("likeKeyword", "%" + normalizedKeyword + "%").addValue("status", normalizedStatus),
+                (rs, rowNum) -> toDto(rs));
     }
 
     @Transactional(readOnly = true)
@@ -63,19 +63,12 @@ public class MetadataQueryAdminService {
     public MetadataQueryAdminDto create(AuthenticatedUserDto actor, MetadataQueryAdminRequest request) {
         requirePermission(actor);
         NormalizedQuery normalized = normalize(request);
-        if (exists(normalized.queryCode())) throw new ApiException("METADATA_QUERY_DUPLICATE", "이미 등록된 Query ID입니다.");
-        LocalDateTime now = LocalDateTime.now();
-        MapSqlParameterSource params = auditParams(actor, normalized, now)
-                .addValue("queryId", normalized.queryCode());
-        jdbc.update("""
-                INSERT INTO TB_M26_METADATA_QUERY (
-                    CREATED_OBJECT_TYPE, CREATED_OBJECT_ID, CREATED_PROGRAM_ID, CREATED_TIMESTAMP,
-                    LAST_UPDATED_OBJECT_TYPE, LAST_UPDATED_OBJECT_ID, LAST_UPDATED_PROGRAM_ID, LAST_UPDATED_TIMESTAMP,
-                    DATA_END_STATUS, QUERY_CODE, QUERY_NAME, QUERY_DESCRIPTION, SQL_TEXT,
-                    PARAMETER_SCHEMA, RESULT_SCHEMA, QUERY_TIMEOUT_SEC, USE_STATUS
-                ) VALUES ('U', :actor, :program, :now, 'U', :actor, :program, :now, 'N',
-                          :queryId, :name, :description, :sql, :parameters, :schema, :timeout, :useStatus)
-                """, params);
+        if (queryRepository.existsByQueryCode(normalized.queryCode())) {
+            throw new ApiException("METADATA_QUERY_DUPLICATE", "A query with the same Query ID already exists.");
+        }
+        MetadataQuery entity = new MetadataQuery();
+        apply(entity, normalized);
+        queryRepository.save(entity);
         return get(actor, normalized.queryCode());
     }
 
@@ -83,33 +76,21 @@ public class MetadataQueryAdminService {
     public MetadataQueryAdminDto update(AuthenticatedUserDto actor, String queryCode, MetadataQueryAdminRequest request) {
         requirePermission(actor);
         NormalizedQuery normalized = normalize(request);
-        if (!queryCode.equals(normalized.queryCode())) throw new ApiException("METADATA_QUERY_INVALID", "Query ID는 수정할 수 없습니다.");
-        get(actor, queryCode);
-        LocalDateTime now = LocalDateTime.now();
-        jdbc.update("""
-                UPDATE TB_M26_METADATA_QUERY
-                SET QUERY_NAME = :name, QUERY_DESCRIPTION = :description, SQL_TEXT = :sql,
-                    PARAMETER_SCHEMA = :parameters, RESULT_SCHEMA = :schema,
-                    QUERY_TIMEOUT_SEC = :timeout, USE_STATUS = :useStatus,
-                    LAST_UPDATED_OBJECT_TYPE = 'U', LAST_UPDATED_OBJECT_ID = :actor,
-                    LAST_UPDATED_PROGRAM_ID = :program, LAST_UPDATED_TIMESTAMP = :now
-                WHERE QUERY_CODE = :queryCode AND DATA_END_STATUS = 'N'
-                """, auditParams(actor, normalized, now).addValue("queryCode", queryCode));
+        if (!queryCode.equals(normalized.queryCode())) {
+            throw new ApiException("METADATA_QUERY_INVALID", "Query ID cannot be changed.");
+        }
+        MetadataQuery entity = activeEntity(queryCode);
+        apply(entity, normalized);
+        queryRepository.save(entity);
         return get(actor, queryCode);
     }
 
     @Transactional
     public MetadataQueryAdminDto setStatus(AuthenticatedUserDto actor, String queryCode, boolean enabled) {
         requirePermission(actor);
-        get(actor, queryCode);
-        jdbc.update("""
-                UPDATE TB_M26_METADATA_QUERY
-                SET USE_STATUS = :status, LAST_UPDATED_OBJECT_TYPE = 'U', LAST_UPDATED_OBJECT_ID = :actor,
-                    LAST_UPDATED_PROGRAM_ID = :program, LAST_UPDATED_TIMESTAMP = :now
-                WHERE QUERY_CODE = :queryCode AND DATA_END_STATUS = 'N'
-                """, new MapSqlParameterSource().addValue("status", enabled ? "Y" : "N")
-                        .addValue("actor", actor.username()).addValue("program", PROGRAM_ID)
-                        .addValue("now", LocalDateTime.now()).addValue("queryCode", queryCode));
+        MetadataQuery entity = activeEntity(queryCode);
+        entity.setUseStatus(enabled ? "Y" : "N");
+        queryRepository.save(entity);
         return get(actor, queryCode);
     }
 
@@ -117,48 +98,47 @@ public class MetadataQueryAdminService {
     public void delete(AuthenticatedUserDto actor, String queryCode) {
         requirePermission(actor);
         MetadataQueryAdminDto query = get(actor, queryCode);
-        if (query.referenceCount() > 0) throw new ApiException("METADATA_QUERY_REFERENCED", "메타데이터 섹션에서 사용 중인 Query는 삭제할 수 없습니다.");
-        LocalDateTime now = LocalDateTime.now();
-        jdbc.update("""
-                UPDATE TB_M26_METADATA_QUERY
-                SET DATA_END_STATUS = 'Y', DATA_END_OBJECT_TYPE = 'U', DATA_END_OBJECT_ID = :actor,
-                    DATA_END_PROGRAM_ID = :program, DATA_END_TIMESTAMP = :now,
-                    LAST_UPDATED_OBJECT_TYPE = 'U', LAST_UPDATED_OBJECT_ID = :actor,
-                    LAST_UPDATED_PROGRAM_ID = :program, LAST_UPDATED_TIMESTAMP = :now
-                WHERE QUERY_CODE = :queryCode AND DATA_END_STATUS = 'N'
-                """, new MapSqlParameterSource().addValue("actor", actor.username())
-                        .addValue("program", PROGRAM_ID).addValue("now", now).addValue("queryCode", queryCode));
+        if (query.referenceCount() > 0) {
+            throw new ApiException("METADATA_QUERY_REFERENCED", "The query cannot be deleted while it is referenced by a metadata section.");
+        }
+        MetadataQuery entity = activeEntity(queryCode);
+        entity.setDataEndStatus("Y");
+        queryRepository.save(entity);
+    }
+
+    private MetadataQuery activeEntity(String queryCode) {
+        return queryRepository.findByQueryCodeAndDataEndStatus(queryCode, "N")
+                .orElseThrow(this::notFound);
+    }
+
+    private void apply(MetadataQuery entity, NormalizedQuery query) {
+        entity.setQueryCode(query.queryCode());
+        entity.setQueryName(query.name());
+        entity.setQueryDescription(query.description());
+        entity.setSqlText(query.sql());
+        entity.setParameterSchema(query.parameters());
+        entity.setResultSchema(query.schema());
+        entity.setQueryTimeoutSec(query.timeout());
+        entity.setUseStatus(query.useStatus());
     }
 
     private NormalizedQuery normalize(MetadataQueryAdminRequest request) {
-        if (request == null) throw new ApiException("METADATA_QUERY_INVALID", "Query 정보를 입력해 주세요.");
+        if (request == null) throw new ApiException("METADATA_QUERY_INVALID", "Query information is required.");
         return new NormalizedQuery(validation.queryCode(request.queryCode()),
-                validation.requiredText(request.queryName(), "Query 명칭", 200),
+                validation.requiredText(request.queryName(), "Query name", 200),
                 validation.optionalText(request.queryDescription(), 1000), validation.sql(request.sqlText()),
-                validation.json(request.parameterSchema(), "파라미터 정의"), validation.json(request.resultSchema(), "결과 Schema"),
+                validation.json(request.parameterSchema(), "Parameter schema"), validation.json(request.resultSchema(), "Result schema"),
                 validation.timeout(request.queryTimeoutSec()), validation.useStatus(request.useStatus()));
-    }
-
-    private MapSqlParameterSource auditParams(AuthenticatedUserDto actor, NormalizedQuery query, LocalDateTime now) {
-        return new MapSqlParameterSource().addValue("actor", actor.username()).addValue("program", PROGRAM_ID)
-                .addValue("now", now).addValue("name", query.name()).addValue("description", query.description())
-                .addValue("sql", query.sql()).addValue("parameters", query.parameters()).addValue("schema", query.schema())
-                .addValue("timeout", query.timeout()).addValue("useStatus", query.useStatus());
-    }
-
-    private boolean exists(String queryCode) {
-        return Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS(SELECT 1 FROM TB_M26_METADATA_QUERY WHERE QUERY_CODE = :code)",
-                new MapSqlParameterSource("code", queryCode), Boolean.class));
     }
 
     private void requirePermission(AuthenticatedUserDto actor) {
         if (actor == null || actor.permissions() == null || actor.permissions().stream().noneMatch(permission ->
                 "admin:access".equalsIgnoreCase(permission) || "query:manage".equalsIgnoreCase(permission))) {
-            throw new ApiException("FORBIDDEN", "Query 관리 권한이 없습니다.");
+            throw new ApiException("FORBIDDEN", "You do not have permission to manage queries.");
         }
     }
 
-    private ApiException notFound() { return new ApiException("METADATA_QUERY_NOT_FOUND", "Query를 찾을 수 없습니다."); }
+    private ApiException notFound() { return new ApiException("METADATA_QUERY_NOT_FOUND", "The query was not found."); }
 
     private MetadataQueryAdminDto toDto(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new MetadataQueryAdminDto(rs.getLong("METADATA_QUERY_ID"), rs.getString("QUERY_CODE"), rs.getString("QUERY_NAME"),
