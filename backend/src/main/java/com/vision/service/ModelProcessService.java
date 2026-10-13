@@ -3,17 +3,17 @@ package com.vision.service;
 import com.vision.dto.ModelProcessCreateRequest;
 import com.vision.dto.ModelProcessSettingsRequest;
 import com.vision.exception.ApiException;
+import com.vision.repository.ModelProcessQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
-import java.util.Arrays;
 import java.time.Duration;
 import java.time.Instant;
+import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class ModelProcessService {
-    private final NamedParameterJdbcTemplate jdbc;
+    private final ModelProcessQueryRepository repository;
     private final ModelCommandService commandService;
 
     @Value("${vision.model-monitoring.status-timeout-seconds:30}")
@@ -31,73 +31,40 @@ public class ModelProcessService {
     public Map<String, Object> list(String processAreas) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("processAreas", listProcessAreas());
-        MapSqlParameterSource params = new MapSqlParameterSource();
-        String areaFilter = "";
-        if (processAreas != null && !processAreas.isBlank()) {
-            String[] areas = processAreas.split(",");
-            params.addValue("areas", Arrays.stream(areas).map(String::trim).filter(value -> !value.isBlank()).map(String::toUpperCase).toList());
-            areaFilter = " AND p.PROCESS_AREA_CODE IN (:areas)";
-        }
-        result.put("processes", jdbc.query("""
-                SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME,
-                       p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH,
-                       p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS,
-                       p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION,
-                       (SELECT CASE mc.COMMAND_STATUS
-                                 WHEN 'PENDING' THEN 'REQUESTED'
-                                 WHEN 'COMPLETED' THEN 'SUCCEEDED'
-                                 ELSE mc.COMMAND_STATUS
-                               END
-                          FROM TB_M26_MODEL_COMMAND mc
-                         WHERE mc.MODEL_PROCESS_ID = CAST(p.MODEL_PROCESS_ID AS CHAR)
-                           AND mc.DATA_END_STATUS = 'N'
-                         ORDER BY mc.CREATED_TIMESTAMP DESC LIMIT 1) CONTROL_REQUEST_STATUS
-                FROM TB_M26_MODEL_PROCESS p
-                LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N'
-                LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N'
-                WHERE p.DATA_END_STATUS = 'N' %s
-                ORDER BY p.PROCESS_AREA_CODE, p.MODEL_PROCESS_ID
-                """.formatted(areaFilter), params, (rs, rowNum) -> toProcess(rs)));
+        List<String> areas = processAreas == null ? List.of() : Arrays.stream(processAreas.split(","))
+                .map(String::trim).filter(value -> !value.isBlank()).map(String::toUpperCase).toList();
+        result.put("processes", repository.findProcesses(areas).stream().map(this::toProcess).toList());
         return result;
     }
 
     private List<Map<String, Object>> listProcessAreas() {
-        List<Map<String, Object>> areas = jdbc.query("""
-                SELECT d.CODE_VALUE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) DISPLAY_NAME, d.SORT_ORDER
-                FROM TB_M26_CODE c
-                JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID
-                WHERE UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' AND d.DATA_END_STATUS = 'N'
-                ORDER BY d.SORT_ORDER, d.CODE_DETAIL_ID
-                """, (rs, rowNum) -> {
+        List<Map<String, Object>> areas = repository.findProcessAreas();
+        List<Map<String, Object>> result = areas.stream().map(row -> {
             Map<String, Object> area = new LinkedHashMap<>();
-            area.put("id", rs.getString("CODE_VALUE").toLowerCase());
-            area.put("name", rs.getString("DISPLAY_NAME"));
-            area.put("sortOrder", rs.getInt("SORT_ORDER"));
+            area.put("id", String.valueOf(row.get("CODE_VALUE")).toLowerCase());
+            area.put("name", row.get("DISPLAY_NAME"));
+            area.put("sortOrder", row.get("SORT_ORDER"));
             area.put("isAll", false);
             return area;
-        });
+        }).toList();
+        List<Map<String, Object>> mutableAreas = new java.util.ArrayList<>(result);
         Map<String, Object> all = new LinkedHashMap<>();
         all.put("id", "all"); all.put("name", "ALL"); all.put("sortOrder", 0); all.put("isAll", true);
-        areas.add(0, all);
-        return areas;
+        mutableAreas.add(0, all);
+        return mutableAreas;
     }
 
     @Transactional
     public Map<String, Object> create(ModelProcessCreateRequest request) {
         validate(request.processId(), request.modelName(), request.automationName(), request.serverIp(), request.pythonProjectPath());
-        jdbc.update("""
-                INSERT INTO TB_M26_MODEL_PROCESS (CREATED_OBJECT_TYPE, CREATED_OBJECT_ID, CREATED_PROGRAM_ID,
-                LAST_UPDATED_OBJECT_TYPE, LAST_UPDATED_OBJECT_ID, LAST_UPDATED_PROGRAM_ID,
-                PROCESS_AREA_CODE, MODEL_NAME, AUTOMATION_NAME, SERVER_IP, PYTHON_PROJECT_PATH)
-                VALUES ('U', 'API', 'MODEL_CREATE', 'U', 'API', 'MODEL_CREATE', :processId, :modelName, :automationName, :serverIp, :pythonProjectPath)
-                """, new MapSqlParameterSource("processId", request.processId().toUpperCase()).addValue("modelName", request.modelName().trim()).addValue("automationName", request.automationName().trim()).addValue("serverIp", request.serverIp().trim()).addValue("pythonProjectPath", request.pythonProjectPath().trim()));
+        repository.insertProcess(request.processId().toUpperCase(), request.modelName().trim(), request.automationName().trim(), request.serverIp().trim(), request.pythonProjectPath().trim());
         return findLatest(request.processId(), request.modelName().trim());
     }
 
     @Transactional
     public Map<String, Object> updateSettings(Long id, ModelProcessSettingsRequest request) {
         validateIpAndPath(request.serverIp(), request.pythonProjectPath());
-        int updated = jdbc.update("UPDATE TB_M26_MODEL_PROCESS SET SERVER_IP = :serverIp, PYTHON_PROJECT_PATH = :path WHERE MODEL_PROCESS_ID = :id AND DATA_END_STATUS = 'N'", new MapSqlParameterSource("serverIp", request.serverIp().trim()).addValue("path", request.pythonProjectPath().trim()).addValue("id", id));
+        int updated = repository.updateSettings(id, request.serverIp().trim(), request.pythonProjectPath().trim());
         if (updated == 0) throw new ApiException("MODEL_NOT_FOUND", "Model process was not found");
         return find(id);
     }
@@ -110,32 +77,39 @@ public class ModelProcessService {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> logs(Long id) {
-        return jdbc.query("SELECT MODEL_EVENT_LOG_ID, OCCURRED_TIMESTAMP, SEVERITY, MESSAGE, DETECTION_SUMMARY FROM TB_M26_MODEL_EVENT_LOG WHERE MODEL_PROCESS_ID = :id AND DATA_END_STATUS = 'N' ORDER BY OCCURRED_TIMESTAMP DESC, MODEL_EVENT_LOG_ID DESC", Map.of("id", id), (rs, rowNum) -> {
+        return repository.findEventLogs(id).stream().map(row -> {
             Map<String, Object> log = new LinkedHashMap<>();
-            log.put("id", "log-" + rs.getLong("MODEL_EVENT_LOG_ID")); log.put("modelProcessId", String.valueOf(id)); log.put("occurredAt", rs.getTimestamp("OCCURRED_TIMESTAMP").toInstant().toString()); log.put("severity", rs.getString("SEVERITY").toLowerCase()); log.put("message", rs.getString("MESSAGE")); log.put("detectionSummary", rs.getString("DETECTION_SUMMARY")); return log;
-        });
+            Timestamp occurredAt = (Timestamp) row.get("OCCURRED_TIMESTAMP");
+            log.put("id", "log-" + row.get("MODEL_EVENT_LOG_ID"));
+            log.put("modelProcessId", String.valueOf(id));
+            log.put("occurredAt", occurredAt == null ? null : occurredAt.toInstant().toString());
+            log.put("severity", String.valueOf(row.get("SEVERITY")).toLowerCase());
+            log.put("message", row.get("MESSAGE"));
+            log.put("detectionSummary", row.get("DETECTION_SUMMARY"));
+            return log;
+        }).toList();
     }
 
-    private Map<String, Object> find(Long id) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT CASE mc.COMMAND_STATUS WHEN 'PENDING' THEN 'REQUESTED' WHEN 'COMPLETED' THEN 'SUCCEEDED' ELSE mc.COMMAND_STATUS END FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = CAST(p.MODEL_PROCESS_ID AS CHAR) AND mc.DATA_END_STATUS = 'N' ORDER BY mc.CREATED_TIMESTAMP DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.MODEL_PROCESS_ID = :id AND p.DATA_END_STATUS = 'N'", Map.of("id", id), (rs, rowNum) -> toProcess(rs)); }
-    private Map<String, Object> findLatest(String area, String modelName) { return jdbc.queryForObject("SELECT p.MODEL_PROCESS_ID, p.PROCESS_AREA_CODE, COALESCE(d.CODE_VALUE_NAME_KO, d.CODE_VALUE_NAME) PROCESS_NAME, p.MODEL_NAME, p.AUTOMATION_NAME, p.SERVER_IP, p.PYTHON_PROJECT_PATH, p.PROCESS_STATUS, p.MONITORING_STATUS, p.CONTROL_STATUS, p.LAST_STATUS_TIMESTAMP, p.DESCRIPTION, (SELECT CASE mc.COMMAND_STATUS WHEN 'PENDING' THEN 'REQUESTED' WHEN 'COMPLETED' THEN 'SUCCEEDED' ELSE mc.COMMAND_STATUS END FROM TB_M26_MODEL_COMMAND mc WHERE mc.MODEL_PROCESS_ID = CAST(p.MODEL_PROCESS_ID AS CHAR) AND mc.DATA_END_STATUS = 'N' ORDER BY mc.CREATED_TIMESTAMP DESC LIMIT 1) CONTROL_REQUEST_STATUS FROM TB_M26_MODEL_PROCESS p LEFT JOIN TB_M26_CODE c ON UPPER(c.CODE_NAME) = 'PROCESS_AREA' AND c.DATA_END_STATUS = 'N' LEFT JOIN TB_M26_CODE_DETAIL d ON d.CODE_ID = c.CODE_ID AND d.CODE_VALUE = p.PROCESS_AREA_CODE AND d.DATA_END_STATUS = 'N' WHERE p.PROCESS_AREA_CODE = :area AND p.MODEL_NAME = :name ORDER BY p.MODEL_PROCESS_ID DESC LIMIT 1", Map.of("area", area.toUpperCase(), "name", modelName), (rs, rowNum) -> toProcess(rs)); }
-    private Map<String, Object> toProcess(java.sql.ResultSet rs) throws java.sql.SQLException {
-        String processAreaCode = rs.getString("PROCESS_AREA_CODE");
-        String processName = rs.getString("PROCESS_NAME");
+    private Map<String, Object> find(Long id) { return toProcess(repository.findProcess(id)); }
+    private Map<String, Object> findLatest(String area, String modelName) { return toProcess(repository.findLatestProcess(area.toUpperCase(), modelName)); }
+    private Map<String, Object> toProcess(Map<String, Object> row) {
+        String processAreaCode = (String) row.get("PROCESS_AREA_CODE");
+        String processName = (String) row.get("PROCESS_NAME");
         Map<String, Object> item = new LinkedHashMap<>();
-        item.put("id", String.valueOf(rs.getLong("MODEL_PROCESS_ID")));
+        item.put("id", String.valueOf(row.get("MODEL_PROCESS_ID")));
         item.put("processId", lower(processAreaCode, "unknown"));
         item.put("processName", processName == null || processName.isBlank() ? processAreaCode : processName);
-        item.put("modelName", rs.getString("MODEL_NAME"));
-        item.put("automationName", rs.getString("AUTOMATION_NAME"));
-        item.put("serverIp", rs.getString("SERVER_IP"));
-        item.put("pythonProjectPath", rs.getString("PYTHON_PROJECT_PATH"));
-        item.put("processStatus", lower(rs.getString("PROCESS_STATUS"), "unknown"));
-        item.put("controlStatus", lower(rs.getString("CONTROL_STATUS"), "unknown"));
-        item.put("controlRequestStatus", lowerOrNull(rs.getString("CONTROL_REQUEST_STATUS")));
-        var timestamp = rs.getTimestamp("LAST_STATUS_TIMESTAMP");
-        item.put("monitoringStatus", resolveMonitoringStatus(rs.getString("MONITORING_STATUS"), timestamp));
+        item.put("modelName", row.get("MODEL_NAME"));
+        item.put("automationName", row.get("AUTOMATION_NAME"));
+        item.put("serverIp", row.get("SERVER_IP"));
+        item.put("pythonProjectPath", row.get("PYTHON_PROJECT_PATH"));
+        item.put("processStatus", lower((String) row.get("PROCESS_STATUS"), "unknown"));
+        item.put("controlStatus", lower((String) row.get("CONTROL_STATUS"), "unknown"));
+        item.put("controlRequestStatus", lowerOrNull((String) row.get("CONTROL_REQUEST_STATUS")));
+        Timestamp timestamp = (Timestamp) row.get("LAST_STATUS_TIMESTAMP");
+        item.put("monitoringStatus", resolveMonitoringStatus((String) row.get("MONITORING_STATUS"), timestamp));
         item.put("lastStatusAt", timestamp == null ? null : timestamp.toInstant().toString());
-        item.put("description", rs.getString("DESCRIPTION"));
+        item.put("description", row.get("DESCRIPTION"));
         return item;
     }
 
