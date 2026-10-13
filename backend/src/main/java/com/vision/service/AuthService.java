@@ -5,6 +5,7 @@ import com.vision.dto.LoginRequest;
 import com.vision.dto.LoginResponse;
 import com.vision.dto.ChangePasswordRequest;
 import com.vision.dto.MyProfileDto;
+import com.vision.dto.UpdateContactRequest;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -125,6 +126,24 @@ public class AuthService {
         return MyProfileDto.from(user, resolveRole(user));
     }
 
+    @Transactional
+    public MyProfileDto updateContact(String username, UpdateContactRequest request) {
+        String normalizedUsername = normalize(username);
+        if (normalizedUsername == null || request == null) throw authFailed();
+        UserAccount user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
+                .filter(this::canLogin)
+                .orElseThrow(this::authFailed);
+        String email = normalizeOptional(request.email());
+        if (email != null && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new ApiException("CONTACT_INVALID", "이메일 형식이 올바르지 않습니다.");
+        }
+        user.setEmail(email);
+        user.setPhone(normalizeOptional(request.phone()));
+        user.setUpdatedBy(user.getUsername());
+        user.setUpdatedTimestamp(java.time.LocalDateTime.now());
+        return MyProfileDto.from(userRepository.save(user), resolveRole(user));
+    }
+
     private String resolveRole(UserAccount user) {
         if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) {
             String role = user.getRole() == null ? "USER" : user.getRole().toUpperCase(Locale.ROOT);
@@ -165,6 +184,12 @@ public class AuthService {
     }
 
     private String normalize(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeOptional(String value) {
         if (value == null) return null;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;

@@ -13,4 +13,6 @@ public interface ModelProcessMapper {
     List<Map<String, Object>> findEventLogs(@Param("id") Long id);
     Map<String, Object> findProcess(@Param("id") Long id);
     Map<String, Object> findLatestProcess(@Param("area") String area, @Param("name") String name);
+    List<Map<String, Object>> findAgents();
+    Map<String, Object> findAgent(@Param("agentId") String agentId);
 }

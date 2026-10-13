@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button, ConfirmDialog } from '@/components/Common'
 import { ModelCreateDialog, ModelEventLogDialog, ModelManagementFilters, ModelProcessControlDialog, ModelProcessEventLogBar, ModelProcessGrid, ModelSettingsDialog, ModelVmDashboard, ProcessAreaCreateDialog, ProcessMultiSelectFilter } from '@/components/ModelManagement'
-import { controlProcess, createProcess, createProcessArea, listEventLogs, listProcesses, updateSettings } from '@/services/modelManagementService'
-import type { ModelControlAction, ModelDashboard, ModelEventLog, ModelCreateInput, ModelProcess, ModelVm, ProcessArea, ProcessStatus } from '@/types/modelManagement'
+import { controlProcess, createProcess, createProcessArea, listAgents, listEventLogs, listProcesses, updateSettings } from '@/services/modelManagementService'
+import type { ModelAgent, ModelControlAction, ModelDashboard, ModelEventLog, ModelCreateInput, ModelProcess, ModelVm, ProcessArea, ProcessStatus } from '@/types/modelManagement'
 
 type ViewMode = 'dashboard' | 'grid'
 
@@ -26,6 +26,7 @@ function groupProcesses(processes: ModelProcess[]): ModelDashboard {
 export function ModelManagement() {
   const [areas, setAreas] = useState<ProcessArea[]>([])
   const [processes, setProcesses] = useState<ModelProcess[]>([])
+  const [agents, setAgents] = useState<ModelAgent[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>(['all'])
   const [viewMode, setViewMode] = useState<ViewMode>('dashboard')
   const [status, setStatus] = useState<ProcessStatus | 'all'>('all')
@@ -45,7 +46,7 @@ export function ModelManagement() {
   const [refreshingProcessId, setRefreshingProcessId] = useState<string | null>(null)
 
   useEffect(() => {
-    void listProcesses().then((result) => { setAreas(result.processAreas); setProcesses(result.processes) }).catch(() => setError('모델 목록을 불러오지 못했습니다.')).finally(() => setLoading(false))
+    void Promise.all([listProcesses(), listAgents()]).then(([result, agentList]) => { setAreas(result.processAreas); setProcesses(result.processes); setAgents(agentList) }).catch(() => setError('모델 목록과 Agent 목록을 불러오지 못했습니다.')).finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
@@ -154,7 +155,7 @@ export function ModelManagement() {
     <ModelSettingsDialog process={settingsProcess} onClose={() => setSettingsProcess(null)} onSave={saveSettings} />
     <ModelEventLogDialog process={logProcess} logs={logs} onClose={() => setLogProcess(null)} />
     <ModelProcessControlDialog process={controlDialogProcess} busy={controlDialogProcess ? busyIds.has(controlDialogProcess.id) : false} refreshing={controlDialogProcess ? refreshingProcessId === controlDialogProcess.id : false} onClose={() => setControlDialogProcessId(null)} onControl={(action) => { if (controlDialogProcess) requestControl(controlDialogProcess.id, action) }} onRefresh={() => { if (controlDialogProcess) void refreshProcess(controlDialogProcess.id) }} onSettings={() => { if (controlDialogProcess) { setControlDialogProcessId(null); setSettingsProcess(controlDialogProcess) } }} />
-    {createOpen && <ModelCreateDialog areas={areas} onClose={() => setCreateOpen(false)} onSave={saveNewProcess} />}
+    {createOpen && <ModelCreateDialog areas={areas} agents={agents} onClose={() => setCreateOpen(false)} onSave={saveNewProcess} />}
     {createAreaOpen && <ProcessAreaCreateDialog onClose={() => setCreateAreaOpen(false)} onSave={saveNewArea} />}
     <ConfirmDialog isOpen={Boolean(pendingAction)} title="프로세스 제어 확인" message={pendingAction ? `${pendingAction.process.modelName} 프로세스를 ${({ start: '시작', stop: '정지', restart: '재시작' }[pendingAction.action])} 요청하시겠습니까?` : ''} confirmLabel="요청" cancelLabel="취소" busy={false} onCancel={() => setPendingAction(null)} onConfirm={runControl} />
   </div>

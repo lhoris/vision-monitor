@@ -20,6 +20,8 @@ public class ModelProcessController {
 
     @GetMapping
     public ApiResponse<Map<String, Object>> list(@RequestParam(required = false) String processAreas) { return ApiResponse.success(service.list(processAreas)); }
+    @GetMapping("/agents")
+    public ApiResponse<List<Map<String, Object>>> agents() { return ApiResponse.success(service.listAgents()); }
     @PostMapping
     public ApiResponse<Map<String, Object>> create(@RequestBody ModelProcessCreateRequest request) { return ApiResponse.success(service.create(request)); }
     @PutMapping("/{id}/settings")

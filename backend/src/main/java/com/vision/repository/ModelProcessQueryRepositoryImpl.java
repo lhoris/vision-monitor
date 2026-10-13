@@ -17,4 +17,6 @@ public class ModelProcessQueryRepositoryImpl implements ModelProcessQueryReposit
     @Override public List<Map<String, Object>> findEventLogs(Long id) { return mapper.findEventLogs(id); }
     @Override public Map<String, Object> findProcess(Long id) { return mapper.findProcess(id); }
     @Override public Map<String, Object> findLatestProcess(String area, String name) { return mapper.findLatestProcess(area, name); }
+    @Override public List<Map<String, Object>> findAgents() { return mapper.findAgents(); }
+    @Override public Map<String, Object> findAgent(String agentId) { return mapper.findAgent(agentId); }
 }

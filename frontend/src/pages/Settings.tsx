@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/Common'
 import { userAlertPreferenceService, type UserAlertPreferences } from '@/services/userAlertPreferenceService'
+import { authService } from '@/services/authService'
 
 export function Settings() {
   const { t } = useTranslation()
@@ -26,7 +27,14 @@ export function Settings() {
   }, [t])
 
   const dirty = settings !== null && savedSettings !== null
-    && (settings.emailEnabled !== savedSettings.emailEnabled || settings.smsEnabled !== savedSettings.smsEnabled)
+    && (settings.email !== savedSettings.email || settings.phone !== savedSettings.phone
+      || settings.emailEnabled !== savedSettings.emailEnabled || settings.smsEnabled !== savedSettings.smsEnabled)
+
+  const setContact = (field: 'email' | 'phone', value: string) => {
+    setSettings((current) => current ? { ...current, [field]: value } : current)
+    setError('')
+    setNotice('')
+  }
 
   const setEnabled = (field: 'emailEnabled' | 'smsEnabled', enabled: boolean) => {
     setSettings((current) => current ? { ...current, [field]: enabled } : current)
@@ -40,12 +48,14 @@ export function Settings() {
     setError('')
     setNotice('')
     try {
+      const profile = await authService.updateContact(settings.email ?? '', settings.phone ?? '')
       const saved = await userAlertPreferenceService.save({
-        emailEnabled: settings.emailEnabled,
-        smsEnabled: settings.smsEnabled,
+        emailEnabled: settings.emailEnabled && Boolean(profile.email),
+        smsEnabled: settings.smsEnabled && Boolean(profile.phone),
       })
-      setSettings(saved)
-      setSavedSettings(saved)
+      const nextSettings = { ...saved, email: profile.email, phone: profile.phone }
+      setSettings(nextSettings)
+      setSavedSettings(nextSettings)
       setNotice(t('settings.saved'))
     } catch {
       setError(t('settings.saveError'))
@@ -69,11 +79,11 @@ export function Settings() {
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               {t('settings.accountEmail')}
-              <input readOnly value={settings.email ?? ''} placeholder={t('settings.contactNotRegistered')} className="mt-1 h-10 w-full rounded border border-gray-300 bg-gray-100 px-3 text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300" />
+              <input type="email" value={settings.email ?? ''} onChange={(event) => setContact('email', event.target.value)} placeholder={t('settings.contactNotRegistered')} className="mt-1 h-10 w-full rounded border border-gray-300 bg-white px-3 text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100" />
             </label>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
               {t('settings.accountPhone')}
-              <input readOnly value={settings.phone ?? ''} placeholder={t('settings.contactNotRegistered')} className="mt-1 h-10 w-full rounded border border-gray-300 bg-gray-100 px-3 text-gray-600 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-300" />
+              <input type="tel" value={settings.phone ?? ''} onChange={(event) => setContact('phone', event.target.value)} placeholder={t('settings.contactNotRegistered')} className="mt-1 h-10 w-full rounded border border-gray-300 bg-white px-3 text-gray-900 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100" />
             </label>
           </div>
           <div className="mt-6 space-y-4 border-t border-gray-200 pt-5 dark:border-gray-700">

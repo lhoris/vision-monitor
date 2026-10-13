@@ -101,4 +101,21 @@
         ORDER BY p.MODEL_PROCESS_ID DESC
         LIMIT 1
     </select>
+
+    <select id="findAgents" resultType="map">
+        SELECT a.AGENT_ID AS agentId,
+               a.IP_ADDRESS AS serverIp
+          FROM TB_M26_AGENT a
+         WHERE a.DATA_END_STATUS = 'N'
+         ORDER BY a.IP_ADDRESS,
+                  a.AGENT_ID
+    </select>
+
+    <select id="findAgent" parameterType="string" resultType="map">
+        SELECT a.AGENT_ID AS agentId,
+               a.IP_ADDRESS AS serverIp
+          FROM TB_M26_AGENT a
+         WHERE a.AGENT_ID = #{agentId}
+           AND a.DATA_END_STATUS = 'N'
+    </select>
 </mapper>

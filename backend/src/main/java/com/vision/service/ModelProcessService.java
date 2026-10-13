@@ -63,15 +63,23 @@ public class ModelProcessService {
 
     @Transactional
     public Map<String, Object> create(ModelProcessCreateRequest request) {
-        validate(request.processId(), request.modelName(), request.automationName(), request.serverIp(), request.pythonProjectPath());
+        validate(request.processId(), request.modelName(), request.automationName(), request.agentId(), request.pythonProjectPath());
+        Map<String, Object> agent = repository.findAgent(request.agentId().trim());
+        if (agent == null) throw new ApiException("AGENT_NOT_FOUND", "선택한 Agent를 찾을 수 없습니다.");
         ModelProcess process = new ModelProcess();
         process.setProcessAreaCode(request.processId().toUpperCase());
         process.setModelName(request.modelName().trim());
         process.setAutomationName(request.automationName().trim());
-        process.setServerIp(request.serverIp().trim());
+        process.setAgentId(String.valueOf(agent.get("agentId")));
+        process.setServerIp(String.valueOf(agent.get("serverIp")));
         process.setPythonProjectPath(request.pythonProjectPath().trim());
         repository.save(process);
         return findLatest(request.processId(), request.modelName().trim());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> listAgents() {
+        return repository.findAgents();
     }
 
     @Transactional
@@ -169,13 +177,16 @@ public class ModelProcessService {
         if (elapsedSeconds > monitoringStatusTimeoutSeconds) return "failed";
         return lower(storedStatus, "unknown");
     }
-    private void validate(String processId, String modelName, String automationName, String serverIp, String path) {
+    private void validate(String processId, String modelName, String automationName, String agentId, String path) {
         if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId)
                 || modelName == null || modelName.isBlank()
-                || automationName == null || automationName.isBlank()) {
-            throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required");
+                || automationName == null || automationName.isBlank()
+                || agentId == null || agentId.isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "공정, 모델명, 조업 자동화 기술명, Agent는 필수입니다.");
         }
-        validateIpAndPath(serverIp, path);
+        if (path == null || path.isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "Python 프로젝트 경로는 필수입니다.");
+        }
     }
 
     private void validateIpAndPath(String serverIp, String path) {

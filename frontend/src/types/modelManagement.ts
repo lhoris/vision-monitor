@@ -58,8 +58,15 @@ export interface ModelSettingsInput {
   pythonProjectPath: string
 }
 
-export interface ModelCreateInput extends ModelSettingsInput {
+export interface ModelAgent {
+  agentId: string
+  serverIp: string
+}
+
+export interface ModelCreateInput {
   processId: string
   modelName: string
   automationName: string
+  agentId: string
+  pythonProjectPath: string
 }

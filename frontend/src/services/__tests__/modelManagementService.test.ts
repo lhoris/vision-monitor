@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '@/services/api'
 import { commonCodeService } from '@/services/commonCodeService'
-import { controlProcess, createProcess, createProcessArea, listDashboard, listProcesses, updateSettings } from '@/services/modelManagementService'
+import { controlProcess, createProcess, createProcessArea, listAgents, listDashboard, listProcesses, updateSettings } from '@/services/modelManagementService'
 
 vi.mock('@/services/api', () => ({ apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }))
 vi.mock('@/services/commonCodeService', () => ({ commonCodeService: { listAdmin: vi.fn(), createDetail: vi.fn() } }))
@@ -17,6 +17,12 @@ describe('modelManagementService', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/model-processes', undefined)
     expect(result.processes).toHaveLength(1)
     expect(result.processAreas[0].isAll).toBe(true)
+  })
+
+  it('loads registered agents for model creation', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: [{ agentId: 'agent-1', serverIp: '10.20.4.21' }] })
+    await expect(listAgents()).resolves.toEqual([{ agentId: 'agent-1', serverIp: '10.20.4.21' }])
+    expect(apiClient.get).toHaveBeenCalledWith('/model-processes/agents')
   })
 
   it('groups process rows by VM for the dashboard', async () => {
@@ -40,8 +46,8 @@ describe('modelManagementService', () => {
   it('validates settings and creates a process through the API', async () => {
     await expect(updateSettings('model-001', { serverIp: 'bad-ip', pythonProjectPath: '/tmp/model' })).rejects.toMatchObject({ code: 'VALIDATION_ERROR' })
     vi.mocked(apiClient.post).mockResolvedValue({ data: { ...process, id: 'model-005', processStatus: 'unknown', monitoringStatus: 'checking' } })
-    const created = await createProcess({ processId: 'heating', modelName: 'New model', automationName: 'New automation', serverIp: '10.20.4.30', pythonProjectPath: '/opt/new' })
-    expect(apiClient.post).toHaveBeenCalledWith('/model-processes', { processId: 'heating', modelName: 'New model', automationName: 'New automation', serverIp: '10.20.4.30', pythonProjectPath: '/opt/new' })
+    const created = await createProcess({ processId: 'heating', modelName: 'New model', automationName: 'New automation', agentId: 'agent-1', pythonProjectPath: '/opt/new' })
+    expect(apiClient.post).toHaveBeenCalledWith('/model-processes', { processId: 'heating', modelName: 'New model', automationName: 'New automation', agentId: 'agent-1', pythonProjectPath: '/opt/new' })
     expect(created.processStatus).toBe('unknown')
   })
 
@@ -52,11 +58,11 @@ describe('modelManagementService', () => {
       processId: 'heating',
       modelName: 'Local test model',
       automationName: 'Test automation',
-      serverIp: '192.168.0.7',
+      agentId: 'agent-1',
       pythonProjectPath: 'C:\\workspace\\local-test\\python-process',
     })
 
-    expect(apiClient.post).toHaveBeenCalledWith('/model-processes', expect.objectContaining({ serverIp: '192.168.0.7' }))
+    expect(apiClient.post).toHaveBeenCalledWith('/model-processes', expect.objectContaining({ agentId: 'agent-1' }))
   })
 
   it('surfaces missing model responses instead of returning an empty process', async () => {
@@ -66,7 +72,7 @@ describe('modelManagementService', () => {
 
     vi.mocked(apiClient.post).mockResolvedValue({ success: true, timestamp: '2026-10-06T00:00:00Z' })
     await expect(controlProcess('model-001', 'stop')).rejects.toThrow('Controlled model process was not returned')
-    await expect(createProcess({ processId: 'heating', modelName: 'New model', automationName: 'New automation', serverIp: '10.20.4.30', pythonProjectPath: '/opt/new' }))
+    await expect(createProcess({ processId: 'heating', modelName: 'New model', automationName: 'New automation', agentId: 'agent-1', pythonProjectPath: '/opt/new' }))
       .rejects.toThrow('Created model process was not returned')
   })
 

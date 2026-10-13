@@ -7,6 +7,7 @@ import com.vision.service.AuthService;
 import com.vision.util.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import com.vision.config.AuthSessionInterceptor;
 import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.MyProfileDto;
+import com.vision.dto.UpdateContactRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -47,6 +49,14 @@ public class AuthController {
             @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
     ) {
         return ApiResponse.success(authService.getMyProfile(user.username()));
+    }
+
+    @PutMapping("/profile")
+    public ApiResponse<MyProfileDto> updateProfile(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
+            @RequestBody UpdateContactRequest request
+    ) {
+        return ApiResponse.success(authService.updateContact(user.username(), request));
     }
 
     @PostMapping("/password")

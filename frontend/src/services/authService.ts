@@ -55,6 +55,13 @@ class AuthService {
     return profile
   }
 
+  async updateContact(email: string, phone: string): Promise<MyProfile> {
+    const response = await apiClient.put<MyProfile>('/auth/profile', { email, phone })
+    const profile = getResponseData<MyProfile | null>(response, null)
+    if (!profile) throw new Error('Profile response is invalid')
+    return profile
+  }
+
   async getCurrentSession(): Promise<User> {
     const response = await apiClient.get<LoginApiResponse['user']>('/auth/session')
     const user = getResponseData<User | null>(response, null)

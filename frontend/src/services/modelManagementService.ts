@@ -2,7 +2,7 @@ import { commonCodeService } from './commonCodeService'
 import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
 import type { ApiResponse } from '@/types/api'
-import type { ModelControlAction, ModelCreateInput, ModelDashboard, ModelEventLog, ModelProcess, ModelSettingsInput, ModelVm, ProcessArea, VmConnectionStatus } from '@/types/modelManagement'
+import type { ModelAgent, ModelControlAction, ModelCreateInput, ModelDashboard, ModelEventLog, ModelProcess, ModelSettingsInput, ModelVm, ProcessArea, VmConnectionStatus } from '@/types/modelManagement'
 
 export class ModelManagementError extends Error {
   constructor(public code: 'VALIDATION_ERROR' | 'MODEL_NOT_FOUND' | 'ACTION_BLOCKED', message: string) { super(message) }
@@ -20,6 +20,10 @@ function validateSettings(input: ModelSettingsInput) {
 export async function listProcesses(processAreas?: string[]): Promise<ModelProcessResponse> {
   const params = processAreas?.length ? { processAreas: processAreas.join(',') } : undefined
   return getResponseData(await apiClient.get<ModelProcessResponse>('/model-processes', params), { processes: [], processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }] })
+}
+
+export async function listAgents(): Promise<ModelAgent[]> {
+  return getResponseData(await apiClient.get<ModelAgent[]>('/model-processes/agents'), [])
 }
 
 export async function listDashboard(processAreas?: string[]): Promise<ModelDashboard> {
@@ -72,8 +76,8 @@ export async function listEventLogs(modelProcessId: string): Promise<ModelEventL
 }
 
 export async function createProcess(input: ModelCreateInput): Promise<ModelProcess> {
-  if (!input.processId || !input.modelName.trim() || !input.automationName.trim()) throw new ModelManagementError('VALIDATION_ERROR', '공정, 모델명, 자동화 기술명을 입력해 주세요.')
-  validateSettings(input)
+  if (!input.processId || !input.modelName.trim() || !input.automationName.trim() || !input.agentId.trim()) throw new ModelManagementError('VALIDATION_ERROR', '공정, 모델명, 자동화 기술명, Agent를 선택해 주세요.')
+  if (!input.pythonProjectPath.trim()) throw new ModelManagementError('VALIDATION_ERROR', 'Python 프로젝트 경로를 입력해 주세요.')
   return requireProcessData(await apiClient.post<ModelProcess>('/model-processes', input), 'Created model process was not returned')
 }
 
