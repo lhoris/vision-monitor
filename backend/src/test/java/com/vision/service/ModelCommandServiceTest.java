@@ -38,7 +38,7 @@ class ModelCommandServiceTest {
     @Test
     void registersRequestedCommandForExistingProcess() {
         when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22")
+                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
         ));
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(0);
 
@@ -50,7 +50,7 @@ class ModelCommandServiceTest {
     @Test
     void blocksSecondCommandWhilePreviousCommandIsActive() {
         when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22")
+                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
         ));
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(1);
 
@@ -74,7 +74,7 @@ class ModelCommandServiceTest {
     @Test
     void acceptsCustomCommandType() {
         when(jdbc.queryForList(anyString(), anyMap())).thenReturn(List.of(
-                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22")
+                Map.of("MODEL_PROCESS_ID", 7L, "SERVER_IP", "10.20.4.22", "AGENT_ID", "agent-1")
         ));
         when(jdbc.queryForObject(anyString(), anyMap(), eq(Integer.class))).thenReturn(0);
 
