@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/Common'
 import { AccountProfile } from '@/pages/AccountProfile'
 import { HelpSupport } from '@/pages/HelpSupport'
+import Settings from '@/pages/Settings'
 
-export type AccountTab = 'profile' | 'help'
+export type AccountTab = 'profile' | 'settings' | 'help'
 
 interface AccountCenterModalProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export function AccountCenterModal({ isOpen, initialTab, onClose, onLogout }: Ac
   }, [initialTab, isOpen])
   const tabs: Array<{ id: AccountTab; label: string }> = [
     { id: 'profile', label: t('account.menu.profile') },
+    { id: 'settings', label: t('account.menu.settings') },
     { id: 'help', label: t('account.menu.help') },
   ]
 
@@ -51,6 +53,7 @@ export function AccountCenterModal({ isOpen, initialTab, onClose, onLogout }: Ac
         </div>
         <div id="account-tab-panel" role="tabpanel" aria-labelledby={`account-tab-${activeTab}`} className="min-h-0 flex-1">
           {activeTab === 'profile' ? <AccountProfile /> : null}
+          {activeTab === 'settings' ? <Settings /> : null}
           {activeTab === 'help' ? <HelpSupport /> : null}
         </div>
         <div className="flex shrink-0 justify-end border-t border-gray-200 px-5 py-3 dark:border-gray-700">

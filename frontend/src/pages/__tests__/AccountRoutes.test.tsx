@@ -2,7 +2,7 @@ import { configureStore } from '@reduxjs/toolkit'
 import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { MemoryRouter, useLocation } from 'react-router-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import i18n from '@/i18n'
 import { AppRoutes } from '@/App'
@@ -45,8 +45,8 @@ describe('account routes', () => {
     expect(screen.getByTestId('current-path')).toHaveTextContent('/live')
   })
 
-  it('keeps the existing system settings page separate from account information', () => {
+  it('keeps the settings route available for direct links', async () => {
     renderRoute('/settings')
-    expect(screen.queryByText(/First screen after login/)).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText(/알람 알림을 받을 방법을 선택합니다\.|Choose how you receive alarm notifications/)).toBeInTheDocument())
   })
 })

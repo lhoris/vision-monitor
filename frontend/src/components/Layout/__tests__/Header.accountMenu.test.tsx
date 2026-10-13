@@ -1,7 +1,7 @@
 import { Provider } from 'react-redux'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { store } from '@/store'
 import type { Event } from '@/types'
@@ -63,13 +63,14 @@ describe('Header account menu', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('routes the Settings menu item to the existing system settings page', async () => {
+  it('opens Settings inside the account center modal', async () => {
     await i18n.changeLanguage('en')
     renderHeader()
     fireEvent.click(screen.getByLabelText(/Open account center|怨꾩젙/))
     fireEvent.click(screen.getByRole('menuitem', { name: /^Settings$/ }))
-    expect(screen.getByTestId('current-path')).toHaveTextContent('/settings')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: /Account Center/ })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: /Personal Settings/ })).toHaveAttribute('aria-selected', 'true')
+    await waitFor(() => expect(screen.getByRole('dialog', { name: /Account Center/ })).toHaveTextContent(/Choose how you receive alarm notifications/))
   })
 
   it('shows unacknowledged alarms in the bell menu and opens the alarm list', async () => {
