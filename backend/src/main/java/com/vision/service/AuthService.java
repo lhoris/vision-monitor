@@ -58,7 +58,9 @@ public class AuthService {
                 new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository));
     }
 
-    @Transactional(readOnly = true)
+    // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
+    // 대부분의 작업이 조회여도 쓰기가 가능한 트랜잭션이어야 한다.
+    @Transactional
     public LoginResponse login(LoginRequest request) {
         String username = normalize(request == null ? null : request.username());
         String password = request == null ? null : request.password();
