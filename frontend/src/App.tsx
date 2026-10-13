@@ -4,7 +4,7 @@
  */
 
 import { Provider } from 'react-redux'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { AppLayout } from '@/components/Layout'
 import Login from '@/pages/Login'
@@ -16,24 +16,45 @@ import Settings from '@/pages/Settings'
 import AdminPlaceholder from '@/pages/AdminPlaceholder'
 import { VideoManagement } from '@/pages/VideoManagement'
 import { store } from '@/store'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
 import { fetchEvents } from '@/store/slices/eventSlice'
-import { hasAdminAccess, validateAuthSession } from '@/store/slices/authSlice'
+import { hasAdminAccess, logout, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n, { getUserLanguage } from '@/i18n'
+import { Modal } from '@/components/Common'
+import { SESSION_EXPIRED_EVENT } from '@/services/api'
+import { useTranslation } from 'react-i18next'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
 
 export function AppRoutes() {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const { t } = useTranslation()
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated)
   const user = useAppSelector((state) => state.auth.user)
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const commonCodeStatus = useAppSelector((state) => state.commonCode.status)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
+  const [sessionExpired, setSessionExpired] = useState(false)
   const eventFetchStarted = useRef(false)
   const canAccessAdminRoutes = hasAdminAccess(user)
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      dispatch(logout())
+      setSessionExpired(true)
+    }
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired)
+  }, [dispatch])
+
+  const moveToLogin = () => {
+    setSessionExpired(false)
+    navigate('/login', { replace: true })
+  }
 
   useEffect(() => {
     const language = getUserLanguage(user?.username)
@@ -77,10 +98,20 @@ export function AppRoutes() {
 
   if (!isAuthenticated) {
     return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+        <Modal isOpen={sessionExpired} title={t('sessionExpired.title')} onClose={moveToLogin} className="max-w-md">
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{t('sessionExpired.message')}</p>
+          <div className="mt-6 flex justify-end">
+            <button type="button" onClick={moveToLogin} className="bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+              {t('sessionExpired.confirm')}
+            </button>
+          </div>
+        </Modal>
+      </>
     )
   }
 

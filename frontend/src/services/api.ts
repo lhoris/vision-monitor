@@ -8,6 +8,7 @@ import type { ApiResponse, ApiError } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 const REQUEST_TIMEOUT = 30000
+export const SESSION_EXPIRED_EVENT = 'vision-monitor:session-expired'
 
 export function shouldHandleSessionExpiry(requestUrl: string, status: number | undefined, alreadyHandled: boolean): boolean {
   return status === 401
@@ -55,7 +56,12 @@ class ApiClient {
 
     // Response interceptor
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        if (response.config.url?.includes('/auth/login')) {
+          this.sessionExpiryHandled = false
+        }
+        return response
+      },
       (error: AxiosError) => {
         const requestUrl = error.config?.url ?? ''
         if (shouldHandleSessionExpiry(requestUrl, error.response?.status, this.sessionExpiryHandled)) {
@@ -63,7 +69,7 @@ class ApiClient {
           localStorage.removeItem('authToken')
           localStorage.removeItem('authUsername')
           localStorage.removeItem('authUser')
-          window.location.href = '/login'
+          window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT))
         }
         return Promise.reject(error)
       }

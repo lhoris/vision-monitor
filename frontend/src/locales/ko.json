@@ -1,4 +1,9 @@
 {
+  "sessionExpired": {
+    "title": "세션 만료",
+    "message": "로그인 세션이 만료되었습니다. 다시 로그인해 주세요.",
+    "confirm": "로그인 화면으로 이동"
+  },
   "common": {
     "save": "저장",
     "cancel": "취소",
