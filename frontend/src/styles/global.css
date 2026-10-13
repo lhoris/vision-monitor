@@ -395,10 +395,6 @@ html[data-theme='theme3'] .camera-rename-dialog {
 .focus-mode-tab,
 .focus-secondary-button,
 .focus-action-button {
-  min-height: 2.5rem;
-  padding: 0.625rem 1rem;
-  border-radius: 0.5rem;
-  line-height: 1.25;
   transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
