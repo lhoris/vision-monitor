@@ -50,6 +50,54 @@ export function getCellCoordinates(cellIndex: number, colsPerRow: number): CellC
   }
 }
 
+export type CameraMoveFailureReason =
+  | 'merged-source-target'
+  | 'merged-target'
+  | 'occupied-target'
+  | 'out-of-bounds'
+  | 'overlapping-target'
+
+export function getCameraMoveFailureReason(
+  positions: CameraPosition[],
+  cameraId: number,
+  targetCellIndex: number,
+  colsPerRow: number,
+  rowsPerGrid = Number.POSITIVE_INFINITY
+): CameraMoveFailureReason | null {
+  const target = getCellCoordinates(targetCellIndex, colsPerRow)
+  const draggedCameraPosition = positions.find((position) => position.cameraId === cameraId)
+  if (!draggedCameraPosition) return null
+
+  const targetCameraPosition = positions.find(
+    (position) =>
+      position.row === target.row &&
+      position.col === target.col &&
+      position.cameraId !== cameraId
+  )
+  const draggedRowSpan = draggedCameraPosition.rowSpan || 1
+  const draggedColSpan = draggedCameraPosition.colSpan || 1
+  const shouldUnmerge = !targetCameraPosition && (draggedRowSpan > 1 || draggedColSpan > 1)
+  const nextRowSpan = shouldUnmerge ? 1 : draggedRowSpan
+  const nextColSpan = shouldUnmerge ? 1 : draggedColSpan
+
+  if (targetCameraPosition) {
+    if (draggedRowSpan !== 1 || draggedColSpan !== 1) return 'merged-source-target'
+    if ((targetCameraPosition.rowSpan || 1) !== 1 || (targetCameraPosition.colSpan || 1) !== 1) return 'merged-target'
+    return null
+  }
+
+  if (target.row >= rowsPerGrid || target.col >= colsPerRow) return 'out-of-bounds'
+
+  const overlaps = positions.some((position) => {
+    if (position.cameraId === cameraId) return false
+    return target.row < position.row + (position.rowSpan || 1) &&
+      target.row + nextRowSpan > position.row &&
+      target.col < position.col + (position.colSpan || 1) &&
+      target.col + nextColSpan > position.col
+  })
+  return overlaps ? 'overlapping-target' : null
+}
+
 export function moveCameraPosition(
   positions: CameraPosition[],
   cameraId: number,
@@ -73,28 +121,24 @@ export function moveCameraPosition(
 
   const draggedRowSpan = draggedCameraPosition.rowSpan || 1
   const draggedColSpan = draggedCameraPosition.colSpan || 1
-  if (targetCameraPosition) {
-    if (draggedRowSpan !== 1 || draggedColSpan !== 1 ||
-      (targetCameraPosition.rowSpan || 1) !== 1 || (targetCameraPosition.colSpan || 1) !== 1) {
-      return positions
-    }
-  } else {
-    if (target.row + draggedRowSpan > rowsPerGrid || target.col + draggedColSpan > colsPerRow) {
-      return positions
-    }
-    const overlaps = positions.some((position) => {
-      if (position.cameraId === cameraId) return false
-      return target.row < position.row + (position.rowSpan || 1) &&
-        target.row + draggedRowSpan > position.row &&
-        target.col < position.col + (position.colSpan || 1) &&
-        target.col + draggedColSpan > position.col
-    })
-    if (overlaps) return positions
-  }
+  const failureReason = getCameraMoveFailureReason(
+    positions,
+    cameraId,
+    targetCellIndex,
+    colsPerRow,
+    rowsPerGrid
+  )
+  if (failureReason) return positions
+  const shouldUnmerge = !targetCameraPosition && (draggedRowSpan > 1 || draggedColSpan > 1)
 
   return positions.map((position) => {
     if (position.cameraId === cameraId) {
-      return { ...position, row: target.row, col: target.col }
+      return {
+        ...position,
+        row: target.row,
+        col: target.col,
+        ...(shouldUnmerge ? { rowSpan: 1, colSpan: 1 } : {}),
+      }
     }
 
     if (targetCameraPosition && position.cameraId === targetCameraPosition.cameraId) {

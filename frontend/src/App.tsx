@@ -84,6 +84,14 @@ export function AppRoutes() {
     )
   }
 
+  if (sessionStatus !== 'valid') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-sm text-gray-500 dark:bg-gray-900 dark:text-gray-300">
+        세션을 확인하는 중입니다.
+      </div>
+    )
+  }
+
   return (
     <Routes>
       <Route

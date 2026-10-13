@@ -12,6 +12,12 @@
     padding: 0;
     box-sizing: border-box;
   }
+
+  button:not(:disabled),
+  a,
+  [role='button'] {
+    cursor: pointer;
+  }
 }
 
 html,

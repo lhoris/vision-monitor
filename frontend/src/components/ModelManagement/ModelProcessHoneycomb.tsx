@@ -20,7 +20,7 @@ interface ModelProcessHoneycombProps {
 interface AxialCoordinate { q: number; r: number }
 
 const groupColors: Record<GroupTone, string> = { sky: '#0ea5e9', emerald: '#10b981', amber: '#f59e0b', violet: '#8b5cf6' }
-const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#b91c1c', restarting: '#b45309', error: '#881337', unknown: '#b45309' }
+const statusBadgeColors: Record<string, string> = { running: '#047857', stopped: '#b91c1c', starting: '#0369a1', stopping: '#b91c1c', restarting: '#b45309', error: '#881337', crashed: '#881337', unknown: '#b45309' }
 
 function axialDistance({ q, r }: AxialCoordinate) { return Math.max(Math.abs(q), Math.abs(r), Math.abs(-q - r)) }
 
@@ -102,7 +102,7 @@ export function ModelProcessHoneycomb({ processes, selectedProcessId, controlDia
       const selected = process.id === selectedProcessId
       const modelLabel = shortenLabel(process.modelName, 11)
       const processLabel = shortenLabel(process.processName, 10)
-      const statusLabel = processStatusLabel[process.processStatus]
+      const statusLabel = processStatusLabel[process.processStatus] ?? processStatusLabel.unknown
       const statusBadgeWidth = Math.max(48, statusLabel.length * 7 + 16)
       const selectWithClickGuard = () => { if (clickTimer.current) window.clearTimeout(clickTimer.current); clickTimer.current = window.setTimeout(() => { onSelect(process); clickTimer.current = null }, 220) }
       const openControlDialog = () => { if (clickTimer.current) window.clearTimeout(clickTimer.current); clickTimer.current = null; setTooltipSuppressed(true); setHoveredProcess(null); onDoubleSelect?.(process) }

@@ -20,10 +20,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class ModelProcessService {
+    private static final Pattern IPV4_PATTERN = Pattern.compile(
+            "^(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d{2}|[1-9]?\\d)){3}$");
+
     private final ModelProcessRepository repository;
     private final ModelCommandRepository commandRepository;
 
@@ -139,6 +143,7 @@ public class ModelProcessService {
         item.put("modelName", row.get("modelName"));
         item.put("automationName", row.get("automationName"));
         item.put("serverIp", row.get("serverIp"));
+        item.put("agentId", row.get("agentId"));
         item.put("pythonProjectPath", row.get("pythonProjectPath"));
         item.put("processStatus", lower((String) row.get("processStatus"), "unknown"));
         item.put("controlStatus", lower((String) row.get("controlStatus"), "unknown"));
@@ -164,6 +169,21 @@ public class ModelProcessService {
         if (elapsedSeconds > monitoringStatusTimeoutSeconds) return "failed";
         return lower(storedStatus, "unknown");
     }
-    private void validate(String processId, String modelName, String automationName, String serverIp, String path) { if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId) || modelName == null || modelName.isBlank() || automationName == null || automationName.isBlank()) throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required"); validateIpAndPath(serverIp, path); }
-    private void validateIpAndPath(String serverIp, String path) { if (serverIp == null || !serverIp.matches("^((25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)\\.){3}(25[0-5]|(2[0-4]|1\\d|[1-9]?\\d)))$") || path == null || path.isBlank()) throw new ApiException("VALIDATION_ERROR", "A valid server IP and Python project path are required"); }
+    private void validate(String processId, String modelName, String automationName, String serverIp, String path) {
+        if (processId == null || processId.isBlank() || "all".equalsIgnoreCase(processId)
+                || modelName == null || modelName.isBlank()
+                || automationName == null || automationName.isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "Process area, model name, and automation name are required");
+        }
+        validateIpAndPath(serverIp, path);
+    }
+
+    private void validateIpAndPath(String serverIp, String path) {
+        String normalizedIp = serverIp == null ? "" : serverIp.trim();
+        String normalizedPath = path == null ? "" : path.trim();
+        if (!IPV4_PATTERN.matcher(normalizedIp).matches() || normalizedPath.isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "A valid server IP and Python project path are required");
+        }
+    }
+
 }

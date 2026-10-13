@@ -25,6 +25,18 @@ describe('grid position helpers', () => {
     ])
   })
 
+  it('unmerges a spanning camera when moving it to an empty cell', () => {
+    const mergedPositions: CameraPosition[] = [
+      { cameraId: 1, row: 0, col: 0, rowSpan: 2, colSpan: 2 },
+      { cameraId: 2, row: 0, col: 2, rowSpan: 1, colSpan: 1 },
+    ]
+
+    expect(moveCameraPosition(mergedPositions, 1, 5, 3, 3)).toEqual([
+      { cameraId: 1, row: 1, col: 2, rowSpan: 1, colSpan: 1 },
+      { cameraId: 2, row: 0, col: 2, rowSpan: 1, colSpan: 1 },
+    ])
+  })
+
   it('swaps cameras when dropping on an occupied cell', () => {
     expect(moveCameraPosition(positions, 1, 1, 3)).toEqual([
       { cameraId: 1, row: 0, col: 1, rowSpan: 1, colSpan: 1 },

@@ -18,7 +18,7 @@
     "roles": { "admin": "Administrator", "manager": "Manager", "user": "User" },
     "profile": {
       "title": "My Profile", "subtitle": "Manage your account information and password.", "accountInfo": "Account Information",
-      "loginId": "Login ID", "name": "Name", "role": "Role", "userNumber": "User Number",
+      "loginId": "Login ID", "name": "Name", "role": "Role", "userNumber": "User Number", "email": "Email", "phone": "Phone",
       "notRegistered": "Not provided", "contactAdmin": "Contact an administrator to update your name or contact information.",
       "loadError": "Unable to load profile information.", "changePassword": "Change Password",
       "passwordHint": "Verify your current password, then enter a new password of at least 8 characters.",
@@ -120,7 +120,13 @@
       "rows": "rows",
       "columns": "cols",
       "overlappingVideosRemoved": "Videos covered by this area will be removed from this layout.",
-      "playerSizeUnavailable": "The selected player size could not be applied."
+      "playerSizeUnavailable": "The selected player size could not be applied.",
+      "moveBlockedTitle": "Video cannot be moved",
+      "moveBlockedMergedSourceTarget": "A merged video cannot move onto another video.\nMove it to an empty cell to unmerge it.",
+      "moveBlockedMergedTarget": "A cell occupied by a merged video cannot be used as a drop target.",
+      "moveBlockedOccupiedTarget": "The selected cell is occupied by another video.",
+      "moveBlockedOutOfBounds": "The selected position is outside the layout.",
+      "moveBlockedOverlappingTarget": "Another video area overlaps the selected position."
     },
     "addCameraDialog": {
       "title": "Add Video",

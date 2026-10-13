@@ -1,4 +1,4 @@
-export type ProcessStatus = 'running' | 'stopped' | 'starting' | 'stopping' | 'error' | 'restarting' | 'unknown'
+export type ProcessStatus = 'running' | 'stopped' | 'starting' | 'stopping' | 'error' | 'crashed' | 'restarting' | 'unknown'
 export type LinkStatus = 'normal' | 'failed' | 'checking' | 'unknown'
 export type ModelControlAction = 'start' | 'stop' | 'restart'
 export type VmConnectionStatus = 'connected' | 'disconnected' | 'checking' | 'unknown'
@@ -18,6 +18,7 @@ export interface ModelProcess {
   modelName: string
   automationName: string
   serverIp: string
+  agentId?: string
   pythonProjectPath: string
   processStatus: ProcessStatus
   monitoringStatus: LinkStatus

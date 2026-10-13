@@ -32,6 +32,9 @@ spring:
     show-sql: false
     open-in-view: false
 
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+
 vision:
   model-monitoring:
     status-timeout-seconds: 30

@@ -96,7 +96,7 @@ html.dark .layout-persist-toast--restoreFailed {
   border: 1.5px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  animation: persist-spinner 700ms linear infinite;
+  animation: persist-spinner 1000ms linear infinite;
 }
 
 .layout-persist-toast__copy {
@@ -122,6 +122,22 @@ html.dark .layout-persist-toast--restoreFailed {
   white-space: nowrap;
 }
 
+.grid-move-toast {
+  width: fit-content;
+  max-width: min(30rem, calc(100% - 2rem));
+  animation: grid-move-toast-in 310ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.grid-move-toast .layout-persist-toast__copy > span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: pre-line;
+}
+
+.grid-move-toast--exit {
+  animation: grid-move-toast-out 265ms ease-in both;
+}
+
 .layout-persist-toast__progress {
   position: absolute;
   right: 0;
@@ -138,6 +154,16 @@ html.dark .layout-persist-toast--restoreFailed {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes grid-move-toast-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(12px) scale(0.98); }
+}
+
+@keyframes grid-move-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @keyframes persist-spinner {
   to { transform: rotate(360deg); }
 }
@@ -148,8 +174,19 @@ html.dark .layout-persist-toast--restoreFailed {
 
 @media (prefers-reduced-motion: reduce) {
   .layout-persist-toast,
-  .layout-persist-toast__spinner,
   .layout-persist-toast__progress {
     animation-duration: 0.01ms;
+  }
+
+  .layout-persist-toast__spinner {
+    animation: persist-spinner 1000ms linear infinite;
+  }
+
+  .grid-move-toast {
+    animation-duration: 310ms;
+  }
+
+  .grid-move-toast--exit {
+    animation-duration: 265ms;
   }
 }

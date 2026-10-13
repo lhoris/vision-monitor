@@ -18,7 +18,7 @@
     "roles": { "admin": "최고 관리자", "manager": "관리자", "user": "사용자" },
     "profile": {
       "title": "내 프로필", "subtitle": "계정 정보와 비밀번호를 관리합니다.", "accountInfo": "계정 정보",
-      "loginId": "로그인 ID", "name": "이름", "role": "권한", "userNumber": "사용자 번호",
+      "loginId": "로그인 ID", "name": "이름", "role": "권한", "userNumber": "사용자 번호", "email": "이메일", "phone": "연락처",
       "notRegistered": "등록되지 않음", "contactAdmin": "이름 및 연락처 변경은 관리자에게 문의하세요.",
       "loadError": "프로필 정보를 불러오지 못했습니다.", "changePassword": "비밀번호 변경",
       "passwordHint": "현재 비밀번호를 확인한 후 새 비밀번호를 설정합니다. 8자 이상 입력하세요.",
@@ -120,7 +120,13 @@
       "rows": "행",
       "columns": "열",
       "overlappingVideosRemoved": "영역에 겹치는 영상은 이 레이아웃에서 제거됩니다.",
-      "playerSizeUnavailable": "선택한 플레이어 크기를 적용할 수 없습니다."
+      "playerSizeUnavailable": "선택한 플레이어 크기를 적용할 수 없습니다.",
+      "moveBlockedTitle": "영상을 이동할 수 없습니다",
+      "moveBlockedMergedSourceTarget": "병합된 영상은 다른 영상이 있는 칸으로 이동할 수 없습니다.\n빈 칸으로 이동하면 병합이 해제됩니다.",
+      "moveBlockedMergedTarget": "병합된 영상이 배치된 칸으로는 이동할 수 없습니다.",
+      "moveBlockedOccupiedTarget": "선택한 칸에 다른 영상이 있어 이동할 수 없습니다.",
+      "moveBlockedOutOfBounds": "선택한 위치가 레이아웃 범위를 벗어났습니다.",
+      "moveBlockedOverlappingTarget": "선택한 위치에 다른 영상 영역이 겹칩니다."
     },
     "addCameraDialog": {
       "title": "영상 추가",

@@ -1,6 +1,6 @@
 import type { ControlRequestStatus, LinkStatus, ProcessStatus, VmConnectionStatus } from '@/types/modelManagement'
 
-export const processStatusLabel: Record<ProcessStatus, string> = { running: '실행 중', stopped: '중지', starting: '시작 중', stopping: '중지 중', error: '오류', restarting: '재시작 중', unknown: '확인 필요' }
+export const processStatusLabel: Record<ProcessStatus, string> = { running: '실행 중', stopped: '중지', starting: '시작 중', stopping: '중지 중', error: '오류', crashed: '오류', restarting: '재시작 중', unknown: '확인 필요' }
 export const linkStatusLabel: Record<LinkStatus, string> = { normal: '정상', failed: '실패', checking: '확인 중', unknown: '미수신' }
 export const vmStatusLabel: Record<VmConnectionStatus, string> = { connected: '연결됨', disconnected: '연결 끊김', checking: '확인 중', unknown: '확인 필요' }
 export const controlRequestStatusLabel: Record<ControlRequestStatus, string> = { requested: '요청됨', processing: '처리 중', running: '처리 중', succeeded: '완료', failed: '실패', timeout: '시간 초과' }

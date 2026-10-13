@@ -85,7 +85,9 @@ export function ModelManagement() {
     setBusyIds((current) => new Set(current).add(process.id))
     try {
       const updated = await controlProcess(process.id, action)
-      setProcesses((current) => current.map((item) => item.id === updated.id ? updated : item))
+      setProcesses((current) => current.map((item) => item.id === updated.id
+        ? { ...updated, controlRequestStatus: 'requested' }
+        : item))
       setNotice(`${process.modelName} 프로세스를 ${actionLabel} 요청했습니다.`)
     } catch (controlError) {
       setError(controlError instanceof Error ? controlError.message : '프로세스 조작에 실패했습니다.')

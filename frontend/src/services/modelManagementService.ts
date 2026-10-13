@@ -10,9 +10,11 @@ export class ModelManagementError extends Error {
 
 interface ModelProcessResponse { processes: ModelProcess[]; processAreas: ProcessArea[] }
 
+const IPV4_PATTERN = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/
+
 function validateSettings(input: ModelSettingsInput) {
   if (!input.serverIp.trim() || !input.pythonProjectPath.trim()) throw new ModelManagementError('VALIDATION_ERROR', '서버 IP와 Python 프로젝트 경로를 입력해 주세요.')
-  if (!/^((25[0-5]|(2[0-4]|1\d|[1-9]?\d)\.){3}(25[0-5]|(2[0-4]|1\d|[1-9]?\d)))$/.test(input.serverIp.trim())) throw new ModelManagementError('VALIDATION_ERROR', '서버 IP 형식이 올바르지 않습니다.')
+  if (!IPV4_PATTERN.test(input.serverIp.trim())) throw new ModelManagementError('VALIDATION_ERROR', '서버 IP 형식이 올바르지 않습니다.')
 }
 
 export async function listProcesses(processAreas?: string[]): Promise<ModelProcessResponse> {

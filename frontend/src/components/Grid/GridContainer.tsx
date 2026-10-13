@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import {
   setActiveTab,
@@ -25,6 +26,7 @@ import DraggableCell from './DraggableCell'
 import AddCameraDialog from './AddCameraDialog'
 import { useGridLayout } from './useGridLayout'
 import {
+  getCameraMoveFailureReason,
   moveCameraPosition,
   placeCameraAtCell,
   removeCameraPosition,
@@ -67,6 +69,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   cameras = [],
   videoSources = [],
 }) => {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const layout = useAppSelector((state) => state.layout.layout)
@@ -85,6 +88,24 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
   const [editingTemporaryId, setEditingTemporaryId] = useState<number | null>(null)
   const [temporaryPlaybackStatuses, setTemporaryPlaybackStatuses] = useState<Record<number, PlayerState>>({})
+  const [moveNotice, setMoveNotice] = useState<string | null>(null)
+  const [isMoveNoticeClosing, setIsMoveNoticeClosing] = useState(false)
+
+  useEffect(() => {
+    if (!moveNotice) return undefined
+
+    const exitDuration = 265
+    const visibleDuration = Math.min(7000, Math.max(3000, 1800 + moveNotice.length * 55))
+    const closeTimeout = window.setTimeout(
+      () => setIsMoveNoticeClosing(true),
+      visibleDuration - exitDuration
+    )
+    const removeTimeout = window.setTimeout(() => setMoveNotice(null), visibleDuration)
+    return () => {
+      window.clearTimeout(closeTimeout)
+      window.clearTimeout(removeTimeout)
+    }
+  }, [moveNotice])
   const temporaryIdRef = useRef(-1)
 
   useEffect(() => {
@@ -127,6 +148,27 @@ export const GridContainer: React.FC<GridContainerProps> = ({
 
   const handleDrop = (cellIndex: number) => {
     if (!draggedCameraId || !activeSubTab) return
+
+    const failureReason = getCameraMoveFailureReason(
+      activeSubTab.cameraPositions,
+      draggedCameraId,
+      cellIndex,
+      activeSubTab.gridConfig.cols,
+      activeSubTab.gridConfig.rows
+    )
+    if (failureReason) {
+      const noticeKey = {
+        'merged-source-target': 'live.contextMenu.moveBlockedMergedSourceTarget',
+        'merged-target': 'live.contextMenu.moveBlockedMergedTarget',
+        'occupied-target': 'live.contextMenu.moveBlockedOccupiedTarget',
+        'out-of-bounds': 'live.contextMenu.moveBlockedOutOfBounds',
+        'overlapping-target': 'live.contextMenu.moveBlockedOverlappingTarget',
+      }[failureReason]
+      setIsMoveNoticeClosing(false)
+      setMoveNotice(t(noticeKey))
+      setDraggedCameraId(null)
+      return
+    }
 
     updateActiveSubTabPositions(
       moveCameraPosition(
@@ -382,7 +424,23 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   }).filter((cell): cell is NonNullable<typeof cell> => cell !== null)
 
   return (
-    <div className="flex min-h-0 h-full flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="relative flex min-h-0 h-full flex-col bg-gray-50 dark:bg-gray-900">
+      {moveNotice && (
+        <div
+          className={`layout-persist-toast grid-move-toast layout-persist-toast--saveFailed ${isMoveNoticeClosing ? 'grid-move-toast--exit' : ''}`}
+          style={{ bottom: '5.5rem' }}
+          role="alert"
+          aria-live="assertive"
+        >
+          <span className="layout-persist-toast__icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M10 6.2v4.3m0 3.1h.01M10 2.7a7.3 7.3 0 1 0 0 14.6 7.3 7.3 0 0 0 0-14.6Z" /></svg>
+          </span>
+          <span className="layout-persist-toast__copy">
+            <strong>{t('live.contextMenu.moveBlockedTitle')}</strong>
+            <span>{moveNotice}</span>
+          </span>
+        </div>
+      )}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <TabsBar
           tabs={layout.tabs}

@@ -185,6 +185,26 @@ describe('DraggableCell focus action', () => {
     expect(onAddCamera).toHaveBeenCalledTimes(1)
   })
 
+  it('accepts a dragged camera on an empty cell', () => {
+    const onDrop = vi.fn()
+
+    render(
+      <DraggableCell
+        cellId="cell-3"
+        index={3}
+        onAddCamera={vi.fn()}
+        onRemoveCamera={vi.fn()}
+        onDrop={onDrop}
+      />
+    )
+
+    const emptyCell = screen.getByRole('button', { name: 'Add Video' })
+    fireEvent.dragOver(emptyCell)
+    fireEvent.drop(emptyCell)
+
+    expect(onDrop).toHaveBeenCalledWith(3)
+  })
+
   it('selects a player span from a hoverable cell picker', () => {
     const onResize = vi.fn(() => true)
     render(

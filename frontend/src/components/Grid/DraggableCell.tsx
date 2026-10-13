@@ -171,21 +171,21 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       <div
         draggable
         onDragStart={handleDragStart}
-            className="camera-tile-header flex h-10 shrink-0 cursor-move items-center justify-between gap-3 border-b px-5 pr-6"
+            className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
       >
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2">
           <span
             className={`h-3 w-3 shrink-0 rounded-full ${getStatusDotClass(effectiveCamera.status)}`}
             aria-label={`Status: ${effectiveCamera.status}`}
           />
           <div className="min-w-0">
-            <h3 className="camera-tile-header__title truncate text-sm font-semibold leading-tight">{displayName}</h3>
+            <h3 className="camera-tile-header__title truncate text-base font-medium leading-none">{displayName}</h3>
           </div>
         </div>
         <button
           type="button"
           onClick={handleFocusClick}
-          className="mr-1 shrink-0 flex items-center justify-center rounded border border-sky-400 bg-sky-100 p-1.5 text-slate-950 opacity-0 transition-all duration-150 hover:border-sky-500 hover:bg-white focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:border-sky-500/50 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/60"
+          className="shrink-0 flex items-center justify-center p-1.5 rounded border border-sky-400 bg-sky-100 text-slate-950 opacity-0 transition-all duration-150 hover:bg-white hover:border-sky-500 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-sky-300 group-hover:opacity-100 dark:bg-sky-950/40 dark:border-sky-500/50 dark:text-sky-300 dark:hover:bg-sky-900/60"
           aria-label={`${displayName} 확대 보기`}
           title="확대 보기"
         >
@@ -197,7 +197,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="h-5 w-5"
+            className="h-3.5 w-3.5"
           >
             <circle cx="8.5" cy="8.5" r="5.5" />
             <line x1="13" y1="13" x2="18" y2="18" />
@@ -348,7 +348,14 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       data-testid="add-camera-tile"
       style={style}
       onClick={onAddCamera}
-      className="relative flex h-full min-h-0 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-dashed border-gray-600 bg-gray-900 transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`relative flex h-full min-h-0 w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border-2 border-dashed transition-all hover:border-blue-400 hover:bg-gray-800 hover:shadow-md active:scale-98 dark:hover:border-blue-500 dark:hover:bg-gray-700 ${
+        isDragOver
+          ? 'border-blue-400 bg-blue-950/60 shadow-xl dark:border-blue-400 dark:bg-blue-950/60'
+          : 'border-gray-600 bg-gray-900 dark:border-gray-600 dark:bg-gray-800'
+      }`}
       title={t('live.clickToAddVideo')}
       aria-label={t('live.addVideo')}
     >

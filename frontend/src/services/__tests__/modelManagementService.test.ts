@@ -45,6 +45,20 @@ describe('modelManagementService', () => {
     expect(created.processStatus).toBe('unknown')
   })
 
+  it('accepts valid IPv4 addresses with three-digit octets', async () => {
+    vi.mocked(apiClient.post).mockResolvedValue({ data: { ...process, id: 'model-006' } })
+
+    await createProcess({
+      processId: 'heating',
+      modelName: 'Local test model',
+      automationName: 'Test automation',
+      serverIp: '192.168.0.7',
+      pythonProjectPath: 'C:\\workspace\\local-test\\python-process',
+    })
+
+    expect(apiClient.post).toHaveBeenCalledWith('/model-processes', expect.objectContaining({ serverIp: '192.168.0.7' }))
+  })
+
   it('surfaces missing model responses instead of returning an empty process', async () => {
     vi.mocked(apiClient.put).mockResolvedValue({ success: true, timestamp: '2026-10-06T00:00:00Z' })
     await expect(updateSettings('model-001', { serverIp: '10.20.4.99', pythonProjectPath: '/opt/new/model' }))
