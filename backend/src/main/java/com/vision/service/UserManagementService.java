@@ -126,9 +126,9 @@ public class UserManagementService {
                 .accountStatus(normalizeAccountStatus(request.accountStatus()))
                 .employmentStatus(normalizeEmploymentStatus(request.employmentStatus()))
                 .enabled(isEnabled(request.accountStatus(), request.employmentStatus()))
-                .createdBy(actor.getUsername())
-                .updatedBy(actor.getUsername())
                 .build();
+        user.setCreatedBy(actor.getUsername());
+        user.setUpdatedBy(actor.getUsername());
         if (Boolean.TRUE.equals(request.resetPassword())) {
             user.setPasswordHash(defaultPasswordHash(user.getUsername()));
         }
@@ -374,7 +374,6 @@ public class UserManagementService {
                         .userId(user.getId())
                         .authId(auth.getId())
                         .grantStartDate("20260101")
-                        .dataEndStatus("N")
                         .build()
         ));
     }

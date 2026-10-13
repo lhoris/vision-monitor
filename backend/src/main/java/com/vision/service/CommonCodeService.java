@@ -77,7 +77,7 @@ public class CommonCodeService {
         String name = normalizeName(request.getName());
         if (codeRepository.existsByNameIgnoreCase(name)) throw new ApiException("DUPLICATE_CODE", "이미 등록된 공통코드입니다.");
         Code saved = codeRepository.save(Code.builder().name(name).description(trimOrNull(request.getDescription()))
-                .type(trimOrNull(request.getType())).remarks(trimOrNull(request.getRemarks())).dataEndStatus(ACTIVE).build());
+                .type(trimOrNull(request.getType())).remarks(trimOrNull(request.getRemarks())).build());
         return toAdminDto(saved);
     }
 
@@ -114,7 +114,7 @@ public class CommonCodeService {
         CodeDetail saved = detailRepository.save(CodeDetail.builder().codeId(codeId).value(value).name(resolveDisplayName(request))
                 .nameKo(trimOrNull(request.getNameKo())).nameEn(trimOrNull(request.getNameEn()))
                 .description(trimOrNull(request.getDescription())).sortOrder(request.getSortOrder() == null ? 0 : request.getSortOrder())
-                .defaultValue(trimOrNull(request.getDefaultValue())).remarks(trimOrNull(request.getRemarks())).dataEndStatus(ACTIVE).build());
+                .defaultValue(trimOrNull(request.getDefaultValue())).remarks(trimOrNull(request.getRemarks())).build());
         return CommonCodeDetailDto.from(saved);
     }
 

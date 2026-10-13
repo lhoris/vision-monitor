@@ -7,19 +7,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import com.vision.entity.audit.BaseAudit;
 
 @Entity
 @Table(name = "TB_M26_VIDEO_SOURCE")
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VideoSource {
+public class VideoSource extends BaseAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "VIDEO_SOURCE_ID")
@@ -43,15 +43,6 @@ public class VideoSource {
     @Column(name = "STATUS", length = 20)
     private String status;
 
-    @Column(name = "DATA_END_STATUS", length = 1)
-    private String dataEndStatus;
-
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
-
-    @Column(name = "CREATED_TIMESTAMP")
-    private LocalDateTime createdAt;
-
-    @Column(name = "LAST_UPDATED_TIMESTAMP")
-    private LocalDateTime updatedAt;
 }

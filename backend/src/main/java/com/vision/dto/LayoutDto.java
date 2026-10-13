@@ -81,8 +81,6 @@ public class LayoutDto {
                 .tabs(writeJson(this.tabs))
                 .activeTab(this.activeTab)
                 .personalData(writeJson(toPersonalData()))
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
                 .build();
     }
 

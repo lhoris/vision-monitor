@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.vision.entity.audit.BaseAudit;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AuthSession {
+public class AuthSession extends BaseAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AUTH_SESSION_ID")
@@ -41,42 +42,4 @@ public class AuthSession {
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
 
-    @Column(name = "CREATED_OBJECT_TYPE", length = 1)
-    private String createdObjectType = "U";
-
-    @Column(name = "CREATED_OBJECT_ID", length = 22)
-    private String createdObjectId;
-
-    @Column(name = "CREATED_PROGRAM_ID", length = 22)
-    private String createdProgramId = "AUTH_SESSION";
-
-    @Column(name = "CREATED_TIMESTAMP")
-    private LocalDateTime createdTimestamp;
-
-    @Column(name = "LAST_UPDATED_OBJECT_TYPE", length = 1)
-    private String updatedObjectType = "U";
-
-    @Column(name = "LAST_UPDATED_OBJECT_ID", length = 22)
-    private String updatedObjectId;
-
-    @Column(name = "LAST_UPDATED_PROGRAM_ID", length = 22)
-    private String updatedProgramId = "AUTH_SESSION";
-
-    @Column(name = "LAST_UPDATED_TIMESTAMP")
-    private LocalDateTime updatedTimestamp;
-
-    @Column(name = "DATA_END_STATUS", length = 1)
-    private String dataEndStatus = "N";
-
-    @Column(name = "DATA_END_OBJECT_TYPE", length = 1)
-    private String dataEndObjectType;
-
-    @Column(name = "DATA_END_OBJECT_ID", length = 22)
-    private String dataEndObjectId;
-
-    @Column(name = "DATA_END_PROGRAM_ID", length = 22)
-    private String dataEndProgramId;
-
-    @Column(name = "DATA_END_TIMESTAMP")
-    private LocalDateTime dataEndTimestamp;
 }

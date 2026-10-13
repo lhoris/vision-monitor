@@ -2,6 +2,7 @@ package com.vision.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vision.dto.AuthenticatedUserDto;
+import com.vision.entity.audit.AuditContext;
 import com.vision.service.AuthSessionService;
 import com.vision.util.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +46,13 @@ public class AuthSessionInterceptor implements HandlerInterceptor {
         }
 
         request.setAttribute(AUTHENTICATED_USER_ATTRIBUTE, user.get());
+        AuditContext.setActor(user.get().username());
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        AuditContext.clear();
     }
     private String extractBearerToken(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) return null;

@@ -9,17 +9,18 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import com.vision.entity.audit.BaseAudit;
 
 @Entity
 @Table(name = "TB_M26_USER_PERSONAL")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class UserPersonal {
+@SuperBuilder
+public class UserPersonal extends BaseAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +41,4 @@ public class UserPersonal {
     @Column(name = "SORT_ORDER")
     private Integer sortOrder;
 
-    @Column(name = "DATA_END_STATUS", length = 1)
-    @Builder.Default
-    private String dataEndStatus = "N";
 }

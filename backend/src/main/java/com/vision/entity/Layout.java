@@ -2,11 +2,11 @@ package com.vision.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import com.vision.entity.audit.BaseAudit;
 
 /**
  * Layout Entity - 사용자 맞춤 카메라 그리드 레이아웃
@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Layout {
+@SuperBuilder
+public class Layout extends BaseAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,13 +49,5 @@ public class Layout {
 
     @Column(name = "SORT_ORDER")
     private Integer sortOrder;
-
-    @Transient
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Transient
-    @Builder.Default
-    private LocalDateTime updatedAt = LocalDateTime.now();
 
 }

@@ -28,7 +28,7 @@ public class VideoSourceDto {
         return VideoSource.builder()
                 .id(id).name(name).url(url).protocol(protocol)
                 .location(location).zone(zone).status(status).remarks(remarks)
-                .createdAt(createdAt).updatedAt(updatedAt).build();
+                .build();
     }
 
     public static VideoSourceDto from(VideoSource source) {

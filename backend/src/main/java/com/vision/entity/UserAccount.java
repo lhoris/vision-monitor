@@ -13,8 +13,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+import com.vision.entity.audit.BaseAudit;
 
 /** M26 사용자 마스터 TB_M26_USER 매핑. */
 @Entity
@@ -22,8 +24,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class UserAccount {
+@SuperBuilder
+public class UserAccount extends BaseAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,22 +51,6 @@ public class UserAccount {
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
 
-    @Column(name = "DATA_END_STATUS", length = 1)
-    @Builder.Default
-    private String dataEndStatus = "N";
-
-    @Column(name = "CREATED_TIMESTAMP")
-    private LocalDateTime createdTimestamp;
-
-    @Column(name = "CREATED_OBJECT_ID", length = 22)
-    private String createdBy;
-
-    @Column(name = "LAST_UPDATED_TIMESTAMP")
-    private LocalDateTime updatedTimestamp;
-
-    @Column(name = "LAST_UPDATED_OBJECT_ID", length = 22)
-    private String updatedBy;
-
     // Transitional API fields are intentionally not persisted in the new master table.
     @Transient private String displayName;
     @Transient private String department;
@@ -74,8 +60,6 @@ public class UserAccount {
     @Transient @Builder.Default private String accountStatus = "active";
     @Transient @Builder.Default private String employmentStatus = "employed";
     @Transient private LocalDateTime lastLoginAt;
-    @Transient private LocalDateTime createdAt;
-    @Transient private LocalDateTime updatedAt;
     @Transient private Long version;
     @Transient private LocalDateTime deletionRequestedAt;
     @Transient private String deletionRequestedBy;

@@ -2,11 +2,13 @@ package com.vision.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
+import com.vision.entity.audit.BaseAudit;
 
 @Entity
 @Table(name = "TB_M26_CODE_DETAIL")
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class CodeDetail {
+@Data @SuperBuilder @NoArgsConstructor @AllArgsConstructor
+public class CodeDetail extends BaseAudit {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CODE_DETAIL_ID") private Long id;
     @Column(name = "CODE_ID") private Long codeId;
@@ -18,5 +20,4 @@ public class CodeDetail {
     @Column(name = "SORT_ORDER") private Integer sortOrder;
     @Column(name = "DEFAULT_VALUE", length = 30) private String defaultValue;
     @Column(name = "REMARKS", length = 4000) private String remarks;
-    @Column(name = "DATA_END_STATUS", length = 1) @Builder.Default private String dataEndStatus = "N";
 }

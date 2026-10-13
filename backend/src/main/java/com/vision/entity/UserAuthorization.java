@@ -9,17 +9,18 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import com.vision.entity.audit.BaseAudit;
 
 @Entity
 @Table(name = "TB_M26_USER_AUTH")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class UserAuthorization {
+@SuperBuilder
+public class UserAuthorization extends BaseAudit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +42,4 @@ public class UserAuthorization {
     @Column(name = "GRANT_END_DT", length = 8)
     private String grantEndDate;
 
-    @Column(name = "DATA_END_STATUS", length = 1)
-    @Builder.Default
-    private String dataEndStatus = "N";
 }
