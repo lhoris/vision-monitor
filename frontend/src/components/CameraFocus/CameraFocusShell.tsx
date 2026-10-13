@@ -94,7 +94,7 @@ export function CameraFocusShell({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => onSelectCamera?.(cameraItem.id)}
-                  className={`focus-camera-tab min-w-28 border px-4 py-2 text-sm font-semibold ${
+              className={`focus-camera-tab min-w-28 border text-sm font-semibold ${
                     isSelected
                       ? 'focus-camera-tab--selected'
                       : 'focus-camera-tab--idle'
@@ -113,7 +113,7 @@ export function CameraFocusShell({
               role="tab"
               aria-selected={mode === 'live'}
               onClick={() => onModeChange?.('live')}
-              className={`focus-mode-tab border px-4 py-2 text-sm font-semibold ${
+              className={`focus-mode-tab border text-sm font-semibold ${
                 mode === 'live' ? 'focus-mode-tab--selected' : 'focus-mode-tab--idle'
               }`}
             >
@@ -124,7 +124,7 @@ export function CameraFocusShell({
               role="tab"
               aria-selected={mode === 'recording'}
               onClick={() => onModeChange?.('recording')}
-              className={`focus-mode-tab border px-4 py-2 text-sm font-semibold ${
+                className={`focus-mode-tab border text-sm font-semibold ${
                 mode === 'recording'
                   ? 'focus-mode-tab--selected'
                   : 'focus-mode-tab--idle'
@@ -137,7 +137,7 @@ export function CameraFocusShell({
             <button
               type="button"
               onClick={onBackToLive}
-              className="focus-secondary-button border px-3 py-1.5 text-sm font-semibold focus:outline-none focus:ring-2"
+              className="focus-secondary-button border text-sm font-semibold focus:outline-none focus:ring-2"
               title={backToLiveLabel}
               aria-label={backToLiveLabel}
             >
@@ -146,7 +146,7 @@ export function CameraFocusShell({
             <button
               type="button"
               onClick={() => setIsTestAlertDialogOpen(true)}
-              className="focus-action-button border px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2"
+              className="focus-action-button border text-sm font-semibold focus:outline-none focus:ring-2"
             >
               테스트 알람
             </button>

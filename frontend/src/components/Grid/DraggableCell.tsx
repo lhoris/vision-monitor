@@ -171,7 +171,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       <div
         draggable
         onDragStart={handleDragStart}
-            className="camera-tile-header flex h-10 shrink-0 cursor-move items-center justify-between gap-3 border-b px-4"
+            className="camera-tile-header flex h-10 shrink-0 cursor-move items-center justify-between gap-3 border-b px-5 pr-6"
       >
         <div className="flex min-w-0 items-center gap-2.5">
           <span
