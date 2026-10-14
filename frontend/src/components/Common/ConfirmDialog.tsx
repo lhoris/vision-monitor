@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export type ConfirmDialogVariant = 'default' | 'danger'
 
@@ -26,6 +26,23 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const cancelButtonRef = useRef<HTMLButtonElement>(null)
+  const [rendered, setRendered] = useState(isOpen)
+  const [phase, setPhase] = useState<'entering' | 'entered' | 'exiting'>(isOpen ? 'entering' : 'exiting')
+
+  useEffect(() => {
+    if (isOpen) {
+      setRendered(true)
+      setPhase('entering')
+      const frameId = window.requestAnimationFrame(() => setPhase('entered'))
+      return () => window.cancelAnimationFrame(frameId)
+    }
+
+    if (!rendered) return undefined
+
+    setPhase('exiting')
+    const timeoutId = window.setTimeout(() => setRendered(false), 200)
+    return () => window.clearTimeout(timeoutId)
+  }, [isOpen, rendered])
 
   useEffect(() => {
     if (!isOpen) return
@@ -37,12 +54,15 @@ export function ConfirmDialog({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [busy, isOpen, onCancel])
 
-  if (!isOpen) return null
+  if (!rendered) return null
+
+  const isVisible = phase === 'entered'
+  const isExiting = phase === 'exiting'
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 p-4" role="presentation">
+    <div className={`fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 p-4 transition-opacity duration-200 ${isExiting ? 'opacity-0' : 'opacity-100'}`} role="presentation">
       <button type="button" aria-label="확인창 닫기" className="absolute inset-0 cursor-default" onClick={() => { if (!busy) onCancel() }} />
-      <section role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message" className="relative w-full max-w-md border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+      <section role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message" className={`relative w-full max-w-md border border-slate-200 bg-white shadow-2xl transition duration-200 dark:border-slate-700 dark:bg-slate-800 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
         <div className="flex items-start gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-700">
           <span aria-hidden="true" className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${variant === 'danger' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-200' : 'bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-200'}`}>{variant === 'danger' ? '!' : '?'}</span>
           <div className="min-w-0"><h2 id="confirm-dialog-title" className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2><p id="confirm-dialog-message" className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{message}</p></div>
