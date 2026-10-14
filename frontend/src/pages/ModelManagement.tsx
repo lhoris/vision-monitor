@@ -124,6 +124,7 @@ export function ModelManagement() {
       setError(controlError instanceof Error ? controlError.message : '프로세스 조작에 실패했습니다.')
     } finally {
       setBusyIds((current) => { const next = new Set(current); next.delete(process.id); return next })
+      setError('')
     }
   }
 
@@ -213,7 +214,7 @@ export function ModelManagement() {
     {createAreaOpen && <ProcessAreaCreateDialog onClose={() => setCreateAreaOpen(false)} onSave={saveNewArea} />}
     <ConfirmDialog isOpen={Boolean(pendingAction)} title="프로세스 제어 확인" message={pendingAction ? `${pendingAction.process.modelName} 프로세스를 ${({ start: '시작', stop: '정지', restart: '재시작' }[pendingAction.action])} 요청하시겠습니까?` : ''} confirmLabel="요청" cancelLabel="취소" busy={false} onCancel={() => setPendingAction(null)} onConfirm={runControl} />
     <ConfirmDialog isOpen={Boolean(deleteTarget)} title="모델 삭제 확인" message={deleteTarget ? `'${deleteTarget.modelName}' 모델을 삭제할까요? 삭제 후에는 모델 관리 목록에서 제외됩니다.` : ''} confirmLabel="삭제" cancelLabel="취소" variant="danger" busy={deleting} onCancel={() => { if (!deleting) setDeleteTarget(null) }} onConfirm={runDelete} />
-    <ConfirmDialog isOpen={Boolean(controlErrorMessage)} title="프로세스 제어 요청 실패" message={controlErrorMessage} confirmLabel="확인" cancelLabel="닫기" variant="danger" onCancel={() => setControlErrorMessage('')} onConfirm={() => setControlErrorMessage('')} />
+    <ConfirmDialog isOpen={Boolean(controlErrorMessage)} title="프로세스 제어 요청 실패" message={controlErrorMessage} confirmLabel="확인" cancelLabel="닫기" variant="danger" onCancel={() => { setControlErrorMessage(''); setError('') }} onConfirm={() => { setControlErrorMessage(''); setError('') }} />
   </div>
 }
 
