@@ -141,7 +141,8 @@ public class ModelProcessService {
             log.put("performedBy", row.get("performedBy"));
             log.put("occurredAt", occurredAt == null ? null : occurredAt.toInstant().toString());
             log.put("severity", String.valueOf(row.get("severity")).toLowerCase());
-            log.put("eventType", row.get("eventType"));
+            String eventType = (String) row.get("eventType");
+            log.put("eventType", eventTypeLabel(eventType));
             log.put("message", row.get("message"));
             log.put("detectionSummary", row.get("detectionSummary"));
             return log;
@@ -216,6 +217,20 @@ public class ModelProcessService {
 
     private String lowerOrNull(String value) {
         return value == null || value.isBlank() ? null : value.toLowerCase(Locale.ROOT);
+    }
+
+    private String eventTypeLabel(String eventType) {
+        if (eventType == null) return null;
+        return switch (eventType) {
+            case "MODEL_REGISTERED" -> "모델 등록";
+            case "MODEL_SETTINGS_CHANGED" -> "모델 설정 변경";
+            case "CONTROL_REQUESTED" -> "제어 요청";
+            case "MODEL_DELETED" -> "모델 삭제";
+            case "AGENT_HEARTBEAT" -> "Agent 상태 갱신";
+            case "AGENT_HEARTBEAT_MISSED" -> "Agent 상태 미수신";
+            case "CONTROL_CALL_FAILED" -> "제어 연동 호출 실패";
+            default -> eventType;
+        };
     }
 
     private String resolveMonitoringStatus(String storedStatus, java.sql.Timestamp lastStatusTimestamp) {
