@@ -73,7 +73,7 @@
 
     <select id="findEventLogs" resultType="map">
         SELECT MODEL_EVENT_LOG_ID AS modelEventLogId,
-               CREATED_OBJECT_ID AS createdObjectId,
+               COALESCE(NULLIF(LAST_UPDATED_OBJECT_ID, ''), NULLIF(CREATED_OBJECT_ID, ''), 'SYSTEM') AS performedBy,
                OCCURRED_TIMESTAMP AS occurredTimestamp,
                SEVERITY AS severity,
                EVENT_TYPE AS eventType,

@@ -138,7 +138,7 @@ public class ModelProcessService {
             Timestamp occurredAt = (Timestamp) row.get("occurredTimestamp");
             log.put("id", "log-" + row.get("modelEventLogId"));
             log.put("modelProcessId", String.valueOf(id));
-            log.put("createdObjectId", row.get("createdObjectId"));
+            log.put("performedBy", row.get("performedBy"));
             log.put("occurredAt", occurredAt == null ? null : occurredAt.toInstant().toString());
             log.put("severity", String.valueOf(row.get("severity")).toLowerCase());
             log.put("eventType", row.get("eventType"));
