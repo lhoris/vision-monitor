@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, ConfirmDialog } from '@/components/Common'
 import { ModelCreateDialog, ModelEventLogDialog, ModelManagementFilters, ModelProcessControlDialog, ModelProcessEventLogBar, ModelProcessGrid, ModelSettingsDialog, ModelVmDashboard, ProcessAreaCreateDialog, ProcessMultiSelectFilter } from '@/components/ModelManagement'
 import { controlProcess, createProcess, createProcessArea, listAgents, listEventLogs, listProcesses, updateSettings } from '@/services/modelManagementService'
@@ -44,10 +44,34 @@ export function ModelManagement() {
   const [selectedProcessId, setSelectedProcessId] = useState<string | null>(null)
   const [controlDialogProcessId, setControlDialogProcessId] = useState<string | null>(null)
   const [refreshingProcessId, setRefreshingProcessId] = useState<string | null>(null)
+  const [refreshingDashboard, setRefreshingDashboard] = useState(false)
+
+  const loadModelData = useCallback(async (showNotice = false) => {
+    if (showNotice) setRefreshingDashboard(true)
+    setError('')
+    try {
+      const [processResult, agentResult] = await Promise.allSettled([listProcesses(), listAgents()])
+      if (processResult.status === 'fulfilled') {
+        setAreas(processResult.value.processAreas)
+        setProcesses(processResult.value.processes)
+      } else {
+        setError('모델 목록과 공정 목록을 불러오지 못했습니다.')
+      }
+      if (agentResult.status === 'fulfilled') {
+        setAgents(agentResult.value)
+      } else {
+        setError((current) => current || 'Agent 목록을 불러오지 못했습니다. 백엔드 재기동 후 다시 확인해 주세요.')
+      }
+      if (showNotice && processResult.status === 'fulfilled') setNotice('모델 관리 대시보드를 새로 조회했습니다.')
+    } finally {
+      setLoading(false)
+      setRefreshingDashboard(false)
+    }
+  }, [])
 
   useEffect(() => {
-    void Promise.all([listProcesses(), listAgents()]).then(([result, agentList]) => { setAreas(result.processAreas); setProcesses(result.processes); setAgents(agentList) }).catch(() => setError('모델 목록과 Agent 목록을 불러오지 못했습니다.')).finally(() => setLoading(false))
-  }, [])
+    void loadModelData()
+  }, [loadModelData])
 
   useEffect(() => {
     if (!notice) return undefined
@@ -146,7 +170,7 @@ export function ModelManagement() {
 
   return <div className="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-gray-50 p-6 dark:bg-gray-900">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-bold text-slate-900 dark:text-white">모델 관리</h1><p className="mt-1 text-sm text-slate-500 dark:text-slate-300">VM과 Python AI 모델 프로세스의 운영 상태를 확인하고 제어합니다.</p></div></div>
-    <div className="flex justify-end"><div className="flex items-center gap-1 rounded border border-slate-200 bg-white p-1 text-xs dark:border-slate-600 dark:bg-slate-800"><button type="button" onClick={() => setViewMode('dashboard')} className={`rounded px-3 py-1.5 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>대시보드</button><button type="button" onClick={() => setViewMode('grid')} className={`rounded px-3 py-1.5 ${viewMode === 'grid' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>관리 그리드</button></div></div>
+    <div className="flex justify-end gap-2"><div className="flex items-center gap-1 rounded border border-slate-200 bg-white p-1 text-xs dark:border-slate-600 dark:bg-slate-800"><button type="button" onClick={() => setViewMode('dashboard')} className={`rounded px-3 py-1.5 ${viewMode === 'dashboard' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>대시보드</button><button type="button" onClick={() => setViewMode('grid')} className={`rounded px-3 py-1.5 ${viewMode === 'grid' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'text-slate-500'}`}>관리 그리드</button></div>{viewMode === 'dashboard' && <button type="button" aria-label="대시보드 새로고침" title="대시보드 새로고침" onClick={() => void loadModelData(true)} disabled={refreshingDashboard} className="inline-flex items-center gap-1.5 rounded border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-sky-400 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"><span className={refreshingDashboard ? 'animate-spin' : ''}>↻</span>{refreshingDashboard ? '조회 중' : '새로고침'}</button>}</div>
     {viewMode === 'grid' && <section className="border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3"><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">운영 대상 필터</h2><span className="text-xs text-slate-500 dark:text-slate-400">공정은 다중 선택할 수 있습니다.</span></div><div className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><ProcessMultiSelectFilter areas={areas} selectedIds={selectedIds} onChange={setSelectedIds} onAdd={() => setCreateAreaOpen(true)} /><Button onClick={() => setCreateOpen(true)}>모델 추가</Button></div><ModelManagementFilters status={status} search={search} onStatusChange={setStatus} onSearchChange={setSearch} /></div></section>}
     {notice && <div role="status" className="fixed left-1/2 top-1/2 z-[120] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-xl shadow-slate-950/20 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">{notice}</div>}
     {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
