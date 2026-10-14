@@ -110,6 +110,27 @@ public class ModelProcessService {
         return find(id);
     }
 
+    @Transactional
+    public void delete(Long id, String requestedBy) {
+        ModelProcess process = repository.findByIdAndDataEndStatus(id, "N")
+                .orElseThrow(() -> new ApiException("MODEL_NOT_FOUND", "The model process was not found"));
+        String status = process.getProcessStatus() == null ? "" : process.getProcessStatus().trim().toUpperCase(Locale.ROOT);
+        if (List.of("RUNNING", "STARTING", "STOPPING", "RESTARTING").contains(status)) {
+            throw new ApiException("ACTION_BLOCKED", "실행 중인 모델은 먼저 중지한 후 삭제할 수 있습니다.");
+        }
+        if (commandRepository.countByAgentIdAndModelProcessIdAndDataEndStatusAndCommandStatusIn(
+                process.getAgentId(), String.valueOf(id), "N", List.of("PENDING", "PROCESSING")) > 0) {
+            throw new ApiException("ACTION_BLOCKED", "처리 중인 제어 요청이 있어 모델을 삭제할 수 없습니다.");
+        }
+        recordEvent(id, "INFO", "MODEL_DELETED", "모델 프로세스를 삭제했습니다.",
+                "modelName=" + process.getModelName() + ", serverIp=" + process.getServerIp(), requestedBy);
+        process.setDataEndStatus("Y");
+        process.setDataEndObjectId(requestedBy);
+        process.setDataEndProgramId("VISION-MONITOR");
+        process.setDataEndTimestamp(new Timestamp(System.currentTimeMillis()));
+        repository.save(process);
+    }
+
     @Transactional(readOnly = true)
     public List<Map<String, Object>> logs(Long id) {
         return repository.findEventLogs(id).stream().map(row -> {

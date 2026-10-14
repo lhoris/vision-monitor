@@ -7,9 +7,10 @@ interface Props {
   onControl: (action: ModelControlAction) => void
   onSettings: () => void
   onLogs: () => void
+  onDelete: () => void
 }
 
-export function ModelProcessActions({ process, busy, onControl, onSettings, onLogs }: Props) {
+export function ModelProcessActions({ process, busy, onControl, onSettings, onLogs, onDelete }: Props) {
   const [open, setOpen] = useState(false)
   const commandPending = ['requested', 'processing', 'running'].includes(process.controlRequestStatus ?? '')
   const actionDisabled = busy || commandPending
@@ -24,6 +25,7 @@ export function ModelProcessActions({ process, busy, onControl, onSettings, onLo
       <div className="my-1 border-t border-slate-200 dark:border-slate-700" />
       <button type="button" role="menuitem" onClick={() => run(onSettings)} className="block w-full rounded px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 dark:text-blue-300 dark:hover:bg-blue-950/40">설정</button>
       <button type="button" role="menuitem" onClick={() => run(onLogs)} className="block w-full rounded px-3 py-1.5 text-xs hover:bg-slate-100 dark:hover:bg-slate-700">로그</button>
+      <button type="button" role="menuitem" disabled={actionDisabled || ['running', 'starting', 'stopping', 'restarting'].includes(process.processStatus)} onClick={() => run(onDelete)} className="block w-full rounded px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:text-rose-300 dark:hover:bg-rose-950/40">삭제</button>
     </div>}
   </div>
 }

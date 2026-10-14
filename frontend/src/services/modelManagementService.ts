@@ -67,6 +67,10 @@ export async function updateSettings(id: string, input: ModelSettingsInput): Pro
   return requireProcessData(await apiClient.put<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/settings`, input), 'Updated model process was not returned')
 }
 
+export async function deleteProcess(id: string): Promise<void> {
+  await apiClient.delete(`/model-processes/${encodeURIComponent(id)}`)
+}
+
 export async function controlProcess(id: string, action: ModelControlAction): Promise<ModelProcess> {
   return requireProcessData(await apiClient.post<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/actions/${action}`), 'Controlled model process was not returned')
 }

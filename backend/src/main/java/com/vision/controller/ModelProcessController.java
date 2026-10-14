@@ -26,6 +26,8 @@ public class ModelProcessController {
     public ApiResponse<Map<String, Object>> create(@RequestBody ModelProcessCreateRequest request, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.create(request, actor.username())); }
     @PutMapping("/{id}/settings")
     public ApiResponse<Map<String, Object>> updateSettings(@PathVariable Long id, @RequestBody ModelProcessSettingsRequest request, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.updateSettings(id, request, actor.username())); }
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { service.delete(id, actor.username()); return ApiResponse.success(null); }
     @PostMapping("/{id}/actions/{action}")
     public ApiResponse<Map<String, Object>> control(@PathVariable Long id, @PathVariable String action, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.control(id, action, actor.username())); }
     @GetMapping("/{id}/event-logs")
