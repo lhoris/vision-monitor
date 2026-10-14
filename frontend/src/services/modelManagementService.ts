@@ -76,7 +76,8 @@ export async function controlProcess(id: string, action: ModelControlAction): Pr
 }
 
 export async function listEventLogs(modelProcessId: string): Promise<ModelEventLog[]> {
-  return getResponseData(await apiClient.get<ModelEventLog[]>(`/model-processes/${encodeURIComponent(modelProcessId)}/event-logs`), [])
+  // 액션 직후 새 이벤트가 기록되므로 브라우저/프록시가 이전 GET 응답을 재사용하지 않게 한다.
+  return getResponseData(await apiClient.get<ModelEventLog[]>(`/model-processes/${encodeURIComponent(modelProcessId)}/event-logs`, { _refresh: Date.now() }), [])
 }
 
 export async function createProcess(input: ModelCreateInput): Promise<ModelProcess> {
