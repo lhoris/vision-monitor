@@ -182,7 +182,7 @@ public class ModelProcessService {
         event.setOccurredTimestamp(new Timestamp(System.currentTimeMillis()));
         event.setSeverity(severity);
         event.setEventType(eventType);
-        event.setMessage(message);
+        event.setMessage("CONTROL_REQUESTED".equals(eventType) ? controlEventMessage(details) : message);
         event.setDetectionSummary(details);
         if (actor != null && !actor.isBlank()) {
             event.setCreatedObjectId(actor);
@@ -230,6 +230,16 @@ public class ModelProcessService {
             case "AGENT_HEARTBEAT_MISSED" -> "Agent 상태 미수신";
             case "CONTROL_CALL_FAILED" -> "제어 연동 호출 실패";
             default -> eventType;
+        };
+    }
+
+    private String controlEventMessage(String details) {
+        String commandType = details == null ? "" : details.replaceFirst(".*commandType=", "").trim().toUpperCase(Locale.ROOT);
+        return switch (commandType) {
+            case "START" -> "모델 프로세스 시작을 요청했습니다.";
+            case "STOP" -> "모델 프로세스 중지를 요청했습니다.";
+            case "RESTART" -> "모델 프로세스 재시작을 요청했습니다.";
+            default -> "모델 프로세스 " + (commandType.isBlank() ? "제어" : commandType) + "를 요청했습니다.";
         };
     }
 
