@@ -8,6 +8,7 @@ import com.vision.entity.audit.BaseAudit;
 @Entity
 @Table(name = "TB_M26_CODE")
 @Data @SuperBuilder @NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class Code extends BaseAudit {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CODE_ID") private Long id;
