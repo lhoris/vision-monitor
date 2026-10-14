@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export type ToastVariant = 'success' | 'error' | 'info' | 'warning'
 export type ToastPlacement = 'top-right' | 'center'
@@ -18,6 +18,7 @@ const variantClassName: Record<ToastVariant, string> = {
 }
 
 export function Toast({ message, variant = 'info', placement = 'top-right', onClose }: ToastProps) {
+  const toastRef = useRef<HTMLDivElement>(null)
   const [rendered, setRendered] = useState(Boolean(message))
   const [visible, setVisible] = useState(false)
 
@@ -33,10 +34,24 @@ export function Toast({ message, variant = 'info', placement = 'top-right', onCl
     return () => window.clearTimeout(timeoutId)
   }, [message])
 
+  useEffect(() => {
+    if (!message || !onClose) return undefined
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.button === 0 && toastRef.current && !toastRef.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [message, onClose])
+
   if (!rendered || !message) return null
 
   return (
     <div
+      ref={toastRef}
       role={variant === 'error' ? 'alert' : 'status'}
       className={`fixed z-[120] flex max-w-[min(420px,calc(100vw-48px))] items-start gap-3 rounded-md border px-4 py-3 text-sm shadow-lg transition duration-200 ease-out ${placement === 'center' ? 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2' : 'right-6 top-20'} ${variantClassName[variant]} ${visible ? 'opacity-100' : 'opacity-0'} ${visible || placement === 'center' ? '' : '-translate-y-2'}`}
     >
