@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ModelManagement from '@/pages/ModelManagement'
 import * as modelService from '@/services/modelManagementService'
 
-vi.mock('@/services/modelManagementService', () => ({ listProcesses: vi.fn(), controlProcess: vi.fn(), createProcess: vi.fn(), createProcessArea: vi.fn(), listEventLogs: vi.fn(), updateSettings: vi.fn() }))
+vi.mock('@/services/modelManagementService', () => ({ listProcesses: vi.fn(), listAgents: vi.fn(), controlProcess: vi.fn(), createProcess: vi.fn(), createProcessArea: vi.fn(), listEventLogs: vi.fn(), updateSettings: vi.fn() }))
 
 const processes = [{ id: 'model-001', processId: 'heating', processName: 'Heating', modelName: 'Heating detector', automationName: 'Heating automation', serverIp: '10.20.4.10', pythonProjectPath: '/opt/heating', processStatus: 'running' as const, monitoringStatus: 'normal' as const, controlStatus: 'normal' as const }]
 
@@ -11,6 +11,7 @@ describe('ModelManagement', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(modelService.listProcesses).mockResolvedValue({ processes, processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }, { id: 'heating', name: 'Heating', sortOrder: 10 }] })
+    vi.mocked(modelService.listAgents).mockResolvedValue([])
     vi.mocked(modelService.listEventLogs).mockResolvedValue([])
     vi.stubGlobal('confirm', vi.fn(() => true))
   })

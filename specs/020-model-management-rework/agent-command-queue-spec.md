@@ -30,6 +30,7 @@ Backend와 VM Agent 사이에는 별도 HTTP API 통신을 사용하지 않는�
 - `TB_M26_MODEL_PROCESS` 상태 갱신
 - Agent heartbeat 및 모니터링 상태 갱신
 - 제어 명령 및 상태 변경 이벤트 로그 기록
+- 모델 등록·설정 변경·제어 요청부터 Agent 실행 결과까지의 운영 이력 조회
 
 ### 제외 범위
 
@@ -214,12 +215,69 @@ Agent는 정해진 주기로 자신의 heartbeat와 마지막 상태 보고 시�
 - 이미 처리 완료된 명령은 재실행하지 않는다.
 - 재시도 가능한 오류와 즉시 실패할 오류는 결과 코드로 구분한다.
 
+## 이벤트 로그 기록 규칙
+
+모델 관리 운영 이력은 `TB_M26_MODEL_EVENT_LOG`에 append-only 방식으로 기록한다. 명령 큐의 현재 상태만으로는 요청 시점과 실제 실행 결과를 구분할 수 없으므로, Backend와 Agent가 각자 알고 있는 이벤트를 기록한다.
+
+### Backend 기록
+
+- 모델 등록 성공: `MODEL_REGISTERED`
+- 모델 설정 저장 성공: `MODEL_SETTINGS_CHANGED`
+- `TB_M26_MODEL_COMMAND` 등록 성공: `CONTROL_REQUESTED`
+
+Backend 이벤트에는 요청 사용자 식별자와 관련 `COMMAND_ID`를 기록한다. 명령 등록 실패는 명령 큐에 남지 않으므로 API 오류 로그와 화면 오류 메시지로 처리한다.
+
+### Agent 기록
+
+- 명령 선점: `COMMAND_PROCESSING`
+- 배치 파일 실행 성공: `CONTROL_COMPLETED`
+- 배치 파일 누락, 실행 실패, timeout: `CONTROL_FAILED`
+- Python 프로세스 상태가 직전 보고값과 달라짐: `PROCESS_STATUS_CHANGED`
+- Agent heartbeat 기반 상태 변경: `MONITORING_STATUS_CHANGED`
+
+Agent는 명령 상태를 갱신하는 트랜잭션 안에서 해당 이벤트를 함께 기록한다. 동일한 polling loop가 재실행되어도 같은 `COMMAND_ID`와 이벤트 유형·상태 조합을 중복 기록하지 않아야 한다. Agent가 장애로 완료 이벤트를 기록하지 못한 경우에도 `TB_M26_MODEL_COMMAND`의 마지막 상태와 `PROCESSED_AT`, `FAILED_REASON`을 기준으로 복구 및 재처리한다.
+
+Agent 구현 전달 규칙:
+
+현재 `TB_M26_MODEL_EVENT_LOG`에는 이벤트 주체와 명령 ID 전용 컬럼이 없으므로, Agent는 기존 컬럼으로 기록한다.
+
+```sql
+INSERT INTO TB_M26_MODEL_EVENT_LOG (
+    CREATED_OBJECT_TYPE,
+    CREATED_PROGRAM_ID,
+    MODEL_PROCESS_ID,
+    OCCURRED_TIMESTAMP,
+    SEVERITY,
+    EVENT_TYPE,
+    MESSAGE,
+    DETECTION_SUMMARY,
+    DATA_END_STATUS
+) VALUES (
+    'A',
+    'LOCAL-RUNTIME-AGENT',
+    :modelProcessId,
+    CURRENT_TIMESTAMP,
+    :severity,
+    :eventType,
+    :message,
+    CONCAT('COMMAND_ID=', :commandId, '; AGENT_ID=', :agentId, '; ', :detectionSummary),
+    'N'
+);
+```
+
+`COMMAND_ID + EVENT_TYPE`가 이미 `DETECTION_SUMMARY`에 기록된 경우 같은 이벤트를 다시 저장하지 않는다. 물리적 FK나 신규 인덱스는 추가하지 않는다.
+
+### 화면 조회
+
+모델 관리 화면의 이벤트 로그 API는 `TB_M26_MODEL_EVENT_LOG`를 모델 프로세스 기준으로 조회하고, 발생 시각 내림차순으로 반환한다. 조회 결과에는 요청 접수, Agent 처리, 실행 결과, 상태 변경 이벤트가 함께 포함되어야 한다. 이벤트 로그는 읽기 전용이며, 명령 제어 API와 분리한다.
+
 ## 권한 및 감사
 
 - 모델 프로세스 제어 권한이 있는 사용자만 명령 등록이 가능하다.
 - 모든 명령에는 요청 사용자와 요청 시각을 기록한다.
 - Agent가 처리한 Agent ID, 선점 시각, 완료 시각, 결과 메시지를 기록한다.
 - 명령 처리 결과와 프로세스 상태 변경은 모델 이벤트 로그에서 추적 가능해야 한다.
+- 이벤트 로그는 관리자 판단을 위한 운영 이력으로 보존하며 일반 화면에서 수정·삭제하지 않는다.
 
 ## 사용자 시나리오 및 검증
 

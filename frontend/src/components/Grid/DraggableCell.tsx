@@ -94,7 +94,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
     setIsDragOver(true)
     if (onDragOver) onDragOver(e)
   }

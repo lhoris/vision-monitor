@@ -6,7 +6,7 @@
 
 ## 1. 계획 요약
 
-모델 관리의 기본 진입점을 기존 그리드 중심 화면에서 VM-프로세스 운영 대시보드로 전환합니다. VM 컨테이너 안에 AI 모델 프로세스를 배치하고, VM 상태·프로세스 상태·제어 요청 상태를 분리해 표현합니다. 프로세스 제어는 확인 절차와 비동기 요청 상태를 포함하며, 모델 등록과 설정 변경은 별도 그리드 보기에서 수행합니다. 1차 구현은 기존 frontend 컴포넌트와 service 경계를 활용한 Mock-First 계약 기반으로 진행하고, Agent 실제 연동과 DB 구조 확장은 계약 확정 후 후속 범위로 둡니다.
+모델 관리의 기본 진입점을 기존 그리드 중심 화면에서 VM-프로세스 운영 대시보드로 전환합니다. VM 컨테이너 안에 AI 모델 프로세스를 배치하고, VM 상태·프로세스 상태·제어 요청 상태를 분리해 표현합니다. 프로세스 제어는 확인 절차와 비동기 요청 상태를 포함하며, 모델 등록과 설정 변경은 별도 그리드 보기에서 수행합니다. 운영 이력은 `TB_M26_MODEL_EVENT_LOG`에 Backend와 Agent가 append-only로 기록하고, 모델 관리 화면은 이를 읽기 전용으로 조회합니다.
 
 ## 2. 요구사항 추적
 
@@ -18,6 +18,7 @@
 | US3 | 5. 화면/컴포넌트 구조 | 그리드 관리 보기 |
 | US4 | 5. 상태 및 상호작용 흐름 | 공통 검색·필터 상태 |
 | 데이터 및 연동 원칙 | 6. 데이터 및 계약 계획 | Mock adapter와 논리 관계 유지 |
+| 운영 이벤트 이력 | 6. 데이터 및 계약 계획, 12. 이벤트 로그 구현 | Backend 행위와 Agent 처리 결과를 공용 DB에 기록 |
 
 ## 3. 기술 컨텍스트
 
@@ -25,7 +26,7 @@
 
 **주요 의존성**: React, Vite, Redux Toolkit, 기존 UI 컴포넌트 및 테스트 도구
 
-**저장소/상태 관리**: 기존 frontend service와 Redux/React 상태 관리, 1차는 fixture/mock adapter
+**저장소/상태 관리**: frontend는 기존 service와 Redux/React 상태 관리, backend는 JPA/MyBatis와 공용 DB 이벤트 로그 저장
 
 **테스트**: Vitest, React Testing Library, frontend production build
 
@@ -35,7 +36,7 @@
 
 **성능 목표**: VM과 프로세스 카드가 늘어나도 전체 화면 재렌더링을 최소화하고, 갱신 중 기존 상태를 유지
 
-**제약사항**: Mock-First MVP, Agent 실제 원격 실행과 신규 DB migration은 계약 확정 후속 범위, 물리적 FK 금지
+**제약사항**: Agent와 Backend 사이 별도 API 없음, 이벤트 로그는 공용 DB 직접 기록, 물리적 FK 금지
 
 **규모/범위**: VM 다수, VM별 AI Python 프로세스 다수, 대시보드 보기와 그리드 편집 보기
 
@@ -50,13 +51,17 @@
 - VM·공정·프로세스 상태 검색 및 필터
 - 기존 모델 관리 service 경계를 확장하는 mock/dashboard contract
 - 관련 컴포넌트 테스트와 production build 검증
+- 모델 등록·설정 변경·제어 요청의 이벤트 로그 저장
+- Agent 명령 처리 결과와 프로세스 상태 변경 이벤트 기록 계약
+- 이벤트 로그 API의 읽기 전용 조회
 
 ### 제외 범위
 
 - VM Agent 구현 및 실제 heartbeat 수집 endpoint
 - 원격 Python 프로세스 실행을 위한 OS 명령 또는 Agent 프로토콜 구현
 - 실제 장비 제어 통신 구현
-- 요구사항 확정 전의 신규 테이블 및 Flyway migration
+- Agent 자체의 실행 코드 변경은 vision-monitor 범위에서 제외하고 Agent 전달용 계약 문서로 정의
+- 이벤트 로그 테이블의 물리적 FK 및 인덱스 추가
 - 모델 실행 파일의 배포, 설치, 서버 운영 자동화
 
 ## 5. 설계 접근
@@ -106,6 +111,9 @@
 - 상세 계약: [model-management-dashboard-contract.md](./contracts/model-management-dashboard-contract.md)
 - VM 대시보드 조회와 프로세스 제어 요청은 별도 계약으로 유지합니다.
 - 실제 프로세스 완료 여부와 요청 접수 여부를 응답에서 구분합니다.
+- 이벤트 로그는 `MODEL_REGISTERED`, `MODEL_SETTINGS_CHANGED`, `CONTROL_REQUESTED`, `COMMAND_PROCESSING`, `CONTROL_COMPLETED`, `CONTROL_FAILED`, `PROCESS_STATUS_CHANGED`, `MONITORING_STATUS_CHANGED` 유형을 사용합니다.
+- Backend는 등록·설정 변경·제어 요청 접수 이벤트를 저장하고, Agent는 명령 처리 및 상태 변화 이벤트를 저장합니다.
+- 이벤트 로그 조회는 모델 프로세스별 발생 시각 내림차순이며 읽기 전용입니다.
 
 ### Fixture/Mock 계획
 
@@ -123,6 +131,7 @@
 - **E2E/수동 검증**: `quickstart.md`의 US1~US4 시나리오
 - **빌드/정적 검증**: `npm test -- --run`, `npm run build`
 - **회귀 확인**: 관리자 메뉴 진입, 기존 그리드 편집, 공통 확인 모달, 다국어 상태 라벨
+- **이벤트 로그 검증**: 등록·설정 변경·제어 요청 시 행 생성, Agent 이벤트 계약 샘플, 조회 API 응답
 
 ## 8. 프로젝트 구조
 
@@ -170,6 +179,7 @@ frontend/src/
 | VM 수와 프로세스 수 증가 | 카드 렌더링 및 갱신 성능 저하 | VM 단위 데이터 구조와 부분 갱신을 우선 설계 |
 | 제어 요청과 실제 프로세스 상태 불일치 | 운영자가 잘못된 상태로 판단할 수 있음 | 요청 상태와 실제 상태를 별도 표시 |
 | 기존 그리드 기능 회귀 | 기존 입력·수정 업무 중단 | 보기 전환을 분리하고 기존 그리드 테스트를 회귀 검증 |
+| Agent와 Backend의 이벤트 중복 기록 | 동일 명령의 이력이 중복 표시될 수 있음 | `COMMAND_ID`와 이벤트 유형·상태 조합으로 멱등 기록 |
 
 ## 11. 복잡도 추적
 

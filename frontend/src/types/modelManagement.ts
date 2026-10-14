@@ -49,6 +49,7 @@ export interface ModelEventLog {
   modelProcessId: string
   occurredAt: string
   severity: 'info' | 'warning' | 'error'
+  eventType?: string
   message: string
   detectionSummary?: string
 }

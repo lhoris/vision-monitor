@@ -75,6 +75,7 @@
         SELECT MODEL_EVENT_LOG_ID AS modelEventLogId,
                OCCURRED_TIMESTAMP AS occurredTimestamp,
                SEVERITY AS severity,
+               EVENT_TYPE AS eventType,
                MESSAGE AS message,
                DETECTION_SUMMARY AS detectionSummary
           FROM TB_M26_MODEL_EVENT_LOG

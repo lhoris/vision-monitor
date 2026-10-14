@@ -23,9 +23,9 @@ public class ModelProcessController {
     @GetMapping("/agents")
     public ApiResponse<List<Map<String, Object>>> agents() { return ApiResponse.success(service.listAgents()); }
     @PostMapping
-    public ApiResponse<Map<String, Object>> create(@RequestBody ModelProcessCreateRequest request) { return ApiResponse.success(service.create(request)); }
+    public ApiResponse<Map<String, Object>> create(@RequestBody ModelProcessCreateRequest request, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.create(request, actor.username())); }
     @PutMapping("/{id}/settings")
-    public ApiResponse<Map<String, Object>> updateSettings(@PathVariable Long id, @RequestBody ModelProcessSettingsRequest request) { return ApiResponse.success(service.updateSettings(id, request)); }
+    public ApiResponse<Map<String, Object>> updateSettings(@PathVariable Long id, @RequestBody ModelProcessSettingsRequest request, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.updateSettings(id, request, actor.username())); }
     @PostMapping("/{id}/actions/{action}")
     public ApiResponse<Map<String, Object>> control(@PathVariable Long id, @PathVariable String action, @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto actor) { return ApiResponse.success(service.control(id, action, actor.username())); }
     @GetMapping("/{id}/event-logs")

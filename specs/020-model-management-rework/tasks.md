@@ -86,6 +86,23 @@
 - [X] T031 frontend production build를 실행하고 결과를 기록한다: `frontend/`
 - [ ] T032 대시보드, 제어, 그리드 편집, 검색 시나리오를 quickstart 기준으로 수동 검증한다: `specs/020-model-management-rework/quickstart.md`
 
+## Phase 8: 운영 이벤트 로그 이력
+
+**목표**: 모델 등록부터 설정 변경·제어 요청·Agent 처리 결과·상태 변경까지의 운영 이력을 `TB_M26_MODEL_EVENT_LOG`에 남기고 모델 관리 화면에서 조회한다.
+
+**독립 테스트**: 모델 등록, 설정 저장, 시작·중지·재시작 요청 후 이벤트 로그 API에서 해당 이벤트가 모델 프로세스별 최신순으로 조회되는지 확인한다.
+
+- [X] T033 이벤트 유형, 기록 주체, `COMMAND_ID` 연계 및 멱등 저장 규칙을 데이터 모델에 반영한다: `specs/020-model-management-rework/data-model.md`, `specs/020-model-management-rework/agent-command-queue-spec.md`
+- [X] T034 [P] 모델 이벤트 로그 JPA Entity와 Repository를 추가한다: `backend/src/main/java/com/vision/entity/ModelEventLog.java`, `backend/src/main/java/com/vision/repository/ModelEventLogRepository.java`
+- [X] T035 모델 등록 성공 이벤트 저장을 ModelProcessService에 연결한다: `backend/src/main/java/com/vision/service/ModelProcessService.java`
+- [X] T036 모델 설정 변경 성공 이벤트 저장을 ModelProcessService에 연결한다: `backend/src/main/java/com/vision/service/ModelProcessService.java`
+- [X] T037 제어 요청 접수 이벤트를 명령 저장과 같은 트랜잭션으로 기록한다: `backend/src/main/java/com/vision/service/ModelProcessService.java`
+- [X] T038 Agent가 기록해야 하는 처리 시작·성공·실패·상태 변경 SQL 및 중복 방지 규칙을 전달 문서에 추가한다: `docs/MODEL_PROCESS_COMMAND_GUIDE.md`, `specs/020-model-management-rework/agent-command-queue-spec.md`
+- [X] T039 이벤트 로그 조회 API가 이벤트 유형과 주체를 반환하도록 조회 매퍼와 서비스 변환을 확장한다: `backend/src/main/resources/mapper/ModelProcessMapper.xml`, `backend/src/main/java/com/vision/service/ModelProcessService.java`
+- [X] T040 [P] 모델 이벤트 로그 저장과 제어 요청 연결 단위 테스트를 작성한다: `backend/src/test/java/com/vision/service/ModelProcessServiceTest.java`
+- [X] T041 이벤트 로그 조회 응답 및 화면 표시 회귀 테스트를 작성한다: `frontend/src/services/__tests__/modelManagementService.test.ts`, `frontend/src/components/ModelManagement/ModelProcessEventLogBar.tsx`
+- [X] T042 백엔드 컴파일·테스트와 프론트 전체 테스트·빌드를 실행한다: `backend/`, `frontend/`
+
 ## 의존성 및 실행 순서
 
 - Phase 1은 즉시 시작할 수 있습니다.
@@ -94,6 +111,7 @@
 - US2는 US1의 프로세스 카드가 필요합니다.
 - US3와 US4는 Phase 2 완료 후 시작할 수 있으며, 페이지 보기 상태를 공유하므로 같은 파일의 병렬 수정은 금지합니다.
 - Phase 7은 모든 사용자 스토리 완료 후 수행합니다.
+- Phase 8은 명령 큐 테이블과 이벤트 로그 테이블이 존재한다는 전제에서 Phase 4 제어 흐름과 기존 모델 등록·설정 구현 이후 수행합니다.
 
 ## 병렬화 가능 지점
 
@@ -104,6 +122,7 @@
 - T021과 T022
 - T025
 - T028과 T029
+- T034와 T038은 서로 다른 문서를 다루므로 병렬 진행할 수 있습니다.
 
 ## 구현 전략
 

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '@/services/api'
 import { commonCodeService } from '@/services/commonCodeService'
-import { controlProcess, createProcess, createProcessArea, listAgents, listDashboard, listProcesses, updateSettings } from '@/services/modelManagementService'
+import { controlProcess, createProcess, createProcessArea, listAgents, listDashboard, listEventLogs, listProcesses, updateSettings } from '@/services/modelManagementService'
 
 vi.mock('@/services/api', () => ({ apiClient: { get: vi.fn(), post: vi.fn(), put: vi.fn() } }))
 vi.mock('@/services/commonCodeService', () => ({ commonCodeService: { listAdmin: vi.fn(), createDetail: vi.fn() } }))
@@ -31,6 +31,13 @@ describe('modelManagementService', () => {
     expect(result.vms).toHaveLength(1)
     expect(result.vms[0].hostAddress).toBe('10.20.4.10')
     expect(result.vms[0].processes).toHaveLength(2)
+  })
+
+  it('returns event types with model process event logs', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({ data: [{ id: 'log-1', modelProcessId: 'model-001', occurredAt: '2026-10-14T01:00:00Z', severity: 'info', eventType: 'MODEL_REGISTERED', message: 'registered', detectionSummary: '-' }] })
+    const logs = await listEventLogs('model-001')
+    expect(apiClient.get).toHaveBeenCalledWith('/model-processes/model-001/event-logs')
+    expect(logs[0].eventType).toBe('MODEL_REGISTERED')
   })
 
   it('updates settings and sends process control actions to the API', async () => {

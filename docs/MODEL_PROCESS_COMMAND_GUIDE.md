@@ -189,7 +189,39 @@ Agent는 `PENDING` 명령을 처리한 뒤 `COMMAND_STATUS`를 `COMPLETED` 또�
 
 현재 Agent의 `TB_M26_MODEL_COMMAND` 처리 결과는 성공 시 `COMMAND_STATUS = 'COMPLETED'`, 실패 시 `COMMAND_STATUS = 'FAILED'`로 기록된다. `PENDING`은 아직 처리되지 않은 요청이며, `SUCCEEDED`, `REQUESTED`, `TIMEOUT`은 이 공유 큐의 현재 Agent 구현에서 사용하는 상태값이 아니다.
 
-## 7. 처리 결과 확인
+## 7. 모델 이벤트 로그 기록
+
+모델 관리 화면에서 확인하는 운영 이력은 `TB_M26_MODEL_EVENT_LOG`에 저장한다. Backend는 모델 등록(`MODEL_REGISTERED`), 설정 변경(`MODEL_SETTINGS_CHANGED`), 제어 요청 접수(`CONTROL_REQUESTED`)를 기록하고, Agent는 명령 처리 시작(`COMMAND_PROCESSING`), 성공(`CONTROL_COMPLETED`), 실패(`CONTROL_FAILED`)와 프로세스 상태 변경(`PROCESS_STATUS_CHANGED`)을 기록한다.
+
+Agent는 명령 상태를 변경하는 DB 처리와 이벤트 로그 저장을 같은 작업 단위로 수행해야 한다. 같은 명령을 재조회하거나 재시작하더라도 `COMMAND_ID`와 이벤트 유형이 같은 로그를 중복으로 생성하지 않는다. 이벤트 로그는 관리자 화면에서 읽기 전용으로 조회한다.
+
+Agent 기록 예시:
+
+```sql
+INSERT INTO TB_M26_MODEL_EVENT_LOG (
+    CREATED_OBJECT_TYPE,
+    CREATED_PROGRAM_ID,
+    MODEL_PROCESS_ID,
+    OCCURRED_TIMESTAMP,
+    SEVERITY,
+    EVENT_TYPE,
+    MESSAGE,
+    DETECTION_SUMMARY,
+    DATA_END_STATUS
+) VALUES (
+    'A',
+    'LOCAL-RUNTIME-AGENT',
+    :modelProcessId,
+    CURRENT_TIMESTAMP,
+    'INFO',
+    'CONTROL_COMPLETED',
+    '모델 프로세스 제어 명령이 정상 처리되었습니다.',
+    CONCAT('COMMAND_ID=', :commandId, '; AGENT_ID=', :agentId, '; ', :resultMessage),
+    'N'
+);
+```
+
+## 8. 처리 결과 확인
 
 ```sql
 SELECT COMMAND_ID,
@@ -221,7 +253,7 @@ SELECT MODEL_PROCESS_ID,
 
 `LAST_STATUS_TIMESTAMP`가 오래되었거나 비어 있으면 Agent가 최근 상태를 갱신하지 않은 것이므로 `PROCESS_STATUS`만 보고 정상으로 판단하지 않는다.
 
-## 8. 오류 점검 순서
+## 9. 오류 점검 순서
 
 1. `TB_M26_MODEL_PROCESS.SERVER_IP`가 Agent가 실행 중인 VM의 IP와 같은지 확인한다.
 2. `PYTHON_PROJECT_PATH`가 실제 프로젝트 루트인지 확인한다.
@@ -233,7 +265,7 @@ SELECT MODEL_PROCESS_ID,
 
 `TB_M26_MODEL_PROCESS.PROCESS_STATUS`를 관리자가 직접 `RUNNING` 또는 `STOPPED`로 변경하지 않는다. 실제 OS 프로세스 상태는 Agent가 확인하여 갱신해야 한다.
 
-## 9. 커스텀 명령
+## 10. 커스텀 명령
 
 Backend의 명령 입력값은 영문 대문자, 숫자, `_`, `-` 조합을 허용한다. 따라서 Agent가 지원하도록 구성된 경우 `CUSTOM1` 명령은 다음 배치 파일로 연결할 수 있다.
 

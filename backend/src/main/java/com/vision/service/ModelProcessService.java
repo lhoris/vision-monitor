@@ -5,7 +5,9 @@ import com.vision.dto.ModelProcessSettingsRequest;
 import com.vision.entity.ModelProcess;
 import com.vision.exception.ApiException;
 import com.vision.entity.ModelCommand;
+import com.vision.entity.ModelEventLog;
 import com.vision.repository.ModelCommandRepository;
+import com.vision.repository.ModelEventLogRepository;
 import com.vision.repository.ModelProcessRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,7 @@ public class ModelProcessService {
 
     private final ModelProcessRepository repository;
     private final ModelCommandRepository commandRepository;
+    private final ModelEventLogRepository eventLogRepository;
 
     @Value("${vision.model-monitoring.status-timeout-seconds:30}")
     private long monitoringStatusTimeoutSeconds = 30;
@@ -62,7 +65,7 @@ public class ModelProcessService {
     }
 
     @Transactional
-    public Map<String, Object> create(ModelProcessCreateRequest request) {
+    public Map<String, Object> create(ModelProcessCreateRequest request, String requestedBy) {
         validate(request.processId(), request.modelName(), request.automationName(), request.agentId(), request.pythonProjectPath());
         Map<String, Object> agent = repository.findAgent(request.agentId().trim());
         if (agent == null) throw new ApiException("AGENT_NOT_FOUND", "선택한 Agent를 찾을 수 없습니다.");
@@ -73,7 +76,9 @@ public class ModelProcessService {
         process.setAgentId(String.valueOf(agent.get("agentId")));
         process.setServerIp(String.valueOf(agent.get("serverIp")));
         process.setPythonProjectPath(request.pythonProjectPath().trim());
-        repository.save(process);
+        ModelProcess saved = repository.save(process);
+        recordEvent(saved.getId(), "INFO", "MODEL_REGISTERED", "모델 프로세스를 등록했습니다.",
+                "modelName=" + saved.getModelName() + ", serverIp=" + saved.getServerIp(), requestedBy);
         return findLatest(request.processId(), request.modelName().trim());
     }
 
@@ -83,20 +88,25 @@ public class ModelProcessService {
     }
 
     @Transactional
-    public Map<String, Object> updateSettings(Long id, ModelProcessSettingsRequest request) {
+    public Map<String, Object> updateSettings(Long id, ModelProcessSettingsRequest request, String requestedBy) {
         validateIpAndPath(request.serverIp(), request.pythonProjectPath());
         ModelProcess process = repository.findById(id)
                 .filter(entity -> !"Y".equalsIgnoreCase(entity.getDataEndStatus()))
                 .orElseThrow(() -> new ApiException("MODEL_NOT_FOUND", "Model process was not found"));
+        String previousSettings = "serverIp=" + process.getServerIp() + ", pythonProjectPath=" + process.getPythonProjectPath();
         process.setServerIp(request.serverIp().trim());
         process.setPythonProjectPath(request.pythonProjectPath().trim());
         repository.save(process);
+        recordEvent(process.getId(), "INFO", "MODEL_SETTINGS_CHANGED", "모델 프로세스 설정을 변경했습니다.",
+                previousSettings + " -> serverIp=" + process.getServerIp() + ", pythonProjectPath=" + process.getPythonProjectPath(), requestedBy);
         return find(id);
     }
 
     @Transactional
     public Map<String, Object> control(Long id, String action, String requestedBy) {
-        enqueueCommand(id, action);
+        ModelCommand command = enqueueCommand(id, action);
+        recordEvent(id, "INFO", "CONTROL_REQUESTED", "모델 프로세스 제어를 요청했습니다.",
+                "commandId=" + command.getCommandId() + ", commandType=" + command.getCommandType(), requestedBy);
         return find(id);
     }
 
@@ -109,6 +119,7 @@ public class ModelProcessService {
             log.put("modelProcessId", String.valueOf(id));
             log.put("occurredAt", occurredAt == null ? null : occurredAt.toInstant().toString());
             log.put("severity", String.valueOf(row.get("severity")).toLowerCase());
+            log.put("eventType", row.get("eventType"));
             log.put("message", row.get("message"));
             log.put("detectionSummary", row.get("detectionSummary"));
             return log;
@@ -118,7 +129,7 @@ public class ModelProcessService {
     private Map<String, Object> find(Long id) { return toProcess(repository.findProcess(id)); }
     private Map<String, Object> findLatest(String area, String modelName) { return toProcess(repository.findLatestProcess(area.toUpperCase(), modelName)); }
 
-    private void enqueueCommand(Long id, String action) {
+    private ModelCommand enqueueCommand(Long id, String action) {
         String commandType = action == null ? "" : action.trim().toUpperCase(Locale.ROOT);
         if (!commandType.matches("[A-Z0-9][A-Z0-9_-]{0,19}")) {
             throw new ApiException("VALIDATION_ERROR", "Invalid model command type");
@@ -139,7 +150,19 @@ public class ModelProcessService {
         command.setCommandType(commandType);
         command.setCommandStatus("PENDING");
         command.setCommandParameters("{}");
-        commandRepository.save(command);
+        return commandRepository.save(command);
+    }
+
+    private void recordEvent(Long modelProcessId, String severity, String eventType, String message, String details, String actor) {
+        ModelEventLog event = new ModelEventLog();
+        event.setModelProcessId(modelProcessId);
+        event.setOccurredTimestamp(new Timestamp(System.currentTimeMillis()));
+        event.setSeverity(severity);
+        event.setEventType(eventType);
+        event.setMessage(message);
+        event.setDetectionSummary(details);
+        if (actor != null && !actor.isBlank()) event.setCreatedObjectId(actor);
+        eventLogRepository.save(event);
     }
     private Map<String, Object> toProcess(Map<String, Object> row) {
         String processAreaCode = (String) row.get("processAreaCode");

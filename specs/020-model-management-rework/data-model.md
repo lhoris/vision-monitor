@@ -48,6 +48,25 @@
 | completedAt | 완료 시각 |
 | resultMessage | 처리 결과 메시지 |
 
+### 모델 운영 이벤트 로그
+
+`TB_M26_MODEL_EVENT_LOG`는 모델 프로세스의 등록·설정·제어·상태 변화를 append-only로 보존하는 이력 엔티티다. `MODEL_PROCESS_ID`는 논리적 참조만 유지하고 물리적 FK는 생성하지 않는다.
+
+| 필드 | 설명 |
+|---|---|
+| modelEventLogId | 이벤트 로그 식별자 |
+| modelProcessId | 대상 모델 프로세스 식별자 |
+| occurredTimestamp | 이벤트 발생 시각 |
+| severity | `INFO`, `WARNING`, `ERROR` |
+| eventType | `MODEL_REGISTERED`, `MODEL_SETTINGS_CHANGED`, `CONTROL_REQUESTED`, `COMMAND_PROCESSING`, `CONTROL_COMPLETED`, `CONTROL_FAILED`, `PROCESS_STATUS_CHANGED`, `MONITORING_STATUS_CHANGED` |
+| message | 운영자가 읽을 수 있는 이벤트 내용 |
+| detectionSummary | 처리 결과 또는 상태 상세 |
+| eventSource | 현재 스키마에서는 `CREATED_OBJECT_TYPE`으로 기록하며 `U`, `A`, `S`를 사용 |
+| eventActorId | 현재 스키마에서는 `CREATED_OBJECT_ID` 또는 `CREATED_PROGRAM_ID`로 기록 |
+| commandId | 현재 스키마에 전용 컬럼이 없으므로 `DETECTION_SUMMARY`에 기록 |
+
+이벤트 로그는 등록·설정 변경·제어 요청 시 Backend가 기록하고, 명령 처리 및 상태 변경 시 Agent가 기록한다. 동일 명령의 동일 단계는 `COMMAND_ID + EVENT_TYPE` 조합을 `DETECTION_SUMMARY`에서 확인하여 중복 기록하지 않는다. 향후 전용 컬럼을 추가할 경우에도 이 논리 계약은 유지한다.
+
 ## 상태 전이
 
 - 프로세스 상태: `RUNNING`, `STOPPED`, `STARTING`, `STOPPING`, `RESTARTING`, `ERROR`, `UNKNOWN`
