@@ -47,7 +47,7 @@ export interface ModelDashboard {
 export interface ModelEventLog {
   id: string
   modelProcessId: string
-  actorId?: string
+  createdObjectId?: string
   occurredAt: string
   severity: 'info' | 'warning' | 'error'
   eventType?: string

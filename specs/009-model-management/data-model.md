@@ -39,7 +39,6 @@ Stores monitoring and model-management events for read-only log dialogs.
 |---|---|
 | `MODEL_EVENT_LOG_ID` | Primary identifier |
 | `MODEL_PROCESS_ID` | Logical reference to `TB_M26_MODEL_PROCESS.MODEL_PROCESS_ID` |
-| `ACTOR_ID` | Identifier of the user or system that performed the event |
 | `OCCURRED_AT` | Event timestamp |
 | `SEVERITY` | `INFO`, `WARNING`, or `ERROR` |
 | `EVENT_TYPE` | Event category |

@@ -27,9 +27,6 @@ public class ModelEventLog extends BaseAudit {
     @Column(name = "MODEL_PROCESS_ID", nullable = false)
     private Long modelProcessId;
 
-    @Column(name = "ACTOR_ID", length = 64)
-    private String actorId;
-
     @Column(name = "OCCURRED_TIMESTAMP", nullable = false)
     private Timestamp occurredTimestamp;
 
