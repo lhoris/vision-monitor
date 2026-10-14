@@ -84,7 +84,6 @@ export const GridContainer: React.FC<GridContainerProps> = ({
 
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null)
   const [showCameraSelector, setShowCameraSelector] = useState(false)
-  const [usedCameraIds, setUsedCameraIds] = useState<number[]>([])
   const [draggedCameraId, setDraggedCameraId] = useState<number | null>(null)
   const [editingTemporaryId, setEditingTemporaryId] = useState<number | null>(null)
   const [temporaryPlaybackStatuses, setTemporaryPlaybackStatuses] = useState<Record<number, PlayerState>>({})
@@ -107,14 +106,6 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     }
   }, [moveNotice])
   const temporaryIdRef = useRef(-1)
-
-  useEffect(() => {
-    if (activeSubTab) {
-      setUsedCameraIds(activeSubTab.cameraPositions
-        .filter((position) => !position.source && position.cameraId > 0)
-        .map((position) => position.cameraId))
-    }
-  }, [activeSubTab])
 
   useEffect(() => {
     if (!layout) return
@@ -379,6 +370,15 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
+  const processTabCameraPositions = activeTab.subTabs
+    .flatMap((subTab) => subTab.cameraPositions)
+  const usedCameraIds = processTabCameraPositions
+    .filter((position) => !position.source && position.cameraId > 0)
+    .map((position) => position.cameraId)
+  const existingTemporaryUrls = processTabCameraPositions
+    .map((position) => position.source?.url)
+    .filter((url): url is string => Boolean(url))
+
   const totalCells = activeSubTab.gridConfig.rows * activeSubTab.gridConfig.cols
   const positions = activeSubTab.cameraPositions
   const cameraMap = new Map(
@@ -543,9 +543,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         cameras={cameras}
         videoSources={videoSources}
         usedCameraIds={usedCameraIds}
-        existingTemporaryUrls={activeSubTab.cameraPositions
-          .map((position) => position.source?.url)
-          .filter((url): url is string => Boolean(url))}
+        existingTemporaryUrls={existingTemporaryUrls}
         initialSource={editingTemporaryId !== null
           ? activeSubTab.cameraPositions.find((position) => position.cameraId === editingTemporaryId)?.source
           : undefined}
