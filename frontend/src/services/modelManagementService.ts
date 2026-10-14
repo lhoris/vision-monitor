@@ -72,7 +72,15 @@ export async function deleteProcess(id: string): Promise<void> {
 }
 
 export async function controlProcess(id: string, action: ModelControlAction): Promise<ModelProcess> {
-  return requireProcessData(await apiClient.post<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/actions/${action}`), 'Controlled model process was not returned')
+  try {
+    return requireProcessData(await apiClient.post<ModelProcess>(`/model-processes/${encodeURIComponent(id)}/actions/${action}`), 'Controlled model process was not returned')
+  } catch (error) {
+    if (error instanceof Error) throw error
+    if (typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string') {
+      throw new Error(error.message)
+    }
+    throw error
+  }
 }
 
 export async function listEventLogs(modelProcessId: string): Promise<ModelEventLog[]> {
