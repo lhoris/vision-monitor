@@ -200,6 +200,7 @@ public class ModelProcessService {
         item.put("automationName", row.get("automationName"));
         item.put("serverIp", row.get("serverIp"));
         item.put("agentId", row.get("agentId"));
+        item.put("hostname", row.get("hostname"));
         item.put("pythonProjectPath", row.get("pythonProjectPath"));
         item.put("processStatus", lower((String) row.get("processStatus"), "unknown"));
         item.put("controlStatus", lower((String) row.get("controlStatus"), "unknown"));

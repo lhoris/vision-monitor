@@ -11,6 +11,7 @@
         p.AUTOMATION_NAME AS automationName,
         p.SERVER_IP AS serverIp,
         p.AGENT_ID AS agentId,
+        a.HOSTNAME AS hostname,
         p.PYTHON_PROJECT_PATH AS pythonProjectPath,
         p.PROCESS_STATUS AS processStatus,
         p.MONITORING_STATUS AS monitoringStatus,
@@ -33,6 +34,9 @@
 
     <sql id="processJoins">
         FROM TB_M26_MODEL_PROCESS p
+        LEFT JOIN TB_M26_AGENT a
+               ON a.AGENT_ID = p.AGENT_ID
+              AND a.DATA_END_STATUS = 'N'
         LEFT JOIN TB_M26_CODE c
                ON UPPER(c.CODE_NAME) = 'PROCESS_AREA'
               AND c.DATA_END_STATUS = 'N'

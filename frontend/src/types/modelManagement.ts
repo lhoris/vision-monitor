@@ -18,6 +18,7 @@ export interface ModelProcess {
   modelName: string
   automationName: string
   serverIp: string
+  hostname?: string
   agentId?: string
   pythonProjectPath: string
   processStatus: ProcessStatus
