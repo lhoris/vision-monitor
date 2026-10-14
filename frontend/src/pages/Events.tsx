@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/store";
+import { Toast } from "@/components/Common";
 import {
   getAlarmOffsetConfig,
   getAlarmRecordingClip,
@@ -291,15 +292,7 @@ export function Events() {
           />
         </label>
       </section>
-      {notice && (
-        <button
-          type="button"
-          onClick={() => setNotice("")}
-          className="self-end rounded border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-800"
-        >
-          {notice}
-        </button>
-      )}
+      <Toast message={notice} variant="success" onClose={() => setNotice("")} />
       {error && (
         <div
           role="alert"

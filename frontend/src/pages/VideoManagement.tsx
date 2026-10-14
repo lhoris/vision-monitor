@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import { GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
+import { GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
 import { videoSourceService } from '@/services/videoSourceService'
 import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
 
@@ -351,8 +351,8 @@ export function VideoManagement() {
         </div>
       </div>
 
-      {notice ? <div role="status" className="fixed right-6 top-20 z-40 rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg">{notice}</div> : null}
-      {error ? <div role="alert" className="fixed right-6 top-20 z-40 rounded border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-lg">{error}</div> : null}
+      <Toast message={notice} variant="success" onClose={() => setNotice('')} />
+      <Toast message={error} variant="error" onClose={() => setError('')} />
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); setAppliedQuery(query) }}>
