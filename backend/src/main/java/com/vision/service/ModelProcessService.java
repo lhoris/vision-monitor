@@ -138,6 +138,7 @@ public class ModelProcessService {
             Timestamp occurredAt = (Timestamp) row.get("occurredTimestamp");
             log.put("id", "log-" + row.get("modelEventLogId"));
             log.put("modelProcessId", String.valueOf(id));
+            log.put("actorId", row.get("actorId"));
             log.put("occurredAt", occurredAt == null ? null : occurredAt.toInstant().toString());
             log.put("severity", String.valueOf(row.get("severity")).toLowerCase());
             log.put("eventType", row.get("eventType"));
@@ -182,7 +183,10 @@ public class ModelProcessService {
         event.setEventType(eventType);
         event.setMessage(message);
         event.setDetectionSummary(details);
-        if (actor != null && !actor.isBlank()) event.setCreatedObjectId(actor);
+        if (actor != null && !actor.isBlank()) {
+            event.setActorId(actor);
+            event.setCreatedObjectId(actor);
+        }
         eventLogRepository.save(event);
     }
     private Map<String, Object> toProcess(Map<String, Object> row) {

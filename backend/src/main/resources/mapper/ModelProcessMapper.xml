@@ -73,6 +73,7 @@
 
     <select id="findEventLogs" resultType="map">
         SELECT MODEL_EVENT_LOG_ID AS modelEventLogId,
+               ACTOR_ID AS actorId,
                OCCURRED_TIMESTAMP AS occurredTimestamp,
                SEVERITY AS severity,
                EVENT_TYPE AS eventType,
