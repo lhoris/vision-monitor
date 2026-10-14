@@ -115,6 +115,8 @@ export function ModelManagement() {
       setProcesses((current) => current.map((item) => item.id === updated.id
         ? { ...updated, controlRequestStatus: 'requested' }
         : item))
+      setSelectedProcessId(updated.id)
+      await loadLogs(updated)
       setNotice(`${process.modelName} 프로세스를 ${actionLabel} 요청했습니다.`)
     } catch (controlError) {
       setError(controlError instanceof Error ? controlError.message : '프로세스 조작에 실패했습니다.')
@@ -127,6 +129,8 @@ export function ModelManagement() {
     if (!settingsProcess) return
     const updated = await updateSettings(settingsProcess.id, { serverIp, pythonProjectPath })
     setProcesses((current) => current.map((item) => item.id === updated.id ? updated : item))
+    setSelectedProcessId(updated.id)
+    await loadLogs(updated)
     setSettingsProcess(null)
     setNotice('모델 설정을 저장했습니다.')
   }
@@ -148,6 +152,8 @@ export function ModelManagement() {
       setAreas(result.processAreas)
       setProcesses(result.processes)
       if (!result.processes.some((process) => process.id === processId)) throw new Error('모델 프로세스를 찾을 수 없습니다.')
+      const refreshedProcess = result.processes.find((process) => process.id === processId)
+      if (refreshedProcess) await loadLogs(refreshedProcess)
       setNotice('모델 프로세스 상태를 새로 조회했습니다.')
     } catch (refreshError) {
       setError(refreshError instanceof Error ? refreshError.message : '모델 프로세스 상태 조회에 실패했습니다.')
@@ -159,6 +165,8 @@ export function ModelManagement() {
   const saveNewProcess = async (input: ModelCreateInput) => {
     const created = await createProcess(input)
     setProcesses((current) => [...current, created])
+    setSelectedProcessId(created.id)
+    await loadLogs(created)
     setCreateOpen(false)
     setNotice('신규 모델을 추가했습니다.')
   }
@@ -194,7 +202,7 @@ export function ModelManagement() {
     {viewMode === 'grid' && <section className="border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"><div className="mb-3"><h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">운영 대상 필터</h2><span className="text-xs text-slate-500 dark:text-slate-400">공정은 다중 선택할 수 있습니다.</span></div><div className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-3"><ProcessMultiSelectFilter areas={areas} selectedIds={selectedIds} onChange={setSelectedIds} onAdd={() => setCreateAreaOpen(true)} /><Button onClick={() => setCreateOpen(true)}>모델 추가</Button></div><ModelManagementFilters status={status} search={search} onStatusChange={setStatus} onSearchChange={setSearch} /></div></section>}
     {notice && <div role="status" className="fixed left-1/2 top-1/2 z-[120] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-xl shadow-slate-950/20 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-200">{notice}</div>}
     {error && <div role="alert" className="rounded border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">{error}</div>}
-    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : viewMode === 'dashboard' ? <div className="flex min-h-0 flex-1 basis-0 flex-col gap-3 overflow-hidden"><div className="flex min-h-0 flex-1 basis-0 flex-col overflow-hidden"><ModelVmDashboard vms={dashboard.vms} selectedProcessId={selectedProcessId ?? undefined} controlDialogOpen={Boolean(controlDialogProcessId)} refreshing={refreshingDashboard} onRefresh={() => void loadModelData(true)} onSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process) }} onClearSelection={() => { setSelectedProcessId(null); setLogs([]) }} onDoubleSelect={(process) => setControlDialogProcessId(process.id)} onContextAction={(process, action) => requestControl(process.id, action)} onAdd={() => setCreateOpen(true)} /></div><ModelProcessEventLogBar process={selectedProcess} logs={logs} /></div> : <ModelProcessGrid processes={filteredProcesses} busyIds={busyIds} onControl={requestControl} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} onDelete={setDeleteTarget} />}
+    {loading ? <div className="flex flex-1 items-center justify-center text-sm text-slate-500">모델 목록을 불러오는 중입니다.</div> : viewMode === 'dashboard' ? <div className="flex min-h-0 flex-1 basis-0 flex-col gap-3 overflow-hidden"><div className="flex min-h-0 flex-1 basis-0 flex-col overflow-hidden"><ModelVmDashboard vms={dashboard.vms} selectedProcessId={selectedProcessId ?? undefined} controlDialogOpen={Boolean(controlDialogProcessId)} refreshing={refreshingDashboard} onRefresh={() => void loadModelData(true)} onSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process) }} onClearSelection={() => { setSelectedProcessId(null); setLogs([]) }} onDoubleSelect={(process) => { setSelectedProcessId(process.id); void loadLogs(process); setControlDialogProcessId(process.id) }} onContextAction={(process, action) => { setSelectedProcessId(process.id); void loadLogs(process); requestControl(process.id, action) }} onAdd={() => setCreateOpen(true)} /></div><ModelProcessEventLogBar process={selectedProcess} logs={logs} /></div> : <ModelProcessGrid processes={filteredProcesses} busyIds={busyIds} onControl={requestControl} onSettings={setSettingsProcess} onLogs={(process) => void openLogs(process)} onDelete={setDeleteTarget} />}
     <div className="flex items-center justify-between text-xs text-slate-500"><span>{selectedIds.includes('all') ? 'ALL' : areas.filter((area) => selectedIds.includes(area.id)).map((area) => area.name).join(', ')}</span><span>총 {filteredProcesses.length}건 · 마지막 조회 {dashboard.refreshedAt ? new Date(dashboard.refreshedAt).toLocaleTimeString('ko-KR') : '-'}</span></div>
     <ModelSettingsDialog process={settingsProcess} onClose={() => setSettingsProcess(null)} onSave={saveSettings} />
     <ModelEventLogDialog process={logProcess} logs={logs} onClose={() => setLogProcess(null)} />
