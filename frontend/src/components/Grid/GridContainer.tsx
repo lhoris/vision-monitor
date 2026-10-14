@@ -370,12 +370,12 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
-  const processTabCameraPositions = activeTab.subTabs
-    .flatMap((subTab) => subTab.cameraPositions)
-  const usedCameraIds = processTabCameraPositions
-    .filter((position) => !position.source && position.cameraId > 0)
-    .map((position) => position.cameraId)
-  const existingTemporaryUrls = processTabCameraPositions
+  const usedCameraIds = activeSubTab.cameraPositions.flatMap((position) => {
+    if (!position.source && position.cameraId > 0) return [position.cameraId]
+    const sourceId = position.source?.id.match(/^video-source-(\d+)$/)
+    return sourceId ? [Number(sourceId[1])] : []
+  })
+  const existingTemporaryUrls = activeSubTab.cameraPositions
     .map((position) => position.source?.url)
     .filter((url): url is string => Boolean(url))
 

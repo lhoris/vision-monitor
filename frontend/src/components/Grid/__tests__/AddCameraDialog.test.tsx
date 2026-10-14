@@ -191,8 +191,7 @@ describe('AddCameraDialog', () => {
         isOpen
         cameras={cameras}
         videoSources={videoSources}
-        usedCameraIds={[]}
-        existingTemporaryUrls={['https://managed.test/live.m3u8']}
+        usedCameraIds={[10]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={vi.fn()}
         onClose={vi.fn()}

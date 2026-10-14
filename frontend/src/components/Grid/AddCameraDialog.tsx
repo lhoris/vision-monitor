@@ -44,7 +44,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   isOpen,
   cameras: _cameras,
   videoSources = [],
-  usedCameraIds: _usedCameraIds,
+  usedCameraIds,
   existingTemporaryUrls = [],
   initialSource,
   onSelectCamera: _onSelectCamera,
@@ -162,7 +162,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
               ) : (
                 <>
                   {filteredVideoSources.map((source) => {
-                    const alreadyAdded = existingTemporaryUrls.includes(source.url)
+                    const alreadyAdded = usedCameraIds.includes(source.id)
                     return (
                       <button
                         key={`video-source-${source.id}`}
