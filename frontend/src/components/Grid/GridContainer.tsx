@@ -64,6 +64,13 @@ export function sortCameraPositionsByGridOrder(positions: CameraPosition[]): Cam
   return [...positions].sort((left, right) => left.row - right.row || left.col - right.col)
 }
 
+export function getUsedVideoSourceIds(positions: CameraPosition[]): number[] {
+  return positions.flatMap((position) => {
+    const sourceId = position.source?.id.match(/^video-source-(\d+)$/)
+    return sourceId ? [Number(sourceId[1])] : []
+  })
+}
+
 export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
@@ -370,11 +377,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
-  const usedCameraIds = activeSubTab.cameraPositions.flatMap((position) => {
-    if (!position.source && position.cameraId > 0) return [position.cameraId]
-    const sourceId = position.source?.id.match(/^video-source-(\d+)$/)
-    return sourceId ? [Number(sourceId[1])] : []
-  })
+  const usedCameraIds = getUsedVideoSourceIds(activeSubTab.cameraPositions)
   const existingTemporaryUrls = activeSubTab.cameraPositions
     .map((position) => position.source?.url)
     .filter((url): url is string => Boolean(url))
