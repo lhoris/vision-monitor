@@ -1,5 +1,11 @@
 import type { Event } from './api'
 
+export type AlarmSseStatus = 'connecting' | 'connected' | 'retrying' | 'closed' | 'error'
+
+export interface AlarmSseSubscription {
+  unsubscribe: () => void
+}
+
 export type AlarmClipStatus = 'loading' | 'available' | 'partial' | 'unavailable' | 'error'
 
 export interface AlarmOffsetConfig {
