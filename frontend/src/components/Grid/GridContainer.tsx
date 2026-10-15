@@ -32,7 +32,7 @@ import {
   removeCameraPosition,
   resizeCameraPosition,
 } from './useGridDnd'
-import type { CameraPosition, Tab, SubTab } from '@/types/layout'
+import type { CameraPosition, Layout, Tab, SubTab } from '@/types/layout'
 import type { Camera } from '@/types/camera'
 import type { PlayerState, TemporaryVideoSource } from '@/types/streamPlayer'
 import type { VideoSource } from '@/types/videoSource'
@@ -64,7 +64,13 @@ export function sortCameraPositionsByGridOrder(positions: CameraPosition[]): Cam
   return [...positions].sort((left, right) => left.row - right.row || left.col - right.col)
 }
 
-export function getUsedVideoSourceIds(positions: CameraPosition[]): number[] {
+export function getUsedVideoSourceIds(layout: Layout | null, tabId: string, subTabId: string): number[] {
+  const positions = layout?.tabs
+    .find((tab) => tab.id === tabId)
+    ?.subTabs
+    .find((subTab) => subTab.id === subTabId)
+    ?.cameraPositions ?? []
+
   return positions.flatMap((position) => {
     const sourceId = position.source?.id.match(/^video-source-(\d+)$/)
     return sourceId ? [Number(sourceId[1])] : []
@@ -377,7 +383,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
-  const usedCameraIds = getUsedVideoSourceIds(activeSubTab.cameraPositions)
+  const usedCameraIds = getUsedVideoSourceIds(layout, activeTabId, activeSubTab.id)
   const existingTemporaryUrls = activeSubTab.cameraPositions
     .map((position) => position.source?.url)
     .filter((url): url is string => Boolean(url))

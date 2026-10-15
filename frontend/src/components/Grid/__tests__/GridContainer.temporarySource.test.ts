@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getUsedVideoSourceIds, updateTemporarySourcePositions } from '../GridContainer'
 import type { CameraPosition } from '@/types/layout'
+import { createMockLayout } from '@/test/fixtures/liveMonitoring'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
 
 describe('updateTemporarySourcePositions', () => {
@@ -39,25 +40,39 @@ describe('updateTemporarySourcePositions', () => {
 })
 
 describe('getUsedVideoSourceIds', () => {
-  it('does not treat an unrendered camera position as an added video source', () => {
-    const positions: CameraPosition[] = [
-      { cameraId: 10, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
-      {
-        cameraId: -1,
-        row: 0,
-        col: 1,
-        rowSpan: 1,
-        colSpan: 1,
-        source: {
-          id: 'video-source-11',
-          url: 'https://media.test/managed.m3u8',
-          protocol: 'hls',
-          displayName: 'Managed feed',
-          playbackStatus: 'idle',
-        },
+  it('checks only the selected detail tab, not another detail tab in the same process', () => {
+    const layout = createMockLayout('2026-10-16T00:00:00.000Z')
+    layout.activeTab = 'tab-1'
+    layout.tabs[0].subTabs[0].cameraPositions = [{
+      cameraId: -1,
+      row: 0,
+      col: 0,
+      rowSpan: 1,
+      colSpan: 1,
+      source: {
+        id: 'video-source-10',
+        url: 'https://media.test/managed.m3u8',
+        protocol: 'hls',
+        displayName: 'Managed feed',
+        playbackStatus: 'idle',
       },
-    ]
+    }]
+    layout.tabs[0].subTabs[1].cameraPositions = []
 
-    expect(getUsedVideoSourceIds(positions)).toEqual([11])
+    expect(getUsedVideoSourceIds(layout, 'tab-1', layout.tabs[0].subTabs[0].id)).toEqual([10])
+    expect(getUsedVideoSourceIds(layout, 'tab-1', layout.tabs[0].subTabs[1].id)).toEqual([])
+  })
+
+  it('does not treat an ordinary camera position as an added video source', () => {
+    const layout = createMockLayout('2026-10-16T00:00:00.000Z')
+    layout.tabs[0].subTabs[0].cameraPositions = [{
+      cameraId: 10,
+      row: 0,
+      col: 0,
+      rowSpan: 1,
+      colSpan: 1,
+    }]
+
+    expect(getUsedVideoSourceIds(layout, 'tab-1', layout.tabs[0].subTabs[0].id)).toEqual([])
   })
 })
