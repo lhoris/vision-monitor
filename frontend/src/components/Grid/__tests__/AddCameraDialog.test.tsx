@@ -224,8 +224,49 @@ describe('AddCameraDialog', () => {
     )
 
     fireEvent.contextMenu(screen.getByRole('button', { name: /Managed Line Feed/ }))
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Remove from current detail tab' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Remove video' }))
 
     expect(onRemoveVideoSource).toHaveBeenCalledWith(10)
+  })
+
+  it('explains how to remove an already added source when clicked', () => {
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[10]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={vi.fn()}
+        onClose={vi.fn()}
+      /></I18nextProvider>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Managed Line Feed/ }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('already added')
+  })
+
+  it('closes when clicking the backdrop but not the dialog content', () => {
+    const onClose = vi.fn()
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={vi.fn()}
+        onClose={onClose}
+      /></I18nextProvider>
+    )
+
+    const dialog = screen.getByRole('dialog')
+    fireEvent.click(dialog)
+    expect(onClose).not.toHaveBeenCalled()
+    fireEvent.click(dialog.parentElement as HTMLElement)
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 })

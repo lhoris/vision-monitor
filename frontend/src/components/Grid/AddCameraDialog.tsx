@@ -60,6 +60,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   const [url, setUrl] = useState(initialSource?.url ?? '')
   const [displayName, setDisplayName] = useState(initialSource?.displayName ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ source: VideoSource; x: number; y: number } | null>(null)
 
   useEffect(() => {
@@ -70,8 +71,15 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     setDisplayName(initialSource?.displayName ?? '')
     setSearchTerm('')
     setError(null)
+    setNotice(null)
     setContextMenu(null)
   }, [isOpen, initialSource])
+
+  useEffect(() => {
+    if (!notice) return undefined
+    const timeout = window.setTimeout(() => setNotice(null), 2800)
+    return () => window.clearTimeout(timeout)
+  }, [notice])
 
   const filteredVideoSources = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
@@ -132,8 +140,8 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-[min(560px,100%)] overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="w-[min(560px,100%)] overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title" onClick={(event) => event.stopPropagation()}>
         <header className="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-700">
           <div>
             <h2 id="add-camera-dialog-title" className="text-xl font-bold text-gray-900 dark:text-white">
@@ -172,7 +180,11 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                         key={`video-source-${source.id}`}
                         type="button"
                         onClick={() => {
-                          if (!alreadyAdded) handleSelectVideoSource(source)
+                          if (!alreadyAdded) {
+                            handleSelectVideoSource(source)
+                          } else {
+                            setNotice(t('live.addCameraDialog.alreadyAddedNotice'))
+                          }
                         }}
                         onContextMenu={(event) => {
                           if (!alreadyAdded) return
@@ -194,6 +206,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                 </>
               )}
             </div>
+            {notice && <p role="status" className="border-t border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">{notice}</p>}
           </>
         ) : (
           <form onSubmit={handleDirectSubmit} className="space-y-4 p-5">
@@ -236,7 +249,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                 setContextMenu(null)
               }}
             >
-              {t('live.addCameraDialog.removeFromCurrentSubTab')}
+              {t('live.addCameraDialog.removeVideo')}
             </button>
           </div>
         </>
