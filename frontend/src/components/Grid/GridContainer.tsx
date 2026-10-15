@@ -77,6 +77,10 @@ export function getUsedVideoSourceIds(layout: Layout | null, tabId: string, subT
   })
 }
 
+export function removeVideoSourceFromPositions(positions: CameraPosition[], sourceId: number): CameraPosition[] {
+  return positions.filter((position) => position.source?.id !== `video-source-${sourceId}`)
+}
+
 export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
@@ -298,6 +302,11 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
     updateActiveSubTabPositions(positions)
     setSelectedCellId(null)
+  }
+
+  const handleRemoveVideoSource = (sourceId: number) => {
+    if (!activeSubTab) return
+    updateActiveSubTabPositions(removeVideoSourceFromPositions(activeSubTab.cameraPositions, sourceId))
   }
 
   const handleEditTemporarySource = (cameraId: number) => {
@@ -558,6 +567,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
           : undefined}
         onSelectCamera={handleSelectCamera}
         onAddDirectSource={handleAddDirectSource}
+        onRemoveVideoSource={handleRemoveVideoSource}
         onClose={() => {
           setShowCameraSelector(false)
           setSelectedCellId(null)

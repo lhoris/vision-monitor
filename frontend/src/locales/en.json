@@ -143,6 +143,7 @@
       "searchLabel": "Search video sources",
       "noResults": "No search results.",
       "alreadyAdded": "Already added",
+      "removeFromCurrentSubTab": "Remove from current detail tab",
       "managedSource": "Managed source",
       "protocolLabel": "Protocol",
       "urlLabel": "Video URL",

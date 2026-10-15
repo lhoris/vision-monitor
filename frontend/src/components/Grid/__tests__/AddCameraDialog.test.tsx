@@ -52,6 +52,7 @@ describe('AddCameraDialog', () => {
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -79,6 +80,7 @@ describe('AddCameraDialog', () => {
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -102,6 +104,7 @@ describe('AddCameraDialog', () => {
         existingTemporaryUrls={['https://media.test/live.m3u8']}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -122,6 +125,7 @@ describe('AddCameraDialog', () => {
         usedCameraIds={[1]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -141,6 +145,7 @@ describe('AddCameraDialog', () => {
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={onAddDirectSource}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -178,6 +183,7 @@ describe('AddCameraDialog', () => {
         usedCameraIds={[]}
         onSelectCamera={vi.fn()}
         onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
       /></I18nextProvider>
     )
@@ -199,7 +205,27 @@ describe('AddCameraDialog', () => {
     )
 
     const sourceButton = screen.getByRole('button', { name: /Managed Line Feed/ })
-    expect(sourceButton).toBeDisabled()
     expect(sourceButton).toHaveTextContent('Already added')
+  })
+
+  it('removes an already added managed source from the current detail tab by context menu', () => {
+    const onRemoveVideoSource = vi.fn()
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[10]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={onRemoveVideoSource}
+        onClose={vi.fn()}
+      /></I18nextProvider>
+    )
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /Managed Line Feed/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Remove from current detail tab' }))
+
+    expect(onRemoveVideoSource).toHaveBeenCalledWith(10)
   })
 })

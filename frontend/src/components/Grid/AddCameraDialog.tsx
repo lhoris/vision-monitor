@@ -20,6 +20,7 @@ interface AddCameraDialogProps {
   initialSource?: TemporaryVideoSource
   onSelectCamera: (camera: Camera) => void
   onAddDirectSource: (source: TemporaryVideoSource) => void
+  onRemoveVideoSource: (sourceId: number) => void
   onClose: () => void
 }
 
@@ -49,6 +50,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   initialSource,
   onSelectCamera: _onSelectCamera,
   onAddDirectSource,
+  onRemoveVideoSource,
   onClose,
 }) => {
   const { t } = useTranslation()
@@ -58,6 +60,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   const [url, setUrl] = useState(initialSource?.url ?? '')
   const [displayName, setDisplayName] = useState(initialSource?.displayName ?? '')
   const [error, setError] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ source: VideoSource; x: number; y: number } | null>(null)
 
   useEffect(() => {
     if (!isOpen) return
@@ -67,6 +70,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     setDisplayName(initialSource?.displayName ?? '')
     setSearchTerm('')
     setError(null)
+    setContextMenu(null)
   }, [isOpen, initialSource])
 
   const filteredVideoSources = useMemo(() => {
@@ -167,8 +171,14 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                       <button
                         key={`video-source-${source.id}`}
                         type="button"
-                        disabled={alreadyAdded}
-                        onClick={() => handleSelectVideoSource(source)}
+                        onClick={() => {
+                          if (!alreadyAdded) handleSelectVideoSource(source)
+                        }}
+                        onContextMenu={(event) => {
+                          if (!alreadyAdded) return
+                          event.preventDefault()
+                          setContextMenu({ source, x: event.clientX, y: event.clientY })
+                        }}
                         className="flex w-full items-center justify-between border-b border-gray-100 px-5 py-4 text-left hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60 dark:border-gray-700 dark:hover:bg-gray-700 dark:disabled:bg-gray-900"
                       >
                         <span className="min-w-0">
@@ -209,6 +219,28 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
           </form>
         )}
       </div>
+      {contextMenu && (
+        <>
+          <div className="fixed inset-0 z-[60]" onClick={() => setContextMenu(null)} />
+          <div
+            role="menu"
+            className="fixed z-[70] min-w-48 rounded border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-600 dark:bg-gray-800"
+            style={{ left: contextMenu.x, top: contextMenu.y }}
+          >
+            <button
+              type="button"
+              role="menuitem"
+              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+              onClick={() => {
+                onRemoveVideoSource(contextMenu.source.id)
+                setContextMenu(null)
+              }}
+            >
+              {t('live.addCameraDialog.removeFromCurrentSubTab')}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }

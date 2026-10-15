@@ -143,6 +143,7 @@
       "searchLabel": "영상 소스 검색",
       "noResults": "검색 결과가 없습니다.",
       "alreadyAdded": "이미 추가됨",
+      "removeFromCurrentSubTab": "현재 세부공정탭에서 제거",
       "managedSource": "관리 소스",
       "protocolLabel": "프로토콜",
       "urlLabel": "영상 주소",
