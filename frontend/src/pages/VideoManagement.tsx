@@ -32,6 +32,7 @@ interface VideoSourceModalProps {
   open: boolean
   initialValue: VideoSourceInput
   modelProcesses: ModelProcess[]
+  onRefreshModelProcesses: () => void
   title: string
   saving: boolean
   error: string
@@ -43,7 +44,7 @@ function normalizeManagedProtocol(protocol: VideoSource['protocol']): VideoProto
   return VIDEO_PROTOCOLS.includes(protocol) ? protocol : 'WEBRTC'
 }
 
-function VideoSourceModal({ open, initialValue, modelProcesses, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
+function VideoSourceModal({ open, initialValue, modelProcesses, onRefreshModelProcesses, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
   const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
@@ -111,10 +112,10 @@ function VideoSourceModal({ open, initialValue, modelProcesses, title, saving, e
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             모델 프로세스 ID
-            <select value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+            <select value={value.modelProcessId ?? ''} onFocus={onRefreshModelProcesses} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
               <option value="">연결하지 않음</option>
               {value.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === value.modelProcessId) ? <option value={value.modelProcessId}>연결된 프로세스 #{value.modelProcessId}</option> : null}
-              {modelProcesses.map((process) => <option key={process.id} value={process.id}>#{process.id} · {process.modelName || process.processName}</option>)}
+              {modelProcesses.map((process) => <option key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
             </select>
           </label>
         </div>
@@ -160,9 +161,16 @@ export function VideoManagement() {
   }, [])
 
   useEffect(() => { void load() }, [load])
-  useEffect(() => {
-    void listProcesses().then((result) => setModelProcesses(result.processes)).catch(() => setModelProcesses([]))
+  const loadModelProcesses = useCallback(async () => {
+    try {
+      const result = await listProcesses()
+      setModelProcesses(result.processes)
+    } catch (exception) {
+      console.error('Failed to load model processes for video source mapping', exception)
+    }
   }, [])
+
+  useEffect(() => { void loadModelProcesses() }, [loadModelProcesses])
   useEffect(() => { setPage(1) }, [filters, pageSize, appliedQuery])
   useEffect(() => {
     if (!notice) return undefined
@@ -353,6 +361,7 @@ export function VideoManagement() {
     <select
       aria-label={`${row.name} 모델 프로세스 선택`}
       value={row.modelProcessId ?? ''}
+      onFocus={() => { void loadModelProcesses() }}
       onChange={(event) => {
         const modelProcessId = event.target.value ? Number(event.target.value) : null
         setRows((current) => current.map((item) => item.id === row.id
@@ -363,7 +372,7 @@ export function VideoManagement() {
     >
       <option value="">연결하지 않음</option>
       {row.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === row.modelProcessId) ? <option value={row.modelProcessId}>연결된 프로세스 #{row.modelProcessId}</option> : null}
-      {modelProcesses.map((process) => <option key={process.id} value={process.id}>#{process.id} · {process.modelName || process.processName}</option>)}
+      {modelProcesses.map((process) => <option key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
     </select>
   )
 
@@ -474,7 +483,7 @@ export function VideoManagement() {
         </div>
       </section>
 
-      <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
+      <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} onRefreshModelProcesses={() => { void loadModelProcesses() }} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
     </section>
   )
 }
