@@ -140,8 +140,14 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="w-[min(560px,100%)] overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title" onClick={(event) => event.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => {
+      if (contextMenu) {
+        setContextMenu(null)
+        return
+      }
+      onClose()
+    }}>
+      <div className="relative w-[min(560px,100%)] overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title" onClick={(event) => event.stopPropagation()}>
         <header className="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-700">
           <div>
             <h2 id="add-camera-dialog-title" className="text-xl font-bold text-gray-900 dark:text-white">
@@ -206,7 +212,6 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                 </>
               )}
             </div>
-            {notice && <p role="status" className="border-t border-amber-100 bg-amber-50 px-5 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">{notice}</p>}
           </>
         ) : (
           <form onSubmit={handleDirectSubmit} className="space-y-4 p-5">
@@ -231,6 +236,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
             </div>
           </form>
         )}
+        {notice && <p role="status" className="absolute bottom-4 left-1/2 z-10 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800 shadow-lg dark:border-amber-900/40 dark:bg-amber-900/90 dark:text-amber-100">{notice}</p>}
       </div>
       {contextMenu && (
         <>

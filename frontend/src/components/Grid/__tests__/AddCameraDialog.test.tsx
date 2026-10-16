@@ -269,4 +269,26 @@ describe('AddCameraDialog', () => {
     fireEvent.click(dialog.parentElement as HTMLElement)
     expect(onClose).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps the dialog open when clicking outside an open context menu', () => {
+    const onClose = vi.fn()
+    render(
+      <I18nextProvider i18n={i18n}><AddCameraDialog
+        isOpen
+        cameras={cameras}
+        videoSources={videoSources}
+        usedCameraIds={[10]}
+        onSelectCamera={vi.fn()}
+        onAddDirectSource={vi.fn()}
+        onRemoveVideoSource={vi.fn()}
+        onClose={onClose}
+      /></I18nextProvider>
+    )
+
+    fireEvent.contextMenu(screen.getByRole('button', { name: /Managed Line Feed/ }))
+    fireEvent.click(screen.getByRole('dialog').parentElement as HTMLElement)
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+  })
 })
