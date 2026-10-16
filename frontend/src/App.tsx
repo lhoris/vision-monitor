@@ -106,7 +106,8 @@ export function AppRoutes() {
     const subscription = subscribeToAlarmStream((alarm) => {
       dispatch(addEvent({
         ...alarm,
-        cameraId: Number(alarm.cameraId),
+        cameraId: alarm.cameraId == null ? 0 : Number(alarm.cameraId),
+        modelProcessId: alarm.modelProcessId == null ? null : Number(alarm.modelProcessId),
         timestamp: alarm.timestamp instanceof Date ? alarm.timestamp : new Date(alarm.timestamp),
       }))
     })

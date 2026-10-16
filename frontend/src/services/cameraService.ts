@@ -158,6 +158,7 @@ function toCameraFocus(camera: CameraDetail): CameraFocusDto {
 
   return {
     cameraId: camera.id,
+    modelProcessId: camera.modelProcessId ?? null,
     cameraName: camera.name,
     processType: 'unknown',
     zoneName: camera.zone,

@@ -23,7 +23,7 @@ requests.post(
         "source": "MODEL_SERVER",
         "type": "PERSON_DETECTED",
         "severity": "warning",
-        "cameraId": 7,
+        "modelProcessId": 12,
         "description": "Restricted area detected",
         "occurredAt": "2026-10-16T12:00:00Z",
         "metadata": {"zone": "A-01"},

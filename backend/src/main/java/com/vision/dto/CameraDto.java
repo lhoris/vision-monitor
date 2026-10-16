@@ -24,6 +24,7 @@ public class CameraDto {
     private String streamUrl;
     private String streamProtocol;
     private String status;
+    private Long modelProcessId;
     private String resolution;
     private Integer fps;
     private Boolean recordingEnabled;

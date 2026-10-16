@@ -26,6 +26,7 @@ export interface CameraPosition {
     protocol: 'hls' | 'webrtc' | 'rtsp'
     displayName: string
     playbackStatus: 'idle' | 'loading' | 'playing' | 'paused' | 'error' | 'seeking'
+    modelProcessId?: number | null
   }
 }
 

@@ -28,6 +28,7 @@ export interface TemporaryVideoSource {
   protocol: Exclude<StreamProtocol, 'unknown'>
   displayName: string
   playbackStatus: PlayerState
+  modelProcessId?: number | null
 }
 
 /**

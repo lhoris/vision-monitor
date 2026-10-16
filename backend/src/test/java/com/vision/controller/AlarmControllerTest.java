@@ -49,7 +49,7 @@ class AlarmControllerTest {
                         .header("X-Model-Server-Key", "model-secret")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"source":"MODEL_SERVER","type":"PERSON_DETECTED","severity":"warning","cameraId":7,"description":"Restricted area detected","occurredAt":"2026-10-16T12:00:00Z","metadata":{"zone":"A-01"}}
+                                {"source":"MODEL_SERVER","type":"PERSON_DETECTED","severity":"warning","modelProcessId":12,"description":"Restricted area detected","occurredAt":"2026-10-16T12:00:00Z","metadata":{"zone":"A-01"}}
                                 """))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.success").value(true))

@@ -68,6 +68,7 @@ export default function CameraFocus() {
           zone: temporarySource.protocol.toUpperCase(),
           streamUrl: temporarySource.url,
           streamProtocol: temporarySource.protocol,
+          modelProcessId: temporarySource.modelProcessId ?? null,
           status: temporarySource.playbackStatus === 'error' ? 'error' : 'online',
         } satisfies Camera]
       }
@@ -90,7 +91,7 @@ export default function CameraFocus() {
   )
   const selectedTemporarySource = routeState.cameraId ? temporarySources[routeState.cameraId] : undefined
   const apiCameraId = routeState.cameraId && routeState.cameraId > 0 ? routeState.cameraId : null
-  const activeCameraId = displayCamera?.cameraId ?? routeState.cameraId
+  const activeModelProcessId = displayCamera?.modelProcessId ?? selectedTemporarySource?.modelProcessId ?? null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
@@ -100,7 +101,11 @@ export default function CameraFocus() {
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
 
   useEffect(() => {
-    if (!realtimeAlarm || Number(realtimeAlarm.cameraId) !== activeCameraId) {
+    if (
+      !realtimeAlarm
+      || activeModelProcessId == null
+      || Number(realtimeAlarm.modelProcessId) !== Number(activeModelProcessId)
+    ) {
       return
     }
 
@@ -117,6 +122,7 @@ export default function CameraFocus() {
         buildManualTestAlert({
           alertId: realtimeAlarm.id,
           cameraId: realtimeAlarm.cameraId,
+          modelProcessId: realtimeAlarm.modelProcessId,
           message: realtimeAlarm.description,
           location: displayCamera?.location ?? 'Entry Zone',
           startedAt: occurredAt.toISOString(),
@@ -126,7 +132,7 @@ export default function CameraFocus() {
         ...current,
       ]
     })
-  }, [activeCameraId, displayCamera?.location, realtimeAlarm])
+  }, [activeModelProcessId, displayCamera?.location, realtimeAlarm])
   const eventRange = useMemo(
     () => ({
       from: playbackSession?.availableFrom ?? '2026-08-15T08:00:00+09:00',
@@ -338,6 +344,7 @@ function parseTemporarySources(value: string | null): Record<number, TemporaryVi
 function toTemporaryCameraFocus(cameraId: number, source: TemporaryVideoSource): CameraFocusDto {
   return {
     cameraId,
+    modelProcessId: source.modelProcessId ?? null,
     cameraName: source.displayName,
     processType: 'temporary',
     zoneName: source.protocol.toUpperCase(),
@@ -380,6 +387,7 @@ function toTemporaryLiveStream(cameraId: number, source: TemporaryVideoSource): 
 function buildManualTestAlert({
   alertId,
   cameraId,
+  modelProcessId,
   message,
   location,
   startedAt,
@@ -388,6 +396,7 @@ function buildManualTestAlert({
 }: {
   alertId: number
   cameraId: number
+  modelProcessId?: number | null
   message: string
   location: string
   startedAt: string
@@ -397,6 +406,7 @@ function buildManualTestAlert({
   return {
     alertId,
     cameraId,
+    modelProcessId: modelProcessId ?? null,
     severity,
     message,
     location,

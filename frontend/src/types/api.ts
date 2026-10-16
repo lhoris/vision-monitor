@@ -21,6 +21,7 @@ export interface PaginatedResponse<T> {
 export interface Event {
   id: number
   cameraId: number
+  modelProcessId?: number | null
   type: string
   severity: 'low' | 'medium' | 'warning' | 'high' | 'critical'
   description: string

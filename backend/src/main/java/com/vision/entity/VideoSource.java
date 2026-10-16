@@ -47,4 +47,7 @@ public class VideoSource extends BaseAudit {
 
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
+
+    @Column(name = "MODEL_PROCESS_ID")
+    private Long modelProcessId;
 }

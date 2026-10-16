@@ -42,6 +42,7 @@ public class CameraQueryService {
                 .streamUrl(source.getUrl())
                 .streamProtocol(source.getProtocol() == null ? null : source.getProtocol().toLowerCase(Locale.ROOT))
                 .status("ACTIVE".equalsIgnoreCase(source.getStatus()) ? "online" : "offline")
+                .modelProcessId(source.getModelProcessId())
                 .recordingEnabled(false)
                 .createdAt(source.getCreatedAt())
                 .updatedAt(source.getUpdatedAt())

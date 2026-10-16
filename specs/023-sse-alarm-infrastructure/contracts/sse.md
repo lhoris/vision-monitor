@@ -32,7 +32,7 @@ data: {"sentAt":"2026-10-16T12:00:00Z"}
 ```json
 {
   "id": 101,
-  "cameraId": 7,
+  "modelProcessId": 12,
   "type": "PERSON_DETECTED",
   "severity": "critical",
   "description": "Restricted area detected",
@@ -60,7 +60,7 @@ Publisher는 사용자명과 위 payload를 받아 `alarm` event로 전송한다
   "source": "MODEL_SERVER",
   "type": "PERSON_DETECTED",
   "severity": "warning",
-  "cameraId": 7,
+  "modelProcessId": 12,
   "description": "Restricted area detected",
   "occurredAt": "2026-10-16T12:00:00Z",
   "metadata": {"zone": "A-01"}

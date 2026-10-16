@@ -10,7 +10,7 @@ public record AlarmIngressRequest(
         String source,
         String type,
         String severity,
-        Long cameraId,
+        Long modelProcessId,
         String description,
         Instant occurredAt,
         Map<String, Object> metadata
@@ -18,7 +18,7 @@ public record AlarmIngressRequest(
     public Map<String, Object> toSsePayload() {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("id", id == null ? System.currentTimeMillis() : id);
-        payload.put("cameraId", cameraId);
+        payload.put("modelProcessId", modelProcessId);
         payload.put("type", type);
         payload.put("severity", severity);
         payload.put("description", description);

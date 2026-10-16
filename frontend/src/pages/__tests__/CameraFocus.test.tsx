@@ -103,6 +103,7 @@ describe('CameraFocus page shell', () => {
           zone: 'Entry Zone',
           streamUrl: `https://media.test/camera-${id}.m3u8`,
           streamProtocol: 'hls',
+          modelProcessId: id === 1 ? 101 : 102,
           status: 'online',
           recordingEnabled: true,
           lastSeen: '2026-10-05T00:00:00Z',
@@ -179,6 +180,7 @@ describe('CameraFocus page shell', () => {
     store.dispatch(addEvent({
       id: 9101,
       cameraId: 1,
+      modelProcessId: 101,
       type: 'PERSON_DETECTED',
       severity: 'warning',
       description: 'Realtime camera 1 alarm',

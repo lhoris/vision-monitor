@@ -13,6 +13,7 @@ const emptyForm: VideoSourceInput = {
   zone: '',
   status: 'ACTIVE',
   remarks: '',
+  modelProcessId: null,
 }
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status'
@@ -104,6 +105,10 @@ function VideoSourceModal({ open, initialValue, title, saving, error, onClose, o
           <label className="text-sm text-slate-700 dark:text-slate-200">
             비고
             <input value={value.remarks ?? ''} onChange={(event) => update('remarks', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+          </label>
+          <label className="text-sm text-slate-700 dark:text-slate-200">
+            모델 프로세스 ID
+            <input type="number" min="1" value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
         </div>
 
@@ -209,6 +214,7 @@ export function VideoManagement() {
     zone: row.zone ?? '',
     status: row.status,
     remarks: row.remarks ?? '',
+    modelProcessId: row.modelProcessId ?? null,
   })
 
   const saveRows = async () => {
@@ -273,6 +279,7 @@ export function VideoManagement() {
       zone: item.zone ?? '',
       status: item.status,
       remarks: item.remarks ?? '',
+      modelProcessId: item.modelProcessId ?? null,
     })
   }
 
@@ -396,6 +403,7 @@ export function VideoManagement() {
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
                 <th className={`w-36 ${headerCell}`}>위치</th>
                 <th className={`w-28 ${headerCell}`}>구역</th>
+                <th className={`w-36 ${headerCell}`}>모델 프로세스 ID</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
               </tr>
               {filtersVisible ? <GridColumnFilterRow filters={columnFilters} /> : null}
@@ -409,10 +417,11 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
+                  <td className={`${bodyCell} px-2 text-sm`}>{item.modelProcessId ?? '-'}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
                 </tr>
               ))}
-              {!visibleRows.length ? <tr><td colSpan={7} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
+              {!visibleRows.length ? <tr><td colSpan={8} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
           </table>
         </div>

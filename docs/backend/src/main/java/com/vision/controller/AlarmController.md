@@ -35,7 +35,7 @@ X-Model-Server-Key: yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=
   "source": "MODEL_SERVER",
   "type": "PERSON_DETECTED",
   "severity": "warning",
-  "cameraId": 7,
+  "modelProcessId": 12,
   "description": "Restricted area detected",
   "occurredAt": "2026-10-16T12:00:00Z",
   "metadata": {
@@ -51,7 +51,7 @@ X-Model-Server-Key: yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=
 | `source` | string | 이벤트 발생 주체. 예: `MODEL_SERVER` |
 | `type` | string | 이벤트 유형. 예: `PERSON_DETECTED` |
 | `severity` | string | 심각도. 예: `info`, `warning`, `critical` |
-| `cameraId` | number | 카메라 ID |
+| `modelProcessId` | number | `TB_M26_MODEL_PROCESS`의 PK |
 | `description` | string | 화면에 표시할 설명 |
 | `occurredAt` | ISO-8601 string | 이벤트 발생 시각. 예: `2026-10-16T12:00:00Z` |
 | `metadata` | object | confidence, zone 등 추가 정보 |
@@ -78,7 +78,7 @@ MODEL_SERVER_KEY = os.getenv(
 )
 
 
-def send_alarm(camera_id: int, description: str, confidence: float) -> None:
+def send_alarm(model_process_id: int, description: str, confidence: float) -> None:
     response = requests.post(
         ALARM_ENDPOINT,
         headers={
@@ -89,7 +89,7 @@ def send_alarm(camera_id: int, description: str, confidence: float) -> None:
             "source": "MODEL_SERVER",
             "type": "PERSON_DETECTED",
             "severity": "warning",
-            "cameraId": camera_id,
+            "modelProcessId": model_process_id,
             "description": description,
             "occurredAt": datetime.now(timezone.utc).isoformat(),
             "metadata": {"confidence": confidence},
@@ -99,7 +99,7 @@ def send_alarm(camera_id: int, description: str, confidence: float) -> None:
     response.raise_for_status()
 
 
-send_alarm(7, "Restricted area detected", 0.97)
+send_alarm(12, "Restricted area detected", 0.97)
 ```
 
 모델 loop에서는 같은 알람이 frame마다 반복 전송되지 않도록 감지 상태가 바뀌었을 때만 호출하거나 camera별 cooldown을 적용한다.
@@ -115,7 +115,7 @@ curl -i -X POST "http://172.18.86.79:8080/api/alarms/events" \
     "source": "MODEL_SERVER",
     "type": "PERSON_DETECTED",
     "severity": "warning",
-    "cameraId": 7,
+    "modelProcessId": 12,
     "description": "Restricted area detected",
     "occurredAt": "2026-10-16T12:00:00Z",
     "metadata": {"confidence": 0.97}

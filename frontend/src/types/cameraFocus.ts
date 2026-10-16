@@ -18,6 +18,7 @@ export interface RecentEventSummaryDto {
 
 export interface CameraFocusDto {
   cameraId: number
+  modelProcessId?: number | null
   cameraName: string
   processType: string
   zoneName: string
@@ -118,6 +119,7 @@ export type ActiveAlertStatus = 'active'
 export interface ActiveAlertDto {
   alertId: number
   cameraId: number
+  modelProcessId?: number | null
   severity: ActiveAlertSeverity
   message: string
   location: string

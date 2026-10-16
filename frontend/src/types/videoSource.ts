@@ -10,6 +10,7 @@ export interface VideoSource {
   zone?: string
   status: VideoSourceStatus
   remarks?: string
+  modelProcessId?: number | null
   createdAt?: string
   updatedAt?: string
 }

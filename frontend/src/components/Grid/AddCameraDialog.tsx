@@ -135,6 +135,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
       protocol: source.protocol.toLowerCase() as DirectProtocol,
       displayName: source.name,
       playbackStatus: 'idle',
+      modelProcessId: source.modelProcessId ?? null,
     })
     onClose()
   }
