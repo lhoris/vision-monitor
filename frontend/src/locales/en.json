@@ -242,7 +242,7 @@
     "searchPlaceholder": "Search alarms, video sources, or descriptions",
     "severity": "Severity",
     "allSeverities": "All severities",
-    "severities": { "low": "Low", "medium": "Medium", "high": "High", "critical": "Critical" },
+    "severities": { "low": "Low", "medium": "Medium", "warning": "Warning", "high": "High", "critical": "Critical" },
     "camera": "Video Source",
     "allCameras": "All video sources",
     "alarmType": "Alarm Type",

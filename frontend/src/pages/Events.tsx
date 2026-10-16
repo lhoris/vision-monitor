@@ -204,6 +204,7 @@ export function Events() {
     ({
       low: "border-sky-300 bg-sky-50 text-sky-800",
       medium: "border-amber-300 bg-amber-50 text-amber-800",
+      warning: "border-amber-300 bg-amber-50 text-amber-800",
       high: "border-orange-300 bg-orange-50 text-orange-800",
       critical: "border-rose-300 bg-rose-50 text-rose-800",
     })[severity];

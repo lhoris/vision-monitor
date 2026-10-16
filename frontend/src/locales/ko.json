@@ -242,7 +242,7 @@
     "searchPlaceholder": "알람, 영상 소스, 설명 검색",
     "severity": "심각도",
     "allSeverities": "전체 심각도",
-    "severities": { "low": "낮음", "medium": "보통", "high": "높음", "critical": "긴급" },
+    "severities": { "low": "낮음", "medium": "보통", "warning": "경고", "high": "높음", "critical": "긴급" },
     "camera": "영상 소스",
     "allCameras": "전체 영상 소스",
     "alarmType": "알람 유형",

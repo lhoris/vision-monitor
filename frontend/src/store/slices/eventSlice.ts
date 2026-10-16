@@ -129,6 +129,7 @@ const eventSlice = createSlice({
       state.selectedEvent = action.payload
     },
     addEvent: (state, action: PayloadAction<Event>) => {
+      if (state.events.some((event) => event.id === action.payload.id)) return
       state.events.unshift(action.payload)
     },
     updateEvent: (state, action: PayloadAction<Event>) => {

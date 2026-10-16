@@ -22,7 +22,7 @@ export interface Event {
   id: number
   cameraId: number
   type: string
-  severity: 'low' | 'medium' | 'high' | 'critical'
+  severity: 'low' | 'medium' | 'warning' | 'high' | 'critical'
   description: string
   timestamp: Date
   acknowledged: boolean

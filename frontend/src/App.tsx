@@ -18,12 +18,13 @@ import { VideoManagement } from '@/pages/VideoManagement'
 import { store } from '@/store'
 import { useEffect, useRef, useState } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
-import { fetchEvents } from '@/store/slices/eventSlice'
+import { addEvent, fetchEvents } from '@/store/slices/eventSlice'
 import { hasAdminAccess, logout, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n, { getUserLanguage } from '@/i18n'
 import { Modal } from '@/components/Common'
 import { SESSION_EXPIRED_EVENT } from '@/services/api'
+import { subscribeToAlarmStream } from '@/services/alarmSseService'
 import { useTranslation } from 'react-i18next'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
@@ -98,6 +99,19 @@ export function AppRoutes() {
       void dispatch(fetchEvents({ page: 0, pageSize: 100 }))
     }
   }, [dispatch, isAuthenticated])
+
+  useEffect(() => {
+    if (!isAuthenticated || sessionStatus !== 'valid') return undefined
+
+    const subscription = subscribeToAlarmStream((alarm) => {
+      dispatch(addEvent({
+        ...alarm,
+        timestamp: alarm.timestamp instanceof Date ? alarm.timestamp : new Date(alarm.timestamp),
+      }))
+    })
+
+    return subscription.unsubscribe
+  }, [dispatch, isAuthenticated, sessionStatus])
 
   if (!isAuthenticated) {
     return (
