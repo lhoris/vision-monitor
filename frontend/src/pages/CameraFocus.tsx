@@ -99,9 +99,13 @@ export default function CameraFocus() {
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
 
   useEffect(() => {
-    if (!realtimeAlarm || realtimeAlarm.cameraId !== apiCameraId) {
+    if (!realtimeAlarm || Number(realtimeAlarm.cameraId) !== apiCameraId) {
       return
     }
+
+    const occurredAt = realtimeAlarm.timestamp instanceof Date
+      ? realtimeAlarm.timestamp
+      : new Date(realtimeAlarm.timestamp)
 
     setManualAlerts((current) => {
       if (current.some((alert) => alert.alertId === realtimeAlarm.id)) {
@@ -114,7 +118,7 @@ export default function CameraFocus() {
           cameraId: realtimeAlarm.cameraId,
           message: realtimeAlarm.description,
           location: displayCamera?.location ?? 'Entry Zone',
-          startedAt: realtimeAlarm.timestamp.toISOString(),
+          startedAt: occurredAt.toISOString(),
           severity: realtimeAlarm.severity === 'critical' ? 'critical' : 'warning',
           source: 'sse',
         }),

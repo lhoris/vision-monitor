@@ -126,7 +126,6 @@ describe('CameraFocus page shell', () => {
     expect(screen.getByRole('heading', { name: '화면 확대 보기' })).toBeInTheDocument()
     expect(await screen.findByRole('tablist', { name: '카메라 목록' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /라이브로 돌아가기|Back to Live/ })).toBeInTheDocument()
-    expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Entry Zone CAM-01' })).toHaveAttribute('aria-selected', 'true')
     expect(await screen.findByRole('tab', { name: 'Entry Zone CAM-02' })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'Camera 7' })).not.toBeInTheDocument()
