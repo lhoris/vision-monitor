@@ -19,7 +19,18 @@ function validateSettings(input: ModelSettingsInput) {
 
 export async function listProcesses(processAreas?: string[]): Promise<ModelProcessResponse> {
   const params = processAreas?.length ? { processAreas: processAreas.join(',') } : undefined
-  return getResponseData(await apiClient.get<ModelProcessResponse>('/model-processes', params), { processes: [], processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }] })
+  const response = await apiClient.get<ModelProcessResponse>('/model-processes', params)
+  const data = response.data
+  if (response.success === false || !data || !Array.isArray(data.processes)) {
+    return { processes: [], processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }] }
+  }
+  return {
+    processes: data.processes.map((process) => ({
+      ...process,
+      id: String(process.id),
+    })),
+    processAreas: Array.isArray(data.processAreas) ? data.processAreas : [],
+  }
 }
 
 export async function listAgents(): Promise<ModelAgent[]> {
