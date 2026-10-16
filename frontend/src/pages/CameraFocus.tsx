@@ -99,7 +99,7 @@ export default function CameraFocus() {
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
 
   useEffect(() => {
-    if (!realtimeAlarm || Number(realtimeAlarm.cameraId) !== apiCameraId) {
+    if (!realtimeAlarm) {
       return
     }
 
