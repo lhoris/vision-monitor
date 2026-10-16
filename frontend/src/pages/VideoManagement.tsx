@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
 import { GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
 import { videoSourceService } from '@/services/videoSourceService'
+import { listProcesses } from '@/services/modelManagementService'
+import type { ModelProcess } from '@/types/modelManagement'
 import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
 
 const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
@@ -29,6 +31,7 @@ const editableCell = 'box-border h-9 w-full rounded-none border border-[#6ab6e8]
 interface VideoSourceModalProps {
   open: boolean
   initialValue: VideoSourceInput
+  modelProcesses: ModelProcess[]
   title: string
   saving: boolean
   error: string
@@ -40,7 +43,7 @@ function normalizeManagedProtocol(protocol: VideoSource['protocol']): VideoProto
   return VIDEO_PROTOCOLS.includes(protocol) ? protocol : 'WEBRTC'
 }
 
-function VideoSourceModal({ open, initialValue, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
+function VideoSourceModal({ open, initialValue, modelProcesses, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
   const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
@@ -108,7 +111,11 @@ function VideoSourceModal({ open, initialValue, title, saving, error, onClose, o
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             모델 프로세스 ID
-            <input type="number" min="1" value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+            <select value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+              <option value="">연결하지 않음</option>
+              {value.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === value.modelProcessId) ? <option value={value.modelProcessId}>연결된 프로세스 #{value.modelProcessId}</option> : null}
+              {modelProcesses.map((process) => <option key={process.id} value={process.id}>#{process.id} · {process.modelName || process.processName}</option>)}
+            </select>
           </label>
         </div>
 
@@ -124,6 +131,7 @@ function VideoSourceModal({ open, initialValue, title, saving, error, onClose, o
 
 export function VideoManagement() {
   const [rows, setRows] = useState<VideoGridRow[]>([])
+  const [modelProcesses, setModelProcesses] = useState<ModelProcess[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
   const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '' })
@@ -152,6 +160,9 @@ export function VideoManagement() {
   }, [])
 
   useEffect(() => { void load() }, [load])
+  useEffect(() => {
+    void listProcesses().then((result) => setModelProcesses(result.processes)).catch(() => setModelProcesses([]))
+  }, [])
   useEffect(() => { setPage(1) }, [filters, pageSize, appliedQuery])
   useEffect(() => {
     if (!notice) return undefined
@@ -445,7 +456,7 @@ export function VideoManagement() {
         </div>
       </section>
 
-      <VideoSourceModal open={modalOpen} initialValue={modalValue} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
+      <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
     </section>
   )
 }
