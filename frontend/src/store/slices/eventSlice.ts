@@ -17,6 +17,7 @@ interface EventFilter {
 
 interface EventState {
   events: Event[]
+  realtimeEvent: Event | null
   selectedEvent: Event | null
   alertSettings: AlertSetting[]
   loading: boolean
@@ -31,6 +32,7 @@ interface EventState {
 
 const initialState: EventState = {
   events: [],
+  realtimeEvent: null,
   selectedEvent: null,
   alertSettings: [],
   loading: false,
@@ -129,6 +131,7 @@ const eventSlice = createSlice({
       state.selectedEvent = action.payload
     },
     addEvent: (state, action: PayloadAction<Event>) => {
+      state.realtimeEvent = action.payload
       if (state.events.some((event) => event.id === action.payload.id)) return
       state.events.unshift(action.payload)
     },

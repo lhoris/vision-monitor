@@ -5,6 +5,7 @@ import { useActiveCameraAlerts } from '@/hooks/useActiveCameraAlerts'
 import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
 import { useCameraPlayback } from '@/hooks/useCameraPlayback'
 import { cameraService, focusApiService } from '@/services'
+import { useAppSelector } from '@/store'
 import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
@@ -21,6 +22,7 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
+  const realtimeAlarm = useAppSelector((state) => state.event.realtimeEvent)
   const [catalogCameras, setCatalogCameras] = useState<Camera[] | null>(null)
   const temporarySources = useMemo(
     () => parseTemporarySources(searchParams.get('temporarySources')),
@@ -95,6 +97,31 @@ export default function CameraFocus() {
   })
   const { alerts } = useActiveCameraAlerts(apiCameraId)
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
+
+  useEffect(() => {
+    if (!realtimeAlarm || realtimeAlarm.cameraId !== apiCameraId) {
+      return
+    }
+
+    setManualAlerts((current) => {
+      if (current.some((alert) => alert.alertId === realtimeAlarm.id)) {
+        return current
+      }
+
+      return [
+        buildManualTestAlert({
+          alertId: realtimeAlarm.id,
+          cameraId: realtimeAlarm.cameraId,
+          message: realtimeAlarm.description,
+          location: displayCamera?.location ?? 'Entry Zone',
+          startedAt: realtimeAlarm.timestamp.toISOString(),
+          severity: realtimeAlarm.severity === 'critical' ? 'critical' : 'warning',
+          source: 'sse',
+        }),
+        ...current,
+      ]
+    })
+  }, [apiCameraId, displayCamera?.location, realtimeAlarm])
   const eventRange = useMemo(
     () => ({
       from: playbackSession?.availableFrom ?? '2026-08-15T08:00:00+09:00',
@@ -351,24 +378,28 @@ function buildManualTestAlert({
   message,
   location,
   startedAt,
+  severity = 'warning',
+  source = 'manual-test',
 }: {
   alertId: number
   cameraId: number
   message: string
   location: string
   startedAt: string
+  severity?: ActiveAlertDto['severity']
+  source?: string
 }): ActiveAlertDto {
   return {
     alertId,
     cameraId,
-    severity: 'warning',
+    severity,
     message,
     location,
     startedAt,
     status: 'active',
     relatedEventId: null,
     metadata: {
-      source: 'manual-test',
+      source,
     },
   }
 }

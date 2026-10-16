@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import CameraFocus from '../CameraFocus'
+import { store } from '@/store'
+import { addEvent } from '@/store/slices/eventSlice'
 
 const { get, post } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn() }))
 vi.mock('@/services/api', () => ({ apiClient: { get, post } }))
@@ -31,10 +34,10 @@ function renderRoute(initialEntry: string) {
         <Route
           path="/live/cameras/:cameraId"
           element={
-            <>
+            <Provider store={store}>
               <CameraFocus />
               <LocationProbe />
-            </>
+            </Provider>
           }
         />
       </Routes>
@@ -169,6 +172,22 @@ describe('CameraFocus page shell', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('[사용자 테스트] 냉각 구간 속도 이상')
     expect(screen.queryByRole('dialog', { name: '테스트 알람 메시지' })).not.toBeInTheDocument()
+  })
+
+  it('shows an SSE alarm toast only for the focused camera', async () => {
+    renderRoute('/live/cameras/1?mode=live&cameraIds=1%2C2')
+
+    store.dispatch(addEvent({
+      id: 9101,
+      cameraId: 1,
+      type: 'PERSON_DETECTED',
+      severity: 'warning',
+      description: 'Realtime camera 1 alarm',
+      timestamp: new Date('2026-10-16T12:00:00Z'),
+      acknowledged: false,
+    }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Realtime camera 1 alarm')
   })
 
   it('shows a manual test alert for a temporary video source', async () => {
