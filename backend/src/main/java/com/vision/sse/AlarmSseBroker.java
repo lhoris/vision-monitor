@@ -47,6 +47,11 @@ public class AlarmSseBroker {
         emitters.forEach(emitter -> send(username, emitter, event));
     }
 
+    public void publishToAll(AlarmSseEvent event) {
+        emittersByUser.forEach((username, emitters) ->
+                emitters.forEach(emitter -> send(username, emitter, event)));
+    }
+
     public int subscriberCount(String username) {
         return emittersByUser.getOrDefault(username, new CopyOnWriteArrayList<>()).size();
     }

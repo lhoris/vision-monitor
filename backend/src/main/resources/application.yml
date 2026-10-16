@@ -36,6 +36,8 @@ mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
 
 vision:
+  sse:
+    model-server-key: ${MODEL_SERVER_KEY:}
   model-monitoring:
     status-timeout-seconds: 30
 

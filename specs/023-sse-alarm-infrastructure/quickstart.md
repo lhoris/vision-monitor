@@ -8,6 +8,32 @@
 
 현재 기능은 인메모리 broker이므로 백엔드 재시작 시 연결과 이벤트는 유지되지 않는다.
 
+## 모델 서버에서 warning 보내기
+
+백엔드 실행 시 `MODEL_SERVER_KEY` 환경 변수를 설정한다. Python 프로세스는 사용자용 SSE endpoint가 아니라 공통 알람 수신 endpoint를 호출한다.
+
+```python
+import requests
+
+requests.post(
+    "http://localhost:8080/api/alarms/events",
+    headers={"X-Model-Server-Key": "model-secret"},
+    json={
+        "id": 101,
+        "source": "MODEL_SERVER",
+        "type": "PERSON_DETECTED",
+        "severity": "warning",
+        "cameraId": 7,
+        "description": "Restricted area detected",
+        "occurredAt": "2026-10-16T12:00:00Z",
+        "metadata": {"zone": "A-01"},
+    },
+    timeout=3,
+)
+```
+
+백엔드는 수신한 warning을 현재 연결된 모든 사용자에게 SSE `alarm` event로 전달한다.
+
 ## 검증 결과
 
 - `backend/mvnw.cmd -q test`: 통과

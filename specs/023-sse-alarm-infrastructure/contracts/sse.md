@@ -43,3 +43,26 @@ data: {"sentAt":"2026-10-16T12:00:00Z"}
 ```
 
 Publisher는 사용자명과 위 payload를 받아 `alarm` event로 전송한다.
+
+## Model server ingress
+
+`POST /api/alarms/events`
+
+- 인증: `X-Model-Server-Key: <MODEL_SERVER_KEY>` 필수
+- 성공: HTTP 202, `{ "success": true, "data": { "accepted": true } }`
+- 실패: key가 없거나 틀리면 HTTP 403
+- 수신한 알람은 현재 연결된 모든 사용자에게 `alarm` event로 전달한다.
+- 이 endpoint는 alarm 도메인의 공통 수신 endpoint이며 업무별 endpoint를 추가하지 않는다.
+
+```json
+{
+  "id": 101,
+  "source": "MODEL_SERVER",
+  "type": "PERSON_DETECTED",
+  "severity": "warning",
+  "cameraId": 7,
+  "description": "Restricted area detected",
+  "occurredAt": "2026-10-16T12:00:00Z",
+  "metadata": {"zone": "A-01"}
+}
+```

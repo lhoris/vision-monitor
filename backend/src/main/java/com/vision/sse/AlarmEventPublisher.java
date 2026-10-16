@@ -18,4 +18,8 @@ public class AlarmEventPublisher {
     public void publishToUser(String username, Object alarm) {
         broker.publishToUser(username, AlarmSseEvent.alarm(alarm));
     }
+
+    public void publishToAll(Map<String, Object> alarm) {
+        broker.publishToAll(AlarmSseEvent.alarm(alarm));
+    }
 }

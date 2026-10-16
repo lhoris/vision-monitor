@@ -13,9 +13,9 @@
 
 ## Phase 3: User Story 1 - 실시간 알람 수신
 
-- [X] T006 [US1] Expose authenticated `GET /api/alarms/stream` in `backend/src/main/java/com/vision/controller/AlarmStreamController.java`
+- [X] T006 [US1] Expose authenticated `GET /api/alarms/stream` in `backend/src/main/java/com/vision/controller/AlarmController.java`
 - [X] T007 [US1] Add broker isolation and publish tests in `backend/src/test/java/com/vision/sse/AlarmSseBrokerTest.java`
-- [X] T008 [US1] Add stream controller contract tests in `backend/src/test/java/com/vision/controller/AlarmStreamControllerTest.java`
+- [X] T008 [US1] Add stream controller contract tests in `backend/src/test/java/com/vision/controller/AlarmControllerTest.java`
 
 ## Phase 4: User Story 2 - 연결 복구
 
@@ -32,6 +32,15 @@
 
 - [X] T014 Update local SSE usage and publisher handoff notes in `specs/023-sse-alarm-infrastructure/quickstart.md`
 - [X] T015 Run backend tests, frontend tests, and frontend build; record results in the implementation handoff
+
+## Phase 7: Model server alarm ingress
+
+- [X] T016 Add the common model alarm payload in `backend/src/main/java/com/vision/dto/AlarmIngressRequest.java`
+- [X] T017 Merge SSE stream and model ingress endpoints into `backend/src/main/java/com/vision/controller/AlarmController.java`
+- [X] T018 Add service-key validation and model alarm fan-out in `backend/src/main/java/com/vision/sse/AlarmEventPublisher.java` and `backend/src/main/java/com/vision/sse/AlarmSseBroker.java`
+- [X] T019 Exclude the model ingress route from user-session auth and configure `MODEL_SERVER_KEY` in `backend/src/main/java/com/vision/config/WebConfig.java` and `backend/src/main/resources/application.yml`
+- [X] T020 Add ingress authentication and publish contract tests in `backend/src/test/java/com/vision/controller/AlarmControllerTest.java`
+- [X] T021 Document the Python model server request contract in `specs/023-sse-alarm-infrastructure/quickstart.md` and `specs/023-sse-alarm-infrastructure/contracts/sse.md`
 
 ## Dependencies
 

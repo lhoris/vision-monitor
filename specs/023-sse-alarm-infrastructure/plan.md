@@ -11,7 +11,7 @@ Spring MVC의 `SseEmitter`를 사용자 이름 기준으로 관리하는 인메�
 
 | 요구사항 | 반영 위치 |
 |---|---|
-| FR-001~FR-006 | `AlarmSseBroker`, `AlarmStreamController`, backend tests |
+| FR-001~FR-006 | `AlarmSseBroker`, `AlarmController`, backend tests |
 | FR-007~FR-008 | `alarmSseService.ts`, frontend tests |
 | FR-009 | `AlarmEventPublisher` |
 | FR-010 | 기존 이벤트 저장소와 UI 변경 없이 contract boundary만 제공 |
@@ -30,7 +30,7 @@ Spring MVC의 `SseEmitter`를 사용자 이름 기준으로 관리하는 인메�
 - `AlarmSseEvent`: SSE event name과 JSON data로 직렬화되는 불변 payload.
 - `AlarmSseBroker`: `ConcurrentHashMap<String, CopyOnWriteArrayList<SseEmitter>>`로 사용자별 구독을 관리한다. 등록 시 초기 `connected` 이벤트를 보내고, 주기 heartbeat를 전송한다.
 - `AlarmEventPublisher`: 알람 생성원이 호출할 공개 경계. 사용자 대상 발행과 전체 사용자 발행을 제공한다.
-- `AlarmStreamController`: `GET /api/alarms/stream`, `produces = text/event-stream`, 인증 user attribute를 이용해 broker를 구독한다.
+- `AlarmController`: SSE 구독과 `POST /api/alarms/events` 모델 서버 수신을 하나의 알람 controller에 둔다. 수신 endpoint는 `X-Model-Server-Key`를 검증하고 `AlarmEventPublisher.publishToAll`로 fan-out한다.
 - cleanup은 emitter completion/timeout/error callback과 전송 예외에서 동일하게 수행한다.
 
 ### 프론트엔드
@@ -39,6 +39,12 @@ Spring MVC의 `SseEmitter`를 사용자 이름 기준으로 관리하는 인메�
 - 요청 interceptor와 동일한 localStorage bearer token을 Authorization 헤더에 넣는다.
 - SSE framing(`event:`, `data:`, blank line)을 파싱하고 `alarm` 이벤트만 JSON decode한다. `connected`/`heartbeat`는 상태 이벤트로만 처리한다.
 - AbortController로 해제하며, 네트워크 종료는 1/2/4/8/16초 지연으로 최대 5회 재시도한다.
+
+### 모델 서버 연동
+
+- 모델 서버는 `POST /api/alarms/events` 하나만 호출한다.
+- 업무별 차이는 `source`, `type`, `severity`, `metadata`로 표현한다.
+- `MODEL_SERVER_KEY` 환경 변수로 service key를 주입하고, key가 없으면 수신을 허용하지 않는다.
 
 ## 5. 계약
 
