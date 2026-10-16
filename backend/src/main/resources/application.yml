@@ -37,7 +37,7 @@ mybatis:
 
 vision:
   sse:
-    model-server-key: yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=
+    model-server-key: ${MODEL_SERVER_KEY:yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=}
   model-monitoring:
     status-timeout-seconds: 30
 

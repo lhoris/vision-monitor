@@ -11,7 +11,15 @@
 공유 키: yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=
 ```
 
-현재 공유 키는 `backend/src/main/resources/application.yml`에 하드코딩되어 있다. 키를 변경하면 백엔드 설정과 Python 코드의 값을 함께 변경하고 백엔드를 재시작한다.
+기본 공유 키는 `backend/src/main/resources/application.yml`에 설정되어 있다. `MODEL_SERVER_KEY` 환경 변수를 설정하면 기본값보다 환경변수 값이 우선 적용된다. 키를 변경하면 백엔드와 Python 코드의 값을 동일하게 맞춘 뒤 백엔드를 재시작한다.
+
+환경변수 설정 예시는 다음과 같다.
+
+```powershell
+$env:MODEL_SERVER_KEY = "변경할-공유-키"
+```
+
+환경변수가 없으면 `application.yml`의 기본 키가 사용된다. 현재 기본 키는 저장소에 노출된 상태이므로 운영 환경에서는 환경변수와 비밀 저장소를 사용한다.
 
 ## 요청 형식
 
@@ -57,13 +65,17 @@ pip install requests
 ```
 
 ```python
+import os
 from datetime import datetime, timezone
 
 import requests
 
 
 ALARM_ENDPOINT = "http://172.18.86.79:8080/api/alarms/events"
-MODEL_SERVER_KEY = "yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU="
+MODEL_SERVER_KEY = os.getenv(
+    "MODEL_SERVER_KEY",
+    "yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=",
+)
 
 
 def send_alarm(camera_id: int, description: str, confidence: float) -> None:
