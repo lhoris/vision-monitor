@@ -237,7 +237,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
           <div className="fixed inset-0 z-[60]" onClick={() => setContextMenu(null)} />
           <div
             role="menu"
-            className="fixed z-[70] min-w-48 rounded border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-600 dark:bg-gray-800"
+            className="fixed z-[70] min-w-max whitespace-nowrap rounded border border-gray-200 bg-white py-1 shadow-xl dark:border-gray-600 dark:bg-gray-800"
             style={{ left: contextMenu.x, top: contextMenu.y }}
           >
             <button
