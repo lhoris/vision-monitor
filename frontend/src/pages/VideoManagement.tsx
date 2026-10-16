@@ -113,7 +113,7 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             모델 프로세스 ID
-            <select disabled={modelProcessesLoading} value={value.modelProcessId ?? ''} onFocus={onRefreshModelProcesses} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 disabled:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:disabled:bg-slate-700">
+            <select value={value.modelProcessId ?? ''} onFocus={onRefreshModelProcesses} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
               <option value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
               {value.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === value.modelProcessId) ? <option value={value.modelProcessId}>연결된 프로세스 #{value.modelProcessId}</option> : null}
               {modelProcesses.map((process) => <option key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
@@ -366,7 +366,6 @@ export function VideoManagement() {
     <select
       aria-label={`${row.name} 모델 프로세스 선택`}
       value={row.modelProcessId ?? ''}
-      disabled={modelProcessesLoading}
       onFocus={() => { void loadModelProcesses() }}
       onChange={(event) => {
         const modelProcessId = event.target.value ? Number(event.target.value) : null
