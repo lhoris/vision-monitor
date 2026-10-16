@@ -90,6 +90,7 @@ export default function CameraFocus() {
   )
   const selectedTemporarySource = routeState.cameraId ? temporarySources[routeState.cameraId] : undefined
   const apiCameraId = routeState.cameraId && routeState.cameraId > 0 ? routeState.cameraId : null
+  const activeCameraId = displayCamera?.cameraId ?? routeState.cameraId
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
@@ -99,7 +100,7 @@ export default function CameraFocus() {
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
 
   useEffect(() => {
-    if (!realtimeAlarm) {
+    if (!realtimeAlarm || Number(realtimeAlarm.cameraId) !== activeCameraId) {
       return
     }
 
@@ -125,7 +126,7 @@ export default function CameraFocus() {
         ...current,
       ]
     })
-  }, [apiCameraId, displayCamera?.location, realtimeAlarm])
+  }, [activeCameraId, displayCamera?.location, realtimeAlarm])
   const eventRange = useMemo(
     () => ({
       from: playbackSession?.availableFrom ?? '2026-08-15T08:00:00+09:00',

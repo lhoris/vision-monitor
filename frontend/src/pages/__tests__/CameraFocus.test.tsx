@@ -173,12 +173,12 @@ describe('CameraFocus page shell', () => {
     expect(screen.queryByRole('dialog', { name: '테스트 알람 메시지' })).not.toBeInTheDocument()
   })
 
-  it('shows an SSE alarm toast for any camera while focus view is open', async () => {
+  it('shows an SSE alarm toast for the active camera', async () => {
     renderRoute('/live/cameras/1?mode=live&cameraIds=1%2C2')
 
     store.dispatch(addEvent({
       id: 9101,
-      cameraId: 2,
+      cameraId: 1,
       type: 'PERSON_DETECTED',
       severity: 'warning',
       description: 'Realtime camera 1 alarm',
