@@ -349,6 +349,24 @@ export function VideoManagement() {
     )
   }
 
+  const renderModelProcessCell = (row: VideoGridRow) => (
+    <select
+      aria-label={`${row.name} 모델 프로세스 선택`}
+      value={row.modelProcessId ?? ''}
+      onChange={(event) => {
+        const modelProcessId = event.target.value ? Number(event.target.value) : null
+        setRows((current) => current.map((item) => item.id === row.id
+          ? { ...item, modelProcessId, rowState: 'dirty' }
+          : item))
+      }}
+      className={`${cellValue} cursor-pointer`}
+    >
+      <option value="">연결하지 않음</option>
+      {row.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === row.modelProcessId) ? <option value={row.modelProcessId}>연결된 프로세스 #{row.modelProcessId}</option> : null}
+      {modelProcesses.map((process) => <option key={process.id} value={process.id}>#{process.id} · {process.modelName || process.processName}</option>)}
+    </select>
+  )
+
   const columnFilters: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', widthClassName: 'w-12', value: '' },
     { id: 'name', ariaLabel: '영상 이름 필터', value: filters.name, widthClassName: 'w-44', onChange: (value) => setFilter('name', value) },
@@ -428,7 +446,7 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
-                  <td className={`${bodyCell} px-2 text-sm`}>{item.modelProcessId ?? '-'}</td>
+                  <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
                 </tr>
               ))}
