@@ -22,7 +22,7 @@ export async function listProcesses(processAreas?: string[]): Promise<ModelProce
   const response = await apiClient.get<ModelProcessResponse>('/model-processes', params)
   const data = response.data
   if (response.success === false || !data || !Array.isArray(data.processes)) {
-    return { processes: [], processAreas: [{ id: 'all', name: 'ALL', sortOrder: 0, isAll: true }] }
+    throw new Error(response.message || 'Model process list response is invalid')
   }
   return {
     processes: data.processes.map((process) => ({
