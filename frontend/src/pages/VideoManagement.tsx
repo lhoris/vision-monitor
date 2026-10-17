@@ -3,6 +3,7 @@ import { GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/
 import { videoSourceService } from '@/services/videoSourceService'
 import { listProcesses } from '@/services/modelManagementService'
 import type { ModelProcess } from '@/types/modelManagement'
+import { useAppSelector } from '@/store'
 import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
 
 const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
@@ -134,6 +135,7 @@ export function VideoManagement() {
   const [rows, setRows] = useState<VideoGridRow[]>([])
   const [modelProcesses, setModelProcesses] = useState<ModelProcess[]>([])
   const [modelProcessesLoading, setModelProcessesLoading] = useState(true)
+  const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
   const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '' })
@@ -174,7 +176,9 @@ export function VideoManagement() {
     }
   }, [])
 
-  useEffect(() => { void loadModelProcesses() }, [loadModelProcesses])
+  useEffect(() => {
+    if (sessionStatus === 'valid') void loadModelProcesses()
+  }, [loadModelProcesses, sessionStatus])
   useEffect(() => { setPage(1) }, [filters, pageSize, appliedQuery])
   useEffect(() => {
     if (!notice) return undefined
