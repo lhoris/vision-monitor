@@ -228,6 +228,12 @@ export function VideoManagement() {
       if (row.id !== id) return row
       return { ...row, [field]: value, rowState: 'dirty' }
     }))
+    setSelectedIds((current) => {
+      if (current.has(id)) return current
+      const next = new Set(current)
+      next.add(id)
+      return next
+    })
   }
 
   const cellKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -377,6 +383,12 @@ export function VideoManagement() {
           setRows((current) => current.map((item) => item.id === row.id
             ? { ...item, modelProcessId, rowState: 'dirty' }
             : item))
+          setSelectedIds((current) => {
+            if (current.has(row.id)) return current
+            const next = new Set(current)
+            next.add(row.id)
+            return next
+          })
           setEditingCell(null)
         }}
         onBlur={() => setEditingCell(null)}
@@ -388,7 +400,7 @@ export function VideoManagement() {
         {modelProcesses.map((process) => <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
       </select>
     ) : (
-      <button type="button" aria-label={`${row.name} 모델 프로세스 셀`} onClick={() => setEditingCell({ id: row.id, field: 'modelProcessId' })} className={cellValue} title={row.modelProcessId == null ? '연결하지 않음' : String(row.modelProcessId)}>
+      <button type="button" aria-label={`${row.name} 모델 프로세스 셀`} onClick={() => setEditingCell({ id: row.id, field: 'modelProcessId' })} className={`${cellValue} min-w-0 truncate`} title={row.modelProcessId == null ? '연결하지 않음' : String(row.modelProcessId)}>
         {row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`}
       </button>
     )
