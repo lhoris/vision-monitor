@@ -56,6 +56,7 @@ public class VideoSourceService {
         source.setZone(trimOrNull(request.getZone()));
         source.setStatus(normalizeStatus(request.getStatus()));
         source.setRemarks(trimOrNull(request.getRemarks()));
+        source.setModelProcessId(request.getModelProcessId());
         return VideoSourceDto.from(repository.save(source));
     }
 

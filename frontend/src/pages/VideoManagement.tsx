@@ -112,11 +112,11 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             <input value={value.remarks ?? ''} onChange={(event) => update('remarks', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
-            모델 프로세스 ID
+            모델 프로세스
             <select disabled={modelProcessesLoading} value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 disabled:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:disabled:bg-slate-700">
-              <option value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
-              {value.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === value.modelProcessId) ? <option value={value.modelProcessId}>연결된 프로세스 #{value.modelProcessId}</option> : null}
-              {modelProcesses.map((process) => <option key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
+              <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
+              {value.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === value.modelProcessId) ? <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value={value.modelProcessId}>연결된 프로세스 #{value.modelProcessId}</option> : null}
+              {modelProcesses.map((process) => <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
             </select>
           </label>
         </div>
@@ -179,6 +179,7 @@ export function VideoManagement() {
   useEffect(() => {
     if (sessionStatus === 'valid') void loadModelProcesses()
   }, [loadModelProcesses, sessionStatus])
+
   useEffect(() => { setPage(1) }, [filters, pageSize, appliedQuery])
   useEffect(() => {
     if (!notice) return undefined
@@ -359,28 +360,38 @@ export function VideoManagement() {
       )
     }
     return (
-      <button type="button" aria-label={`${field} 셀`} onDoubleClick={() => setEditingCell({ id: row.id, field })} className={cellValue}>
+      <button type="button" aria-label={`${field} 셀`} onClick={() => setEditingCell({ id: row.id, field })} className={cellValue}>
         {field === 'status' ? <span className={row.status === 'ACTIVE' ? 'text-emerald-600' : 'text-slate-500'}>{row.status}</span> : row.protocol}
       </button>
     )
   }
 
   const renderModelProcessCell = (row: VideoGridRow) => (
-    <select
-      aria-label={`${row.name} 모델 프로세스 선택`}
-      value={row.modelProcessId ?? ''}
-      onChange={(event) => {
-        const modelProcessId = event.target.value ? Number(event.target.value) : null
-        setRows((current) => current.map((item) => item.id === row.id
-          ? { ...item, modelProcessId, rowState: 'dirty' }
-          : item))
-      }}
-      className={`${cellValue} cursor-pointer`}
-    >
-      <option value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
-      {row.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === row.modelProcessId) ? <option value={row.modelProcessId}>연결된 프로세스 #{row.modelProcessId}</option> : null}
-      {modelProcesses.map((process) => <option key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
-    </select>
+    editingCell?.id === row.id && editingCell.field === 'modelProcessId' ? (
+      <select
+        autoFocus
+        aria-label={`${row.name} 모델 프로세스 편집`}
+        value={row.modelProcessId ?? ''}
+        onChange={(event) => {
+          const modelProcessId = event.target.value ? Number(event.target.value) : null
+          setRows((current) => current.map((item) => item.id === row.id
+            ? { ...item, modelProcessId, rowState: 'dirty' }
+            : item))
+          setEditingCell(null)
+        }}
+        onBlur={() => setEditingCell(null)}
+        onKeyDown={cellKeyDown}
+        className={editableCell}
+      >
+        <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
+        {row.modelProcessId != null && !modelProcesses.some((process) => Number(process.id) === row.modelProcessId) ? <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value={row.modelProcessId}>연결된 프로세스 #{row.modelProcessId}</option> : null}
+        {modelProcesses.map((process) => <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
+      </select>
+    ) : (
+      <button type="button" aria-label={`${row.name} 모델 프로세스 셀`} onClick={() => setEditingCell({ id: row.id, field: 'modelProcessId' })} className={cellValue} title={row.modelProcessId == null ? '연결하지 않음' : String(row.modelProcessId)}>
+        {row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`}
+      </button>
+    )
   )
 
   const columnFilters: GridColumnFilter[] = [
@@ -448,7 +459,7 @@ export function VideoManagement() {
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
                 <th className={`w-36 ${headerCell}`}>위치</th>
                 <th className={`w-28 ${headerCell}`}>구역</th>
-                <th className={`w-36 ${headerCell}`}>모델 프로세스 ID</th>
+                <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
               </tr>
               {filtersVisible ? <GridColumnFilterRow filters={columnFilters} /> : null}

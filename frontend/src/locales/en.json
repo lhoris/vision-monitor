@@ -2,7 +2,7 @@
   "sessionExpired": {
     "title": "Session expired",
     "message": "Your login session has expired. Please sign in again.",
-    "confirm": "Go to sign-in"
+    "confirm": "OK"
   },
   "common": {
     "save": "Save",
