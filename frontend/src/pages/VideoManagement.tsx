@@ -79,7 +79,7 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
 
         <div className="grid gap-4 p-5 sm:grid-cols-2">
           <label className="text-sm text-slate-700 dark:text-slate-200">
-            영상 이름
+            영상 제목
             <input required value={value.name} onChange={(event) => update('name', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
@@ -149,17 +149,23 @@ export function VideoManagement() {
   const [modalValue, setModalValue] = useState<VideoSourceInput>(emptyForm)
   const [modalError, setModalError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
+    setLoading(true)
     setError('')
     try {
       setRows((await videoSourceService.list()).map((item) => ({ ...item, rowState: 'clean' })))
       setSelectedIds(new Set())
       setEditingCell(null)
+      setLastLoadedAt(new Date())
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : '영상 목록을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -408,12 +414,12 @@ export function VideoManagement() {
 
   const columnFilters: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', widthClassName: 'w-12', value: '' },
-    { id: 'name', ariaLabel: '영상 이름 필터', value: filters.name, widthClassName: 'w-44', onChange: (value) => setFilter('name', value) },
-    { id: 'url', ariaLabel: '영상 주소 필터', value: filters.url, widthClassName: 'w-[30rem]', onChange: (value) => setFilter('url', value) },
+    { id: 'name', ariaLabel: '영상 제목 필터', value: filters.name, widthClassName: 'w-44', onChange: (value) => setFilter('name', value) },
     { id: 'protocol', ariaLabel: '프로토콜 필터', kind: 'select', value: filters.protocol, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, ...VIDEO_PROTOCOLS.map((value) => ({ value, label: value }))], onChange: (value) => setFilter('protocol', value) },
+    { id: 'url', ariaLabel: '영상 주소 필터', value: filters.url, widthClassName: 'w-[30rem]', onChange: (value) => setFilter('url', value) },
+    { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
     { id: 'location', ariaLabel: '위치 필터', value: filters.location, widthClassName: 'w-36', onChange: (value) => setFilter('location', value) },
     { id: 'zone', ariaLabel: '구역 필터', value: filters.zone, widthClassName: 'w-28', onChange: (value) => setFilter('zone', value) },
-    { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
   ]
 
   return (
@@ -444,6 +450,11 @@ export function VideoManagement() {
         </div>
       </div>
 
+      <div className="-mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+        {loading ? <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-blue-500" aria-label="조회 중" /> : null}
+        <span>{loading ? '영상 목록을 조회하고 있습니다.' : lastLoadedAt ? `마지막 조회 ${lastLoadedAt.toLocaleTimeString()}` : '조회 대기 중'}</span>
+      </div>
+
       <section className="relative flex min-h-0 flex-1 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
         {contextMenu ? (
           <div role="menu" className="fixed z-50 min-w-36 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-800" style={{ left: contextMenu.x, top: contextMenu.y }}>
@@ -466,13 +477,13 @@ export function VideoManagement() {
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
-                <th className={`w-44 ${headerCell}`}>영상 이름</th>
-                <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
+                <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
-                <th className={`w-36 ${headerCell}`}>위치</th>
-                <th className={`w-28 ${headerCell}`}>구역</th>
+                <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
                 <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
+                <th className={`w-36 ${headerCell}`}>위치</th>
+                <th className={`w-28 ${headerCell}`}>구역</th>
               </tr>
               {filtersVisible ? <GridColumnFilterRow filters={columnFilters} /> : null}
             </thead>
@@ -481,12 +492,12 @@ export function VideoManagement() {
                 <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:bg-slate-700`}>
                   <td className={`${bodyCell} text-center`}><input aria-label={`${item.name} 선택`} type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleRow(item.id)} /></td>
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'url', 'truncate font-mono text-xs')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'url', 'truncate font-mono text-xs')}</td>
                   <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
               {!visibleRows.length ? <tr><td colSpan={8} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
