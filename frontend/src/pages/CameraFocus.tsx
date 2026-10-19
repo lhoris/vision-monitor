@@ -91,6 +91,7 @@ export default function CameraFocus() {
   )
   const selectedTemporarySource = routeState.cameraId ? temporarySources[routeState.cameraId] : undefined
   const apiCameraId = routeState.cameraId && routeState.cameraId > 0 ? routeState.cameraId : null
+  const metadataSourceId = apiCameraId ?? parseManagedSourceId(selectedTemporarySource?.id)
   const activeModelProcessId = displayCamera?.modelProcessId ?? selectedTemporarySource?.modelProcessId ?? null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
@@ -294,6 +295,7 @@ export default function CameraFocus() {
       selectedEventId={routeState.selectedEventId}
       alerts={visibleAlerts}
       camera={focusCamera}
+      metadataSourceId={metadataSourceId}
       selectedCameraId={routeState.cameraId}
       cameraList={cameraList}
       liveStream={liveStream}
@@ -339,6 +341,13 @@ function parseTemporarySources(value: string | null): Record<number, TemporaryVi
   } catch {
     return {}
   }
+}
+
+function parseManagedSourceId(sourceId?: string): number | null {
+  const match = sourceId?.match(/^video-source-(\d+)$/)
+  if (!match) return null
+  const id = Number(match[1])
+  return Number.isSafeInteger(id) && id > 0 ? id : null
 }
 
 function toTemporaryCameraFocus(cameraId: number, source: TemporaryVideoSource): CameraFocusDto {

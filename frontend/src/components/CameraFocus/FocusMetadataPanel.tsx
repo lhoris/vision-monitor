@@ -10,6 +10,7 @@ import { MetadataSectionRenderer } from './Metadata/MetadataSectionRenderer'
 
 interface FocusMetadataPanelProps {
   camera: CameraFocusDto | null
+  metadataSourceId?: number | null
   error?: string | null
   selectedEventDetail?: EventDetailDto | null
   onSelectEvent?: (eventId: number) => void
@@ -19,8 +20,9 @@ function currentUserId() {
   return localStorage.getItem('authUsername') || 'anonymous'
 }
 
-export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelectEvent }: FocusMetadataPanelProps) {
-  const sourceId = String(camera?.cameraId ?? '1')
+export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEventDetail, onSelectEvent }: FocusMetadataPanelProps) {
+  const sourceId = String(metadataSourceId ?? camera?.cameraId ?? '1')
+  const persistableSourceId = metadataSourceId ?? camera?.cameraId ?? null
   const userId = currentUserId()
   const [profile, setProfile] = useState<MetadataLayoutProfile>(() => createDefaultMetadataProfile(userId, sourceId))
   const [queries, setQueries] = useState<MetadataQueryDefinition[]>([])
@@ -51,6 +53,10 @@ export function FocusMetadataPanel({ camera, error, selectedEventDetail, onSelec
 
   async function persist(nextProfile: MetadataLayoutProfile) {
     setSaveError(null)
+    if (persistableSourceId == null || persistableSourceId <= 0) {
+      setSaveError('임시 영상은 메타데이터 설정을 저장할 수 없습니다. 영상 관리에 등록된 영상을 사용해 주세요.')
+      return false
+    }
     try {
       setProfile(await saveMetadataProfile(nextProfile))
       return true

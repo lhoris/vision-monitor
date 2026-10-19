@@ -19,6 +19,7 @@ interface CameraFocusShellProps {
   selectedEventId?: number
   alerts?: ActiveAlertDto[]
   camera: CameraFocusDto | null
+  metadataSourceId?: number | null
   selectedCameraId?: number | null
   cameraList?: Camera[]
   liveStream?: LiveStreamDto | null
@@ -43,6 +44,7 @@ export function CameraFocusShell({
   selectedEventId,
   alerts = [],
   camera,
+  metadataSourceId,
   selectedCameraId = null,
   cameraList = [],
   liveStream,
@@ -170,7 +172,7 @@ export function CameraFocusShell({
           selectedEventDetail={selectedEventDetail}
           onSelectEvent={onSelectEvent}
         />
-        <FocusMetadataPanel camera={camera} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />
+        <FocusMetadataPanel camera={camera} metadataSourceId={metadataSourceId} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />
       </div>
       {isTestAlertDialogOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="presentation">
