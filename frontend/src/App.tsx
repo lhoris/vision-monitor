@@ -104,6 +104,14 @@ export function AppRoutes() {
     if (!isAuthenticated || sessionStatus !== 'valid') return undefined
 
     const subscription = subscribeToAlarmStream((alarm) => {
+      if (import.meta.env.DEV) {
+        console.info('[Alarm SSE] received', {
+          id: alarm.id,
+          modelProcessId: alarm.modelProcessId,
+          cameraId: alarm.cameraId,
+          description: alarm.description,
+        })
+      }
       dispatch(addEvent({
         ...alarm,
         cameraId: alarm.cameraId == null ? 0 : Number(alarm.cameraId),

@@ -113,6 +113,19 @@ export default function CameraFocus() {
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
 
   useEffect(() => {
+    if (import.meta.env.DEV && realtimeAlarm) {
+      console.info('[CameraFocus alarm] matching', {
+        routeCameraId: routeState.cameraId,
+        activeModelProcessId,
+        catalogModelProcessId: activeCatalogCamera?.modelProcessId ?? null,
+        focusModelProcessId: displayCamera?.modelProcessId ?? null,
+        temporaryModelProcessId: selectedTemporarySource?.modelProcessId ?? null,
+        routeModelProcessId: routeState.cameraId ? modelProcessIdOverrides[routeState.cameraId] ?? null : null,
+        alarmModelProcessId: realtimeAlarm.modelProcessId,
+        matched: activeModelProcessId != null && Number(realtimeAlarm.modelProcessId) === Number(activeModelProcessId),
+      })
+    }
+
     if (
       !realtimeAlarm
       || activeModelProcessId == null

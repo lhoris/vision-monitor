@@ -235,6 +235,9 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       if (Object.keys(currentModelProcessIds).length > 0) {
         params.set('modelProcessIds', JSON.stringify(currentModelProcessIds))
       }
+      if (import.meta.env.DEV) {
+        console.info('[Grid focus] model process mapping', currentModelProcessIds)
+      }
 
       const currentNameOverrides = orderedPositions.reduce<Record<number, string>>((overrides, position) => {
         const override = position.displayName
