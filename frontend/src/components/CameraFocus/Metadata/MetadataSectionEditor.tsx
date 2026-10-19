@@ -14,7 +14,7 @@ export function MetadataSectionEditor({ section, queries, onSave, onClose }: Met
   const [textDisplayMode, setTextDisplayMode] = useState<MetadataTextDisplayMode>(getTextDisplayMode(section))
   const [queryId, setQueryId] = useState(section?.queryId ?? queries[0]?.queryId ?? '')
   const [defaultText, setDefaultText] = useState(section?.defaultText ?? '')
-  const [interval, setInterval] = useState<5 | 10 | 30 | 60>(section?.refreshIntervalSec ?? 10)
+  const [interval, setInterval] = useState(section?.refreshIntervalSec ?? 10)
   const [labelField, setLabelField] = useState('')
   const [valueField, setValueField] = useState('')
   const [selectedFields, setSelectedFields] = useState<string[]>([])
@@ -65,7 +65,7 @@ export function MetadataSectionEditor({ section, queries, onSave, onClose }: Met
         <label className="block text-sm">제목<input value={title} onChange={(event) => setTitle(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
         <label className="block text-sm">표시 형식<select value={type} onChange={(event) => setType(event.target.value as MetadataSectionType)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="text">텍스트</option><option value="grid">그리드</option><option value="chart">차트</option></select></label>
         <label className="block text-sm">Query ID{type === 'text' ? ' (선택)' : ''}<select value={queryId} onChange={(event) => setQueryId(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900">{type === 'text' ? <option value="">조회하지 않음</option> : null}{queries.map((item) => <option key={item.queryId} value={item.queryId}>{item.queryId}</option>)}</select></label>
-        <label className="block text-sm">조회 주기<select value={interval} onChange={(event) => setInterval(Number(event.target.value) as 5 | 10 | 30 | 60)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value={5}>5초</option><option value={10}>10초</option><option value={30}>30초</option><option value={60}>60초</option></select></label>
+        <label className="block text-sm">조회 주기 (초)<input type="number" min={1} max={86400} step={1} value={interval} onChange={(event) => setInterval(Math.max(1, Math.min(86400, Number(event.target.value) || 1)))} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
         {type === 'text' ? <>
           <label className="block text-sm">텍스트 표시 형식<select value={textDisplayMode} onChange={(event) => setTextDisplayMode(event.target.value as MetadataTextDisplayMode)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="free">자유 텍스트</option><option value="label_value">라벨-값</option></select></label>
           <label className="block text-sm">기본 텍스트<textarea value={defaultText} onChange={(event) => setDefaultText(event.target.value)} rows={3} placeholder="정적으로 표시할 텍스트 또는 조회 결과가 없을 때 표시할 안내 문구" className="mt-1 w-full resize-y border px-3 py-2 dark:bg-slate-900" /></label>

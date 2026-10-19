@@ -68,7 +68,7 @@ export interface MetadataSectionConfig {
   order: number
   visible: boolean
   queryId?: string
-  refreshIntervalSec: 5 | 10 | 30 | 60
+  refreshIntervalSec: number
   mapping: MetadataMapping
   defaultText?: string
   options?: MetadataSectionOptions

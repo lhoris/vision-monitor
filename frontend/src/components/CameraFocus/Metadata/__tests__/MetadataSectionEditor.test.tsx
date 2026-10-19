@@ -41,7 +41,7 @@ describe('MetadataSectionEditor', () => {
 
     expect(screen.queryByLabelText('라벨 필드')).not.toBeInTheDocument()
     fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'text' } })
-    fireEvent.change(screen.getAllByRole('combobox')[3], { target: { value: 'label_value' } })
+    fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'label_value' } })
     expect(screen.getByLabelText('라벨 필드')).toBeInTheDocument()
     expect(screen.getByLabelText('값 필드')).toBeInTheDocument()
   })
