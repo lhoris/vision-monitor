@@ -92,7 +92,13 @@ export default function CameraFocus() {
   const selectedTemporarySource = routeState.cameraId ? temporarySources[routeState.cameraId] : undefined
   const apiCameraId = routeState.cameraId && routeState.cameraId > 0 ? routeState.cameraId : null
   const metadataSourceId = apiCameraId ?? parseManagedSourceId(selectedTemporarySource?.id)
-  const activeModelProcessId = displayCamera?.modelProcessId ?? selectedTemporarySource?.modelProcessId ?? null
+  const activeCatalogCamera = routeState.cameraId
+    ? cameraList.find((cameraItem) => cameraItem.id === routeState.cameraId)
+    : undefined
+  const activeModelProcessId = displayCamera?.modelProcessId
+    ?? activeCatalogCamera?.modelProcessId
+    ?? selectedTemporarySource?.modelProcessId
+    ?? null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
