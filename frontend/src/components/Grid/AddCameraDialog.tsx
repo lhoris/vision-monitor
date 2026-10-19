@@ -43,12 +43,12 @@ function validateUrl(value: string, protocol: DirectProtocol): string | null {
 
 export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   isOpen,
-  cameras: _cameras,
+  cameras,
   videoSources = [],
   usedCameraIds,
   existingTemporaryUrls = [],
   initialSource,
-  onSelectCamera: _onSelectCamera,
+  onSelectCamera,
   onAddDirectSource,
   onRemoveVideoSource,
   onClose,
@@ -129,14 +129,10 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   }
 
   const handleSelectVideoSource = (source: VideoSource) => {
-    onAddDirectSource({
-      id: `video-source-${source.id}`,
-      url: source.url,
-      protocol: source.protocol.toLowerCase() as DirectProtocol,
-      displayName: source.name,
-      playbackStatus: 'idle',
-      modelProcessId: source.modelProcessId ?? null,
-    })
+    const managedCamera = cameras.find((camera) => camera.id === source.id)
+    if (managedCamera) {
+      onSelectCamera(managedCamera)
+    }
     onClose()
   }
 

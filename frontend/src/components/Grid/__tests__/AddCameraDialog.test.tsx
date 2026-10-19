@@ -14,6 +14,15 @@ const cameras: Camera[] = [{
   streamUrl: 'https://example.test/live',
   streamProtocol: 'hls',
   status: 'online',
+}, {
+  id: 10,
+  name: 'Managed Line Feed',
+  location: 'Line B',
+  zone: 'Packaging',
+  streamUrl: 'https://managed.test/live.m3u8',
+  streamProtocol: 'hls',
+  status: 'online',
+  modelProcessId: 2,
 }]
 
 const videoSources: VideoSource[] = [
@@ -134,7 +143,8 @@ describe('AddCameraDialog', () => {
     expect(screen.getByText('No search results.')).toBeInTheDocument()
   })
 
-  it('shows active managed video sources in the catalog list and selects one as a video tile source', () => {
+  it('shows active managed video sources in the catalog list and selects one as a managed camera', () => {
+    const onSelectCamera = vi.fn()
     const onAddDirectSource = vi.fn()
 
     render(
@@ -143,7 +153,7 @@ describe('AddCameraDialog', () => {
         cameras={cameras}
         videoSources={videoSources}
         usedCameraIds={[]}
-        onSelectCamera={vi.fn()}
+        onSelectCamera={onSelectCamera}
         onAddDirectSource={onAddDirectSource}
         onRemoveVideoSource={vi.fn()}
         onClose={vi.fn()}
@@ -155,13 +165,7 @@ describe('AddCameraDialog', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Managed Line Feed/ }))
 
-    expect(onAddDirectSource).toHaveBeenCalledWith({
-      id: 'video-source-10',
-      url: 'https://managed.test/live.m3u8',
-      protocol: 'hls',
-      displayName: 'Managed Line Feed',
-      playbackStatus: 'idle',
-    })
+    expect(onSelectCamera).toHaveBeenCalledWith(expect.objectContaining({ id: 10, modelProcessId: 2 }))
   })
 
   it('hides legacy RTSP managed video sources from the catalog list', () => {
