@@ -45,6 +45,7 @@ export function Events() {
   const [clip, setClip] = useState<AlarmRecordingClip | null>(null);
   const [clipLoading, setClipLoading] = useState(false);
   const [notice, setNotice] = useState("");
+  const [acknowledgementVersion, setAcknowledgementVersion] = useState(0);
   const [gridCollapsed, setGridCollapsed] = useState(false);
   const offsetConfig: AlarmOffsetConfig = getAlarmOffsetConfig();
 
@@ -132,6 +133,7 @@ export function Events() {
       i18n.resolvedLanguage,
       cameras,
       currentUserKey,
+      acknowledgementVersion,
     ],
   );
 
@@ -181,6 +183,10 @@ export function Events() {
       }),
     );
     setNotice(t("events.acknowledgedNotice"));
+    setAcknowledgementVersion((version) => version + 1);
+    if (statusFilter === "open") {
+      setSelectedId(null);
+    }
   };
 
   const download = async (event: Event) => {

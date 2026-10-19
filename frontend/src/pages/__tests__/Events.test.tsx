@@ -32,6 +32,7 @@ const alarmFixtures: Event[] = [
 describe('Events', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
+    localStorage.removeItem('alarmAcknowledgements')
     store.dispatch(setFilter({}))
     store.dispatch(fetchEvents.fulfilled({
       content: alarmFixtures,
@@ -68,6 +69,17 @@ describe('Events', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Acknowledge alarm' }))
     await waitFor(() => expect(screen.getAllByText('Acknowledged').length).toBeGreaterThan(0))
+  })
+
+  it('removes an acknowledged alarm from the unacknowledged list', async () => {
+    renderEvents()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Unacknowledged' }))
+    expect(screen.getByRole('button', { name: 'Motion Detected' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Acknowledge' }))
+
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Motion Detected' })).not.toBeInTheDocument())
   })
 
   it('switches the alarm screen to Korean', async () => {
