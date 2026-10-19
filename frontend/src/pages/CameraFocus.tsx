@@ -99,8 +99,12 @@ export default function CameraFocus() {
   const activeCatalogCamera = routeState.cameraId
     ? cameraList.find((cameraItem) => cameraItem.id === routeState.cameraId)
     : undefined
+  const sourceCatalogCamera = selectedTemporarySource
+    ? catalogCameras?.find((cameraItem) => cameraItem.id === parseManagedSourceId(selectedTemporarySource.id))
+    : undefined
   const activeModelProcessId = displayCamera?.modelProcessId
     ?? activeCatalogCamera?.modelProcessId
+    ?? sourceCatalogCamera?.modelProcessId
     ?? selectedTemporarySource?.modelProcessId
     ?? (routeState.cameraId ? modelProcessIdOverrides[routeState.cameraId] : null)
     ?? null
@@ -118,6 +122,7 @@ export default function CameraFocus() {
         routeCameraId: routeState.cameraId,
         activeModelProcessId,
         catalogModelProcessId: activeCatalogCamera?.modelProcessId ?? null,
+        sourceCatalogModelProcessId: sourceCatalogCamera?.modelProcessId ?? null,
         focusModelProcessId: displayCamera?.modelProcessId ?? null,
         temporaryModelProcessId: selectedTemporarySource?.modelProcessId ?? null,
         routeModelProcessId: routeState.cameraId ? modelProcessIdOverrides[routeState.cameraId] ?? null : null,
