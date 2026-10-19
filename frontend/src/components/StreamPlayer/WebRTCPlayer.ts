@@ -16,7 +16,6 @@ import { StreamPlayer } from './StreamPlayer'
 class WHEPClient {
   private peerConnection: RTCPeerConnection | null = null
   private whepUrl: string
-  private resourceUrl: string | null = null
   private iceServers: RTCIceServer[]
   private iceGatheringTimeout: ReturnType<typeof setTimeout> | null = null
   private iceGatheringStateChangeHandler: (() => void) | null = null
@@ -84,7 +83,6 @@ class WHEPClient {
       throw new Error(`WHEP error: ${response.statusText}`)
     }
 
-    this.resourceUrl = response.headers.get('location')
     const answerSdp = await response.text()
 
     const answer = new RTCSessionDescription({
@@ -139,14 +137,6 @@ class WHEPClient {
    * 연결 종료
    */
   async disconnect(): Promise<void> {
-    if (this.resourceUrl) {
-      try {
-        await fetch(this.resourceUrl, { method: 'DELETE' })
-      } catch (error) {
-        console.error('Failed to delete WHEP resource:', error)
-      }
-    }
-
     if (this.peerConnection) {
       if (this.iceGatheringStateChangeHandler) {
         this.peerConnection.removeEventListener(
