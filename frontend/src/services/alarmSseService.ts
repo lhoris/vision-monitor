@@ -84,7 +84,16 @@ export function subscribeToAlarmStream(
         const parsed = parseSseChunk(decoder.decode(result.value, { stream: true }), buffered)
         buffered = parsed.remainder
         parsed.events.forEach((event) => {
-          if (event.event === 'alarm') onAlarm(JSON.parse(event.data) as Event)
+          if (event.event === 'alarm') {
+            const alarm = JSON.parse(event.data) as Event
+            console.info('[Alarm SSE] parsed alarm', {
+              id: alarm.id,
+              modelProcessId: alarm.modelProcessId,
+              cameraId: alarm.cameraId,
+              description: alarm.description,
+            })
+            onAlarm(alarm)
+          }
         })
       }
       if (!stopped) throw new Error('Alarm stream closed')

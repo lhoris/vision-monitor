@@ -17,6 +17,15 @@ export function useActiveCameraAlerts(cameraId: number | null) {
       }
 
       const response = await focusApiService.getActiveAlerts(cameraId)
+      console.info('[CameraFocus active alerts] response', {
+        cameraId,
+        success: response.success,
+        alerts: response.success ? (response.data ?? []).map((alert) => ({
+          alertId: alert.alertId,
+          modelProcessId: alert.modelProcessId,
+          message: alert.message,
+        })) : [],
+      })
       if (!cancelled) {
         setAlerts(response.success ? response.data ?? [] : [])
         setAlertsError(response.success ? null : response.error ?? 'UNKNOWN')
