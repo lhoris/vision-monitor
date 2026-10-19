@@ -32,6 +32,10 @@ export default function CameraFocus() {
     () => parseCameraNameOverrides(searchParams.get('cameraNames')),
     [searchParams]
   )
+  const modelProcessIdOverrides = useMemo(
+    () => parseModelProcessIdOverrides(searchParams.get('modelProcessIds')),
+    [searchParams]
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -98,6 +102,7 @@ export default function CameraFocus() {
   const activeModelProcessId = displayCamera?.modelProcessId
     ?? activeCatalogCamera?.modelProcessId
     ?? selectedTemporarySource?.modelProcessId
+    ?? (routeState.cameraId ? modelProcessIdOverrides[routeState.cameraId] : null)
     ?? null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
@@ -460,6 +465,26 @@ function parseCameraNameOverrides(value: string | null): Record<number, string> 
       const id = Number(rawId)
       if (Number.isSafeInteger(id) && id !== 0 && typeof rawName === 'string' && rawName.trim()) {
         overrides[id] = rawName.trim()
+      }
+      return overrides
+    }, {})
+  } catch {
+    return {}
+  }
+}
+
+function parseModelProcessIdOverrides(value: string | null): Record<number, number> {
+  if (!value) return {}
+
+  try {
+    const parsed = JSON.parse(value) as unknown
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+
+    return Object.entries(parsed).reduce<Record<number, number>>((overrides, [rawCameraId, rawProcessId]) => {
+      const cameraId = Number(rawCameraId)
+      const modelProcessId = Number(rawProcessId)
+      if (Number.isSafeInteger(cameraId) && cameraId !== 0 && Number.isSafeInteger(modelProcessId) && modelProcessId > 0) {
+        overrides[cameraId] = modelProcessId
       }
       return overrides
     }, {})

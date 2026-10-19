@@ -224,6 +224,18 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       params.set('subTabId', activeSubTab.id)
       params.set('cameraIds', currentCameraIds.join(','))
 
+      const currentModelProcessIds = orderedPositions.reduce<Record<number, number>>((processIds, position) => {
+        const modelProcessId = position.source?.modelProcessId
+          ?? cameras.find((camera) => camera.id === position.cameraId)?.modelProcessId
+        if (modelProcessId != null) {
+          processIds[position.cameraId] = modelProcessId
+        }
+        return processIds
+      }, {})
+      if (Object.keys(currentModelProcessIds).length > 0) {
+        params.set('modelProcessIds', JSON.stringify(currentModelProcessIds))
+      }
+
       const currentNameOverrides = orderedPositions.reduce<Record<number, string>>((overrides, position) => {
         const override = position.displayName
         if (override) {
