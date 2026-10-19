@@ -29,6 +29,10 @@ export function FocusAlertBanner({ alerts }: FocusAlertBannerProps) {
 
   const alertId = alert.alertId
   const isDismissing = dismissingAlertId === alertId
+  const occurredAt = new Date(alert.startedAt)
+  const occurredAtLabel = Number.isNaN(occurredAt.getTime())
+    ? alert.startedAt
+    : occurredAt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
   function dismissAlert() {
     if (isDismissing) {
@@ -63,6 +67,8 @@ export function FocusAlertBanner({ alerts }: FocusAlertBannerProps) {
             <dd>{alert.location}</dd>
             <dt className="font-semibold">등급</dt>
             <dd>{alert.severity}</dd>
+            <dt className="font-semibold">발생 시각</dt>
+            <dd>{occurredAtLabel}</dd>
             <dt className="font-semibold">상태</dt>
             <dd>{alert.status}</dd>
           </dl>
