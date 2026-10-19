@@ -2,6 +2,7 @@ package com.vision.dto;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
 
 public record MetadataProfileSaveRequest(
         List<MetadataSectionRequest> sections
@@ -14,7 +15,7 @@ public record MetadataProfileSaveRequest(
             Integer order,
             Boolean visible,
             String queryId,
-            Integer refreshIntervalSec,
+            BigDecimal refreshIntervalSec,
             String defaultText,
             Map<String, Object> mapping
     ) { }

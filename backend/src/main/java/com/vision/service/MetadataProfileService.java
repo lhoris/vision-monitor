@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +55,7 @@ public class MetadataProfileService {
             section.put("order", rs.getInt("SORT_ORDER"));
             section.put("visible", "Y".equalsIgnoreCase(rs.getString("VISIBLE_STATUS")));
             section.put("queryId", rs.getString("QUERY_CODE"));
-            section.put("refreshIntervalSec", rs.getInt("REFRESH_INTERVAL_SEC"));
+            section.put("refreshIntervalSec", rs.getBigDecimal("REFRESH_INTERVAL_SEC"));
             section.put("defaultText", rs.getString("DEFAULT_TEXT"));
             section.put("sourceProfileStatus", "included");
             section.put("mapping", parseOptions(rs.getString("SECTION_OPTIONS")));
@@ -118,9 +120,11 @@ public class MetadataProfileService {
         if (!List.of("TEXT", "GRID", "CHART").contains(type)) {
             throw new ApiException("METADATA_PROFILE_INVALID", "Unsupported metadata section type");
         }
-        int interval = section.refreshIntervalSec() == null ? 10 : section.refreshIntervalSec();
-        if (!List.of(5, 10, 30, 60).contains(interval)) {
-            throw new ApiException("METADATA_PROFILE_INVALID", "Unsupported metadata refresh interval");
+        BigDecimal interval = section.refreshIntervalSec() == null
+                ? BigDecimal.TEN
+                : section.refreshIntervalSec().setScale(1, RoundingMode.HALF_UP);
+        if (interval.compareTo(new BigDecimal("0.1")) < 0 || interval.compareTo(new BigDecimal("3600.0")) > 0) {
+            throw new ApiException("METADATA_PROFILE_INVALID", "Metadata refresh interval must be between 0.1 and 3600 seconds");
         }
         String options;
         try {
