@@ -250,12 +250,20 @@ export class WebRTCPlayer extends StreamPlayer {
   private async setupWebRTC(): Promise<void> {
     try {
       const whepUrl = this.webrtcConfig.whepUrl || this.url
-      this.whepClient = new WHEPClient(whepUrl, this.webrtcConfig.iceServers)
+      const client = new WHEPClient(whepUrl, this.webrtcConfig.iceServers)
+      this.whepClient = client
 
-      this.peerConnection = await this.whepClient.connect(
+      const peerConnection = await client.connect(
         this.handlePeerTrack,
         this.handlePeerConnectionStateChange
       )
+
+      if (this.destroyed || this.whepClient !== client || !this.videoElement) {
+        await client.disconnect()
+        return
+      }
+
+      this.peerConnection = peerConnection
 
       this.emit('loadend', {})
     } catch (error) {
@@ -278,7 +286,8 @@ export class WebRTCPlayer extends StreamPlayer {
    * 재생
    */
   async play(): Promise<void> {
-    if (!this.videoElement) {
+    const videoElement = this.videoElement
+    if (!videoElement) {
       throw new Error('Video element not initialized')
     }
 
@@ -291,7 +300,11 @@ export class WebRTCPlayer extends StreamPlayer {
         await this.setupWebRTC()
       }
 
-      await this.videoElement.play()
+      if (this.destroyed || this.videoElement !== videoElement || !this.peerConnection) {
+        return
+      }
+
+      await videoElement.play()
       this.cancelReconnect()
     } catch (error) {
       this.handleError({
