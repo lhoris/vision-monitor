@@ -38,6 +38,12 @@ export function useMetadataPolling(section: MetadataSectionConfig, sourceId: str
       } catch (error) {
         if (disposed || (error instanceof DOMException && error.name === 'AbortError')) return
         const queryError = error as MetadataQueryError
+        if (isMissingQueryError(queryError.code)) {
+          if (timer !== undefined) {
+            window.clearInterval(timer)
+            timer = undefined
+          }
+        }
         setState({ status: previousResult ? 'stale' : 'error', result: previousResult, error: { code: queryError.code ?? 'QUERY_FAILED', message: queryError.message ?? 'Query 조회에 실패했습니다.', queryId } })
       } finally {
         if (requestController === controller) requestController = null
@@ -58,4 +64,8 @@ export function useMetadataPolling(section: MetadataSectionConfig, sourceId: str
   }, [active, section.id, section.queryId, section.refreshIntervalSec, section.visible, sourceId])
 
   return state
+}
+
+function isMissingQueryError(code?: string): boolean {
+  return code === 'QUERY_NOT_FOUND' || code === 'METADATA_QUERY_NOT_FOUND'
 }
