@@ -337,7 +337,7 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
       clearControlsTimeout()
       controlsTimeoutRef.current = setTimeout(() => {
         if (state === 'playing') setShowControls(false)
-      }, 3000)
+      }, 2000)
     }
 
     const handleMouseMove = () => {
