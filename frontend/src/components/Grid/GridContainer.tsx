@@ -27,6 +27,7 @@ import AddCameraDialog from './AddCameraDialog'
 import { useGridLayout } from './useGridLayout'
 import {
   getCameraMoveFailureReason,
+  getCellCoordinates,
   moveCameraPosition,
   placeCameraAtCell,
   removeCameraPosition,
@@ -64,7 +65,7 @@ export function sortCameraPositionsByGridOrder(positions: CameraPosition[]): Cam
   return [...positions].sort((left, right) => left.row - right.row || left.col - right.col)
 }
 
-export function getUsedVideoSourceIds(layout: Layout | null, tabId: string, subTabId: string): number[] {
+export function getUsedVideoSourceIds(layout: Layout | null, tabId: string, subTabId: string, videoSourceIds: number[] = []): number[] {
   const positions = layout?.tabs
     .find((tab) => tab.id === tabId)
     ?.subTabs
@@ -73,12 +74,15 @@ export function getUsedVideoSourceIds(layout: Layout | null, tabId: string, subT
 
   return positions.flatMap((position) => {
     const sourceId = position.source?.id.match(/^video-source-(\d+)$/)
-    return sourceId ? [Number(sourceId[1])] : []
+    if (sourceId) return [Number(sourceId[1])]
+    return videoSourceIds.includes(position.cameraId) ? [position.cameraId] : []
   })
 }
 
 export function removeVideoSourceFromPositions(positions: CameraPosition[], sourceId: number): CameraPosition[] {
-  return positions.filter((position) => position.source?.id !== `video-source-${sourceId}`)
+  const index = positions.findIndex((position) => position.source?.id === `video-source-${sourceId}` || position.cameraId === sourceId)
+  if (index === -1) return positions
+  return positions.filter((_, positionIndex) => positionIndex !== index)
 }
 
 export const GridContainer: React.FC<GridContainerProps> = ({
@@ -270,14 +274,32 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     if (!selectedCellId || !activeSubTab) return
 
     const cellIndex = parseInt(selectedCellId.split('-')[1])
-    updateActiveSubTabPositions(
-      placeCameraAtCell(
-        activeSubTab.cameraPositions,
-        camera.id,
-        cellIndex,
-        activeSubTab.gridConfig.cols
-      )
+    const placedPositions = placeCameraAtCell(
+      activeSubTab.cameraPositions,
+      camera.id,
+      cellIndex,
+      activeSubTab.gridConfig.cols
     )
+    const managedSource = videoSources.find((source) => source.id === camera.id)
+    const sourceProtocol: TemporaryVideoSource['protocol'] = camera.streamProtocol === 'hls' || camera.streamProtocol === 'rtsp'
+      ? camera.streamProtocol
+      : 'webrtc'
+    const source = managedSource
+      ? {
+          id: `video-source-${managedSource.id}`,
+          url: managedSource.url,
+          protocol: sourceProtocol,
+          displayName: managedSource.name,
+          playbackStatus: 'idle' as const,
+          modelProcessId: managedSource.modelProcessId ?? null,
+        }
+      : undefined
+    const target = getCellCoordinates(cellIndex, activeSubTab.gridConfig.cols)
+    updateActiveSubTabPositions(placedPositions.map((position) => (
+      position.row === target.row && position.col === target.col && source
+        ? { ...position, displayName: camera.name, source }
+        : position
+    )))
 
     setShowCameraSelector(false)
     setSelectedCellId(null)
@@ -407,7 +429,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
     )
   }
 
-  const usedCameraIds = getUsedVideoSourceIds(layout, activeTabId, activeSubTab.id)
+  const usedCameraIds = getUsedVideoSourceIds(layout, activeTabId, activeSubTab.id, videoSources.map((source) => source.id))
   const existingTemporaryUrls = activeSubTab.cameraPositions
     .map((position) => position.source?.url)
     .filter((url): url is string => Boolean(url))

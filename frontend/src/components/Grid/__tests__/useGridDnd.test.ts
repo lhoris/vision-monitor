@@ -68,6 +68,15 @@ describe('grid position helpers', () => {
     ])
   })
 
+  it('removes only one duplicate camera placement', () => {
+    const duplicatePositions: CameraPosition[] = [
+      { cameraId: 1, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+      { cameraId: 1, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
+    ]
+
+    expect(removeCameraPosition(duplicatePositions, 1)).toEqual([duplicatePositions[1]])
+  })
+
   it('resizes a player across available cells', () => {
     expect(resizeCameraPosition([positions[0]], 1, 2, 2, 3, 3)).toEqual([
       { ...positions[0], rowSpan: 2, colSpan: 2 },

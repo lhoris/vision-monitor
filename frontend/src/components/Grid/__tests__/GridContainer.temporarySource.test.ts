@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { getUsedVideoSourceIds, updateTemporarySourcePositions } from '../GridContainer'
+import {
+  getUsedVideoSourceIds,
+  removeVideoSourceFromPositions,
+  updateTemporarySourcePositions,
+} from '../GridContainer'
 import type { CameraPosition } from '@/types/layout'
 import { createMockLayout } from '@/test/fixtures/liveMonitoring'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
@@ -74,5 +78,32 @@ describe('getUsedVideoSourceIds', () => {
     }]
 
     expect(getUsedVideoSourceIds(layout, 'tab-1', layout.tabs[0].subTabs[0].id)).toEqual([])
+  })
+
+  it('recognizes legacy camera positions backed by managed video sources', () => {
+    const layout = createMockLayout('2026-10-16T00:00:00.000Z')
+    layout.tabs[0].subTabs[0].cameraPositions = [{
+      cameraId: 10,
+      row: 0,
+      col: 0,
+      rowSpan: 1,
+      colSpan: 1,
+    }]
+
+    expect(getUsedVideoSourceIds(
+      layout,
+      'tab-1',
+      layout.tabs[0].subTabs[0].id,
+      [10]
+    )).toEqual([10])
+  })
+
+  it('removes only one placement when the same video is duplicated', () => {
+    const positions: CameraPosition[] = [
+      { cameraId: 10, row: 0, col: 0, rowSpan: 1, colSpan: 1 },
+      { cameraId: 10, row: 0, col: 1, rowSpan: 1, colSpan: 1 },
+    ]
+
+    expect(removeVideoSourceFromPositions(positions, 10)).toEqual([positions[1]])
   })
 })

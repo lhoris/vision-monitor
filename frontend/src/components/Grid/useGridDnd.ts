@@ -179,7 +179,9 @@ export function removeCameraPosition(
   positions: CameraPosition[],
   cameraId: number
 ): CameraPosition[] {
-  return positions.filter((position) => position.cameraId !== cameraId)
+  const index = positions.findIndex((position) => position.cameraId === cameraId)
+  if (index === -1) return positions
+  return positions.filter((_, positionIndex) => positionIndex !== index)
 }
 
 export function useGridDnd() {
