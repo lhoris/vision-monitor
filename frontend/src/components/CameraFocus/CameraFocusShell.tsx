@@ -96,13 +96,14 @@ export function CameraFocusShell({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => onSelectCamera?.(cameraItem.id)}
-              className={`focus-camera-tab min-w-28 border px-4 py-2 text-sm font-semibold ${
+                  title={cameraItem.name}
+                  className={`focus-camera-tab min-w-28 max-w-52 shrink-0 border px-4 py-2 text-sm font-semibold ${
                     isSelected
                       ? 'focus-camera-tab--selected'
                       : 'focus-camera-tab--idle'
                   }`}
                 >
-                  {cameraItem.name}
+                  <span className="block min-w-0 truncate">{cameraItem.name}</span>
                 </button>
               )
             })}
