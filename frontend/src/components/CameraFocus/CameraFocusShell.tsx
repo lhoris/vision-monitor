@@ -103,7 +103,7 @@ export function CameraFocusShell({
                       : 'focus-camera-tab--idle'
                   }`}
                 >
-                  <span className="block min-w-0 truncate">{cameraItem.name}</span>
+                  <span className="block min-w-0 overflow-hidden text-clip whitespace-nowrap">{cameraItem.name}</span>
                 </button>
               )
             })}
