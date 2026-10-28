@@ -66,6 +66,7 @@ export function CameraFocusShell({
   const { t } = useTranslation()
   const backToLiveLabel = t('cameraFocus.backToLive', '라이브로 돌아가기')
   const [isTestAlertDialogOpen, setIsTestAlertDialogOpen] = useState(false)
+  const [cameraTooltip, setCameraTooltip] = useState<{ name: string; left: number; top: number } | null>(null)
   const [testAlertMessage, setTestAlertMessage] = useState('[테스트 경고] Entry Zone 치입불 발생 중')
 
   function handleSubmitTestAlert() {
@@ -96,7 +97,24 @@ export function CameraFocusShell({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => onSelectCamera?.(cameraItem.id)}
-                  title={cameraItem.name}
+                  onMouseEnter={(event) => {
+                    const bounds = event.currentTarget.getBoundingClientRect()
+                    setCameraTooltip({
+                      name: cameraItem.name,
+                      left: Math.max(8, Math.min(bounds.left, window.innerWidth - 360)),
+                      top: bounds.bottom + 8,
+                    })
+                  }}
+                  onMouseLeave={() => setCameraTooltip(null)}
+                  onFocus={(event) => {
+                    const bounds = event.currentTarget.getBoundingClientRect()
+                    setCameraTooltip({
+                      name: cameraItem.name,
+                      left: Math.max(8, Math.min(bounds.left, window.innerWidth - 360)),
+                      top: bounds.bottom + 8,
+                    })
+                  }}
+                  onBlur={() => setCameraTooltip(null)}
                   className={`focus-camera-tab min-w-28 max-w-52 shrink-0 border px-4 py-2 text-sm font-semibold ${
                     isSelected
                       ? 'focus-camera-tab--selected'
@@ -107,6 +125,15 @@ export function CameraFocusShell({
                 </button>
               )
             })}
+          </div>
+        ) : null}
+        {cameraTooltip ? (
+          <div
+            role="tooltip"
+            className="pointer-events-none fixed z-[120] max-w-[min(22rem,calc(100vw-1rem))] rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-xs font-medium leading-5 text-white shadow-xl"
+            style={{ left: cameraTooltip.left, top: cameraTooltip.top }}
+          >
+            {cameraTooltip.name}
           </div>
         ) : null}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
