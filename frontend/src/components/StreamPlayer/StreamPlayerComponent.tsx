@@ -239,7 +239,7 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
   const latestStatsRef = useRef({ currentTime: 0, duration: 0 })
   const onStateChangeRef = useRef(onStateChange)
   const onErrorRef = useRef(onError)
-  const [showControls, setShowControls] = useState(true)
+  const [showControls, setShowControls] = useState(false)
   const controlsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const {
@@ -346,15 +346,18 @@ export const StreamPlayerComponent: React.FC<StreamPlayerProps> = ({
     }
 
     if (state !== 'playing') {
-      setShowControls(true)
+      setShowControls(false)
       clearControlsTimeout()
       return undefined
     }
 
+    setShowControls(false)
     scheduleHideControls()
+    containerRef.current?.addEventListener('mouseenter', handleMouseMove)
     containerRef.current?.addEventListener('mousemove', handleMouseMove)
 
     return () => {
+      containerRef.current?.removeEventListener('mouseenter', handleMouseMove)
       containerRef.current?.removeEventListener('mousemove', handleMouseMove)
       clearControlsTimeout()
     }
