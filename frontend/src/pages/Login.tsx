@@ -147,6 +147,26 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     event.preventDefault()
     setError('')
     setSaving(true)
+    if (input.password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      setSaving(false)
+      return
+    }
+    if (input.password !== input.passwordConfirm) {
+      setError('Password and password confirmation must match.')
+      setSaving(false)
+      return
+    }
+    if (input.password.length < 8) {
+      setError('비밀번호는 8자 이상이어야 합니다.')
+      setSaving(false)
+      return
+    }
+    if (input.password !== input.passwordConfirm) {
+      setError('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
+      setSaving(false)
+      return
+    }
     try {
       await authService.signup(input)
       onSuccess('가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.')

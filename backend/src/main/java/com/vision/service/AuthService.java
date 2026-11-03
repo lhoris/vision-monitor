@@ -262,7 +262,19 @@ public class AuthService {
             throw new ApiException("VALIDATION_ERROR", "사용자 ID는 2자 이상 입력해야 합니다.");
         }
         if (request.password() == null || request.password().length() < 8) {
+            throw new ApiException("PASSWORD_INVALID", "Password must be at least 8 characters.");
+        }
+        if (request.password() == null || request.password().length() < 8) {
+            throw new ApiException("PASSWORD_INVALID", "비밀번호는 8자 이상이어야 합니다.");
+        }
+        if (request.password() == null || request.password().length() < 8) {
             throw new ApiException("VALIDATION_ERROR", "비밀번호는 8자 이상 입력해야 합니다.");
+        }
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new ApiException("PASSWORD_CONFIRM_MISMATCH", "Password and password confirmation must match.");
+        }
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new ApiException("PASSWORD_CONFIRM_MISMATCH", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");
         }
         if (!request.password().equals(request.passwordConfirm())) {
             throw new ApiException("VALIDATION_ERROR", "비밀번호가 일치하지 않습니다.");
