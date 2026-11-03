@@ -244,7 +244,9 @@ export function UserManagementGrid({
   const [pageSize, setPageSize] = useState(25)
   const [currentPage, setCurrentPage] = useState(1)
   const [columnFiltersVisible, setColumnFiltersVisible] = useState(false)
+  const [loginAccountQuery, setLoginAccountQuery] = useState('')
   const [nameQuery, setNameQuery] = useState('')
+  const [appliedLoginAccountQuery, setAppliedLoginAccountQuery] = useState('')
   const [appliedNameQuery, setAppliedNameQuery] = useState('')
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: EditableField; initialValue?: string } | null>(null)
@@ -293,6 +295,7 @@ export function UserManagementGrid({
 
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
+      if (appliedLoginAccountQuery.trim() && !row.username.toLowerCase().includes(appliedLoginAccountQuery.trim().toLowerCase())) return false
       if (appliedNameQuery.trim() && !row.name.toLowerCase().includes(appliedNameQuery.trim().toLowerCase())) return false
       return (Object.entries(columnFilters) as [UserColumnFilterKey, string][])
         .every(([key, filterValue]) => {
@@ -301,7 +304,7 @@ export function UserManagementGrid({
           return getColumnFilterValue(row, key).toLowerCase().includes(value)
         })
     })
-  }, [appliedNameQuery, columnFilters, rows])
+  }, [appliedLoginAccountQuery, appliedNameQuery, columnFilters, rows])
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize))
   const safeCurrentPage = Math.min(currentPage, totalPages)
@@ -319,6 +322,7 @@ export function UserManagementGrid({
 
   const executeSearch = async () => {
     onClearNotice?.()
+    setAppliedLoginAccountQuery(loginAccountQuery)
     setAppliedNameQuery(nameQuery)
     setCurrentPage(1)
     await onRefresh()
@@ -449,7 +453,7 @@ export function UserManagementGrid({
     { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-[200px]', onChange: (value) => updateColumnFilter('username', value) },
     { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[200px]', onChange: (value) => updateColumnFilter('name', value) },
     { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-[90px]' },
-    { id: 'accountStatus', ariaLabel: '계정 상태 필터', kind: 'empty', value: '', widthClassName: 'w-[120px]' },
+    { id: 'accountStatus', ariaLabel: '계정 상태 필터', kind: 'empty', value: '', widthClassName: 'w-[140px]' },
     { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-[240px]', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
     { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-auto', onChange: (value) => updateColumnFilter('displayName', value) },
   ]
@@ -530,7 +534,16 @@ export function UserManagementGrid({
       return
     }
 
-    if (!await askConfirmation({ title: t('userManagement.deleteUserTitle'), message: t('userManagement.deleteUserMessage', { count: persistedTargets.length }), variant: 'danger' })) return
+    const deleteMessageKey = persistedTargets.length === 1 ? 'userManagement.deleteUserMessageSingle' : 'userManagement.deleteUserMessage'
+    if (!await askConfirmation({
+      title: t('userManagement.deleteUserTitle'),
+      message: t(deleteMessageKey, {
+        count: persistedTargets.length,
+        username: persistedTargets[0]?.username || '-',
+        name: persistedTargets[0]?.name || '-',
+      }),
+      variant: 'danger',
+    })) return
 
     await runBatchAction('delete-request', persistedTargets.map((row) => row.rowId), true)
   }
@@ -561,7 +574,13 @@ export function UserManagementGrid({
       return
     }
 
-    if (!await askConfirmation({ title: '사용자 정보 저장 확인', message: `선택한 ${changedRows.length}건의 변경 사항을 저장하시겠습니까?` })) return
+    const saveMessage = selectedChangedRows.length === 1
+      ? t('userManagement.saveMessageSingle', {
+        username: selectedChangedRows[0]?.username || '-',
+        name: selectedChangedRows[0]?.name || '-',
+      })
+      : t('userManagement.saveMessage', { count: selectedChangedRows.length })
+    if (!await askConfirmation({ title: t('userManagement.saveTitle'), message: saveMessage })) return
 
     setRows((current) => current.map((row) => changedRows.some((changed) => changed.rowId === row.rowId) ? { ...row, state: 'saving' } : row))
     setSaving(true)
@@ -962,6 +981,8 @@ export function UserManagementGrid({
     <>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); void executeSearch() }}>
+          <label htmlFor="user-login-account-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.loginAccount')}</label>
+          <input id="user-login-account-search" aria-label={t('userManagement.loginAccountSearch')} value={loginAccountQuery} onChange={(event) => setLoginAccountQuery(event.target.value)} placeholder={t('userManagement.loginAccountSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
           <label htmlFor="user-name-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.name')}</label>
           <input id="user-name-search" aria-label={t('userManagement.nameSearch')} value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder={t('userManagement.nameSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>
@@ -1013,7 +1034,7 @@ export function UserManagementGrid({
               <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
               <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
-              <th className={`w-[120px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
+              <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
               <th className={`w-[240px] ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
@@ -1028,7 +1049,13 @@ export function UserManagementGrid({
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {
                     if (!row.id || !onResetPassword) return
-                    void askConfirmation({ title: t('userManagement.resetPasswordTitle'), message: t('userManagement.resetPasswordMessage') }).then((confirmed) => {
+                    void askConfirmation({
+                      title: t('userManagement.resetPasswordTitle'),
+                      message: t('userManagement.resetPasswordMessage', {
+                        username: row.username || '-',
+                        name: row.name || '-',
+                      }),
+                    }).then((confirmed) => {
                       if (!confirmed || !row.id || !onResetPassword) return
                       setSaving(true)
                       void onResetPassword(row.id).finally(() => setSaving(false))

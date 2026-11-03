@@ -27,7 +27,8 @@ describe('UserManagementGrid', () => {
   it('renders the current compact master columns and action bars', () => {
     renderGrid()
 
-    expect(screen.getByText('로그인 계정')).toBeInTheDocument()
+    expect(screen.getByLabelText('로그인 계정 입력')).toBeInTheDocument()
+    expect(screen.getAllByText('로그인 계정').length).toBeGreaterThan(0)
     expect(screen.getAllByText('이름').length).toBeGreaterThan(0)
     expect(screen.getByText('비밀번호')).toBeInTheDocument()
     expect(screen.getByText('권한')).toBeInTheDocument()
