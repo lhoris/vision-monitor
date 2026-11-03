@@ -28,6 +28,7 @@ interface UserManagementGridProps {
   onBatchAction: (action: UserDangerAction, userIds: number[]) => Promise<void>
   onSaveChanges: (changes: UserGridSaveRequest[]) => Promise<void>
   onRefresh: () => Promise<void>
+  onClearNotice?: () => void
   onResetPassword?: (userId: number) => Promise<void>
   onApprove?: (userId: number) => Promise<void>
   onReject?: (userId: number, reason: string) => Promise<void>
@@ -231,6 +232,7 @@ export function UserManagementGrid({
   onBatchAction,
   onSaveChanges,
   onRefresh,
+  onClearNotice,
   onResetPassword,
   onApprove,
   onReject,
@@ -315,6 +317,7 @@ export function UserManagementGrid({
   }
 
   const executeSearch = async () => {
+    onClearNotice?.()
     setAppliedNameQuery(nameQuery)
     setCurrentPage(1)
     await onRefresh()
@@ -322,13 +325,14 @@ export function UserManagementGrid({
   }
 
   const executeRefresh = async () => {
+    onClearNotice?.()
     await onRefresh()
     setLocalNotice(t('userManagement.refreshCompleted'))
   }
 
   useEffect(() => {
     if (!localNotice) return undefined
-    const timeoutId = window.setTimeout(() => setLocalNotice(''), 2500)
+    const timeoutId = window.setTimeout(() => setLocalNotice(''), 3000)
     return () => window.clearTimeout(timeoutId)
   }, [localNotice])
 
@@ -500,6 +504,7 @@ export function UserManagementGrid({
   }
 
   const deleteDraftRows = async () => {
+    setLocalNotice('')
     setLocalError('')
     if (!selectedDraftRows.length) {
       setLocalError('신규 행만 행 삭제할 수 있습니다.')
@@ -515,6 +520,7 @@ export function UserManagementGrid({
   }
 
   const deleteRows = async () => {
+    setLocalNotice('')
     setLocalError('')
     const persistedTargets = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id))
     if (!persistedTargets.length) {
@@ -528,6 +534,7 @@ export function UserManagementGrid({
   }
 
   const saveRows = async () => {
+    setLocalNotice('')
     setLocalError('')
     if (!selectedChangedRows.length) {
       setLocalError('저장할 변경 행을 선택하세요.')
@@ -990,7 +997,7 @@ export function UserManagementGrid({
       )}
 
       {localNotice && (
-        <div role="status" className="fixed right-6 top-20 z-50 max-w-sm rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-200">
+        <div role="status" className="animate-toast-in-out fixed right-6 top-20 z-50 max-w-sm rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-200">
           {localNotice}
         </div>
       )}

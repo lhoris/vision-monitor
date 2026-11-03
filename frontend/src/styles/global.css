@@ -32,6 +32,17 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+@keyframes toast-in-out {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  12% { opacity: 1; transform: translateY(0) scale(1); }
+  82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+.animate-toast-in-out {
+  animation: toast-in-out 3s ease-in-out both;
+}
+
 /* ========================================================
   Theme 1: 스카이 블루 & 모던 쿨그레이 (라이트 테마)
   ======================================================== */
