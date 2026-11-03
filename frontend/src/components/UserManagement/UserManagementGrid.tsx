@@ -257,6 +257,7 @@ export function UserManagementGrid({
   const [approvalSaving, setApprovalSaving] = useState(false)
   const [approvalRequest, setApprovalRequest] = useState<ApprovalRequest | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [approvalValidationError, setApprovalValidationError] = useState('')
   const [confirmation, setConfirmation] = useState<ConfirmationRequest | null>(null)
   const footerToolbar = { ...defaultToolbarOptions, ...toolbarOptions }
 
@@ -825,7 +826,7 @@ export function UserManagementGrid({
       return (
         <div className="flex h-9 items-center justify-start gap-1 whitespace-nowrap px-2">
           <button type="button" onClick={() => setApprovalRequest({ type: 'approve', userId: row.id! })} disabled={approvalSaving} className="rounded border border-emerald-300 px-1.5 py-0.5 text-xs font-medium text-emerald-700 disabled:opacity-50">{t('userManagement.approve')}</button>
-          <button type="button" onClick={() => { setRejectionReason(''); setApprovalRequest({ type: 'reject', userId: row.id! }) }} disabled={approvalSaving} className="rounded border border-rose-300 px-1.5 py-0.5 text-xs font-medium text-rose-700 disabled:opacity-50">{t('userManagement.reject')}</button>
+          <button type="button" onClick={() => { setRejectionReason(''); setApprovalValidationError(''); setApprovalRequest({ type: 'reject', userId: row.id! }) }} disabled={approvalSaving} className="rounded border border-rose-300 px-1.5 py-0.5 text-xs font-medium text-rose-700 disabled:opacity-50">{t('userManagement.reject')}</button>
         </div>
       )
     }
@@ -938,11 +939,12 @@ export function UserManagementGrid({
     if (!approvalRequest) return
     const reason = rejectionReason.trim()
     if (approvalRequest.type === 'reject' && !reason) {
-      setLocalError(t('userManagement.rejectionReasonRequired'))
+      setApprovalValidationError(t('userManagement.rejectionReasonRequired'))
       return
     }
 
     setApprovalSaving(true)
+    setApprovalValidationError('')
     setLocalError('')
     try {
       if (approvalRequest.type === 'approve') await onApprove?.(approvalRequest.userId)
@@ -1178,7 +1180,7 @@ export function UserManagementGrid({
       </section>
       {approvalRequest && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 p-4" role="presentation">
-          <button type="button" aria-label={t('userManagement.cancel')} className="absolute inset-0 cursor-default" onClick={() => { if (!approvalSaving) setApprovalRequest(null) }} />
+          <button type="button" aria-label={t('userManagement.cancel')} className="absolute inset-0 cursor-default" onClick={() => { if (!approvalSaving) { setApprovalRequest(null); setApprovalValidationError('') } }} />
           <section role="dialog" aria-modal="true" aria-labelledby="approval-dialog-title" className="relative w-full max-w-md border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
             <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
               <h2 id="approval-dialog-title" className="text-base font-semibold text-slate-900 dark:text-white">
@@ -1193,10 +1195,11 @@ export function UserManagementGrid({
                   <textarea value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t('userManagement.rejectionReasonPlaceholder')} rows={4} autoFocus className="mt-1 block w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm font-normal text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
                 </label>
               )}
+              {approvalValidationError && <p role="alert" className="mt-3 text-center text-sm font-medium text-rose-600 dark:text-rose-300">{approvalValidationError}</p>}
             </div>
             <div className="flex justify-end gap-2 px-5 py-4">
               <button type="button" onClick={() => void submitApprovalRequest()} disabled={approvalSaving} className={`px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 ${approvalRequest.type === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-blue-600 hover:bg-blue-700'}`}>{approvalSaving ? t('common.loading') : approvalRequest.type === 'approve' ? t('userManagement.approve') : t('userManagement.reject')}</button>
-              <button type="button" onClick={() => setApprovalRequest(null)} disabled={approvalSaving} className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">{t('userManagement.cancel')}</button>
+              <button type="button" onClick={() => { setApprovalRequest(null); setApprovalValidationError('') }} disabled={approvalSaving} className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">{t('userManagement.cancel')}</button>
             </div>
           </section>
         </div>
