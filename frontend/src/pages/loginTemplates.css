@@ -174,9 +174,8 @@
 }
 
 .vm-signup-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: block;
+  min-width: 0;
   color: #cbd5e1;
   font-size: 12px;
   font-weight: 700;
@@ -187,6 +186,10 @@
 }
 
 .vm-signup-field input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin-top: 6px;
   height: 42px;
   border: 1px solid #475569;
   border-radius: 8px;
