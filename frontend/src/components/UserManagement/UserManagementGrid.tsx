@@ -120,7 +120,7 @@ function toGridRow(user: UserAccount): UserGridRow {
     phone: user.phone,
     roleIds: user.roleIds,
     roles: user.roles,
-    accountStatus: user.dataEndStatus === 'Y' ? 'disabled' : user.accountStatus,
+    accountStatus: user.accountStatus,
     employmentStatus: user.employmentStatus,
     lastLoginAt: user.lastLoginAt,
     createdAt: user.createdAt,

@@ -259,7 +259,6 @@ public class UserManagementService {
     private Specification<UserAccount> buildSpecification(String query, String roleId, String accountStatus, String employmentStatus) {
         return (root, criteriaQuery, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
-            predicates.add(builder.equal(root.get("dataEndStatus"), "N"));
             if (query != null && !query.isBlank()) {
                 String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
                 predicates.add(builder.or(
@@ -287,7 +286,7 @@ public class UserManagementService {
 
     private Map<String, Long> summary() {
         Map<String, Long> values = new HashMap<>();
-        userRepository.findAll((root, query, builder) -> builder.equal(root.get("dataEndStatus"), "N")).forEach(user -> {
+        userRepository.findAll().forEach(user -> {
             String account = user.getAccountStatus() == null ? ACTIVE : user.getAccountStatus();
             String employment = user.getEmploymentStatus() == null ? EMPLOYED : user.getEmploymentStatus();
             values.merge(account + "Count", 1L, Long::sum);
@@ -329,9 +328,7 @@ public class UserManagementService {
 
     private UserAccountDto toDto(UserAccount user, List<RoleSummaryDto> roles) {
         user.setRole(resolveRoleCode(user));
-        if ("Y".equalsIgnoreCase(user.getDataEndStatus())) {
-            user.setAccountStatus(DISABLED);
-        } else if (user.getAccountStatus() == null || user.getAccountStatus().isBlank()) {
+        if (user.getAccountStatus() == null || user.getAccountStatus().isBlank()) {
             user.setAccountStatus(ACTIVE);
         }
         user.setEnabled(ACTIVE.equalsIgnoreCase(user.getAccountStatus())
