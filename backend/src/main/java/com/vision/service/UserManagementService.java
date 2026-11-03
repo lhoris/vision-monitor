@@ -25,9 +25,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class UserManagementService {
@@ -220,12 +222,12 @@ public class UserManagementService {
             protectAdminRemoval(actor, user, user.getRole(), DISABLED, user.getEmploymentStatus());
             user.setAccountStatus(DISABLED);
             user.setEnabled(false);
-            user.setDataEndStatus("Y");
+            user.setDataEndStatus("N");
         } else if ("lock".equals(normalizedAction)) {
             protectAdminRemoval(actor, user, user.getRole(), LOCKED, user.getEmploymentStatus());
             user.setAccountStatus(LOCKED);
             user.setEnabled(false);
-            user.setDataEndStatus("Y");
+            user.setDataEndStatus("N");
         } else if ("unlock".equals(normalizedAction)) {
             user.setAccountStatus(ACTIVE);
             user.setEnabled(EMPLOYED.equalsIgnoreCase(user.getEmploymentStatus()));
@@ -235,7 +237,7 @@ public class UserManagementService {
             user.setEmploymentStatus(RETIRED);
             user.setAccountStatus(DISABLED);
             user.setEnabled(false);
-            user.setDataEndStatus("Y");
+            user.setDataEndStatus("N");
         } else if ("delete-request".equals(normalizedAction)) {
             protectAdminRemoval(actor, user, user.getRole(), user.getAccountStatus(), user.getEmploymentStatus());
             if (!Boolean.TRUE.equals(safeRequest.confirmedImpact())) {
@@ -256,12 +258,19 @@ public class UserManagementService {
 
     private Specification<UserAccount> buildSpecification(String query, String roleId, String accountStatus, String employmentStatus) {
         return (root, criteriaQuery, builder) -> {
-            if (query == null || query.isBlank()) return builder.conjunction();
-            String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
-            return builder.or(
-                    builder.like(builder.lower(root.get("username")), pattern),
-                    builder.like(builder.lower(root.get("name")), pattern)
-            );
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(builder.equal(root.get("dataEndStatus"), "N"));
+            if (query != null && !query.isBlank()) {
+                String pattern = "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
+                predicates.add(builder.or(
+                        builder.like(builder.lower(root.get("username")), pattern),
+                        builder.like(builder.lower(root.get("name")), pattern)
+                ));
+            }
+            if (accountStatus != null && !accountStatus.isBlank()) {
+                predicates.add(builder.equal(builder.lower(root.get("accountStatus")), normalizeAccountStatus(accountStatus)));
+            }
+            return builder.and(predicates.toArray(Predicate[]::new));
         };
     }
 
@@ -278,7 +287,7 @@ public class UserManagementService {
 
     private Map<String, Long> summary() {
         Map<String, Long> values = new HashMap<>();
-        userRepository.findAll().forEach(user -> {
+        userRepository.findAll((root, query, builder) -> builder.equal(root.get("dataEndStatus"), "N")).forEach(user -> {
             String account = user.getAccountStatus() == null ? ACTIVE : user.getAccountStatus();
             String employment = user.getEmploymentStatus() == null ? EMPLOYED : user.getEmploymentStatus();
             values.merge(account + "Count", 1L, Long::sum);
