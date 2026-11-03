@@ -262,7 +262,7 @@ public class AuthService {
             throw new ApiException("VALIDATION_ERROR", "사용자 ID는 2자 이상 입력해야 합니다.");
         }
         if (request.password() == null || request.password().length() < 8) {
-            throw new ApiException("PASSWORD_INVALID", "Password must be at least 8 characters.");
+            throw new ApiException("PASSWORD_INVALID", "\uBE44\uBC00\uBC88\uD638\uB294 8\uC790 \uC774\uC0C1\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4.");
         }
         if (request.password() == null || request.password().length() < 8) {
             throw new ApiException("PASSWORD_INVALID", "비밀번호는 8자 이상이어야 합니다.");
@@ -271,7 +271,7 @@ public class AuthService {
             throw new ApiException("VALIDATION_ERROR", "비밀번호는 8자 이상 입력해야 합니다.");
         }
         if (!request.password().equals(request.passwordConfirm())) {
-            throw new ApiException("PASSWORD_CONFIRM_MISMATCH", "Password and password confirmation must match.");
+            throw new ApiException("PASSWORD_CONFIRM_MISMATCH", "\uBE44\uBC00\uBC88\uD638\uC640 \uBE44\uBC00\uBC88\uD638 \uD655\uC778\uC774 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.");
         }
         if (!request.password().equals(request.passwordConfirm())) {
             throw new ApiException("PASSWORD_CONFIRM_MISMATCH", "비밀번호와 비밀번호 확인이 일치하지 않습니다.");

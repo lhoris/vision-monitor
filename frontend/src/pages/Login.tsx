@@ -148,12 +148,12 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     setError('')
     setSaving(true)
     if (input.password.length < 8) {
-      setError('Password must be at least 8 characters.')
+      setError('\uBE44\uBC00\uBC88\uD638\uB294 8\uC790 \uC774\uC0C1\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4.')
       setSaving(false)
       return
     }
     if (input.password !== input.passwordConfirm) {
-      setError('Password and password confirmation must match.')
+      setError('\uBE44\uBC00\uBC88\uD638\uC640 \uBE44\uBC00\uBC88\uD638 \uD655\uC778\uC774 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.')
       setSaving(false)
       return
     }
