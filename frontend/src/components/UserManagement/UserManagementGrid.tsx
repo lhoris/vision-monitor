@@ -9,7 +9,7 @@ import type {
   UserGridRowState,
   UserMutationRequest,
 } from '@/types/userManagement'
-import { GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
+import { ConfirmDialog, GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
 import { canPerformDangerAction, validateUserMutation, type UserValidationErrors } from '@/services/userManagementValidation'
 import { accountStatusLabel, employmentStatusLabel } from './UserStatusBadge'
 
@@ -52,6 +52,13 @@ interface UserGridRow extends UserMutationRequest {
   updatedAt?: string
   state: UserGridRowState
   fieldErrors: UserValidationErrors
+}
+
+type ConfirmationRequest = {
+  title: string
+  message: string
+  variant?: 'default' | 'danger'
+  resolve: (confirmed: boolean) => void
 }
 
 const initialColumnFilters: Record<UserColumnFilterKey, string> = {
@@ -241,7 +248,12 @@ export function UserManagementGrid({
   const [saving, setSaving] = useState(false)
   const [localError, setLocalError] = useState('')
   const [approvalSaving, setApprovalSaving] = useState(false)
+  const [confirmation, setConfirmation] = useState<ConfirmationRequest | null>(null)
   const footerToolbar = { ...defaultToolbarOptions, ...toolbarOptions }
+
+  const askConfirmation = (request: Omit<ConfirmationRequest, 'resolve'>) => new Promise<boolean>((resolve) => {
+    setConfirmation({ ...request, resolve })
+  })
 
   useEffect(() => {
     setRows(users.map(toGridRow))
@@ -502,7 +514,7 @@ export function UserManagementGrid({
       return
     }
 
-    if (!window.confirm(`${selectedRows.length}건의 사용자를 삭제 요청하시겠습니까?`)) return
+    if (!await askConfirmation({ title: '사용자 삭제 요청 확인', message: `선택한 ${selectedRows.length}건의 사용자 삭제를 요청하시겠습니까?`, variant: 'danger' })) return
 
     const draftRowIds = new Set(selectedRows.filter((row) => !row.id).map((row) => row.rowId))
     const persistedTargets = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id))
@@ -542,7 +554,7 @@ export function UserManagementGrid({
       return
     }
 
-    if (!window.confirm(`${changedRows.length}건의 사용자 변경 사항을 저장하시겠습니까?`)) return
+    if (!await askConfirmation({ title: '사용자 정보 저장 확인', message: `선택한 ${changedRows.length}건의 변경 사항을 저장하시겠습니까?` })) return
 
     setRows((current) => current.map((row) => changedRows.some((changed) => changed.rowId === row.rowId) ? { ...row, state: 'saving' } : row))
     setSaving(true)
@@ -592,7 +604,7 @@ export function UserManagementGrid({
       return
     }
 
-    if (!skipConfirmation && !window.confirm(`${targets.length}명의 사용자를 ${actionLabel[action]} 처리할까요?`)) return
+    if (!skipConfirmation && !await askConfirmation({ title: '사용자 상태 변경 확인', message: `선택한 ${targets.length}명의 사용자를 ${actionLabel[action]} 처리할까요?`, variant: action === 'delete-request' ? 'danger' : 'default' })) return
 
     setRows((current) => current.map((row) => targetRowIds.has(row.rowId) ? { ...row, state: 'saving' } : row))
     setSaving(true)
@@ -979,9 +991,13 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'name', '이름')}{renderError(row, 'name')}</td>
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {
-                    if (!row.id || !onResetPassword || !window.confirm('선택한 사용자의 비밀번호를 초기화하시겠습니까?')) return
-                    setSaving(true)
-                    void onResetPassword(row.id).finally(() => setSaving(false))
+                    if (!row.id || !onResetPassword) return
+                    void askConfirmation({ title: '비밀번호 초기화 확인', message: '선택한 사용자의 비밀번호를 초기화하시겠습니까?' }).then((confirmed) => {
+                      if (!confirmed || !row.id || !onResetPassword) return
+                      setSaving(true)
+                      void onResetPassword(row.id).finally(() => setSaving(false))
+                    })
+                    return
                   }}>
                     초기화
                   </button>
@@ -1119,6 +1135,22 @@ export function UserManagementGrid({
         </div>
       </div>
       </section>
+      <ConfirmDialog
+        isOpen={Boolean(confirmation)}
+        title={confirmation?.title ?? ''}
+        message={confirmation?.message ?? ''}
+        variant={confirmation?.variant ?? 'default'}
+        confirmLabel="확인"
+        cancelLabel="취소"
+        onCancel={() => {
+          confirmation?.resolve(false)
+          setConfirmation(null)
+        }}
+        onConfirm={() => {
+          confirmation?.resolve(true)
+          setConfirmation(null)
+        }}
+      />
     </>
   )
 }

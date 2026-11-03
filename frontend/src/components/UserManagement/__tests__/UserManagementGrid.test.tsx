@@ -54,6 +54,7 @@ describe('UserManagementGrid', () => {
     fireEvent.change(screen.getByLabelText('표시명'), { target: { value: '변경된 비고' } })
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
     await waitFor(() => expect(props.onSaveChanges).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: userManagementFixture[0].id,
@@ -78,6 +79,7 @@ describe('UserManagementGrid', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
     await waitFor(() => expect(props.onSaveChanges).toHaveBeenCalledWith([
       expect.objectContaining({
         userId: userManagementFixture[0].id,
@@ -185,6 +187,7 @@ describe('UserManagementGrid', () => {
     fireEvent.click(screen.getByLabelText(/tester1 선택/))
     fireEvent.click(screen.getByRole('button', { name: '행 삭제' }))
 
+    fireEvent.click(screen.getByRole('button', { name: '확인' }))
     await waitFor(() => expect(props.onBatchAction).toHaveBeenCalledWith('delete-request', [userManagementFixture[1].id]))
   })
 })
