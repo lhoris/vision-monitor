@@ -321,6 +321,8 @@ export function UserManagementGrid({
       setApprovalSaving(false)
     }
   }
+  void approveSelected
+  void rejectSelected
   const updateColumnFilter = (key: UserColumnFilterKey, value: string) => {
     setColumnFilters((current) => ({ ...current, [key]: value }))
   }
@@ -1100,8 +1102,6 @@ export function UserManagementGrid({
           {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">새로고침</button>}
         </div>
 
-        {onApprove && <button type="button" onClick={() => void approveSelected()} disabled={approvalSaving || pendingRows.length === 0} className="rounded border border-emerald-300 px-2 py-1 font-medium text-emerald-700 disabled:opacity-50">가입 승인</button>}
-        {onReject && <button type="button" onClick={() => void rejectSelected()} disabled={approvalSaving || pendingRows.length === 0} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50">가입 반려</button>}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <span>선택 {selectedPersistedRows.length}명 / 변경 {changedRows.length}건</span>
           <span className="text-slate-300 dark:text-slate-600">|</span>

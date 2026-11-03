@@ -31,7 +31,7 @@ describe('UserManagementGrid', () => {
     expect(screen.getAllByText('이름').length).toBeGreaterThan(0)
     expect(screen.getByText('비밀번호 초기화')).toBeInTheDocument()
     expect(screen.getByText('권한')).toBeInTheDocument()
-    expect(screen.getByText('REMARKS')).toBeInTheDocument()
+    expect(screen.getByText('비고')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '조회' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '저장' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '삭제' })).toBeInTheDocument()
