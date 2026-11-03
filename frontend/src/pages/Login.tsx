@@ -26,6 +26,7 @@ interface LoginFormProps {
   username: string
   password: string
   error: string
+  success: boolean
   loading: boolean
   onUsernameChange: (value: string) => void
   onPasswordChange: (value: string) => void
@@ -38,6 +39,7 @@ function LoginFields({
   username,
   password,
   error,
+  success,
   loading,
   onUsernameChange,
   onPasswordChange,
@@ -112,7 +114,7 @@ function LoginFields({
         <button type="button" className="vm-login-link">아이디/비밀번호 찾기</button>
       </div>
 
-      {error && <p className="vm-login-error">{error}</p>}
+      {error && <p className={success ? 'vm-login-success' : 'vm-login-error'} role={success ? 'status' : 'alert'}>{error}</p>}
 
       <button type="submit" className={buttonClassName} disabled={loading}>
         {loading ? 'Signing In...' : 'Login'}
@@ -347,6 +349,7 @@ export const Login: React.FC = () => {
   const [username, setUsername] = useState(DEMO_USERNAME)
   const [password, setPassword] = useState(DEMO_PASSWORD)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [passwordChangeRequired, setPasswordChangeRequired] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -355,6 +358,7 @@ export const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setSuccess(false)
 
     if (!username.trim()) {
       setError('Username is required')
@@ -396,6 +400,7 @@ export const Login: React.FC = () => {
     username,
     password,
     error,
+    success,
     loading,
     onUsernameChange: setUsername,
     onPasswordChange: setPassword,
@@ -418,7 +423,7 @@ export const Login: React.FC = () => {
         </div>
       )}
 
-      {isSignupOpen ? <SignupDialog onClose={() => setIsSignupOpen(false)} onSuccess={(message) => { setIsSignupOpen(false); setError(message) }} /> : null}
+      {isSignupOpen ? <SignupDialog onClose={() => setIsSignupOpen(false)} onSuccess={(message) => { setIsSignupOpen(false); setSuccess(true); setError(message) }} /> : null}
 
       {ACTIVE_LOGIN_TEMPLATE === 1 && <Type1Login {...templateProps} />}
       {ACTIVE_LOGIN_TEMPLATE === 2 && <Type2Login {...templateProps} />}

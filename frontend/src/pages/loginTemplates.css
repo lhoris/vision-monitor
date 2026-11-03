@@ -240,6 +240,14 @@
   font-size: 13px;
 }
 
+.vm-login-success {
+  margin: 0;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  border-radius: 8px;
+  background: rgba(6, 78, 59, 0.24);
+  color: #a7f3d0;
+}
+
 .vm-login-demo {
   display: grid;
   gap: 4px;
