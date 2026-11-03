@@ -51,7 +51,9 @@ export function UserManagement() {
       for (const userId of userIds) {
         await userManagementService.dangerAction(userId, action, true)
       }
-      setNotice(t('userManagement.statusChanged', { count: userIds.length }))
+      setNotice(action === 'delete-request'
+        ? t('userManagement.deleteSuccess', { count: userIds.length })
+        : t('userManagement.statusChanged', { count: userIds.length }))
       await loadUsers()
     } catch (actionError) {
       const message = actionError instanceof Error ? actionError.message : t('userManagement.statusChangeError')

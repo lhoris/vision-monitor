@@ -62,6 +62,8 @@ type ConfirmationRequest = {
   resolve: (confirmed: boolean) => void
 }
 
+type ApprovalRequest = { type: 'approve' | 'reject'; userId: number }
+
 const initialColumnFilters: Record<UserColumnFilterKey, string> = {
   state: '',
   id: '',
@@ -251,6 +253,8 @@ export function UserManagementGrid({
   const [localError, setLocalError] = useState('')
   const [localNotice, setLocalNotice] = useState('')
   const [approvalSaving, setApprovalSaving] = useState(false)
+  const [approvalRequest, setApprovalRequest] = useState<ApprovalRequest | null>(null)
+  const [rejectionReason, setRejectionReason] = useState('')
   const [confirmation, setConfirmation] = useState<ConfirmationRequest | null>(null)
   const footerToolbar = { ...defaultToolbarOptions, ...toolbarOptions }
 
@@ -305,40 +309,7 @@ export function UserManagementGrid({
   const selectedRows = rows.filter((row) => selectedRowIds.has(row.rowId))
   const selectedDraftRows = selectedRows.filter((row) => !row.id)
   const selectedChangedRows = changedRows.filter((row) => selectedRowIds.has(row.rowId))
-  const pendingRows = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id) && row.accountStatus === 'pending')
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((row) => selectedRowIds.has(row.rowId))
-
-  const approveSelected = async () => {
-    if (!onApprove || pendingRows.length === 0) return
-    setApprovalSaving(true)
-    setLocalError('')
-    try {
-      for (const row of pendingRows) await onApprove(row.id)
-      setSelectedRowIds(new Set())
-    } catch (error) {
-      setLocalError(error instanceof Error ? error.message : '가입 승인에 실패했습니다.')
-    } finally {
-      setApprovalSaving(false)
-    }
-  }
-
-  const rejectSelected = async () => {
-    if (!onReject || pendingRows.length === 0) return
-    const reason = window.prompt('반려 사유를 입력하세요.')?.trim()
-    if (!reason) return
-    setApprovalSaving(true)
-    setLocalError('')
-    try {
-      for (const row of pendingRows) await onReject(row.id, reason)
-      setSelectedRowIds(new Set())
-    } catch (error) {
-      setLocalError(error instanceof Error ? error.message : '가입 반려에 실패했습니다.')
-    } finally {
-      setApprovalSaving(false)
-    }
-  }
-  void approveSelected
-  void rejectSelected
   const updateColumnFilter = (key: UserColumnFilterKey, value: string) => {
     setColumnFilters((current) => ({ ...current, [key]: value }))
   }
@@ -348,6 +319,11 @@ export function UserManagementGrid({
     setCurrentPage(1)
     await onRefresh()
     setLocalNotice(t('userManagement.searchCompleted'))
+  }
+
+  const executeRefresh = async () => {
+    await onRefresh()
+    setLocalNotice(t('userManagement.refreshCompleted'))
   }
 
   useEffect(() => {
@@ -481,6 +457,11 @@ export function UserManagementGrid({
       const next = { ...row, [field]: value, roles: nextRoles, fieldErrors: { ...row.fieldErrors, [field]: undefined } }
       return { ...next, state: row.state === 'new' ? 'new' : 'dirty' }
     }))
+    setSelectedRowIds((current) => {
+      const next = new Set(current)
+      next.add(rowId)
+      return next
+    })
   }
 
   const addRow = () => {
@@ -530,6 +511,7 @@ export function UserManagementGrid({
     const draftRowIds = new Set(selectedDraftRows.map((row) => row.rowId))
     setRows((current) => current.filter((row) => !draftRowIds.has(row.rowId)))
     setSelectedRowIds((current) => new Set([...current].filter((rowId) => !draftRowIds.has(rowId))))
+    setLocalNotice(t('userManagement.draftDeleteSuccess', { count: selectedDraftRows.length }))
   }
 
   const deleteRows = async () => {
@@ -834,8 +816,8 @@ export function UserManagementGrid({
     if (field === 'accountStatus' && value === 'pending' && row.id && onApprove && onReject) {
       return (
         <div className="flex h-9 items-center justify-start gap-1 whitespace-nowrap px-2">
-          <button type="button" onClick={() => void onApprove(row.id!)} disabled={approvalSaving} className="rounded border border-emerald-300 px-1.5 py-0.5 text-xs font-medium text-emerald-700 disabled:opacity-50">승인</button>
-          <button type="button" onClick={() => { const reason = window.prompt('반려 사유를 입력하세요.')?.trim(); if (reason) void onReject(row.id!, reason) }} disabled={approvalSaving} className="rounded border border-rose-300 px-1.5 py-0.5 text-xs font-medium text-rose-700 disabled:opacity-50">반려</button>
+          <button type="button" onClick={() => setApprovalRequest({ type: 'approve', userId: row.id! })} disabled={approvalSaving} className="rounded border border-emerald-300 px-1.5 py-0.5 text-xs font-medium text-emerald-700 disabled:opacity-50">{t('userManagement.approve')}</button>
+          <button type="button" onClick={() => { setRejectionReason(''); setApprovalRequest({ type: 'reject', userId: row.id! }) }} disabled={approvalSaving} className="rounded border border-rose-300 px-1.5 py-0.5 text-xs font-medium text-rose-700 disabled:opacity-50">{t('userManagement.reject')}</button>
         </div>
       )
     }
@@ -944,6 +926,28 @@ export function UserManagementGrid({
     </button>
   )
 
+  const submitApprovalRequest = async () => {
+    if (!approvalRequest) return
+    const reason = rejectionReason.trim()
+    if (approvalRequest.type === 'reject' && !reason) {
+      setLocalError(t('userManagement.rejectionReasonRequired'))
+      return
+    }
+
+    setApprovalSaving(true)
+    setLocalError('')
+    try {
+      if (approvalRequest.type === 'approve') await onApprove?.(approvalRequest.userId)
+      else await onReject?.(approvalRequest.userId, reason)
+      setApprovalRequest(null)
+      setRejectionReason('')
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : t('userManagement.statusChangeError'))
+    } finally {
+      setApprovalSaving(false)
+    }
+  }
+
   return (
     <>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
@@ -998,7 +1002,7 @@ export function UserManagementGrid({
               <th className={`w-12 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
               <th className={`w-44 ${headerCellClass}`}>{t('userManagement.employeeNo')}</th>
               <th className={`w-36 ${headerCellClass}`}>{t('userManagement.name')}</th>
-              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.passwordReset')}</th>
+              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-40 ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-24 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
               <th className={`w-64 ${headerCellClass}`}>{t('userManagement.remarks')}</th>
@@ -1144,7 +1148,7 @@ export function UserManagementGrid({
           {footerToolbar.add && <button type="button" onClick={addRow} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">{t('userManagement.add')}</button>}
           {footerToolbar.duplicate && <button type="button" onClick={duplicateRows} disabled={saving || !selectedRows.length} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.duplicate')}</button>}
           {footerToolbar.delete && <button type="button" onClick={() => void deleteDraftRows()} disabled={saving || !selectedDraftRows.length} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">{t('userManagement.deleteRow')}</button>}
-          {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.refresh')}</button>}
+          {footerToolbar.refresh && <button type="button" onClick={() => void executeRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.refresh')}</button>}
         </div>
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
@@ -1164,6 +1168,31 @@ export function UserManagementGrid({
         </div>
       </div>
       </section>
+      {approvalRequest && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 p-4" role="presentation">
+          <button type="button" aria-label={t('userManagement.cancel')} className="absolute inset-0 cursor-default" onClick={() => { if (!approvalSaving) setApprovalRequest(null) }} />
+          <section role="dialog" aria-modal="true" aria-labelledby="approval-dialog-title" className="relative w-full max-w-md border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
+            <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-700">
+              <h2 id="approval-dialog-title" className="text-base font-semibold text-slate-900 dark:text-white">
+                {approvalRequest.type === 'approve' ? t('userManagement.approvalTitle') : t('userManagement.rejectionTitle')}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                {approvalRequest.type === 'approve' ? t('userManagement.approvalMessage') : t('userManagement.rejectionMessage')}
+              </p>
+              {approvalRequest.type === 'reject' && (
+                <label className="mt-4 block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  {t('userManagement.rejectionReason')}
+                  <textarea value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t('userManagement.rejectionReasonPlaceholder')} rows={4} autoFocus className="mt-1 block w-full resize-none border border-slate-300 bg-white px-3 py-2 text-sm font-normal text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
+                </label>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-4">
+              <button type="button" onClick={() => void submitApprovalRequest()} disabled={approvalSaving} className={`px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 ${approvalRequest.type === 'reject' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-blue-600 hover:bg-blue-700'}`}>{approvalSaving ? t('common.loading') : approvalRequest.type === 'approve' ? t('userManagement.approve') : t('userManagement.reject')}</button>
+              <button type="button" onClick={() => setApprovalRequest(null)} disabled={approvalSaving} className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">{t('userManagement.cancel')}</button>
+            </div>
+          </section>
+        </div>
+      )}
       <ConfirmDialog
         isOpen={Boolean(confirmation)}
         title={confirmation?.title ?? ''}

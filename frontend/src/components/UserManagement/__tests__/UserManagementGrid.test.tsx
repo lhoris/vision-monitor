@@ -29,7 +29,7 @@ describe('UserManagementGrid', () => {
 
     expect(screen.getByText('직번')).toBeInTheDocument()
     expect(screen.getAllByText('이름').length).toBeGreaterThan(0)
-    expect(screen.getByText('비밀번호 초기화')).toBeInTheDocument()
+    expect(screen.getByText('비밀번호')).toBeInTheDocument()
     expect(screen.getByText('권한')).toBeInTheDocument()
     expect(screen.getByText('비고')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '조회' })).toBeInTheDocument()
@@ -133,6 +133,16 @@ describe('UserManagementGrid', () => {
     fireEvent.keyDown(nameCell, { key: 'A' })
 
     expect(screen.getAllByLabelText('이름').find((input) => input.getAttribute('value') === 'A')).toBeInTheDocument()
+  })
+
+  it('automatically selects a row when a cell is edited', async () => {
+    renderGrid()
+
+    const nameCell = screen.getAllByRole('button', { name: '이름 셀' })[0]
+    fireEvent.doubleClick(nameCell)
+    fireEvent.change(screen.getAllByLabelText('이름')[1], { target: { value: '변경된 이름' } })
+
+    await waitFor(() => expect(screen.getAllByRole('checkbox')[1]).toBeChecked())
   })
 
   it('selects a compact cell range with left mouse drag', () => {
