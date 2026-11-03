@@ -246,6 +246,8 @@
   border-radius: 8px;
   background: rgba(6, 78, 59, 0.24);
   color: #a7f3d0;
+  padding: 10px 12px;
+  font-size: 13px;
 }
 
 .vm-login-demo {

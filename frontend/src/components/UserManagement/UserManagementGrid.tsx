@@ -964,6 +964,7 @@ export function UserManagementGrid({
               <th className={`w-36 ${headerCellClass}`}>이름</th>
               <th className={`w-32 ${headerCellClass}`}>비밀번호 초기화</th>
               <th className={`w-40 ${headerCellClass}`}>권한</th>
+              <th className={`w-32 ${headerCellClass}`}>STATUS</th>
               <th className={`w-64 ${headerCellClass}`}>REMARKS</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
@@ -984,6 +985,7 @@ export function UserManagementGrid({
                   </button>
                 </td>
                 <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
+                <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', 'STATUS', row.accountStatus, [{ value: 'active', label: 'ACTIVE' }, { value: 'pending', label: 'PENDING' }, { value: 'inactive', label: 'INACTIVE' }, { value: 'locked', label: 'LOCKED' }, { value: 'rejected', label: 'REJECTED' }, { value: 'disabled', label: 'DISABLED' }])}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', '표시명')}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
