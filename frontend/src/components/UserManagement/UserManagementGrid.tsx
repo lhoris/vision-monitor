@@ -964,8 +964,8 @@ export function UserManagementGrid({
               <th className={`w-36 ${headerCellClass}`}>이름</th>
               <th className={`w-32 ${headerCellClass}`}>비밀번호 초기화</th>
               <th className={`w-40 ${headerCellClass}`}>권한</th>
-              <th className={`w-32 ${headerCellClass}`}>STATUS</th>
-              <th className={`w-64 ${headerCellClass}`}>REMARKS</th>
+              <th className={`w-32 ${headerCellClass}`}>&#xACC4;&#xC815; &#xC0C1;&#xD0DC;</th>
+              <th className={`w-64 ${headerCellClass}`}>&#xBE44;&#xACE0;</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
           </thead>
@@ -985,7 +985,7 @@ export function UserManagementGrid({
                   </button>
                 </td>
                 <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
-                <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', 'STATUS', row.accountStatus, [{ value: 'active', label: 'ACTIVE' }, { value: 'pending', label: 'PENDING' }, { value: 'inactive', label: 'INACTIVE' }, { value: 'locked', label: 'LOCKED' }, { value: 'rejected', label: 'REJECTED' }, { value: 'disabled', label: 'DISABLED' }])}</td>
+                <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', '\uACC4\uC815 \uC0C1\uD0DC', row.accountStatus, [{ value: 'active', label: '\uD65C\uC131' }, { value: 'pending', label: '\uC2B9\uC778 \uB300\uAE30' }, { value: 'inactive', label: '\uBE44\uD65C\uC131' }, { value: 'locked', label: '\uC7A0\uAE08' }, { value: 'rejected', label: '\uBC18\uB824' }, { value: 'disabled', label: '\uBE44\uD65C\uC131' }])}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', '표시명')}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
