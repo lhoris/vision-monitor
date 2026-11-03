@@ -441,11 +441,11 @@ export function UserManagementGrid({
 
   const masterColumnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-12' },
-    { id: 'username', ariaLabel: '직번 필터', value: columnFilters.username, widthClassName: 'w-44', onChange: (value) => updateColumnFilter('username', value) },
-    { id: 'name', ariaLabel: '이름 필터', value: columnFilters.name, widthClassName: 'w-36', onChange: (value) => updateColumnFilter('name', value) },
-    { id: 'resetPassword', ariaLabel: '비밀번호 초기화 필터', kind: 'empty', value: '', widthClassName: 'w-32' },
-    { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-40', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
-    { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-64', onChange: (value) => updateColumnFilter('displayName', value) },
+    { id: 'username', ariaLabel: '직번 필터', value: columnFilters.username, widthClassName: 'w-28', onChange: (value) => updateColumnFilter('username', value) },
+    { id: 'name', ariaLabel: '이름 필터', value: columnFilters.name, widthClassName: 'w-24', onChange: (value) => updateColumnFilter('name', value) },
+    { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-20' },
+    { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-32', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
+    { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-80', onChange: (value) => updateColumnFilter('displayName', value) },
   ]
 
   const updateRow = (rowId: string, field: EditableField, value: UserMutationRequest[EditableField]) => {
@@ -1000,12 +1000,12 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-12 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
-              <th className={`w-44 ${headerCellClass}`}>{t('userManagement.employeeNo')}</th>
-              <th className={`w-36 ${headerCellClass}`}>{t('userManagement.name')}</th>
-              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.password')}</th>
-              <th className={`w-40 ${headerCellClass}`}>{t('userManagement.role')}</th>
-              <th className={`w-24 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
-              <th className={`w-64 ${headerCellClass}`}>{t('userManagement.remarks')}</th>
+              <th className={`w-28 ${headerCellClass}`}>{t('userManagement.employeeNo')}</th>
+              <th className={`w-24 ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-20 ${headerCellClass}`}>{t('userManagement.password')}</th>
+              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.role')}</th>
+              <th className={`w-16 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
+              <th className={`w-80 ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
           </thead>
