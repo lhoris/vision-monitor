@@ -444,12 +444,13 @@ export function UserManagementGrid({
   ]
 
   const masterColumnFilterControls: GridColumnFilter[] = [
-    { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-12' },
-    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-28', onChange: (value) => updateColumnFilter('username', value) },
-    { id: 'name', ariaLabel: '이름 필터', value: columnFilters.name, widthClassName: 'w-24', onChange: (value) => updateColumnFilter('name', value) },
-    { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-20' },
+    { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-8' },
+    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-14', onChange: (value) => updateColumnFilter('username', value) },
+    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-12', onChange: (value) => updateColumnFilter('name', value) },
+    { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-14' },
+    { id: 'accountStatus', ariaLabel: '계정 상태 필터', kind: 'empty', value: '', widthClassName: 'w-16' },
     { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-32', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
-    { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-80', onChange: (value) => updateColumnFilter('displayName', value) },
+    { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-auto', onChange: (value) => updateColumnFilter('displayName', value) },
   ]
 
   const updateRow = (rowId: string, field: EditableField, value: UserMutationRequest[EditableField]) => {
@@ -1006,13 +1007,13 @@ export function UserManagementGrid({
         <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
-              <th className={`w-12 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
-              <th className={`w-28 ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
-              <th className={`w-24 ${headerCellClass}`}>{t('userManagement.name')}</th>
-              <th className={`w-20 ${headerCellClass}`}>{t('userManagement.password')}</th>
-              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.role')}</th>
+              <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
+              <th className={`w-14 ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
+              <th className={`w-12 ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-14 ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-16 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
-              <th className={`w-80 ${headerCellClass}`}>{t('userManagement.remarks')}</th>
+              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.role')}</th>
+              <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
           </thead>
@@ -1021,7 +1022,7 @@ export function UserManagementGrid({
               <tr key={row.rowId} className={`${rowClassName(row.state)} ${selectedRowIds.has(row.rowId) ? 'bg-[#d6edff] dark:bg-sky-950/40' : ''} h-9 text-slate-800 hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:bg-slate-700`}>
                 <td className={`${bodyCellClass} text-center`}><input aria-label={`${row.username || row.displayName || '신규 행'} 선택`} type="checkbox" checked={selectedRowIds.has(row.rowId)} onChange={() => toggleRow(row.rowId)} /></td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'username', t('userManagement.loginAccount'), Boolean(row.id))}{renderError(row, 'username')}</td>
-                <td className={bodyCellClass}>{renderTextCell(row, 'name', '이름')}{renderError(row, 'name')}</td>
+                <td className={bodyCellClass}>{renderTextCell(row, 'name', t('userManagement.name'))}{renderError(row, 'name')}</td>
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {
                     if (!row.id || !onResetPassword) return
@@ -1035,7 +1036,6 @@ export function UserManagementGrid({
                     {t('userManagement.resetAction')}
                   </button>
                 </td>
-                <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', t('userManagement.accountStatus'), row.accountStatus, [
                   { value: 'active', label: t('userManagement.accountStatuses.active') },
                   { value: 'pending', label: t('userManagement.accountStatuses.pending') },
@@ -1044,10 +1044,11 @@ export function UserManagementGrid({
                   { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
                   { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
                 ])}</td>
+                <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', '표시명')}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
-            {!visibleRows.length && <tr><td colSpan={6} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
+            {!visibleRows.length && <tr><td colSpan={7} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
           </tbody>
         </table>
 
