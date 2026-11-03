@@ -446,9 +446,9 @@ export function UserManagementGrid({
 
   const masterColumnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-8' },
-    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-20', onChange: (value) => updateColumnFilter('username', value) },
-    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-16', onChange: (value) => updateColumnFilter('name', value) },
-    { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-16' },
+    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-[7.5rem]', onChange: (value) => updateColumnFilter('username', value) },
+    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-24', onChange: (value) => updateColumnFilter('name', value) },
+    { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-[4.8rem]' },
     { id: 'accountStatus', ariaLabel: '계정 상태 필터', kind: 'empty', value: '', widthClassName: 'w-24' },
     { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-64', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
     { id: 'displayName', ariaLabel: '비고 필터', value: columnFilters.displayName, widthClassName: 'w-auto', onChange: (value) => updateColumnFilter('displayName', value) },
@@ -1010,9 +1010,9 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
-              <th className={`w-20 ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
-              <th className={`w-16 ${headerCellClass}`}>{t('userManagement.name')}</th>
-              <th className={`w-16 ${headerCellClass}`}>{t('userManagement.password')}</th>
+              <th className={`w-[7.5rem] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
+              <th className={`w-24 ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-[4.8rem] ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-24 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
               <th className={`w-64 ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
