@@ -185,7 +185,7 @@ describe('UserManagementGrid', () => {
     const props = renderGrid()
 
     fireEvent.click(screen.getByLabelText(/tester1 선택/))
-    fireEvent.click(screen.getByRole('button', { name: '행 삭제' }))
+    fireEvent.click(screen.getByRole('button', { name: '삭제' }))
 
     fireEvent.click(screen.getByRole('button', { name: '확인' }))
     await waitFor(() => expect(props.onBatchAction).toHaveBeenCalledWith('delete-request', [userManagementFixture[1].id]))

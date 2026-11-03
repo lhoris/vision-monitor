@@ -303,6 +303,7 @@ export function UserManagementGrid({
   const changedRows = rows.filter((row) => row.state === 'new' || row.state === 'dirty')
   const selectedPersistedRows = rows.filter((row) => selectedRowIds.has(row.rowId) && row.id)
   const selectedRows = rows.filter((row) => selectedRowIds.has(row.rowId))
+  const selectedDraftRows = selectedRows.filter((row) => !row.id)
   const selectedChangedRows = changedRows.filter((row) => selectedRowIds.has(row.rowId))
   const pendingRows = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id) && row.accountStatus === 'pending')
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((row) => selectedRowIds.has(row.rowId))
@@ -517,26 +518,31 @@ export function UserManagementGrid({
     setCurrentPage(1)
   }
 
-  const deleteRows = async () => {
+  const deleteDraftRows = async () => {
     setLocalError('')
-    if (!selectedRows.length) {
-      setLocalError('삭제할 행을 선택하세요.')
+    if (!selectedDraftRows.length) {
+      setLocalError('신규 행만 행 삭제할 수 있습니다.')
       return
     }
 
-    if (!await askConfirmation({ title: '사용자 삭제 요청 확인', message: `선택한 ${selectedRows.length}건의 사용자 삭제를 요청하시겠습니까?`, variant: 'danger' })) return
+    if (!await askConfirmation({ title: t('userManagement.deleteDraftTitle'), message: t('userManagement.deleteDraftMessage', { count: selectedDraftRows.length }), variant: 'danger' })) return
 
-    const draftRowIds = new Set(selectedRows.filter((row) => !row.id).map((row) => row.rowId))
+    const draftRowIds = new Set(selectedDraftRows.map((row) => row.rowId))
+    setRows((current) => current.filter((row) => !draftRowIds.has(row.rowId)))
+    setSelectedRowIds((current) => new Set([...current].filter((rowId) => !draftRowIds.has(rowId))))
+  }
+
+  const deleteRows = async () => {
+    setLocalError('')
     const persistedTargets = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id))
-
-    if (draftRowIds.size) {
-      setRows((current) => current.filter((row) => !draftRowIds.has(row.rowId)))
-      setSelectedRowIds((current) => new Set([...current].filter((rowId) => !draftRowIds.has(rowId))))
+    if (!persistedTargets.length) {
+      setLocalError('기존 사용자를 선택한 뒤 삭제 버튼을 사용하세요.')
+      return
     }
 
-    if (persistedTargets.length) {
-      await runBatchAction('delete-request', persistedTargets.map((row) => row.rowId), true)
-    }
+    if (!await askConfirmation({ title: t('userManagement.deleteUserTitle'), message: t('userManagement.deleteUserMessage', { count: persistedTargets.length }), variant: 'danger' })) return
+
+    await runBatchAction('delete-request', persistedTargets.map((row) => row.rowId), true)
   }
 
   const saveRows = async () => {
@@ -948,7 +954,7 @@ export function UserManagementGrid({
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => void executeSearch()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{t('userManagement.search')}</button>
         <button type="button" onClick={() => void saveRows()} disabled={saving || selectedChangedRows.length === 0} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">{t('userManagement.save')}</button>
-        <button type="button" onClick={() => void deleteRows()} disabled={saving || selectedRows.length === 0} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">{t('userManagement.delete')}</button>
+        <button type="button" onClick={() => void deleteRows()} disabled={saving || selectedRows.every((row) => !row.id)} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">{t('userManagement.delete')}</button>
         </div>
       </div>
 
@@ -1137,7 +1143,7 @@ export function UserManagementGrid({
         <div className="flex flex-wrap items-center gap-1">
           {footerToolbar.add && <button type="button" onClick={addRow} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">{t('userManagement.add')}</button>}
           {footerToolbar.duplicate && <button type="button" onClick={duplicateRows} disabled={saving || !selectedRows.length} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.duplicate')}</button>}
-          {footerToolbar.delete && <button type="button" onClick={() => void deleteRows()} disabled={saving || !selectedRows.length} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">{t('userManagement.deleteRow')}</button>}
+          {footerToolbar.delete && <button type="button" onClick={() => void deleteDraftRows()} disabled={saving || !selectedDraftRows.length} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">{t('userManagement.deleteRow')}</button>}
           {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.refresh')}</button>}
         </div>
 
