@@ -100,6 +100,7 @@
     "selectAll": "전체 선택",
     "selectUser": "{{name}} 선택",
     "employeeNo": "직번",
+    "loginAccount": "로그인 계정",
     "password": "비밀번호",
     "passwordReset": "비밀번호 초기화",
     "resetAction": "초기화",

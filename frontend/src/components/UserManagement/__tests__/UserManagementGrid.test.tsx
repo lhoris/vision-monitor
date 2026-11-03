@@ -27,7 +27,7 @@ describe('UserManagementGrid', () => {
   it('renders the current compact master columns and action bars', () => {
     renderGrid()
 
-    expect(screen.getByText('직번')).toBeInTheDocument()
+    expect(screen.getByText('로그인 계정')).toBeInTheDocument()
     expect(screen.getAllByText('이름').length).toBeGreaterThan(0)
     expect(screen.getByText('비밀번호')).toBeInTheDocument()
     expect(screen.getByText('권한')).toBeInTheDocument()
@@ -94,7 +94,7 @@ describe('UserManagementGrid', () => {
     fireEvent.contextMenu(screen.getByRole('table'))
     fireEvent.click(screen.getByRole('menuitem', { name: '검색/필터' }))
 
-    expect(screen.getByLabelText('직번 필터')).toBeInTheDocument()
+    expect(screen.getByLabelText('로그인 계정 필터')).toBeInTheDocument()
     expect(screen.getByLabelText('이름 필터')).toBeInTheDocument()
     expect(screen.getByLabelText('권한 필터')).toBeInTheDocument()
     expect(screen.getByLabelText('비고 필터')).toBeInTheDocument()

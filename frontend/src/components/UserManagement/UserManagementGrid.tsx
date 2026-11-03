@@ -441,7 +441,7 @@ export function UserManagementGrid({
 
   const masterColumnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-12' },
-    { id: 'username', ariaLabel: '직번 필터', value: columnFilters.username, widthClassName: 'w-28', onChange: (value) => updateColumnFilter('username', value) },
+    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-28', onChange: (value) => updateColumnFilter('username', value) },
     { id: 'name', ariaLabel: '이름 필터', value: columnFilters.name, widthClassName: 'w-24', onChange: (value) => updateColumnFilter('name', value) },
     { id: 'resetPassword', ariaLabel: '비밀번호 필터', kind: 'empty', value: '', widthClassName: 'w-20' },
     { id: 'role', ariaLabel: '권한 필터', kind: 'select', value: columnFilters.role, widthClassName: 'w-32', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
@@ -1000,7 +1000,7 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-12 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
-              <th className={`w-28 ${headerCellClass}`}>{t('userManagement.employeeNo')}</th>
+              <th className={`w-28 ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
               <th className={`w-24 ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-20 ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-32 ${headerCellClass}`}>{t('userManagement.role')}</th>
@@ -1013,7 +1013,7 @@ export function UserManagementGrid({
             {visibleRows.map((row) => (
               <tr key={row.rowId} className={`${rowClassName(row.state)} ${selectedRowIds.has(row.rowId) ? 'bg-[#d6edff] dark:bg-sky-950/40' : ''} h-9 text-slate-800 hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:bg-slate-700`}>
                 <td className={`${bodyCellClass} text-center`}><input aria-label={`${row.username || row.displayName || '신규 행'} 선택`} type="checkbox" checked={selectedRowIds.has(row.rowId)} onChange={() => toggleRow(row.rowId)} /></td>
-                <td className={bodyCellClass}>{renderTextCell(row, 'username', '직번', Boolean(row.id))}{renderError(row, 'username')}</td>
+                <td className={bodyCellClass}>{renderTextCell(row, 'username', t('userManagement.loginAccount'), Boolean(row.id))}{renderError(row, 'username')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'name', '이름')}{renderError(row, 'name')}</td>
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {

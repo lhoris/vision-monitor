@@ -100,6 +100,7 @@
     "selectAll": "Select all",
     "selectUser": "Select {{name}}",
     "employeeNo": "Employee No.",
+    "loginAccount": "Login Account",
     "password": "Password",
     "passwordReset": "Reset Password",
     "resetAction": "Reset",

@@ -243,6 +243,8 @@ public class UserManagementService {
             if (!Boolean.TRUE.equals(safeRequest.confirmedImpact())) {
                 throw new ApiException("CONFIRMATION_REQUIRED", "삭제 영향 확인이 필요합니다.");
             }
+            user.setAccountStatus(INACTIVE);
+            user.setEnabled(false);
             user.setDeletionRequestedAt(LocalDateTime.now());
             user.setDeletionRequestedBy(actor.getUsername());
             user.setDeletionReason(valueOrNull(safeRequest.reason()));
