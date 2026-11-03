@@ -801,6 +801,15 @@ export function UserManagementGrid({
   ) => {
     const selectionField: SelectableCellField = field
 
+    if (field === 'accountStatus' && value === 'pending' && row.id && onApprove && onReject) {
+      return (
+        <div className="flex h-9 items-center justify-center gap-1 whitespace-nowrap">
+          <button type="button" onClick={() => void onApprove(row.id!)} disabled={approvalSaving} className="rounded border border-emerald-300 px-1.5 py-0.5 text-xs font-medium text-emerald-700 disabled:opacity-50">승인</button>
+          <button type="button" onClick={() => { const reason = window.prompt('반려 사유를 입력하세요.')?.trim(); if (reason) void onReject(row.id!, reason) }} disabled={approvalSaving} className="rounded border border-rose-300 px-1.5 py-0.5 text-xs font-medium text-rose-700 disabled:opacity-50">반려</button>
+        </div>
+      )
+    }
+
     if (isEditing(row.rowId, field)) {
       return (
         <select
