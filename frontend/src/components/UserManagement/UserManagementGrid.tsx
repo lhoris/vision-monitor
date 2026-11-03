@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type {
   AccountStatus,
   EmploymentStatus,
@@ -233,6 +234,7 @@ export function UserManagementGrid({
   onReject,
   toolbarOptions,
 }: UserManagementGridProps) {
+  const { t } = useTranslation()
   const [rows, setRows] = useState<UserGridRow[]>([])
   const [columnFilters, setColumnFilters] = useState<Record<UserColumnFilterKey, string>>(initialColumnFilters)
   const [pageSize, setPageSize] = useState(25)
@@ -247,6 +249,7 @@ export function UserManagementGrid({
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [localError, setLocalError] = useState('')
+  const [localNotice, setLocalNotice] = useState('')
   const [approvalSaving, setApprovalSaving] = useState(false)
   const [confirmation, setConfirmation] = useState<ConfirmationRequest | null>(null)
   const footerToolbar = { ...defaultToolbarOptions, ...toolbarOptions }
@@ -343,7 +346,14 @@ export function UserManagementGrid({
     setAppliedNameQuery(nameQuery)
     setCurrentPage(1)
     await onRefresh()
+    setLocalNotice(t('userManagement.searchCompleted'))
   }
+
+  useEffect(() => {
+    if (!localNotice) return undefined
+    const timeoutId = window.setTimeout(() => setLocalNotice(''), 2500)
+    return () => window.clearTimeout(timeoutId)
+  }, [localNotice])
 
   const columnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-12' },
@@ -932,13 +942,13 @@ export function UserManagementGrid({
     <>
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); void executeSearch() }}>
-          <label htmlFor="user-name-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">이름</label>
-          <input id="user-name-search" aria-label="이름 검색" value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder="이름 입력" className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
+          <label htmlFor="user-name-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.name')}</label>
+          <input id="user-name-search" aria-label={t('userManagement.nameSearch')} value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder={t('userManagement.nameSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => void executeSearch()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">조회</button>
-        <button type="button" onClick={() => void saveRows()} disabled={saving || selectedChangedRows.length === 0} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">저장</button>
-        <button type="button" onClick={() => void deleteRows()} disabled={saving || selectedRows.length === 0} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">삭제</button>
+          <button type="button" onClick={() => void executeSearch()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{t('userManagement.search')}</button>
+        <button type="button" onClick={() => void saveRows()} disabled={saving || selectedChangedRows.length === 0} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">{t('userManagement.save')}</button>
+        <button type="button" onClick={() => void deleteRows()} disabled={saving || selectedRows.length === 0} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">{t('userManagement.delete')}</button>
         </div>
       </div>
 
@@ -958,7 +968,7 @@ export function UserManagementGrid({
             }}
             className="block w-full px-3 py-2 text-left text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-700"
           >
-            {columnFiltersVisible ? '검색/필터 숨기기' : '검색/필터'}
+            {columnFiltersVisible ? t('userManagement.hideFilters') : t('userManagement.showFilters')}
           </button>
         </div>
       )}
@@ -969,17 +979,23 @@ export function UserManagementGrid({
         </div>
       )}
 
+      {localNotice && (
+        <div role="status" className="fixed right-6 top-20 z-50 max-w-sm rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-200">
+          {localNotice}
+        </div>
+      )}
+
       <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu}>
         <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
-              <th className={`w-12 ${headerCellClass}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
-              <th className={`w-44 ${headerCellClass}`}>직번</th>
-              <th className={`w-36 ${headerCellClass}`}>이름</th>
-              <th className={`w-32 ${headerCellClass}`}>비밀번호 초기화</th>
-              <th className={`w-40 ${headerCellClass}`}>권한</th>
-              <th className={`w-24 ${headerCellClass}`}>&#xACC4;&#xC815; &#xC0C1;&#xD0DC;</th>
-              <th className={`w-64 ${headerCellClass}`}>&#xBE44;&#xACE0;</th>
+              <th className={`w-12 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
+              <th className={`w-44 ${headerCellClass}`}>{t('userManagement.employeeNo')}</th>
+              <th className={`w-36 ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-32 ${headerCellClass}`}>{t('userManagement.passwordReset')}</th>
+              <th className={`w-40 ${headerCellClass}`}>{t('userManagement.role')}</th>
+              <th className={`w-24 ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
+              <th className={`w-64 ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
           </thead>
@@ -992,18 +1008,25 @@ export function UserManagementGrid({
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {
                     if (!row.id || !onResetPassword) return
-                    void askConfirmation({ title: '비밀번호 초기화 확인', message: '선택한 사용자의 비밀번호를 초기화하시겠습니까?' }).then((confirmed) => {
+                    void askConfirmation({ title: t('userManagement.resetPasswordTitle'), message: t('userManagement.resetPasswordMessage') }).then((confirmed) => {
                       if (!confirmed || !row.id || !onResetPassword) return
                       setSaving(true)
                       void onResetPassword(row.id).finally(() => setSaving(false))
                     })
                     return
                   }}>
-                    초기화
+                    {t('userManagement.resetAction')}
                   </button>
                 </td>
                 <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
-                <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', '\uACC4\uC815 \uC0C1\uD0DC', row.accountStatus, [{ value: 'active', label: '\uD65C\uC131' }, { value: 'pending', label: '\uC2B9\uC778 \uB300\uAE30' }, { value: 'inactive', label: '\uBE44\uD65C\uC131' }, { value: 'locked', label: '\uC7A0\uAE08' }, { value: 'rejected', label: '\uBC18\uB824' }, { value: 'disabled', label: '\uBE44\uD65C\uC131' }])}</td>
+                <td className={bodyCellClass}>{renderSelectCell(row, 'accountStatus', t('userManagement.accountStatus'), row.accountStatus, [
+                  { value: 'active', label: t('userManagement.accountStatuses.active') },
+                  { value: 'pending', label: t('userManagement.accountStatuses.pending') },
+                  { value: 'inactive', label: t('userManagement.accountStatuses.inactive') },
+                  { value: 'locked', label: t('userManagement.accountStatuses.locked') },
+                  { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
+                  { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
+                ])}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', '표시명')}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
@@ -1112,26 +1135,26 @@ export function UserManagementGrid({
 
       <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
         <div className="flex flex-wrap items-center gap-1">
-          {footerToolbar.add && <button type="button" onClick={addRow} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">행 추가</button>}
-          {footerToolbar.duplicate && <button type="button" onClick={duplicateRows} disabled={saving || !selectedRows.length} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">행 복제</button>}
-          {footerToolbar.delete && <button type="button" onClick={() => void deleteRows()} disabled={saving || !selectedRows.length} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">행 삭제</button>}
-          {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">새로고침</button>}
+          {footerToolbar.add && <button type="button" onClick={addRow} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-700">{t('userManagement.add')}</button>}
+          {footerToolbar.duplicate && <button type="button" onClick={duplicateRows} disabled={saving || !selectedRows.length} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.duplicate')}</button>}
+          {footerToolbar.delete && <button type="button" onClick={() => void deleteRows()} disabled={saving || !selectedRows.length} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">{t('userManagement.deleteRow')}</button>}
+          {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">{t('userManagement.refresh')}</button>}
         </div>
 
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <span>선택 {selectedPersistedRows.length}명 / 변경 {changedRows.length}건</span>
+          <span>{t('userManagement.selectedSummary', { selected: selectedPersistedRows.length, changed: changedRows.length })}</span>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <span>총 {filteredRows.length}명</span>
+          <span>{t('userManagement.totalSummary', { count: filteredRows.length })}</span>
           <span className="text-slate-300 dark:text-slate-600">|</span>
-          <select aria-label="표시 건수" value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900 dark:text-white">
-            <option value={10}>10개</option>
-            <option value={25}>25개</option>
-            <option value={50}>50개</option>
-            <option value={100}>100개</option>
+          <select aria-label={t('userManagement.pageSize')} value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
           </select>
-          <button type="button" aria-label="이전 페이지" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={safeCurrentPage <= 1} className="rounded border border-slate-300 px-2 py-1 disabled:opacity-50 dark:border-slate-600">이전</button>
+          <button type="button" aria-label={t('userManagement.previous')} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={safeCurrentPage <= 1} className="rounded border border-slate-300 px-2 py-1 disabled:opacity-50 dark:border-slate-600">{t('userManagement.previous')}</button>
           <span>{safeCurrentPage} / {totalPages}</span>
-          <button type="button" aria-label="다음 페이지" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={safeCurrentPage >= totalPages} className="rounded border border-slate-300 px-2 py-1 disabled:opacity-50 dark:border-slate-600">다음</button>
+          <button type="button" aria-label={t('userManagement.next')} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={safeCurrentPage >= totalPages} className="rounded border border-slate-300 px-2 py-1 disabled:opacity-50 dark:border-slate-600">{t('userManagement.next')}</button>
         </div>
       </div>
       </section>
@@ -1140,8 +1163,8 @@ export function UserManagementGrid({
         title={confirmation?.title ?? ''}
         message={confirmation?.message ?? ''}
         variant={confirmation?.variant ?? 'default'}
-        confirmLabel="확인"
-        cancelLabel="취소"
+        confirmLabel={t('userManagement.confirm')}
+        cancelLabel={t('userManagement.cancel')}
         onCancel={() => {
           confirmation?.resolve(false)
           setConfirmation(null)

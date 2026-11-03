@@ -1,19 +1,6 @@
 import type { AccountStatus, EmploymentStatus } from '@/types/userManagement'
-
-const accountLabels: Record<AccountStatus, string> = {
-  pending: '승인 대기',
-  inactive: '비활성',
-  rejected: '반려',
-  active: '활성',
-  locked: '잠금',
-  disabled: '비활성',
-}
-
-const employmentLabels: Record<EmploymentStatus, string> = {
-  employed: '재직',
-  leave: '휴직',
-  retired: '퇴사',
-}
+import { useTranslation } from 'react-i18next'
+import i18next from '@/i18n'
 
 const accountClasses: Record<AccountStatus, string> = {
   pending: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200',
@@ -25,17 +12,19 @@ const accountClasses: Record<AccountStatus, string> = {
 }
 
 export function UserStatusBadge({ status }: { status: AccountStatus }) {
-  return <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${accountClasses[status]}`}>{accountLabels[status]}</span>
+  const { t } = useTranslation()
+  return <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${accountClasses[status]}`}>{t(`userManagement.accountStatuses.${status}`)}</span>
 }
 
 export function EmploymentStatusBadge({ status }: { status: EmploymentStatus }) {
-  return <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100">{employmentLabels[status]}</span>
+  const { t } = useTranslation()
+  return <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-700 dark:text-slate-100">{t(`userManagement.employmentStatuses.${status}`)}</span>
 }
 
 export function accountStatusLabel(status: AccountStatus): string {
-  return accountLabels[status]
+  return i18next.t(`userManagement.accountStatuses.${status}`)
 }
 
 export function employmentStatusLabel(status: EmploymentStatus): string {
-  return employmentLabels[status]
+  return i18next.t(`userManagement.employmentStatuses.${status}`)
 }
