@@ -7,6 +7,8 @@ export interface UserManagementService {
   getUser(userId: number): Promise<UserAccount>
   createUser(input: UserMutationRequest): Promise<UserAccount>
   updateUser(userId: number, input: UserMutationRequest): Promise<UserAccount>
+  approveUser(userId: number): Promise<UserAccount>
+  rejectUser(userId: number, reason: string): Promise<UserAccount>
   resetPassword(userId: number): Promise<UserAccount>
   dangerAction(userId: number, action: UserDangerAction, keepPersonalization: boolean): Promise<UserAccount>
 }
@@ -28,6 +30,12 @@ function actualApiService(): UserManagementService {
     },
     async updateUser(userId, input) {
       return requireUserData(await apiClient.put<UserAccount>(`/admin/users/${userId}`, input), 'Updated user was not returned')
+    },
+    async approveUser(userId) {
+      return requireUserData(await apiClient.post<UserAccount>(`/admin/users/${userId}/approve`), 'Approved user was not returned')
+    },
+    async rejectUser(userId, reason) {
+      return requireUserData(await apiClient.post<UserAccount>(`/admin/users/${userId}/reject`, { reason }), 'Rejected user was not returned')
     },
     async resetPassword(userId) {
       return requireUserData(await apiClient.post<UserAccount>(`/admin/users/${userId}/reset-password`), 'Reset user was not returned')
@@ -57,6 +65,8 @@ export const userManagementService: UserManagementService = {
   getUser: (userId) => actualApi.getUser(userId),
   createUser: (input) => actualApi.createUser(input),
   updateUser: (userId, input) => actualApi.updateUser(userId, input),
+  approveUser: (userId) => actualApi.approveUser(userId),
+  rejectUser: (userId, reason) => actualApi.rejectUser(userId, reason),
   resetPassword: (userId) => actualApi.resetPassword(userId),
   dangerAction: (userId, action, keepPersonalization) => actualApi.dangerAction(userId, action, keepPersonalization),
 }

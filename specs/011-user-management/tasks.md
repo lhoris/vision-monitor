@@ -122,3 +122,19 @@
 - [X] T073 [P] [US1] `frontend/src/components/UserManagement/__tests__/UserManagementGrid.test.tsx`에 행 추가, 인라인 편집, batch action, 변경 취소, 셀 오류 테스트를 추가한다.
 - [X] T074 [US1] `frontend/src/pages/UserManagement.test.tsx` 또는 기존 사용자관리 page 테스트에 우측 상세 패널 없이 주요 업무가 완료되는 회귀 테스트를 추가한다.
 - [X] T075 `specs/011-user-management/quickstart.md`의 그리드 중심 검증 시나리오와 실제 구현 흐름이 일치하는지 확인한다.
+
+## Phase 11: 회원가입 및 관리자 승인
+
+- [X] T076 [P] `TB_M26_USER`에 `ACCOUNT_STATUS`, 상태 변경 메타데이터, `APPLIED_AT`을 추가하고 기존 계정을 `ACTIVE`로 보정하는 Flyway migration을 작성한다: `backend/src/main/resources/db/migration/`
+- [X] T077 [P] `UserAccount`와 관련 DTO/타입에 통합 계정 상태 및 상태 변경 정보를 반영한다: `backend/src/main/java/com/vision/entity/UserAccount.java`, `backend/src/main/java/com/vision/dto/`, `frontend/src/types/`
+- [X] T078 `POST /api/auth/signup`으로 사용자 ID·비밀번호·이름·이메일·연락처·부서·직책을 검증하고 `PENDING` 계정을 생성한다: `backend/src/main/java/com/vision/controller/`, `backend/src/main/java/com/vision/service/`
+- [X] T079 `PENDING` 및 `REJECTED` 계정의 로그인을 차단하고 상태별 안내 오류를 반환한다: `backend/src/main/java/com/vision/service/AuthService.java`, `backend/src/main/java/com/vision/service/AuthSessionService.java`
+- [X] T080 `POST /api/auth/signup/reapply`로 반려 계정의 재신청을 처리하고 상태를 `PENDING`으로 되돌린다: `backend/src/main/java/com/vision/controller/`, `backend/src/main/java/com/vision/service/`
+- [X] T081 사용자 관리 목록에 `PENDING` 필터와 승인 대기 상태 메타데이터를 추가한다: `backend/src/main/java/com/vision/service/UserManagementService.java`, `frontend/src/components/UserManagement/`
+- [X] T082 관리자 승인·반려 endpoint와 반려 사유 필수 validation을 구현한다: `backend/src/main/java/com/vision/controller/UserManagementController.java`, `backend/src/main/java/com/vision/service/UserManagementService.java`
+- [X] T083 로그인 화면에 회원가입 버튼과 회원가입 modal을 추가한다: `frontend/src/pages/`, `frontend/src/components/`
+- [X] T084 회원가입 성공, 승인 대기, 반려, 재신청 상태를 로그인 화면에서 안내한다: `frontend/src/services/authService.ts`, `frontend/src/pages/`
+- [X] T085 사용자 관리 그리드에 승인·반려 action과 반려 사유 입력을 추가한다: `frontend/src/components/UserManagement/UserManagementGrid.tsx`, `frontend/src/components/UserManagement/`
+- [X] T086 `ACCOUNT_STATUS`의 `PENDING`, `ACTIVE`, `INACTIVE`, `LOCKED`, `REJECTED` 전이와 마지막 관리자 보호를 frontend/backend 테스트로 검증한다: `backend/src/test/`, `frontend/src/services/__tests__/`, `frontend/src/components/UserManagement/__tests__/`
+- [X] T087 회원가입 중복 ID·이메일, 필수값, 잘못된 상태 전이를 검증한다: `backend/src/test/`, `frontend/src/`
+- [X] T088 회원가입 및 승인 테스트와 frontend/backend 빌드를 실행한다: `specs/011-user-management/quickstart.md`

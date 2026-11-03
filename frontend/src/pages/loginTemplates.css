@@ -111,6 +111,122 @@
   padding: 0;
 }
 
+.vm-signup-link {
+  align-self: center;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.vm-signup-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(2, 6, 23, 0.72);
+}
+
+.vm-signup-card {
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  padding: 24px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 24px 70px rgba(2, 6, 23, 0.55);
+}
+
+.vm-signup-header,
+.vm-signup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vm-signup-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.vm-signup-header button {
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.vm-signup-description {
+  margin: 8px 0 20px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.vm-signup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.vm-signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.vm-signup-field span {
+  color: #fb7185;
+}
+
+.vm-signup-field input {
+  height: 42px;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #1e293b;
+  color: #f8fafc;
+  outline: none;
+}
+
+.vm-signup-field input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+}
+
+.vm-signup-actions {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.vm-signup-actions button {
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: #1e293b;
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.vm-signup-actions button[type='submit'] {
+  border-color: #0284c7;
+  background: #0284c7;
+  color: white;
+}
+
+@media (max-width: 560px) {
+  .vm-signup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .vm-login-error {
   margin: 0;
   border: 1px solid rgba(248, 113, 113, 0.45);

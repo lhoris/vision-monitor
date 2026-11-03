@@ -7,6 +7,17 @@ export interface LoginCredentials {
   password: string
 }
 
+export interface SignupInput {
+  username: string
+  password: string
+  passwordConfirm: string
+  name: string
+  email: string
+  phone?: string
+  department?: string
+  position?: string
+}
+
 export interface LoginResult {
   user: User
   token: string
@@ -29,6 +40,20 @@ interface LoginApiResponse {
 }
 
 class AuthService {
+  async signup(input: SignupInput): Promise<{ username: string; accountStatus: string }> {
+    const response = await apiClient.post<{ username: string; accountStatus: string }>('/auth/signup', input)
+    const result = getResponseData<{ username: string; accountStatus: string } | null>(response, null)
+    if (!result) throw new Error('회원가입 신청에 실패했습니다.')
+    return result
+  }
+
+  async reapply(input: SignupInput): Promise<{ username: string; accountStatus: string }> {
+    const response = await apiClient.post<{ username: string; accountStatus: string }>('/auth/signup/reapply', input)
+    const result = getResponseData<{ username: string; accountStatus: string } | null>(response, null)
+    if (!result) throw new Error('회원가입 재신청에 실패했습니다.')
+    return result
+  }
+
   async login(credentials: LoginCredentials): Promise<LoginResult> {
     const response = await apiClient.post<LoginApiResponse>('/auth/login', credentials)
     const data = getResponseData<LoginApiResponse | null>(response, null)

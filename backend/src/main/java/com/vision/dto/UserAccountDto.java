@@ -30,7 +30,11 @@ public record UserAccountDto(
         UserPersonalizationDto personalization,
         String employeeNo,
         String remarks,
-        String dataEndStatus
+        String dataEndStatus,
+        LocalDateTime accountStatusChangedAt,
+        Long accountStatusChangedBy,
+        String accountStatusReason,
+        LocalDateTime appliedAt
 ) {
 
     public static UserAccountDto from(UserAccount user) {
@@ -77,6 +81,10 @@ public record UserAccountDto(
                 .employeeNo(user.getUsername())
                 .remarks(user.getRemarks())
                 .dataEndStatus(user.getDataEndStatus())
+                .accountStatusChangedAt(user.getAccountStatusChangedAt())
+                .accountStatusChangedBy(user.getAccountStatusChangedBy())
+                .accountStatusReason(user.getAccountStatusReason())
+                .appliedAt(user.getAppliedAt())
                 .build();
     }
 }

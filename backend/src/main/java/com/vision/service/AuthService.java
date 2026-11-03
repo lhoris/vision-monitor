@@ -6,6 +6,8 @@ import com.vision.dto.LoginResponse;
 import com.vision.dto.ChangePasswordRequest;
 import com.vision.dto.MyProfileDto;
 import com.vision.dto.UpdateContactRequest;
+import com.vision.dto.SignupRequest;
+import com.vision.dto.UserAccountDto;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -25,6 +27,8 @@ import java.util.Locale;
 public class AuthService {
 
     private static final String ACTIVE = "active";
+    private static final String PENDING = "pending";
+    private static final String REJECTED = "rejected";
     private static final String EMPLOYED = "employed";
     private static final String AUTH_FAILED = "AUTH_FAILED";
     private static final String AUTH_FAILED_MESSAGE = "Invalid username or password";
@@ -71,9 +75,7 @@ public class AuthService {
 
         UserAccount user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(this::authFailed);
-        if (!canLogin(user)) {
-            throw authFailed();
-        }
+        if (!canLogin(user)) throw loginStatusError(user);
         boolean passwordChangeRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
         if (!passwordChangeRequired) {
             boolean passwordMatches = password != null
@@ -95,6 +97,65 @@ public class AuthService {
 
     public void logout(String token) {
         sessionService.revokeSession(token);
+    }
+
+    @Transactional
+    public UserAccountDto signup(SignupRequest request) {
+        validateSignup(request);
+        String username = normalize(request.username());
+        String email = normalizeOptional(request.email());
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            throw new ApiException("DUPLICATE_USERNAME", "이미 사용 중인 사용자 ID입니다.");
+        }
+        if (email != null && userRepository.existsByEmailIgnoreCase(email)) {
+            throw new ApiException("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.");
+        }
+        UserAccount user = UserAccount.builder()
+                .username(username)
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .name(request.name().trim())
+                .email(email)
+                .phone(normalizeOptional(request.phone()))
+                .department(normalizeOptional(request.department()))
+                .position(normalizeOptional(request.position()))
+                .accountStatus(PENDING)
+                .accountStatusChangedAt(java.time.LocalDateTime.now())
+                .accountStatusReason("가입 신청")
+                .appliedAt(java.time.LocalDateTime.now())
+                .enabled(false)
+                .role("USER")
+                .employmentStatus("employed")
+                .build();
+        user.setCreatedBy("SYSTEM");
+        user.setUpdatedBy("SYSTEM");
+        return UserAccountDto.from(userRepository.save(user));
+    }
+
+    @Transactional
+    public UserAccountDto reapply(SignupRequest request) {
+        validateSignup(request);
+        UserAccount user = userRepository.findByUsernameIgnoreCase(normalize(request.username()))
+                .orElseThrow(() -> new ApiException("SIGNUP_NOT_FOUND", "재신청할 계정을 찾을 수 없습니다."));
+        if (!REJECTED.equalsIgnoreCase(user.getAccountStatus())) {
+            throw new ApiException("SIGNUP_NOT_REJECTED", "반려된 계정만 재신청할 수 있습니다.");
+        }
+        String email = normalizeOptional(request.email());
+        if (email != null && !email.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmailIgnoreCase(email)) {
+            throw new ApiException("DUPLICATE_EMAIL", "이미 사용 중인 이메일입니다.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.password()));
+        user.setName(request.name().trim());
+        user.setEmail(email);
+        user.setPhone(normalizeOptional(request.phone()));
+        user.setDepartment(normalizeOptional(request.department()));
+        user.setPosition(normalizeOptional(request.position()));
+        user.setAccountStatus(PENDING);
+        user.setAccountStatusChangedAt(java.time.LocalDateTime.now());
+        user.setAccountStatusChangedBy(null);
+        user.setAccountStatusReason("재가입 신청");
+        user.setAppliedAt(java.time.LocalDateTime.now());
+        user.setEnabled(false);
+        return UserAccountDto.from(userRepository.save(user));
     }
 
     @Transactional
@@ -181,6 +242,38 @@ public class AuthService {
 
     private ApiException authFailed() {
         return new ApiException(AUTH_FAILED, AUTH_FAILED_MESSAGE);
+    }
+
+    private ApiException loginStatusError(UserAccount user) {
+        if (PENDING.equalsIgnoreCase(user.getAccountStatus())) {
+            return new ApiException("ACCOUNT_PENDING", "관리자 승인 대기 중인 계정입니다.");
+        }
+        if (REJECTED.equalsIgnoreCase(user.getAccountStatus())) {
+            String reason = user.getAccountStatusReason();
+            return new ApiException("ACCOUNT_REJECTED", reason == null || reason.isBlank()
+                    ? "가입 신청이 반려되었습니다."
+                    : "가입 신청이 반려되었습니다: " + reason);
+        }
+        return authFailed();
+    }
+
+    private void validateSignup(SignupRequest request) {
+        if (request == null || normalize(request.username()) == null || request.username().trim().length() < 2) {
+            throw new ApiException("VALIDATION_ERROR", "사용자 ID는 2자 이상 입력해야 합니다.");
+        }
+        if (request.password() == null || request.password().length() < 8) {
+            throw new ApiException("VALIDATION_ERROR", "비밀번호는 8자 이상 입력해야 합니다.");
+        }
+        if (!request.password().equals(request.passwordConfirm())) {
+            throw new ApiException("VALIDATION_ERROR", "비밀번호가 일치하지 않습니다.");
+        }
+        if (request.name() == null || request.name().isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "이름은 필수입니다.");
+        }
+        String email = normalizeOptional(request.email());
+        if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new ApiException("VALIDATION_ERROR", "올바른 이메일을 입력해야 합니다.");
+        }
     }
 
     private String normalize(String value) {

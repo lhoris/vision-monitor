@@ -50,16 +50,34 @@ public class UserAccount extends BaseAudit {
     @Column(name = "USER_PHONE", length = 50)
     private String phone;
 
+    @Column(name = "USER_DEPARTMENT", length = 200)
+    private String department;
+
+    @Column(name = "USER_POSITION", length = 200)
+    private String position;
+
+    @Column(name = "ACCOUNT_STATUS", nullable = false, length = 20)
+    @Builder.Default private String accountStatus = "active";
+
+    @Column(name = "ACCOUNT_STATUS_CHANGED_AT")
+    private LocalDateTime accountStatusChangedAt;
+
+    @Column(name = "ACCOUNT_STATUS_CHANGED_BY")
+    private Long accountStatusChangedBy;
+
+    @Column(name = "ACCOUNT_STATUS_REASON", length = 1000)
+    private String accountStatusReason;
+
+    @Column(name = "APPLIED_AT")
+    private LocalDateTime appliedAt;
+
     @Column(name = "REMARKS", length = 4000)
     private String remarks;
 
     // Transitional API fields are intentionally not persisted in the new master table.
     @Transient private String displayName;
-    @Transient private String department;
-    @Transient private String position;
     @Transient @Builder.Default private String role = "USER";
     @Transient @Builder.Default private Boolean enabled = true;
-    @Transient @Builder.Default private String accountStatus = "active";
     @Transient @Builder.Default private String employmentStatus = "employed";
     @Transient private LocalDateTime lastLoginAt;
     @Transient private Long version;

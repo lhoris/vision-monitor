@@ -1,4 +1,4 @@
-export type AccountStatus = 'active' | 'locked' | 'disabled'
+export type AccountStatus = 'pending' | 'active' | 'inactive' | 'locked' | 'rejected' | 'disabled'
 export type EmploymentStatus = 'employed' | 'leave' | 'retired'
 
 export interface RoleSummary {

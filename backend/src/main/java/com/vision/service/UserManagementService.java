@@ -33,6 +33,9 @@ import java.util.Map;
 public class UserManagementService {
 
     private static final String ACTIVE = "active";
+    private static final String PENDING = "pending";
+    private static final String REJECTED = "rejected";
+    private static final String INACTIVE = "inactive";
     private static final String LOCKED = "locked";
     private static final String DISABLED = "disabled";
     private static final String EMPLOYED = "employed";
@@ -104,6 +107,29 @@ public class UserManagementService {
     public UserAccountDto getUser(String actorUsername, Long userId) {
         requireAdmin(actorUsername);
         return toDto(findUser(userId), availableRoles());
+    }
+
+    @Transactional
+    public UserAccountDto approve(String actorUsername, Long userId) {
+        UserAccount actor = requireAdmin(actorUsername);
+        UserAccount user = findUser(userId);
+        requirePending(user);
+        setAccountStatus(user, ACTIVE, actor, "관리자 승인");
+        user.setEnabled(isEnabled(ACTIVE, user.getEmploymentStatus()));
+        return toDto(userRepository.save(user), availableRoles());
+    }
+
+    @Transactional
+    public UserAccountDto reject(String actorUsername, Long userId, String reason) {
+        UserAccount actor = requireAdmin(actorUsername);
+        UserAccount user = findUser(userId);
+        requirePending(user);
+        if (reason == null || reason.isBlank()) {
+            throw new ApiException("VALIDATION_ERROR", "반려 사유는 필수입니다.");
+        }
+        setAccountStatus(user, REJECTED, actor, reason.trim());
+        user.setEnabled(false);
+        return toDto(userRepository.save(user), availableRoles());
     }
 
     @Transactional
@@ -294,8 +320,13 @@ public class UserManagementService {
 
     private UserAccountDto toDto(UserAccount user, List<RoleSummaryDto> roles) {
         user.setRole(resolveRoleCode(user));
-        user.setAccountStatus("Y".equalsIgnoreCase(user.getDataEndStatus()) ? DISABLED : ACTIVE);
-        user.setEnabled(!"Y".equalsIgnoreCase(user.getDataEndStatus()));
+        if ("Y".equalsIgnoreCase(user.getDataEndStatus())) {
+            user.setAccountStatus(DISABLED);
+        } else if (user.getAccountStatus() == null || user.getAccountStatus().isBlank()) {
+            user.setAccountStatus(ACTIVE);
+        }
+        user.setEnabled(ACTIVE.equalsIgnoreCase(user.getAccountStatus())
+                && EMPLOYED.equalsIgnoreCase(user.getEmploymentStatus()));
         return UserAccountDto.from(user, roles);
     }
 
@@ -380,7 +411,8 @@ public class UserManagementService {
 
     private String normalizeAccountStatus(String value) {
         String normalized = value == null || value.isBlank() ? ACTIVE : value.toLowerCase(Locale.ROOT);
-        if (!List.of(ACTIVE, LOCKED, DISABLED).contains(normalized)) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 계정 상태입니다.");
+        if (DISABLED.equals(normalized)) normalized = INACTIVE;
+        if (!List.of(ACTIVE, LOCKED, INACTIVE, PENDING, REJECTED).contains(normalized)) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 계정 상태입니다.");
         return normalized;
     }
 
@@ -392,6 +424,21 @@ public class UserManagementService {
 
     private boolean isEnabled(String accountStatus, String employmentStatus) {
         return ACTIVE.equalsIgnoreCase(normalizeAccountStatus(accountStatus)) && EMPLOYED.equalsIgnoreCase(normalizeEmploymentStatus(employmentStatus));
+    }
+
+    private void requirePending(UserAccount user) {
+        if (!PENDING.equalsIgnoreCase(user.getAccountStatus())) {
+            throw new ApiException("INVALID_ACCOUNT_STATUS", "승인 대기 상태의 계정만 처리할 수 있습니다.");
+        }
+    }
+
+    private void setAccountStatus(UserAccount user, String status, UserAccount actor, String reason) {
+        user.setAccountStatus(status);
+        user.setAccountStatusChangedAt(LocalDateTime.now());
+        user.setAccountStatusChangedBy(actor.getId());
+        user.setAccountStatusReason(reason);
+        user.setUpdatedBy(actor.getUsername());
+        user.setUpdatedAt(LocalDateTime.now());
     }
 
     private void protectAdminRemoval(UserAccount actor, UserAccount target, String nextRole, String nextAccountStatus, String nextEmploymentStatus) {

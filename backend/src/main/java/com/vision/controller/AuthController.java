@@ -18,6 +18,8 @@ import com.vision.config.AuthSessionInterceptor;
 import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.MyProfileDto;
 import com.vision.dto.UpdateContactRequest;
+import com.vision.dto.SignupRequest;
+import com.vision.dto.UserAccountDto;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -29,6 +31,16 @@ public class AuthController {
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody LoginRequest request) {
         return ApiResponse.success(authService.login(request));
+    }
+
+    @PostMapping("/signup")
+    public ApiResponse<UserAccountDto> signup(@RequestBody SignupRequest request) {
+        return ApiResponse.success(authService.signup(request));
+    }
+
+    @PostMapping("/signup/reapply")
+    public ApiResponse<UserAccountDto> reapply(@RequestBody SignupRequest request) {
+        return ApiResponse.success(authService.reapply(request));
     }
 
     @GetMapping("/session")

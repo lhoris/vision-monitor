@@ -28,6 +28,8 @@ interface UserManagementGridProps {
   onSaveChanges: (changes: UserGridSaveRequest[]) => Promise<void>
   onRefresh: () => Promise<void>
   onResetPassword?: (userId: number) => Promise<void>
+  onApprove?: (userId: number) => Promise<void>
+  onReject?: (userId: number, reason: string) => Promise<void>
   toolbarOptions?: UserManagementGridToolbarOptions
 }
 
@@ -220,6 +222,8 @@ export function UserManagementGrid({
   onSaveChanges,
   onRefresh,
   onResetPassword,
+  onApprove,
+  onReject,
   toolbarOptions,
 }: UserManagementGridProps) {
   const [rows, setRows] = useState<UserGridRow[]>([])
@@ -236,6 +240,7 @@ export function UserManagementGrid({
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [localError, setLocalError] = useState('')
+  const [approvalSaving, setApprovalSaving] = useState(false)
   const footerToolbar = { ...defaultToolbarOptions, ...toolbarOptions }
 
   useEffect(() => {
@@ -284,7 +289,38 @@ export function UserManagementGrid({
   const selectedPersistedRows = rows.filter((row) => selectedRowIds.has(row.rowId) && row.id)
   const selectedRows = rows.filter((row) => selectedRowIds.has(row.rowId))
   const selectedChangedRows = changedRows.filter((row) => selectedRowIds.has(row.rowId))
+  const pendingRows = selectedRows.filter((row): row is UserGridRow & { id: number } => Boolean(row.id) && row.accountStatus === 'pending')
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((row) => selectedRowIds.has(row.rowId))
+
+  const approveSelected = async () => {
+    if (!onApprove || pendingRows.length === 0) return
+    setApprovalSaving(true)
+    setLocalError('')
+    try {
+      for (const row of pendingRows) await onApprove(row.id)
+      setSelectedRowIds(new Set())
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : '가입 승인에 실패했습니다.')
+    } finally {
+      setApprovalSaving(false)
+    }
+  }
+
+  const rejectSelected = async () => {
+    if (!onReject || pendingRows.length === 0) return
+    const reason = window.prompt('반려 사유를 입력하세요.')?.trim()
+    if (!reason) return
+    setApprovalSaving(true)
+    setLocalError('')
+    try {
+      for (const row of pendingRows) await onReject(row.id, reason)
+      setSelectedRowIds(new Set())
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : '가입 반려에 실패했습니다.')
+    } finally {
+      setApprovalSaving(false)
+    }
+  }
   const updateColumnFilter = (key: UserColumnFilterKey, value: string) => {
     setColumnFilters((current) => ({ ...current, [key]: value }))
   }
@@ -1053,6 +1089,8 @@ export function UserManagementGrid({
           {footerToolbar.refresh && <button type="button" onClick={() => void onRefresh()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium disabled:opacity-50 dark:border-slate-600">새로고침</button>}
         </div>
 
+        {onApprove && <button type="button" onClick={() => void approveSelected()} disabled={approvalSaving || pendingRows.length === 0} className="rounded border border-emerald-300 px-2 py-1 font-medium text-emerald-700 disabled:opacity-50">가입 승인</button>}
+        {onReject && <button type="button" onClick={() => void rejectSelected()} disabled={approvalSaving || pendingRows.length === 0} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 disabled:opacity-50">가입 반려</button>}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <span>선택 {selectedPersistedRows.length}명 / 변경 {changedRows.length}건</span>
           <span className="text-slate-300 dark:text-slate-600">|</span>

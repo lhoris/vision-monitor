@@ -33,7 +33,8 @@
 
 - 검증 결과: PASS
 - 사용자관리 화면을 그리드 기반 목록, 신규 등록, 수정, 역할 배정, 비활성화, 퇴사 처리, 삭제 요청, 권한/개인화 연동 기준 데이터까지 포함하도록 보강했다.
-- MVP는 mock 데이터 기준이며 실제 인증 저장소, DB, SSO/MFA, 비밀번호 정책, backend 권한 검증은 제외 범위로 분리했다.
+- 회원가입 팝업, 승인 대기, 승인, 반려, 반려 후 재신청 흐름과 통합 계정 상태 전이를 추가했다.
+- 구현 세부사항은 plan.md, data-model.md, backend-database-design.md, backend-api.md에서 다루고 spec.md는 사용자 동작과 결과 중심으로 유지했다.
 
 ## Grid-Centered Revision Check
 

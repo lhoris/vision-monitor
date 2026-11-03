@@ -59,7 +59,7 @@ Query:
 ```text
 query              username, name, displayName 검색
 orgUnitId          조직 ID
-accountStatus      active, locked, disabled
+accountStatus      pending, active, inactive, locked, rejected
 employmentStatus   employed, leave, retired
 page               1부터 시작
 pageSize           기본 20, 최대 100
@@ -108,9 +108,37 @@ Response data:
 
 ### `PUT /api/admin/users/{userId}`
 
-기본 정보, 주 소속, 계정 상태, 재직 상태를 수정한다. 수정 대상의 `version` 또는 `updatedAt`이 변경된 경우 충돌을 반환한다.
+기본 정보, 주 소속, 계정 상태, 재직 상태를 수정한다. 가입 승인 상태는 별도 승인 endpoint를 사용하며, 수정 대상의 `version` 또는 `updatedAt`이 변경된 경우 충돌을 반환한다.
 
-## 6. 상태 변경
+## 6. 회원가입
+
+### `POST /api/auth/signup`
+
+로그인하지 않은 사용자가 회원가입을 신청한다. 사용자 ID, 비밀번호, 이름, 이메일은 필수이며 연락처·부서·직책은 선택이다. 성공 시 `accountStatus = PENDING`인 사용자 정보를 반환하되 비밀번호는 반환하지 않는다.
+
+### `POST /api/auth/signup/reapply`
+
+반려된 사용자 ID로 가입을 재신청한다. 신청 정보와 비밀번호를 갱신하고 `accountStatus = PENDING`으로 변경한다.
+
+## 7. 가입 승인
+
+### `POST /api/admin/users/{userId}/approve`
+
+`PENDING` 계정을 승인하고 `ACTIVE` 상태로 변경한다. 승인자와 승인일시를 상태 변경 정보에 기록한다.
+
+### `POST /api/admin/users/{userId}/reject`
+
+`PENDING` 계정을 반려하고 `REJECTED` 상태로 변경한다. 요청 본문의 `reason`은 필수다.
+
+```json
+{
+  "reason": "소속 확인이 필요합니다."
+}
+```
+
+승인·반려 endpoint는 관리자 권한과 대상 계정의 현재 상태를 backend에서 검증한다.
+
+## 8. 상태 변경
 
 ### `POST /api/admin/users/{userId}/lock`
 
@@ -135,7 +163,7 @@ Response data:
 }
 ```
 
-## 7. 삭제 요청
+## 9. 삭제 요청
 
 ### `POST /api/admin/users/{userId}/delete-request`
 
@@ -150,7 +178,7 @@ Response data:
 
 자기 계정, 마지막 관리자, 활성 상태의 사용자에 대한 위험 변경은 backend에서 차단하거나 추가 확인을 요구한다.
 
-## 8. 오류 코드와 HTTP 상태
+## 10. 오류 코드와 HTTP 상태
 
 | HTTP | 코드 | 의미 |
 |---:|---|---|
@@ -161,7 +189,7 @@ Response data:
 | 422 | `VALIDATION_ERROR` | 입력값 오류 |
 | 500 | `INTERNAL_ERROR` | 서버 처리 오류 |
 
-## 9. backend 처리 규칙
+## 11. backend 처리 규칙
 
 - 사용자 API는 frontend의 mock guard를 신뢰하지 않는다.
 - `orgUnitId` 존재 여부와 active 여부를 service에서 검증한다.
@@ -170,7 +198,7 @@ Response data:
 - 비밀번호 hash와 인증 token은 사용자관리 응답에 포함하지 않는다.
 - 사용자 변경 작업은 수행자, 대상, 변경 내용, 사유를 감사 로그와 연결할 수 있도록 설계한다.
 
-## 10. 미정인 인증 정책
+## 12. 미정인 인증 정책
 
 다음은 사용자관리 API 구현 전에 인증 명세와 함께 확정해야 한다.
 

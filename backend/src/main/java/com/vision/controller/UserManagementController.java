@@ -63,6 +63,23 @@ public class UserManagementController {
         return ApiResponse.success(userManagementService.updateUser(actorUsername, userId, request));
     }
 
+    @PostMapping("/users/{userId}/approve")
+    public ApiResponse<UserAccountDto> approveUser(
+            @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
+            @PathVariable Long userId
+    ) {
+        return ApiResponse.success(userManagementService.approve(actorUsername, userId));
+    }
+
+    @PostMapping("/users/{userId}/reject")
+    public ApiResponse<UserAccountDto> rejectUser(
+            @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,
+            @PathVariable Long userId,
+            @RequestBody UserDangerActionRequest request
+    ) {
+        return ApiResponse.success(userManagementService.reject(actorUsername, userId, request == null ? null : request.reason()));
+    }
+
     @PostMapping("/users/{userId}/reset-password")
     public ApiResponse<UserAccountDto> resetPassword(
             @RequestHeader(value = "X-Actor-Username", required = false) String actorUsername,

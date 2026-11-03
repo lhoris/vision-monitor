@@ -82,3 +82,19 @@ DB 외래키는 생성하지 않는다. backend가 다음 규칙을 저장 전 �
 - 사용자 등록 시 초기 비밀번호를 직접 입력할지, 초대/임시 비밀번호를 사용할지
 
 위 항목은 인증·인사 운영 정책 확정 후 별도 migration과 API 계약으로 결정한다.
+
+## 7. 회원가입 및 계정 상태 확장
+
+회원가입 신청과 승인 결과는 별도 신청 테이블 없이 `TB_M26_USER`에 저장한다. 기존 `DATA_END_STATUS`는 데이터 종료 여부로 유지하고, 로그인 가능 여부와 가입 승인 상태는 `ACCOUNT_STATUS`로 분리한다.
+
+추가 컬럼:
+
+| 컬럼 | 타입 | 기본값 | 규칙 |
+|---|---|---|---|
+| `ACCOUNT_STATUS` | `VARCHAR(20)` | `ACTIVE` | `PENDING`, `ACTIVE`, `INACTIVE`, `LOCKED`, `REJECTED` |
+| `ACCOUNT_STATUS_CHANGED_AT` | `DATETIME` | `CURRENT_TIMESTAMP` | 상태 변경 시 갱신 |
+| `ACCOUNT_STATUS_CHANGED_BY` | `INT(15) UNSIGNED NULL` | `NULL` | 상태 변경 관리자 ID, 최초 신청은 null 허용 |
+| `ACCOUNT_STATUS_REASON` | `VARCHAR(1000)` | `NULL` | 반려 시 필수 |
+| `APPLIED_AT` | `DATETIME` | `NULL` | 최초 가입 및 재신청 시 갱신 |
+
+기존 사용자는 migration에서 `ACCOUNT_STATUS = 'ACTIVE'`로 보정한다. `USER_EMP_NO`와 `USER_EMAIL`은 각각 사용자 ID와 이메일 중복 검증 기준으로 사용한다. 반려 후 재신청은 같은 사용자 레코드의 상태와 신청일시를 갱신한다.

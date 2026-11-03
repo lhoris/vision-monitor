@@ -93,6 +93,56 @@
 - 비활성화/퇴사/삭제 요청 전 위험 변경 검사를 수행한다.
 - 저장 성공 후 목록과 상세 상태를 같은 user snapshot으로 갱신한다.
 
+## 14. 회원가입 및 승인 확장 계획
+
+### 설계 결정
+
+- 별도 가입 신청 테이블은 만들지 않고 기존 `TB_M26_USER`에 가입 신청 계정을 저장한다.
+- 가입 및 운영 상태는 영속 `ACCOUNT_STATUS` 하나로 관리한다.
+- 상태값은 `PENDING`, `ACTIVE`, `INACTIVE`, `LOCKED`, `REJECTED`를 사용한다.
+- `DATA_END_STATUS`는 데이터 종료 여부만 표현한다.
+- 신규 가입자는 기본 일반 사용자 역할로 생성하며 관리자 역할은 승인 후 별도 배정한다.
+- 기존 계정은 migration에서 `ACTIVE`로 보정한다.
+
+### 화면 흐름
+
+```text
+로그인 화면
+  -> 회원가입 버튼
+  -> 회원가입 modal
+  -> 가입 신청
+  -> PENDING 안내
+
+관리자 사용자 관리
+  -> PENDING 필터
+  -> 신청 정보 확인
+  -> 승인(ACTIVE) 또는 반려(REJECTED)
+  -> 반려 사유 저장
+```
+
+### 컴포넌트 및 서비스 조정
+
+- 로그인 화면에 회원가입 버튼과 `SignupDialog`를 추가한다.
+- `authService`에 회원가입 및 반려 계정 재신청 계약을 추가한다.
+- `UserManagementGrid`에 승인 대기 필터, 승인, 반려 action을 추가한다.
+- 반려 action은 사유 입력 modal을 거친다.
+- `UserStatusBadge`와 사용자 타입은 통합 `ACCOUNT_STATUS` 값을 표시한다.
+- backend는 로그인 시 `ACTIVE`만 허용하고 회원가입·승인·반려 권한을 각각 검증한다.
+
+### 데이터 및 API 계획
+
+- migration에서 `TB_M26_USER.ACCOUNT_STATUS`, 상태 변경 메타데이터, `APPLIED_AT` 컬럼을 추가한다.
+- `POST /api/auth/signup`과 `POST /api/auth/signup/reapply`를 추가한다.
+- `POST /api/admin/users/{userId}/approve`와 `POST /api/admin/users/{userId}/reject`를 추가한다.
+- 목록 API의 계정 상태 필터와 사용자 응답에 상태 변경 메타데이터를 포함한다.
+
+### 보안 및 동시성
+
+- 비밀번호는 기존 인증 정책의 해시 방식으로만 저장하고 응답에 포함하지 않는다.
+- `PENDING`, `REJECTED`, `INACTIVE`, `LOCKED` 계정은 로그인할 수 없다.
+- 승인·반려 시 대상 계정이 `PENDING`인지 재검증한다.
+- 마지막 관리자 계정은 비활성화·잠금·반려할 수 없다.
+
 ### 서비스 및 데이터 흐름
 
 - `userManagementService`는 사용자관리 화면의 단일 service facade가 된다.

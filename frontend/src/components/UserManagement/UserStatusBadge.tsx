@@ -1,6 +1,9 @@
 import type { AccountStatus, EmploymentStatus } from '@/types/userManagement'
 
 const accountLabels: Record<AccountStatus, string> = {
+  pending: '승인 대기',
+  inactive: '비활성',
+  rejected: '반려',
   active: '활성',
   locked: '잠금',
   disabled: '비활성',
@@ -13,6 +16,9 @@ const employmentLabels: Record<EmploymentStatus, string> = {
 }
 
 const accountClasses: Record<AccountStatus, string> = {
+  pending: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200',
+  inactive: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200',
+  rejected: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200',
   active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
   locked: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200',
   disabled: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200',

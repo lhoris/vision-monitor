@@ -79,6 +79,18 @@ export function UserManagement() {
     await loadUsers()
   }
 
+  const approveUser = async (userId: number) => {
+    await userManagementService.approveUser(userId)
+    setNotice('가입 신청을 승인했습니다.')
+    await loadUsers()
+  }
+
+  const rejectUser = async (userId: number, reason: string) => {
+    await userManagementService.rejectUser(userId, reason)
+    setNotice('가입 신청을 반려했습니다.')
+    await loadUsers()
+  }
+
   if (loading && !initialLoadComplete) {
     return (
       <section className="flex h-full items-center justify-center p-6 text-sm text-slate-500">
@@ -135,6 +147,8 @@ export function UserManagement() {
         onSaveChanges={saveChanges}
         onRefresh={loadUsers}
         onResetPassword={resetPassword}
+        onApprove={approveUser}
+        onReject={rejectUser}
       />
     </section>
   )

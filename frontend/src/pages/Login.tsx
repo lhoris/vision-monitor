@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { loginUser } from '@/store/slices/authSlice'
-import { authService } from '@/services/authService'
+import { authService, type SignupInput } from '@/services/authService'
 import poscoLogo from '../../bak/login_html/img/posco_logo.svg'
 import poscoLogoWhite from '../../bak/login_html/img/posco_logo_w.svg'
 import type1Background from '../../bak/login_html/img/bg_img01.png'
@@ -30,6 +30,7 @@ interface LoginFormProps {
   onUsernameChange: (value: string) => void
   onPasswordChange: (value: string) => void
   onSubmit: (event: React.FormEvent) => void
+  onSignup: () => void
   buttonClassName: string
 }
 
@@ -41,6 +42,7 @@ function LoginFields({
   onUsernameChange,
   onPasswordChange,
   onSubmit,
+  onSignup,
   buttonClassName,
 }: LoginFormProps) {
   const [isPasswordRevealed, setIsPasswordRevealed] = useState(false)
@@ -116,6 +118,8 @@ function LoginFields({
         {loading ? 'Signing In...' : 'Login'}
       </button>
 
+      <button type="button" className="vm-login-link vm-signup-link" onClick={onSignup}>회원가입</button>
+
       <DemoCredentials />
     </form>
   )
@@ -129,6 +133,34 @@ function DemoCredentials() {
       <span>Password: <code>{DEMO_PASSWORD}</code></span>
     </div>
   )
+}
+
+function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: (message: string) => void }) {
+  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '' })
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const update = (field: keyof SignupInput, value: string) => setInput((current) => ({ ...current, [field]: value }))
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setError('')
+    setSaving(true)
+    try {
+      await authService.signup(input)
+      onSuccess('가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '회원가입 신청에 실패했습니다.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const fields: Array<[keyof SignupInput, string, boolean]> = [
+    ['username', '사용자 ID', true], ['name', '이름', true], ['email', '이메일', true],
+    ['phone', '연락처', false], ['department', '부서', false], ['position', '직책', false],
+  ]
+
+  return <div className="vm-signup-modal" role="presentation"><form className="vm-signup-card" onSubmit={submit}><div className="vm-signup-header"><h2>회원가입</h2><button type="button" onClick={onClose} aria-label="닫기">×</button></div><p className="vm-signup-description">가입 신청 후 관리자 승인 절차가 진행됩니다.</p><div className="vm-signup-grid">{fields.map(([field, label, required]) => <label key={field} className="vm-signup-field">{label}{required ? <span> *</span> : null}<input value={input[field] ?? ''} required={required} onChange={(event) => update(field, event.target.value)} /></label>)}<label className="vm-signup-field">비밀번호 *<input type="password" value={input.password} required onChange={(event) => update('password', event.target.value)} /></label><label className="vm-signup-field">비밀번호 확인 *<input type="password" value={input.passwordConfirm} required onChange={(event) => update('passwordConfirm', event.target.value)} /></label></div>{error ? <p className="vm-login-error" role="alert">{error}</p> : null}<div className="vm-signup-actions"><button type="button" onClick={onClose}>취소</button><button type="submit" disabled={saving}>{saving ? '신청 중...' : '가입 신청'}</button></div></form></div>
 }
 
 function Type1Login(props: LoginFormProps) {
@@ -318,6 +350,7 @@ export const Login: React.FC = () => {
   const [passwordChangeRequired, setPasswordChangeRequired] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSignupOpen, setIsSignupOpen] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -367,6 +400,7 @@ export const Login: React.FC = () => {
     onUsernameChange: setUsername,
     onPasswordChange: setPassword,
     onSubmit: handleLogin,
+    onSignup: () => setIsSignupOpen(true),
     buttonClassName: '',
   }
 
@@ -383,6 +417,8 @@ export const Login: React.FC = () => {
           </div>
         </div>
       )}
+
+      {isSignupOpen ? <SignupDialog onClose={() => setIsSignupOpen(false)} onSuccess={(message) => { setIsSignupOpen(false); setError(message) }} /> : null}
 
       {ACTIVE_LOGIN_TEMPLATE === 1 && <Type1Login {...templateProps} />}
       {ACTIVE_LOGIN_TEMPLATE === 2 && <Type2Login {...templateProps} />}

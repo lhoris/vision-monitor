@@ -133,3 +133,29 @@ leave -> retired
 1차 backend 범위에서는 사용자당 주 소속 조직 하나를 `orgUnitId`로 연결한다. `department` 문자열은 호환 기간 동안 표시용으로만 유지할 수 있지만 신규 API의 기준값은 `orgUnitId`다.
 
 DB 외래키는 사용하지 않으며, 조직 존재 여부와 활성 여부는 backend service에서 검증한다.
+
+## 회원가입 및 계정 상태 확장
+
+회원가입 신청과 승인 결과는 별도 신청 테이블을 만들지 않고 `TB_M26_USER`에 저장한다.
+
+| 필드 | 설명 | 검증/규칙 |
+|------|------|-----------|
+| `accountStatus` | 가입 및 계정 운영 상태 | `PENDING`, `ACTIVE`, `INACTIVE`, `LOCKED`, `REJECTED` |
+| `accountStatusChangedAt` | 마지막 상태 변경일시 | 상태 변경 시 필수 갱신 |
+| `accountStatusChangedBy` | 마지막 상태 변경자 | 가입 신청은 시스템, 승인/반려는 관리자 |
+| `accountStatusReason` | 상태 변경 사유 | 반려 시 필수, 그 외 선택 |
+| `appliedAt` | 가입 신청일시 | 최초 신청 및 재신청 시 갱신 |
+
+상태 전이는 다음을 따른다.
+
+```text
+PENDING -> ACTIVE
+PENDING -> REJECTED
+REJECTED -> PENDING
+ACTIVE -> INACTIVE
+ACTIVE -> LOCKED
+LOCKED -> ACTIVE
+INACTIVE -> ACTIVE
+```
+
+기존 사용자 데이터는 migration에서 `ACTIVE`로 보정한다. `DATA_END_STATUS`는 데이터 종료 여부를 표현하는 기존 감사 필드로 유지한다.
