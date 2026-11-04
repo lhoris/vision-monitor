@@ -146,6 +146,7 @@
     "statusChangeError": "Unable to change user status.",
     "passwordResetSuccess": "The password was reset. The user must set a new password at next login.",
     "passwordResetError": "Unable to reset the password.",
+    "resetPasswordSelfDisabled": "You cannot reset the password of the currently signed-in account.",
     "approvalSuccess": "The signup request was approved.",
     "rejectionSuccess": "The signup request was rejected.",
     "approvalTitle": "Approve signup request",

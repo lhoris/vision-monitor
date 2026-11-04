@@ -1061,7 +1061,7 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'department', t('userManagement.department'))}{renderError(row, 'department')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'position', t('userManagement.position'))}{renderError(row, 'position')}</td>
                 <td className={`${bodyCellClass} text-center`}>
-                  <button type="button" className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id} onClick={() => {
+                  <button type="button" title={row.username?.toLowerCase() === currentUsername.toLowerCase() ? t('userManagement.resetPasswordSelfDisabled') : undefined} className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id || row.username?.toLowerCase() === currentUsername.toLowerCase()} onClick={() => {
                     if (!row.id || !onResetPassword) return
                     void askConfirmation({
                       title: t('userManagement.resetPasswordTitle'),
