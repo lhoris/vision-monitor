@@ -1,6 +1,7 @@
 package com.vision.dto;
 
 import com.vision.entity.UserAccount;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public record UserAccountDto(
         Long accountStatusChangedBy,
         String accountStatusReason,
         LocalDateTime appliedAt,
-        boolean passwordResetRequired
+        @JsonProperty("passwordResetRequired") boolean passwordResetRequired
 ) {
 
     public static UserAccountDto from(UserAccount user) {
@@ -45,6 +46,7 @@ public record UserAccountDto(
     public static UserAccountDto from(UserAccount user, List<RoleSummaryDto> availableRoles) {
         String role = user.getRole() == null ? "USER" : user.getRole();
         boolean systemAdmin = "ADMIN".equalsIgnoreCase(role);
+        boolean passwordResetRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
         RoleSummaryDto roleSummary = availableRoles.stream()
                 .filter(candidate -> candidate.id().equalsIgnoreCase(role) || candidate.name().equalsIgnoreCase(role))
                 .findFirst()
@@ -86,7 +88,7 @@ public record UserAccountDto(
                 .accountStatusChangedBy(user.getAccountStatusChangedBy())
                 .accountStatusReason(user.getAccountStatusReason())
                 .appliedAt(user.getAppliedAt())
-                .passwordResetRequired(user.getPasswordHash() == null || user.getPasswordHash().isBlank())
+                .passwordResetRequired(passwordResetRequired)
                 .build();
     }
 }
