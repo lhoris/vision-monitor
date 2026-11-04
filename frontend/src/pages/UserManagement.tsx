@@ -80,9 +80,11 @@ export function UserManagement() {
   const resetPassword = async (userId: number) => {
     setError('')
     try {
-      await userManagementService.resetPassword(userId)
+      const resetUser = await userManagementService.resetPassword(userId)
+      setUsers((currentUsers) => currentUsers.map((user) => user.id === userId
+        ? { ...user, ...resetUser, passwordResetRequired: true }
+        : user))
       setNotice(t('userManagement.passwordResetSuccess'))
-      await loadUsers()
     } catch (resetError) {
       setError(resetError instanceof Error ? resetError.message : t('userManagement.passwordResetError'))
       throw resetError
