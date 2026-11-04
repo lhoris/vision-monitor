@@ -3,10 +3,14 @@ import { apiClient } from './api'
 import { getResponseData } from './serviceUtils'
 
 export async function listMetadataQueries(): Promise<MetadataQueryDefinition[]> {
-  const response = await apiClient.get<Array<Partial<MetadataQueryDefinition> & { queryCode?: string }>>('/metadata/queries')
+  const response = await apiClient.get<Array<Partial<MetadataQueryDefinition> & { queryCode?: string; queryDescription?: string }>>('/metadata/queries')
   const data = getResponseData(response, [])
   return data.map((query) => ({
     queryId: query.queryId ?? query.queryCode ?? '',
+    queryName: query.queryName,
+    description: query.description ?? query.queryDescription ?? '',
+    descriptionKo: query.descriptionKo,
+    descriptionEn: query.descriptionEn,
     sqlText: query.sqlText ?? '',
     allowedParameters: query.allowedParameters ?? ['sourceId'],
     resultSchema: query.resultSchema ?? [],

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { MetadataChartMapping, MetadataGridMapping, MetadataQueryDefinition, MetadataSectionConfig, MetadataSectionType, MetadataTextDisplayMode, MetadataTextMapping } from '@/types/metadataConfig'
 
 interface MetadataSectionEditorProps {
@@ -9,6 +10,7 @@ interface MetadataSectionEditorProps {
 }
 
 export function MetadataSectionEditor({ section, queries, onSave, onClose }: MetadataSectionEditorProps) {
+  const { t, i18n } = useTranslation()
   const [title, setTitle] = useState(section?.title ?? '')
   const [type, setType] = useState<MetadataSectionType>(section?.type ?? 'grid')
   const [textDisplayMode, setTextDisplayMode] = useState<MetadataTextDisplayMode>(getTextDisplayMode(section))
@@ -23,6 +25,8 @@ export function MetadataSectionEditor({ section, queries, onSave, onClose }: Met
 
   const query = queries.find((item) => item.queryId === queryId)
   const fields = query?.resultSchema ?? []
+  const language = i18n.resolvedLanguage ?? i18n.language ?? 'ko'
+  const queryDescription = query ? getQueryDescription(query, language) : ''
 
   useEffect(() => {
     if (!query) return
@@ -61,20 +65,21 @@ export function MetadataSectionEditor({ section, queries, onSave, onClose }: Met
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <form onSubmit={submit} className="w-full max-w-md space-y-4 border bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-slate-800">
-        <div className="flex items-center justify-between"><h3 className="font-semibold">메타데이터 섹션 설정</h3><button type="button" onClick={onClose} aria-label="닫기">×</button></div>
-        <label className="block text-sm">제목<input value={title} onChange={(event) => setTitle(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
-        <label className="block text-sm">표시 형식<select value={type} onChange={(event) => setType(event.target.value as MetadataSectionType)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="text">텍스트</option><option value="grid">그리드</option><option value="chart">차트</option></select></label>
-        <label className="block text-sm">Query ID{type === 'text' ? ' (선택)' : ''}<select value={queryId} onChange={(event) => setQueryId(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900">{type === 'text' ? <option value="">조회하지 않음</option> : null}{queries.map((item) => <option key={item.queryId} value={item.queryId}>{item.queryId}</option>)}</select></label>
-        <label className="block text-sm">조회 주기 (초)<input type="number" min={0.1} max={3600} step={0.1} value={interval} onChange={(event) => setInterval(Math.max(0.1, Math.min(3600, Number(event.target.value) || 0.1)))} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
+        <div className="flex items-center justify-between"><h3 className="font-semibold">{t('cameraFocus.metadata.sectionSettings')}</h3><button type="button" onClick={onClose} aria-label={t('common.close')}>×</button></div>
+        <label className="block text-sm">{t('cameraFocus.metadata.title')}<input value={title} onChange={(event) => setTitle(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
+        <label className="block text-sm">{t('cameraFocus.metadata.displayFormat')}<select value={type} onChange={(event) => setType(event.target.value as MetadataSectionType)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="text">{t('cameraFocus.metadata.text')}</option><option value="grid">{t('cameraFocus.metadata.grid')}</option><option value="chart">{t('cameraFocus.metadata.chart')}</option></select></label>
+        <label className="block text-sm">{t('cameraFocus.metadata.queryId')}{type === 'text' ? ` (${t('cameraFocus.metadata.optional')})` : ''}<select value={queryId} onChange={(event) => setQueryId(event.target.value)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900">{type === 'text' ? <option value="">{t('cameraFocus.metadata.noQuery')}</option> : null}{queries.map((item) => <option key={item.queryId} value={item.queryId}>{item.queryId}{getQueryDescription(item, language) ? ` - ${getQueryDescription(item, language)}` : ''}</option>)}</select></label>
+        {query ? <p className="-mt-2 text-xs text-slate-500 dark:text-slate-400"><span className="font-medium">{t('cameraFocus.metadata.queryDescription')}:</span> {queryDescription || '-'}</p> : null}
+        <label className="block text-sm">{t('cameraFocus.metadata.refreshInterval')}<input type="number" min={0.1} max={3600} step={0.1} value={interval} onChange={(event) => setInterval(Math.max(0.1, Math.min(3600, Number(event.target.value) || 0.1)))} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900" required /></label>
         {type === 'text' ? <>
-          <label className="block text-sm">텍스트 표시 형식<select value={textDisplayMode} onChange={(event) => setTextDisplayMode(event.target.value as MetadataTextDisplayMode)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="free">자유 텍스트</option><option value="label_value">라벨-값</option></select></label>
-          <label className="block text-sm">기본 텍스트<textarea value={defaultText} onChange={(event) => setDefaultText(event.target.value)} rows={3} placeholder="정적으로 표시할 텍스트 또는 조회 결과가 없을 때 표시할 안내 문구" className="mt-1 w-full resize-y border px-3 py-2 dark:bg-slate-900" /></label>
+          <label className="block text-sm">{t('cameraFocus.metadata.textDisplayFormat')}<select value={textDisplayMode} onChange={(event) => setTextDisplayMode(event.target.value as MetadataTextDisplayMode)} className="mt-1 w-full border px-3 py-2 dark:bg-slate-900"><option value="free">{t('cameraFocus.metadata.freeText')}</option><option value="label_value">{t('cameraFocus.metadata.labelValue')}</option></select></label>
+          <label className="block text-sm">{t('cameraFocus.metadata.defaultText')}<textarea value={defaultText} onChange={(event) => setDefaultText(event.target.value)} rows={3} placeholder={t('cameraFocus.metadata.defaultTextPlaceholder')} className="mt-1 w-full resize-y border px-3 py-2 dark:bg-slate-900" /></label>
           {textDisplayMode === 'label_value' && query ? <div className="grid grid-cols-2 gap-2"><FieldSelect label="라벨 필드" value={labelField} fields={fields} onChange={setLabelField} /><FieldSelect label="값 필드" value={valueField} fields={fields} onChange={setValueField} /></div> : null}
-          {textDisplayMode === 'label_value' && !query ? <p className="text-xs text-red-600">라벨-값 형식은 Query ID와 필드 매핑이 필요합니다.</p> : null}
+          {textDisplayMode === 'label_value' && !query ? <p className="text-xs text-red-600">{t('cameraFocus.metadata.labelValueRequiresQuery')}</p> : null}
         </> : null}
-        {type === 'grid' ? <fieldset className="space-y-2"><legend className="text-sm">표시 컬럼</legend>{fields.map((field) => <label key={field.name} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={selectedFields.includes(field.name)} onChange={(event) => setSelectedFields((current) => event.target.checked ? [...current, field.name] : current.filter((item) => item !== field.name))} />{field.label} ({field.name})</label>)}</fieldset> : null}
-        {type === 'chart' ? <div className="space-y-2"><FieldSelect label="시간 필드" value={timeField} fields={fields} onChange={setTimeField} /><fieldset><legend className="text-sm">계열 필드</legend>{fields.filter((field) => field.name !== timeField).map((field) => <label key={field.name} className="mr-3 inline-flex items-center gap-1 text-xs"><input type="checkbox" checked={seriesFields.includes(field.name)} onChange={(event) => setSeriesFields((current) => event.target.checked ? [...current, field.name] : current.filter((item) => item !== field.name))} />{field.label}</label>)}</fieldset></div> : null}
-        <div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="border px-3 py-2">취소</button><button type="submit" className="bg-blue-600 px-3 py-2 text-white">저장</button></div>
+        {type === 'grid' ? <fieldset className="space-y-2"><legend className="text-sm">{t('cameraFocus.metadata.displayColumns')}</legend>{fields.map((field) => <label key={field.name} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={selectedFields.includes(field.name)} onChange={(event) => setSelectedFields((current) => event.target.checked ? [...current, field.name] : current.filter((item) => item !== field.name))} />{field.label} ({field.name})</label>)}</fieldset> : null}
+        {type === 'chart' ? <div className="space-y-2"><FieldSelect label={t('cameraFocus.metadata.timeField')} value={timeField} fields={fields} onChange={setTimeField} /><fieldset><legend className="text-sm">{t('cameraFocus.metadata.seriesFields')}</legend>{fields.filter((field) => field.name !== timeField).map((field) => <label key={field.name} className="mr-3 inline-flex items-center gap-1 text-xs"><input type="checkbox" checked={seriesFields.includes(field.name)} onChange={(event) => setSeriesFields((current) => event.target.checked ? [...current, field.name] : current.filter((item) => item !== field.name))} />{field.label}</label>)}</fieldset></div> : null}
+        <div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="border px-3 py-2">{t('common.cancel')}</button><button type="submit" className="bg-blue-600 px-3 py-2 text-white">{t('common.save')}</button></div>
       </form>
     </div>
   )
@@ -84,6 +89,11 @@ function getTextDisplayMode(section?: MetadataSectionConfig): MetadataTextDispla
   if (!section || section.type !== 'text') return 'free'
   if (section.textDisplayMode) return section.textDisplayMode
   return 'valueField' in section.mapping ? 'label_value' : 'free'
+}
+
+function getQueryDescription(query: MetadataQueryDefinition, language = 'ko'): string {
+  if (language.startsWith('ko')) return query.descriptionKo || query.description || query.descriptionEn || ''
+  return query.descriptionEn || query.description || query.descriptionKo || ''
 }
 
 function FieldSelect({ label, value, fields, onChange, allowEmpty = false }: { label: string; value: string; fields: MetadataQueryDefinition['resultSchema']; onChange: (value: string) => void; allowEmpty?: boolean }) {

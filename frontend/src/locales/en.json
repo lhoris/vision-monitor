@@ -133,7 +133,7 @@
     "deleteUserMessage": "Request deletion for {{count}} selected users?",
     "deleteUserMessageSingle": "Request deletion for {{username}} ({{name}})?",
     "deleteDraftTitle": "Confirm new row deletion",
-    "deleteDraftMessage": "Delete {{count}} new rows from the grid? Only unsaved new rows are removed from the grid; existing users are not deleted.",
+    "deleteDraftMessage": "Delete {{count}} new rows from the grid?\nOnly unsaved new rows are removed from the grid; existing users are not deleted.",
     "saveSuccess": "Saved {{count}} user changes.",
     "saveTitle": "Confirm user information save",
     "saveMessage": "Save changes for {{count}} selected users?",
@@ -180,6 +180,30 @@
       "queries": "Query Management",
       "systemManagement": "System Management",
       "users": "User Management"
+    }
+  },
+  "cameraFocus": {
+    "metadata": {
+      "sectionSettings": "Metadata section settings",
+      "title": "Title",
+      "displayFormat": "Display format",
+      "text": "Text",
+      "grid": "Grid",
+      "chart": "Chart",
+      "queryId": "Query ID",
+      "optional": "optional",
+      "noQuery": "Do not query",
+      "queryDescription": "Description",
+      "refreshInterval": "Refresh interval (seconds)",
+      "textDisplayFormat": "Text display format",
+      "freeText": "Free text",
+      "labelValue": "Label-value",
+      "defaultText": "Default text",
+      "defaultTextPlaceholder": "Text to display statically or when the query has no result",
+      "labelValueRequiresQuery": "Label-value format requires a Query ID and field mapping.",
+      "displayColumns": "Display columns",
+      "timeField": "Time field",
+      "seriesFields": "Series fields"
     }
   },
   "live": {

@@ -16,10 +16,10 @@ describe('metadataQueryService', () => {
 
   it('loads query definitions from the backend catalog', async () => {
     get.mockResolvedValue({
-      data: [{ queryCode: 'Q_STATUS', queryName: 'Status', useStatus: 'Y' }],
+      data: [{ queryCode: 'Q_STATUS', queryName: 'Status', queryDescription: '카메라 상태 조회', useStatus: 'Y' }],
     })
 
-    await expect(listMetadataQueries()).resolves.toEqual([expect.objectContaining({ queryId: 'Q_STATUS', enabled: true })])
+    await expect(listMetadataQueries()).resolves.toEqual([expect.objectContaining({ queryId: 'Q_STATUS', description: '카메라 상태 조회', enabled: true })])
     expect(get).toHaveBeenCalledWith('/metadata/queries')
   })
 

@@ -133,7 +133,7 @@
     "deleteUserMessage": "선택한 {{count}}건의 사용자 삭제를 요청하시겠습니까?",
     "deleteUserMessageSingle": "{{username}} ({{name}}) 사용자의 삭제를 요청하시겠습니까?",
     "deleteDraftTitle": "신규 행 삭제 확인",
-    "deleteDraftMessage": "그리드에서 선택한 신규 {{count}}건을 삭제하시겠습니까? 저장되지 않은 신규 행만 그리드에서 제거되며, 기존 사용자는 삭제되지 않습니다.",
+    "deleteDraftMessage": "그리드에서 선택한 신규 {{count}}건을 삭제하시겠습니까?\n저장되지 않은 신규 행만 그리드에서 제거되며, 기존 사용자는 삭제되지 않습니다.",
     "saveSuccess": "{{count}}건의 사용자 변경 사항을 저장했습니다.",
     "saveTitle": "사용자 정보 저장 확인",
     "saveMessage": "선택한 {{count}}건의 변경 사항을 저장하시겠습니까?",
@@ -180,6 +180,30 @@
       "queries": "쿼리 관리",
       "systemManagement": "시스템 관리",
       "users": "사용자 관리"
+    }
+  },
+  "cameraFocus": {
+    "metadata": {
+      "sectionSettings": "메타데이터 섹션 설정",
+      "title": "제목",
+      "displayFormat": "표시 형식",
+      "text": "텍스트",
+      "grid": "그리드",
+      "chart": "차트",
+      "queryId": "Query ID",
+      "optional": "선택",
+      "noQuery": "조회하지 않음",
+      "queryDescription": "한글 Description",
+      "refreshInterval": "조회 주기 (초)",
+      "textDisplayFormat": "텍스트 표시 형식",
+      "freeText": "자유 텍스트",
+      "labelValue": "라벨-값",
+      "defaultText": "기본 텍스트",
+      "defaultTextPlaceholder": "정적으로 표시할 텍스트 또는 조회 결과가 없을 때 표시할 안내 문구",
+      "labelValueRequiresQuery": "라벨-값 형식은 Query ID와 필드 매핑이 필요합니다.",
+      "displayColumns": "표시 컬럼",
+      "timeField": "시간 필드",
+      "seriesFields": "계열 필드"
     }
   },
   "live": {

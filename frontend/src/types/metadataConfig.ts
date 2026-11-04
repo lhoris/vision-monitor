@@ -11,6 +11,10 @@ export interface MetadataResultField {
 
 export interface MetadataQueryDefinition {
   queryId: string
+  queryName?: string
+  description?: string
+  descriptionKo?: string
+  descriptionEn?: string
   sqlText: string
   allowedParameters: string[]
   resultSchema: MetadataResultField[]
