@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { I18nextProvider } from 'react-i18next'
+import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FocusMetadataPanel } from '../FocusMetadataPanel'
 import type { CameraFocusDto } from '@/types/cameraFocus'
+import i18n from '@/i18n'
 
 const { get, post, put } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }))
 vi.mock('@/services/api', () => ({ apiClient: { get, post, put } }))
@@ -30,6 +33,10 @@ const camera: CameraFocusDto = {
   },
 }
 
+function renderPanel(props: ComponentProps<typeof FocusMetadataPanel>) {
+  return render(<I18nextProvider i18n={i18n}><FocusMetadataPanel {...props} /></I18nextProvider>)
+}
+
 describe('FocusMetadataPanel', () => {
   let savedProfile: { sourceId: string; sections: unknown[]; updatedAt: string } | null
 
@@ -56,7 +63,7 @@ describe('FocusMetadataPanel', () => {
   })
 
   it('renders camera focus metadata', async () => {
-    render(<FocusMetadataPanel camera={camera} />)
+    renderPanel({ camera })
 
     expect(await screen.findByText('Entry Zone CAM-01')).toBeInTheDocument()
     expect(screen.getByText('냉각')).toBeInTheDocument()
@@ -66,19 +73,19 @@ describe('FocusMetadataPanel', () => {
   })
 
   it('uses dash fallback for missing camera values', () => {
-    render(<FocusMetadataPanel camera={{ ...camera, lastSeenAt: null }} />)
+    renderPanel({ camera: { ...camera, lastSeenAt: null } })
 
     expect(screen.getByText('-')).toBeInTheDocument()
   })
 
   it('renders metadata error state without requiring video state', () => {
-    render(<FocusMetadataPanel camera={null} error="NOT_FOUND" />)
+    renderPanel({ camera: null, error: 'NOT_FOUND' })
 
     expect(screen.getByText('카메라 정보를 불러오지 못했습니다.')).toBeInTheDocument()
   })
 
   it('renders forbidden state without restricted metadata', () => {
-    render(<FocusMetadataPanel camera={null} error="FORBIDDEN" />)
+    renderPanel({ camera: null, error: 'FORBIDDEN' })
 
     expect(screen.getByText('카메라 정보 접근 권한이 없습니다.')).toBeInTheDocument()
     expect(screen.queryByText('Entry Zone CAM-01')).not.toBeInTheDocument()
@@ -86,7 +93,7 @@ describe('FocusMetadataPanel', () => {
 
   it('reorders the three sections by drag and persists the order per user', async () => {
     localStorage.setItem('authUsername', 'tester1')
-    const { unmount } = render(<FocusMetadataPanel camera={camera} />)
+    const { unmount } = renderPanel({ camera })
     const cameraSection = screen.getByTestId('metadata-section-camera')
     const statusSection = screen.getByTestId('metadata-section-status')
     fireEvent.dragStart(cameraSection)
@@ -98,25 +105,25 @@ describe('FocusMetadataPanel', () => {
     expect(sections[0]).toHaveAttribute('data-testid', 'metadata-section-status')
     unmount()
 
-    render(<FocusMetadataPanel camera={camera} />)
+    renderPanel({ camera })
     await waitFor(() => expect(screen.getAllByTestId(/metadata-section-/)[0]).toHaveAttribute('data-testid', 'metadata-section-status'))
     const restoredSections = screen.getAllByTestId(/metadata-section-/)
     expect(restoredSections[0]).toHaveAttribute('data-testid', 'metadata-section-status')
   })
 
-  it('asks for confirmation before restoring the default profile', () => {
+  it('asks for confirmation before restoring the default profile', async () => {
     localStorage.setItem('authUsername', 'tester1')
-    render(<FocusMetadataPanel camera={camera} />)
+    renderPanel({ camera })
 
     fireEvent.click(screen.getByRole('button', { name: '기본값' }))
 
     expect(screen.getByRole('dialog')).toHaveTextContent('현재 영상소스의 메타데이터 섹션 설정을 기본값으로 복원하시겠습니까?')
     fireEvent.click(screen.getByRole('button', { name: '취소' }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('asks for confirmation before deleting a section', () => {
-    render(<FocusMetadataPanel camera={camera} />)
+    renderPanel({ camera })
 
     fireEvent.click(screen.getAllByRole('button', { name: '삭제' })[0])
 

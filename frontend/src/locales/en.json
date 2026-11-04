@@ -12,6 +12,7 @@
     "add": "Add",
     "apply": "Apply",
     "close": "Close",
+    "confirm": "Confirm",
     "online": "Online",
     "offline": "Offline",
     "error": "Error",
@@ -183,6 +184,25 @@
     }
   },
   "cameraFocus": {
+    "metadataPanel": {
+      "ariaLabel": "Camera metadata",
+      "title": "Metadata",
+      "addSection": "Add section",
+      "restoreDefaults": "Defaults",
+      "restoreDefaultsTitle": "Restore default metadata sections",
+      "description": "Drag sections to change their order for each video source.",
+      "temporarySourceError": "Metadata settings cannot be saved for a temporary video. Use a video registered in Video Management.",
+      "saveError": "Unable to save metadata settings. Please try again later.",
+      "forbiddenError": "You do not have permission to access camera information.",
+      "loadError": "Unable to load camera information.",
+      "edit": "Edit",
+      "remove": "Delete",
+      "empty": "No sections to display. Add a section or restore the defaults.",
+      "selectedAlarm": "Selected alarm",
+      "confirmTitle": "Confirm settings change",
+      "restoreConfirm": "Restore the default metadata sections for this video source?",
+      "removeConfirm": "Delete the '{{title}}' section?"
+    },
     "metadata": {
       "sectionSettings": "Metadata section settings",
       "title": "Title",
@@ -194,6 +214,10 @@
       "optional": "optional",
       "noQuery": "Do not query",
       "queryDescription": "Description",
+      "noDescription": "No description available.",
+      "labelField": "Label field",
+      "valueField": "Value field",
+      "noField": "Not selected",
       "refreshInterval": "Refresh interval (seconds)",
       "textDisplayFormat": "Text display format",
       "freeText": "Free text",
@@ -269,9 +293,7 @@
         "invalidProtocol": "{{protocol}} requires a {{schemes}} URL.",
         "duplicateUrl": "This video URL has already been added to the current equipment tab."
       }
-    }
-  },
-  "cameraFocus": {
+    },
     "backToLive": "Back to Live"
   },
   "settings": {

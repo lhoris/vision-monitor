@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
 import { listMetadataQueries } from '@/services/metadataQueryService'
 import { createDefaultMetadataProfile } from '@/config/metadataDefaults'
@@ -21,6 +22,7 @@ function currentUserId() {
 }
 
 export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEventDetail, onSelectEvent }: FocusMetadataPanelProps) {
+  const { t } = useTranslation()
   const sourceId = String(metadataSourceId ?? camera?.cameraId ?? '1')
   const persistableSourceId = metadataSourceId ?? camera?.cameraId ?? null
   const userId = currentUserId()
@@ -54,7 +56,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
   async function persist(nextProfile: MetadataLayoutProfile) {
     setSaveError(null)
     if (persistableSourceId == null || persistableSourceId <= 0) {
-      setSaveError('임시 영상은 메타데이터 설정을 저장할 수 없습니다. 영상 관리에 등록된 영상을 사용해 주세요.')
+      setSaveError(t('cameraFocus.metadataPanel.temporarySourceError'))
       return false
     }
     try {
@@ -62,7 +64,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
       return true
     } catch {
       setProfile(nextProfile)
-      setSaveError('메타데이터 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      setSaveError(t('cameraFocus.metadataPanel.saveError'))
       return false
     }
   }
@@ -109,7 +111,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
       else await removeSection(pendingConfirmation.section.id)
       setPendingConfirmation(null)
     } catch {
-      setSaveError('메타데이터 설정을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+      setSaveError(t('cameraFocus.metadataPanel.saveError'))
     } finally {
       setIsConfirming(false)
     }
@@ -126,33 +128,33 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
   const sections = profile?.sections.filter((section) => section.visible).sort((a, b) => a.order - b.order) ?? []
 
   return (
-    <aside className="w-full border-l border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 lg:w-[380px]" aria-label="카메라 메타데이터">
+    <aside className="w-full border-l border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 lg:w-[380px]" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">메타데이터</h2>
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('cameraFocus.metadataPanel.title')}</h2>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => { setEditingSection(undefined); setIsEditorOpen(true) }} className="border px-2 py-1 text-xs text-blue-700 dark:text-blue-300">섹션 추가</button>
-          <button type="button" onClick={confirmRestoreDefaults} className="text-xs text-gray-500 underline-offset-2 hover:text-blue-600 hover:underline dark:text-gray-300" title="메타데이터 섹션 기본값 복원">기본값</button>
+          <button type="button" onClick={() => { setEditingSection(undefined); setIsEditorOpen(true) }} className="border px-2 py-1 text-xs text-blue-700 dark:text-blue-300">{t('cameraFocus.metadataPanel.addSection')}</button>
+          <button type="button" onClick={confirmRestoreDefaults} className="text-xs text-gray-500 underline-offset-2 hover:text-blue-600 hover:underline dark:text-gray-300" title={t('cameraFocus.metadataPanel.restoreDefaultsTitle')}>{t('cameraFocus.metadataPanel.restoreDefaults')}</button>
         </div>
       </div>
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">영상소스별 섹션을 드래그해 순서를 변경할 수 있습니다.</p>
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p>
       {saveError ? <p role="alert" className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
-      {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? '카메라 정보 접근 권한이 없습니다.' : '카메라 정보를 불러오지 못했습니다.'}</p> : null}
+      {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? t('cameraFocus.metadataPanel.forbiddenError') : t('cameraFocus.metadataPanel.loadError')}</p> : null}
       <div className="mt-4 space-y-3">
         {!error && sections.map((section) => (
           <section key={section.id} draggable onDragStart={() => { draggedSectionRef.current = section.id; setDraggedSection(section.id) }} onDragOver={(event) => event.preventDefault()} onDrop={() => void moveSection(section.id)} onDragEnd={() => { draggedSectionRef.current = null; setDraggedSection(null) }} data-testid={`metadata-section-${section.id}`} className={`border border-gray-200 dark:border-gray-700 ${draggedSection === section.id ? 'opacity-50' : ''}`}>
             <div className="flex items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-900">
               <div className="flex min-w-0 cursor-grab items-center gap-2 font-semibold text-gray-700 active:cursor-grabbing dark:text-gray-100"><span aria-hidden="true" className="text-gray-400">⠿</span><h3 className="truncate">{section.title}</h3></div>
-              <div className="flex shrink-0 gap-2 text-xs"><button type="button" onClick={() => { setEditingSection(section); setIsEditorOpen(true) }} className="text-blue-600 underline">편집</button><button type="button" onClick={() => setPendingConfirmation({ type: 'remove', section })} className="text-rose-600 underline">삭제</button></div>
+              <div className="flex shrink-0 gap-2 text-xs"><button type="button" onClick={() => { setEditingSection(section); setIsEditorOpen(true) }} className="text-blue-600 underline">{t('cameraFocus.metadataPanel.edit')}</button><button type="button" onClick={() => setPendingConfirmation({ type: 'remove', section })} className="text-rose-600 underline">{t('cameraFocus.metadataPanel.remove')}</button></div>
             </div>
             <div className="p-3"><MetadataSectionRenderer section={section} sourceId={sourceId} active={Boolean(camera)} onSelectEvent={onSelectEvent} /></div>
           </section>
         ))}
-        {!error && !profile.sections.length ? <div className="border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">표시할 섹션이 없습니다. 섹션을 추가하거나 기본값을 복원하세요.</div> : null}
+        {!error && !profile.sections.length ? <div className="border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">{t('cameraFocus.metadataPanel.empty')}</div> : null}
       </div>
       {camera?.lastSeenAt === null ? <span className="sr-only">-</span> : null}
-      {selectedEventDetail ? <p className="mt-3 text-xs text-slate-500">선택 알람: {selectedEventDetail.title}</p> : null}
+      {selectedEventDetail ? <p className="mt-3 text-xs text-slate-500">{t('cameraFocus.metadataPanel.selectedAlarm')}: {selectedEventDetail.title}</p> : null}
       {isEditorOpen ? <MetadataSectionEditor section={editingSection} queries={queries} onSave={(section) => void saveSection(section)} onClose={() => { setIsEditorOpen(false); setEditingSection(undefined) }} /> : null}
-      <ConfirmDialog isOpen={Boolean(pendingConfirmation)} title="설정 변경 확인" message={pendingConfirmation?.type === 'restore' ? '현재 영상소스의 메타데이터 섹션 설정을 기본값으로 복원하시겠습니까?' : `'${pendingConfirmation?.section.title ?? ''}' 섹션을 삭제하시겠습니까?'`} confirmLabel="확인" variant={pendingConfirmation?.type === 'remove' ? 'danger' : 'default'} busy={isConfirming} onConfirm={confirmPendingAction} onCancel={() => { if (!isConfirming) setPendingConfirmation(null) }} />
+      <ConfirmDialog isOpen={Boolean(pendingConfirmation)} title={t('cameraFocus.metadataPanel.confirmTitle')} message={pendingConfirmation?.type === 'restore' ? t('cameraFocus.metadataPanel.restoreConfirm') : t('cameraFocus.metadataPanel.removeConfirm', { title: pendingConfirmation?.section.title ?? '' })} confirmLabel={t('common.confirm')} variant={pendingConfirmation?.type === 'remove' ? 'danger' : 'default'} busy={isConfirming} onConfirm={confirmPendingAction} onCancel={() => { if (!isConfirming) setPendingConfirmation(null) }} />
     </aside>
   )
 }

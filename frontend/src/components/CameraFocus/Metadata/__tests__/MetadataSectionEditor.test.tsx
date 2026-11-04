@@ -33,9 +33,9 @@ describe('MetadataSectionEditor', () => {
     const onSave = vi.fn()
     renderEditor({ queries, onSave, onClose: vi.fn() })
 
-    fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Static note' } })
+    fireEvent.change(screen.getByLabelText('제목'), { target: { value: 'Static note' } })
     fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'text' } })
-    fireEvent.change(screen.getAllByRole('textbox')[1], { target: { value: 'Static content' } })
+    fireEvent.change(screen.getByLabelText('기본 텍스트'), { target: { value: 'Static content' } })
     fireEvent.change(screen.getAllByRole('combobox')[1], { target: { value: '' } })
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
@@ -61,7 +61,15 @@ describe('MetadataSectionEditor', () => {
   it('shows the query description with the query id', () => {
     renderEditor({ queries, onSave: vi.fn(), onClose: vi.fn() })
 
-    expect(screen.getByRole('option', { name: 'camera.status - 카메라 상태 조회' })).toBeInTheDocument()
-    expect(screen.getAllByText('카메라 상태 조회').length).toBeGreaterThan(0)
+    expect(screen.getByRole('option', { name: 'camera.status' })).toBeInTheDocument()
+    expect(screen.getByLabelText('한글 Description')).toHaveValue('카메라 상태 조회')
+  })
+
+  it('offers only text and grid display formats', () => {
+    renderEditor({ queries, onSave: vi.fn(), onClose: vi.fn() })
+
+    expect(screen.getByRole('option', { name: '텍스트' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: '그리드' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: '차트' })).not.toBeInTheDocument()
   })
 })
