@@ -25,6 +25,7 @@ export interface UserAccount {
   roleIds: string[]
   roles: RoleSummary[]
   accountStatus: AccountStatus
+  accountStatusReason?: string
   employmentStatus: EmploymentStatus
   lastLoginAt?: string
   createdAt: string

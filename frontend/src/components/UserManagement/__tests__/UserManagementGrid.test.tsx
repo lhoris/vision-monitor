@@ -51,8 +51,8 @@ describe('UserManagementGrid', () => {
     await waitFor(() => expect(props.onRefresh).toHaveBeenCalledTimes(1))
 
     fireEvent.click(screen.getAllByRole('checkbox')[1])
-    fireEvent.doubleClick(screen.getAllByRole('button', { name: '표시명 셀' })[0])
-    fireEvent.change(screen.getByLabelText('표시명'), { target: { value: '변경된 비고' } })
+    fireEvent.doubleClick(screen.getAllByRole('button', { name: '비고 셀' })[0])
+    fireEvent.change(screen.getByLabelText('비고'), { target: { value: '변경된 비고' } })
     fireEvent.click(screen.getByRole('button', { name: '저장' }))
 
     fireEvent.click(screen.getByRole('button', { name: '확인' }))
@@ -112,18 +112,18 @@ describe('UserManagementGrid', () => {
 
     expect(screen.getByText('총 1명')).toBeInTheDocument()
     expect(screen.getByLabelText('비고 필터')).toHaveValue(userManagementFixture[1].displayName)
-    expect(screen.getByRole('button', { name: '표시명 셀' })).toHaveTextContent(userManagementFixture[1].displayName)
+    expect(screen.getByRole('button', { name: '비고 셀' })).toHaveTextContent(userManagementFixture[1].displayName)
     expect(screen.queryByText(userManagementFixture[0].displayName)).not.toBeInTheDocument()
   })
 
   it('opens a text cell editor only after double clicking', () => {
     renderGrid()
 
-    expect(screen.queryByLabelText('표시명')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('비고')).not.toBeInTheDocument()
 
-    fireEvent.doubleClick(screen.getAllByRole('button', { name: '표시명 셀' })[0])
+    fireEvent.doubleClick(screen.getAllByRole('button', { name: '비고 셀' })[0])
 
-    expect(screen.getByLabelText('표시명')).toHaveValue(userManagementFixture[0].displayName)
+    expect(screen.getByLabelText('비고')).toHaveValue(userManagementFixture[0].displayName)
   })
 
   it('starts editing a selected text cell when typing a character', () => {
@@ -150,7 +150,7 @@ describe('UserManagementGrid', () => {
     renderGrid()
 
     const nameCell = screen.getAllByRole('button', { name: '이름 셀' })[0]
-    const remarksCell = screen.getAllByRole('button', { name: '표시명 셀' })[1]
+    const remarksCell = screen.getAllByRole('button', { name: '비고 셀' })[1]
 
     fireEvent.mouseDown(nameCell, { button: 0 })
     fireEvent.mouseEnter(remarksCell)
@@ -169,7 +169,7 @@ describe('UserManagementGrid', () => {
     renderGrid()
 
     const nameCell = screen.getAllByRole('button', { name: '이름 셀' })[0]
-    const remarksCell = screen.getAllByRole('button', { name: '표시명 셀' })[1]
+    const remarksCell = screen.getAllByRole('button', { name: '비고 셀' })[1]
 
     fireEvent.mouseDown(nameCell, { button: 0 })
     fireEvent.mouseEnter(remarksCell)
@@ -188,7 +188,7 @@ describe('UserManagementGrid', () => {
     fireEvent.click(screen.getByLabelText(/tester1 선택/))
     fireEvent.click(screen.getByRole('button', { name: '행 복제' }))
 
-    expect(screen.getAllByRole('button', { name: '표시명 셀' })[0]).toHaveTextContent(`${userManagementFixture[1].displayName} 복사`)
+    expect(screen.getAllByRole('button', { name: '비고 셀' })[0]).toHaveTextContent(`${userManagementFixture[1].displayName} 복사`)
   })
 
   it('turns persisted row deletion into a delete request batch action', async () => {
