@@ -1,6 +1,7 @@
 package com.vision.service;
 
 import com.vision.entity.UserAccount;
+import com.vision.dto.UserAccountDto;
 import com.vision.dto.UserMutationRequest;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -85,6 +87,21 @@ class UserManagementServiceTest {
         org.mockito.ArgumentCaptor<UserAccount> captor = org.mockito.ArgumentCaptor.forClass(UserAccount.class);
         org.mockito.Mockito.verify(userRepository).save(captor.capture());
         assertTrue(new BCryptPasswordEncoder().matches("pd0a5661", captor.getValue().getPasswordHash()));
+    }
+
+    @Test
+    void resetsPasswordAndFlushesNullHashBeforeReturning() {
+        UserAccount admin = user(1L, "admin", "ADMIN");
+        UserAccount target = user(2L, "other-user", "USER");
+        target.setPasswordHash("$2a$10$existing-hash");
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.saveAndFlush(any(UserAccount.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UserAccountDto result = service.resetPassword("admin", 2L);
+
+        assertTrue(result.passwordResetRequired());
+        assertNull(target.getPasswordHash());
     }
 
     private UserAccount user(Long id, String username, String role) {

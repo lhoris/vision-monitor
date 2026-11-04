@@ -207,7 +207,7 @@ public class UserManagementService {
         }
         user.setPasswordHash(null);
         user.setUpdatedBy(actor.getUsername());
-        return toDto(userRepository.save(user), availableRoles());
+        return toDto(userRepository.saveAndFlush(user), availableRoles());
     }
 
     @Transactional
