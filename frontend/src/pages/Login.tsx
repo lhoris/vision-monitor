@@ -120,7 +120,10 @@ function LoginFields({
         {loading ? 'Signing In...' : 'Login'}
       </button>
 
-      <button type="button" className="vm-login-link vm-signup-link" onClick={onSignup}>회원가입</button>
+      <div className="vm-signup-prompt">
+        <span>계정이 없으신가요?</span>
+        <button type="button" className="vm-login-link vm-signup-link" onClick={onSignup}>회원가입</button>
+      </div>
 
       <DemoCredentials />
     </form>

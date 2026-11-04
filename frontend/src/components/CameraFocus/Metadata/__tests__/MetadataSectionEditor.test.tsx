@@ -62,7 +62,7 @@ describe('MetadataSectionEditor', () => {
     renderEditor({ queries, onSave: vi.fn(), onClose: vi.fn() })
 
     expect(screen.getByRole('option', { name: 'camera.status' })).toBeInTheDocument()
-    expect(screen.getByLabelText('한글 Description')).toHaveValue('카메라 상태 조회')
+    expect(screen.getByLabelText('쿼리 설명')).toHaveValue('카메라 상태 조회')
   })
 
   it('offers only text and grid display formats', () => {

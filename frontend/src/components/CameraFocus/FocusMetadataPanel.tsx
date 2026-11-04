@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
 import { listMetadataQueries } from '@/services/metadataQueryService'
 import { createDefaultMetadataProfile } from '@/config/metadataDefaults'
-import { getMetadataProfile, resetMetadataProfile, saveMetadataProfile } from '@/services/metadataConfigurationService'
+import { getMetadataProfile, saveMetadataProfile } from '@/services/metadataConfigurationService'
 import type { MetadataLayoutProfile, MetadataQueryDefinition, MetadataSectionConfig } from '@/types/metadataConfig'
 import { ConfirmDialog } from '@/components/Common'
 import { MetadataSectionEditor } from './Metadata/MetadataSectionEditor'
@@ -33,7 +33,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
   const profileChangedRef = useRef(false)
   const [editingSection, setEditingSection] = useState<MetadataSectionConfig | undefined>()
   const [isEditorOpen, setIsEditorOpen] = useState(false)
-  const [pendingConfirmation, setPendingConfirmation] = useState<{ type: 'restore' } | { type: 'remove'; section: MetadataSectionConfig } | null>(null)
+  const [pendingConfirmation, setPendingConfirmation] = useState<{ type: 'remove'; section: MetadataSectionConfig } | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -107,22 +107,13 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
     if (!pendingConfirmation) return
     setIsConfirming(true)
     try {
-      if (pendingConfirmation.type === 'restore') await restoreDefaults()
-      else await removeSection(pendingConfirmation.section.id)
+      await removeSection(pendingConfirmation.section.id)
       setPendingConfirmation(null)
     } catch {
       setSaveError(t('cameraFocus.metadataPanel.saveError'))
     } finally {
       setIsConfirming(false)
     }
-  }
-
-  async function restoreDefaults() {
-    setProfile(await resetMetadataProfile(userId, sourceId))
-  }
-
-  function confirmRestoreDefaults() {
-    setPendingConfirmation({ type: 'restore' })
   }
 
   const sections = profile?.sections.filter((section) => section.visible).sort((a, b) => a.order - b.order) ?? []
@@ -133,7 +124,6 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
         <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('cameraFocus.metadataPanel.title')}</h2>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => { setEditingSection(undefined); setIsEditorOpen(true) }} className="border px-2 py-1 text-xs text-blue-700 dark:text-blue-300">{t('cameraFocus.metadataPanel.addSection')}</button>
-          <button type="button" onClick={confirmRestoreDefaults} className="text-xs text-gray-500 underline-offset-2 hover:text-blue-600 hover:underline dark:text-gray-300" title={t('cameraFocus.metadataPanel.restoreDefaultsTitle')}>{t('cameraFocus.metadataPanel.restoreDefaults')}</button>
         </div>
       </div>
       <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p>
@@ -154,7 +144,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
       {camera?.lastSeenAt === null ? <span className="sr-only">-</span> : null}
       {selectedEventDetail ? <p className="mt-3 text-xs text-slate-500">{t('cameraFocus.metadataPanel.selectedAlarm')}: {selectedEventDetail.title}</p> : null}
       {isEditorOpen ? <MetadataSectionEditor section={editingSection} queries={queries} onSave={(section) => void saveSection(section)} onClose={() => { setIsEditorOpen(false); setEditingSection(undefined) }} /> : null}
-      <ConfirmDialog isOpen={Boolean(pendingConfirmation)} title={t('cameraFocus.metadataPanel.confirmTitle')} message={pendingConfirmation?.type === 'restore' ? t('cameraFocus.metadataPanel.restoreConfirm') : t('cameraFocus.metadataPanel.removeConfirm', { title: pendingConfirmation?.section.title ?? '' })} confirmLabel={t('common.confirm')} variant={pendingConfirmation?.type === 'remove' ? 'danger' : 'default'} busy={isConfirming} onConfirm={confirmPendingAction} onCancel={() => { if (!isConfirming) setPendingConfirmation(null) }} />
+      <ConfirmDialog isOpen={Boolean(pendingConfirmation)} title={t('cameraFocus.metadataPanel.confirmTitle')} message={t('cameraFocus.metadataPanel.removeConfirm', { title: pendingConfirmation?.section.title ?? '' })} confirmLabel={t('common.confirm')} variant="danger" busy={isConfirming} onConfirm={confirmPendingAction} onCancel={() => { if (!isConfirming) setPendingConfirmation(null) }} />
     </aside>
   )
 }

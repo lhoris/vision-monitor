@@ -112,9 +112,17 @@
 }
 
 .vm-signup-link {
-  align-self: center;
   font-weight: 700;
   text-decoration: underline;
+}
+
+.vm-signup-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
 }
 
 .vm-signup-modal {

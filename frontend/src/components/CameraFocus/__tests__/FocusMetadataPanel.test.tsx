@@ -111,17 +111,6 @@ describe('FocusMetadataPanel', () => {
     expect(restoredSections[0]).toHaveAttribute('data-testid', 'metadata-section-status')
   })
 
-  it('asks for confirmation before restoring the default profile', async () => {
-    localStorage.setItem('authUsername', 'tester1')
-    renderPanel({ camera })
-
-    fireEvent.click(screen.getByRole('button', { name: '기본값' }))
-
-    expect(screen.getByRole('dialog')).toHaveTextContent('현재 영상소스의 메타데이터 섹션 설정을 기본값으로 복원하시겠습니까?')
-    fireEvent.click(screen.getByRole('button', { name: '취소' }))
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-  })
-
   it('asks for confirmation before deleting a section', () => {
     renderPanel({ camera })
 
