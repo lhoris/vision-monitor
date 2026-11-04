@@ -145,6 +145,7 @@
     "statusChanged": "Changed the status of {{count}} users.",
     "statusChangeError": "Unable to change user status.",
     "passwordResetSuccess": "The password was reset. The user must set a new password at next login.",
+    "passwordResetError": "Unable to reset the password.",
     "approvalSuccess": "The signup request was approved.",
     "rejectionSuccess": "The signup request was rejected.",
     "approvalTitle": "Approve signup request",

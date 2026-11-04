@@ -78,9 +78,15 @@ export function UserManagement() {
   }
 
   const resetPassword = async (userId: number) => {
-    await userManagementService.resetPassword(userId)
-    setNotice(t('userManagement.passwordResetSuccess'))
-    await loadUsers()
+    setError('')
+    try {
+      await userManagementService.resetPassword(userId)
+      setNotice(t('userManagement.passwordResetSuccess'))
+      await loadUsers()
+    } catch (resetError) {
+      setError(resetError instanceof Error ? resetError.message : t('userManagement.passwordResetError'))
+      throw resetError
+    }
   }
 
   const approveUser = async (userId: number) => {

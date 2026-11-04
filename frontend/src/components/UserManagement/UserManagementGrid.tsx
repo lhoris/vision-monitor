@@ -1069,10 +1069,15 @@ export function UserManagementGrid({
                         username: row.username || '-',
                         name: row.name || '-',
                       }),
+                      variant: 'danger',
                     }).then((confirmed) => {
                       if (!confirmed || !row.id || !onResetPassword) return
                       setSaving(true)
-                      void onResetPassword(row.id).finally(() => setSaving(false))
+                      void onResetPassword(row.id)
+                        .catch((resetError) => {
+                          setLocalError(resetError instanceof Error ? resetError.message : t('userManagement.passwordResetError'))
+                        })
+                        .finally(() => setSaving(false))
                     })
                     return
                   }}>

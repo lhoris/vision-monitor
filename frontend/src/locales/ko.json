@@ -145,6 +145,7 @@
     "statusChanged": "{{count}}명의 사용자 상태를 변경했습니다.",
     "statusChangeError": "사용자 상태 변경에 실패했습니다.",
     "passwordResetSuccess": "비밀번호가 초기화되었습니다. 다음 로그인 시 새 비밀번호를 설정해야 합니다.",
+    "passwordResetError": "비밀번호 초기화에 실패했습니다.",
     "approvalSuccess": "가입 신청을 승인했습니다.",
     "rejectionSuccess": "가입 신청을 반려했습니다.",
     "approvalTitle": "가입 승인 확인",
