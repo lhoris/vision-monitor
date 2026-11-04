@@ -144,7 +144,7 @@
     "saveError": "Unable to save users.",
     "statusChanged": "Changed the status of {{count}} users.",
     "statusChangeError": "Unable to change user status.",
-    "passwordResetSuccess": "The password was reset. The user must set a new password at next login.",
+    "passwordResetSuccess": "The password was reset.\nThe user must set a new password at next login.",
     "passwordResetError": "Unable to reset the password.",
     "resetPasswordSelfDisabled": "You cannot reset the password of the currently signed-in account.",
     "approvalSuccess": "The signup request was approved.",

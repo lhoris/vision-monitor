@@ -139,7 +139,7 @@ export function UserManagement() {
 
       {notice && (
         <div role="status" className="animate-toast-in-out fixed right-6 top-20 z-50 flex max-w-sm items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-200">
-          <span>{notice}</span>
+          <span className="whitespace-pre-line">{notice}</span>
           <button type="button" onClick={() => setNotice('')} className="text-emerald-700 hover:text-emerald-950 dark:text-emerald-200 dark:hover:text-white" aria-label={t('userManagement.closeNotice')}>×</button>
         </div>
       )}

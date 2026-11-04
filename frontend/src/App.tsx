@@ -41,6 +41,7 @@ export function AppRoutes() {
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
   const passwordChangeRequired = useAppSelector((state) => state.auth.passwordChangeRequired)
   const [sessionExpired, setSessionExpired] = useState(false)
+  const [passwordChangeNotice, setPasswordChangeNotice] = useState('')
   const eventFetchStarted = useRef(false)
   const canAccessAdminRoutes = hasAdminAccess(user)
 
@@ -90,6 +91,12 @@ export function AppRoutes() {
       void dispatch(validateAuthSession())
     }
   }, [dispatch, isAuthenticated, sessionStatus])
+
+  useEffect(() => {
+    if (!passwordChangeNotice) return undefined
+    const timeoutId = window.setTimeout(() => setPasswordChangeNotice(''), 3000)
+    return () => window.clearTimeout(timeoutId)
+  }, [passwordChangeNotice])
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -221,12 +228,13 @@ export function AppRoutes() {
       />
       <Route path="*" element={<Navigate to="/live" replace />} />
       </Routes>
-      <PasswordChangeRequiredModal isOpen={passwordChangeRequired} />
+      {passwordChangeNotice ? <div role="status" className="animate-toast-in-out fixed right-6 top-20 z-[90] rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-800 dark:bg-emerald-950/90 dark:text-emerald-200">{passwordChangeNotice}</div> : null}
+      <PasswordChangeRequiredModal isOpen={passwordChangeRequired} onCompleted={() => setPasswordChangeNotice('비밀번호가 변경되었습니다.')} />
     </>
   )
 }
 
-function PasswordChangeRequiredModal({ isOpen }: { isOpen: boolean }) {
+function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean; onCompleted: () => void }) {
   const dispatch = useAppDispatch()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -249,6 +257,7 @@ function PasswordChangeRequiredModal({ isOpen }: { isOpen: boolean }) {
       dispatch(passwordChangeCompleted())
       setNewPassword('')
       setConfirmPassword('')
+      onCompleted()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : '비밀번호 변경에 실패했습니다.')
     } finally {
