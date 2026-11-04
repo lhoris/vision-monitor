@@ -257,9 +257,11 @@ public class AuthService {
     }
 
     private boolean canLogin(UserAccount user) {
-        return Boolean.TRUE.equals(user.getEnabled())
+        boolean enabled = user.getEnabled() == null || user.getEnabled();
+        String employmentStatus = user.getEmploymentStatus() == null ? EMPLOYED : user.getEmploymentStatus();
+        return enabled
                 && ACTIVE.equalsIgnoreCase(user.getAccountStatus())
-                && EMPLOYED.equalsIgnoreCase(user.getEmploymentStatus())
+                && EMPLOYED.equalsIgnoreCase(employmentStatus)
                 && !"Y".equalsIgnoreCase(user.getDataEndStatus());
     }
 

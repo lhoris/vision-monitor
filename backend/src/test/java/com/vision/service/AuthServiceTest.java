@@ -131,6 +131,22 @@ class AuthServiceTest {
     }
 
     @Test
+    void allowsResetAccountLoadedWithoutTransientStatusValues() {
+        UserAccount account = UserAccount.builder()
+                .id(1L)
+                .username("admin")
+                .role("ADMIN")
+                .accountStatus("active")
+                .build();
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(account));
+
+        LoginResponse response = service.login(new LoginRequest("admin", "anything"));
+
+        assertEquals("admin", response.user().username());
+        assertTrue(response.passwordChangeRequired());
+    }
+
+    @Test
     void migratesLegacyFoundationPasswordWhenUsernameIsUsed() {
         UserAccount account = user("pd0a5661", "USER");
         account.setPasswordHash("$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a");
