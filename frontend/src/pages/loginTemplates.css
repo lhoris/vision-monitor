@@ -193,6 +193,55 @@
   color: #fb7185;
 }
 
+.vm-signup-required {
+  color: #fb7185;
+}
+
+.vm-signup-field-control {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.vm-signup-field-control input {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.vm-signup-field-control button {
+  flex: 0 0 auto;
+  border: 1px solid #38bdf8;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: transparent;
+  color: #7dd3fc;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vm-signup-field-control button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.vm-signup-check-success,
+.vm-signup-check-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.vm-signup-check-success {
+  color: #4ade80;
+}
+
+.vm-signup-check-error {
+  color: #fb7185;
+}
+
 .vm-signup-field input {
   box-sizing: border-box;
   display: block;

@@ -20,6 +20,9 @@ import com.vision.dto.MyProfileDto;
 import com.vision.dto.UpdateContactRequest;
 import com.vision.dto.SignupRequest;
 import com.vision.dto.UserAccountDto;
+import com.vision.dto.SignupAvailabilityDto;
+import com.vision.dto.SignupAdminContactDto;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,6 +39,19 @@ public class AuthController {
     @PostMapping("/signup")
     public ApiResponse<UserAccountDto> signup(@RequestBody SignupRequest request) {
         return ApiResponse.success(authService.signup(request));
+    }
+
+    @GetMapping("/signup/check")
+    public ApiResponse<SignupAvailabilityDto> checkSignupAvailability(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email
+    ) {
+        return ApiResponse.success(authService.checkSignupAvailability(username, email));
+    }
+
+    @GetMapping("/signup/contact")
+    public ApiResponse<SignupAdminContactDto> getSignupAdminContact() {
+        return ApiResponse.success(authService.getSignupAdminContact());
     }
 
     @PostMapping("/signup/reapply")

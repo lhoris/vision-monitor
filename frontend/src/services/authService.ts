@@ -18,6 +18,17 @@ export interface SignupInput {
   position?: string
 }
 
+export interface SignupAvailability {
+  usernameAvailable: boolean
+  emailAvailable: boolean
+}
+
+export interface SignupAdminContact {
+  name: string
+  email?: string | null
+  phone?: string | null
+}
+
 export interface LoginResult {
   user: User
   token: string
@@ -40,6 +51,18 @@ interface LoginApiResponse {
 }
 
 class AuthService {
+  async checkSignupAvailability(username?: string, email?: string): Promise<SignupAvailability> {
+    const response = await apiClient.get<SignupAvailability>('/auth/signup/check', { params: { username, email } })
+    const result = getResponseData<SignupAvailability | null>(response, null)
+    if (!result) throw new Error('중복 확인에 실패했습니다.')
+    return result
+  }
+
+  async getSignupAdminContact(): Promise<SignupAdminContact | null> {
+    const response = await apiClient.get<SignupAdminContact | null>('/auth/signup/contact')
+    return getResponseData<SignupAdminContact | null>(response, null)
+  }
+
   async signup(input: SignupInput): Promise<{ username: string; accountStatus: string }> {
     const response = await apiClient.post<{ username: string; accountStatus: string }>('/auth/signup', input)
     const result = getResponseData<{ username: string; accountStatus: string } | null>(response, null)

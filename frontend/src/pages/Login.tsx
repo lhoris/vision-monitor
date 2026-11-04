@@ -22,6 +22,13 @@ export const ACTIVE_LOGIN_TEMPLATE = 2 as LoginTemplateId
 const DEMO_USERNAME = 'tester'
 const DEMO_PASSWORD = 'tester1@#'
 
+function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`
+}
+
 interface LoginFormProps {
   username: string
   password: string
@@ -144,22 +151,51 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
-  const update = (field: keyof SignupInput, value: string) => setInput((current) => ({ ...current, [field]: value }))
+  const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
+  const [emailCheck, setEmailCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
+  const update = (field: keyof SignupInput, value: string) => {
+    setInput((current) => ({ ...current, [field]: value }))
+    if (field === 'username') setUsernameCheck('idle')
+    if (field === 'email') setEmailCheck('idle')
+  }
+
+  const checkAvailability = async (field: 'username' | 'email') => {
+    const value = input[field]?.trim() ?? ''
+    if (!value) {
+      setError(field === 'username' ? '사용자 ID를 입력하세요.' : '이메일을 입력하세요.')
+      return
+    }
+    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setError('올바른 이메일 주소를 입력하세요.')
+      return
+    }
+    setError('')
+    if (field === 'username') setUsernameCheck('checking')
+    else setEmailCheck('checking')
+    try {
+      const result = await authService.checkSignupAvailability(field === 'username' ? value : undefined, field === 'email' ? value : undefined)
+      const available = field === 'username' ? result.usernameAvailable : result.emailAvailable
+      if (field === 'username') setUsernameCheck(available ? 'available' : 'unavailable')
+      else setEmailCheck(available ? 'available' : 'unavailable')
+    } catch (reason) {
+      if (field === 'username') setUsernameCheck('idle')
+      else setEmailCheck('idle')
+      setError(reason instanceof Error ? reason.message : '중복 확인에 실패했습니다.')
+    }
+  }
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError('')
+    if (usernameCheck !== 'available') {
+      setError('사용자 ID 중복 확인을 완료하세요.')
+      return
+    }
+    if (emailCheck !== 'available') {
+      setError('이메일 중복 확인을 완료하세요.')
+      return
+    }
     setSaving(true)
-    if (input.password.length < 8) {
-      setError('\uBE44\uBC00\uBC88\uD638\uB294 8\uC790 \uC774\uC0C1\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4.')
-      setSaving(false)
-      return
-    }
-    if (input.password !== input.passwordConfirm) {
-      setError('\uBE44\uBC00\uBC88\uD638\uC640 \uBE44\uBC00\uBC88\uD638 \uD655\uC778\uC774 \uC77C\uCE58\uD558\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4.')
-      setSaving(false)
-      return
-    }
     if (input.password.length < 8) {
       setError('비밀번호는 8자 이상이어야 합니다.')
       setSaving(false)
@@ -172,7 +208,11 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     }
     try {
       await authService.signup(input)
-      onSuccess('가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.')
+      const admin = await authService.getSignupAdminContact().catch(() => null)
+      const adminContact = admin
+        ? ` 승인 담당자: ${admin.name}${admin.email ? ` / ${admin.email}` : ''}${admin.phone ? ` / ${admin.phone}` : ''}`
+        : ''
+      onSuccess(`가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.${adminContact}`)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : '회원가입 신청에 실패했습니다.')
     } finally {
@@ -185,7 +225,13 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     ['phone', '연락처', false], ['department', '부서', false], ['position', '직책', false],
   ]
 
-  return <div className="vm-signup-modal" role="presentation"><form className="vm-signup-card" onSubmit={submit}><div className="vm-signup-header"><h2>회원가입</h2><button type="button" onClick={onClose} aria-label="닫기">×</button></div><p className="vm-signup-description">가입 신청 후 관리자 승인 절차가 진행됩니다.</p><div className="vm-signup-grid">{fields.map(([field, label, required]) => <label key={field} className="vm-signup-field">{label}{required ? <span> *</span> : null}<input value={input[field] ?? ''} required={required} onChange={(event) => update(field, event.target.value)} /></label>)}<label className="vm-signup-field">비밀번호 *<input type="password" value={input.password} required onChange={(event) => update('password', event.target.value)} /></label><label className="vm-signup-field">비밀번호 확인 *<input type="password" value={input.passwordConfirm} required onChange={(event) => update('passwordConfirm', event.target.value)} /></label></div>{error ? <p className="vm-login-error" role="alert">{error}</p> : null}<div className="vm-signup-actions"><button type="button" onClick={onClose}>취소</button><button type="submit" disabled={saving}>{saving ? '신청 중...' : '가입 신청'}</button></div></form></div>
+  const renderField = ([field, label, required]: [keyof SignupInput, string, boolean]) => {
+    const checkable = field === 'username' || field === 'email'
+    const checkState = field === 'username' ? usernameCheck : emailCheck
+    return <div key={field} className="vm-signup-field"><label htmlFor={`signup-${field}`}>{label}{required ? <span className="vm-signup-required"> *</span> : null}</label><div className={checkable ? 'vm-signup-field-control' : undefined}><input id={`signup-${field}`} type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} inputMode={field === 'phone' ? 'numeric' : undefined} placeholder={field === 'phone' ? '010-1234-5678' : undefined} maxLength={field === 'phone' ? 13 : undefined} value={input[field] ?? ''} required={required} onChange={(event) => update(field, field === 'phone' ? formatPhoneNumber(event.target.value) : event.target.value)} />{checkable ? <button type="button" onClick={() => void checkAvailability(field)} disabled={checkState === 'checking'}>{checkState === 'checking' ? '확인 중...' : '중복 확인'}</button> : null}</div>{checkState === 'available' ? <small className="vm-signup-check-success">사용할 수 있습니다.</small> : null}{checkState === 'unavailable' ? <small className="vm-signup-check-error">이미 사용 중입니다.</small> : null}</div>
+  }
+
+  return <div className="vm-signup-modal" role="presentation"><form className="vm-signup-card" onSubmit={submit}><div className="vm-signup-header"><h2>회원가입</h2><button type="button" onClick={onClose} aria-label="닫기">×</button></div><p className="vm-signup-description">가입 신청 후 관리자 승인 절차가 진행됩니다.</p><div className="vm-signup-grid">{fields.map(renderField)}<label className="vm-signup-field" htmlFor="signup-password">비밀번호<span className="vm-signup-required"> *</span><input id="signup-password" type="password" value={input.password} required onChange={(event) => update('password', event.target.value)} /></label><label className="vm-signup-field" htmlFor="signup-password-confirm">비밀번호 확인<span className="vm-signup-required"> *</span><input id="signup-password-confirm" type="password" value={input.passwordConfirm} required onChange={(event) => update('passwordConfirm', event.target.value)} /></label></div>{error ? <p className="vm-login-error" role="alert">{error}</p> : null}<div className="vm-signup-actions"><button type="button" onClick={onClose}>취소</button><button type="submit" disabled={saving}>{saving ? '신청 중...' : '가입 신청'}</button></div></form></div>
 }
 
 function Type1Login(props: LoginFormProps) {

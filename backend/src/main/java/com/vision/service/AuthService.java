@@ -8,6 +8,8 @@ import com.vision.dto.MyProfileDto;
 import com.vision.dto.UpdateContactRequest;
 import com.vision.dto.SignupRequest;
 import com.vision.dto.UserAccountDto;
+import com.vision.dto.SignupAvailabilityDto;
+import com.vision.dto.SignupAdminContactDto;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -97,6 +99,27 @@ public class AuthService {
 
     public void logout(String token) {
         sessionService.revokeSession(token);
+    }
+
+    @Transactional(readOnly = true)
+    public SignupAvailabilityDto checkSignupAvailability(String username, String email) {
+        String normalizedUsername = normalize(username);
+        String normalizedEmail = normalizeOptional(email);
+        return new SignupAvailabilityDto(
+                normalizedUsername == null || !userRepository.existsByUsernameIgnoreCase(normalizedUsername),
+                normalizedEmail == null || !userRepository.existsByEmailIgnoreCase(normalizedEmail)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public SignupAdminContactDto getSignupAdminContact() {
+        return userRepository.findFirstActiveAdministrator()
+                .map(user -> new SignupAdminContactDto(
+                        user.getName() == null || user.getName().isBlank() ? user.getUsername() : user.getName(),
+                        user.getEmail(),
+                        user.getPhone()
+                ))
+                .orElse(null);
     }
 
     @Transactional
@@ -285,6 +308,10 @@ public class AuthService {
         String email = normalizeOptional(request.email());
         if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new ApiException("VALIDATION_ERROR", "올바른 이메일을 입력해야 합니다.");
+        }
+        String phone = normalizeOptional(request.phone());
+        if (phone != null && !phone.matches("^010-\\d{4}-\\d{4}$")) {
+            throw new ApiException("VALIDATION_ERROR", "연락처는 010-1234-5678 형식으로 입력해야 합니다.");
         }
     }
 
