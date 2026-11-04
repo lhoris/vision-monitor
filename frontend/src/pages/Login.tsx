@@ -22,6 +22,12 @@ export const ACTIVE_LOGIN_TEMPLATE = 2 as LoginTemplateId
 const DEMO_USERNAME = 'tester'
 const DEMO_PASSWORD = 'tester1@#'
 
+function getLoginErrorMessage(error: unknown): string {
+  const message = typeof error === 'string' ? error : error instanceof Error ? error.message : ''
+  if (message === 'Invalid username or password') return '사용자 ID 또는 비밀번호가 올바르지 않습니다.'
+  return message || '로그인에 실패했습니다.'
+}
+
 function formatPhoneNumber(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 11)
   if (digits.length <= 3) return digits
@@ -442,7 +448,7 @@ export const Login: React.FC = () => {
         navigate('/')
       }
     } catch (loginError) {
-      setError(typeof loginError === 'string' ? loginError : 'Invalid username or password')
+      setError(getLoginErrorMessage(loginError))
     }
   }
 

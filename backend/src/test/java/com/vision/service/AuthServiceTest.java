@@ -69,8 +69,8 @@ class AuthServiceTest {
 
         ApiException exception = assertThrows(ApiException.class, () -> service.login(new LoginRequest("admin", "wrong")));
 
-        assertEquals("AUTH_FAILED", exception.getCode());
-        assertEquals("Invalid username or password", exception.getMessage());
+        assertEquals("LOGIN_PASSWORD_INVALID", exception.getCode());
+        assertEquals("비밀번호가 올바르지 않습니다.", exception.getMessage());
     }
 
     @Test

@@ -76,7 +76,7 @@ public class AuthService {
         }
 
         UserAccount user = userRepository.findByUsernameIgnoreCase(username)
-                .orElseThrow(this::authFailed);
+                .orElseThrow(this::usernameNotFound);
         if (!canLogin(user)) throw loginStatusError(user);
         boolean passwordChangeRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
         if (!passwordChangeRequired) {
@@ -85,7 +85,7 @@ public class AuthService {
                     && passwordEncoder.matches(password, user.getPasswordHash());
             boolean legacyUsernamePassword = LEGACY_FOUNDATION_PASSWORD_HASH.equals(user.getPasswordHash())
                     && username.equals(password);
-            if (!passwordMatches && !legacyUsernamePassword) throw authFailed();
+            if (!passwordMatches && !legacyUsernamePassword) throw passwordMismatch();
             if (legacyUsernamePassword) {
                 user.setPasswordHash(passwordEncoder.encode(username));
                 userRepository.save(user);
@@ -265,6 +265,14 @@ public class AuthService {
 
     private ApiException authFailed() {
         return new ApiException(AUTH_FAILED, AUTH_FAILED_MESSAGE);
+    }
+
+    private ApiException usernameNotFound() {
+        return new ApiException("LOGIN_USERNAME_NOT_FOUND", "사용자 ID를 찾을 수 없습니다.");
+    }
+
+    private ApiException passwordMismatch() {
+        return new ApiException("LOGIN_PASSWORD_INVALID", "비밀번호가 올바르지 않습니다.");
     }
 
     private ApiException loginStatusError(UserAccount user) {
