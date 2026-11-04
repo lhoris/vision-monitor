@@ -24,11 +24,13 @@ interface AuthState {
   loading: boolean
   error: string | null
   sessionStatus: 'idle' | 'checking' | 'valid' | 'invalid'
+  passwordChangeRequired: boolean
 }
 
 const AUTH_TOKEN_KEY = 'authToken'
 const AUTH_USERNAME_KEY = 'authUsername'
 const AUTH_USER_KEY = 'authUser'
+const PASSWORD_CHANGE_REQUIRED_KEY = 'passwordChangeRequired'
 
 function isStorageAvailable(): boolean {
   return typeof window !== 'undefined' && Boolean(window.localStorage)
@@ -40,6 +42,7 @@ function removeStoredAuth(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY)
   localStorage.removeItem(AUTH_USERNAME_KEY)
   localStorage.removeItem(AUTH_USER_KEY)
+  localStorage.removeItem(PASSWORD_CHANGE_REQUIRED_KEY)
 }
 
 function readStoredUser(): User | null {
@@ -85,6 +88,7 @@ function createInitialState(): AuthState {
       loading: false,
       error: null,
       sessionStatus: 'invalid',
+      passwordChangeRequired: false,
     }
   }
 
@@ -94,6 +98,7 @@ function createInitialState(): AuthState {
     loading: false,
     error: null,
     sessionStatus: 'idle',
+    passwordChangeRequired: localStorage.getItem(PASSWORD_CHANGE_REQUIRED_KEY) === 'true',
   }
 }
 
@@ -109,6 +114,7 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem(AUTH_TOKEN_KEY, result.token)
       localStorage.setItem(AUTH_USERNAME_KEY, result.user.username)
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(result.user))
+      localStorage.setItem(PASSWORD_CHANGE_REQUIRED_KEY, String(Boolean(result.passwordChangeRequired)))
       void dispatch(fetchCommonCodes())
       return result
     } catch (error) {
@@ -162,10 +168,15 @@ const authSlice = createSlice({
       state.user = null
       state.error = null
       state.sessionStatus = 'invalid'
+      state.passwordChangeRequired = false
       removeStoredAuth()
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload
+    },
+    passwordChangeCompleted: (state) => {
+      state.passwordChangeRequired = false
+      if (isStorageAvailable()) localStorage.removeItem(PASSWORD_CHANGE_REQUIRED_KEY)
     },
   },
   extraReducers: (builder) => {
@@ -178,8 +189,9 @@ const authSlice = createSlice({
         state.loading = false
         state.isAuthenticated = true
         state.user = action.payload.user
-        state.error = null
-        state.sessionStatus = 'valid'
+      state.error = null
+      state.sessionStatus = 'valid'
+        state.passwordChangeRequired = Boolean(action.payload.passwordChangeRequired)
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false
@@ -189,6 +201,7 @@ const authSlice = createSlice({
           ? action.payload
           : 'Invalid username or password'
         state.sessionStatus = 'invalid'
+        state.passwordChangeRequired = false
       })
       .addCase(validateAuthSession.pending, (state) => {
         state.sessionStatus = 'checking'
@@ -203,6 +216,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.user = null
         state.sessionStatus = 'invalid'
+        state.passwordChangeRequired = false
         state.error = typeof action.payload === 'string' ? action.payload : null
       })
       .addCase(logoutUser.fulfilled, (state) => {
@@ -210,9 +224,10 @@ const authSlice = createSlice({
         state.user = null
         state.error = null
         state.sessionStatus = 'invalid'
+        state.passwordChangeRequired = false
       })
   },
 })
 
-export const { logout, setLoading } = authSlice.actions
+export const { logout, setLoading, passwordChangeCompleted } = authSlice.actions
 export default authSlice.reducer

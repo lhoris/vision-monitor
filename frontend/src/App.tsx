@@ -19,12 +19,13 @@ import { store } from '@/store'
 import { useEffect, useRef, useState } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
 import { addEvent, fetchEvents } from '@/store/slices/eventSlice'
-import { hasAdminAccess, logout, validateAuthSession } from '@/store/slices/authSlice'
+import { hasAdminAccess, logout, passwordChangeCompleted, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n, { getUserLanguage } from '@/i18n'
 import { Modal } from '@/components/Common'
 import { SESSION_EXPIRED_EVENT } from '@/services/api'
 import { subscribeToAlarmStream } from '@/services/alarmSseService'
+import { authService } from '@/services/authService'
 import { useTranslation } from 'react-i18next'
 import '@/styles/global.css'
 import '@/styles/custom-theme.css'
@@ -38,6 +39,7 @@ export function AppRoutes() {
   const themeMode = useAppSelector((state) => state.ui.themeMode)
   const commonCodeStatus = useAppSelector((state) => state.commonCode.status)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
+  const passwordChangeRequired = useAppSelector((state) => state.auth.passwordChangeRequired)
   const [sessionExpired, setSessionExpired] = useState(false)
   const eventFetchStarted = useRef(false)
   const canAccessAdminRoutes = hasAdminAccess(user)
@@ -151,7 +153,8 @@ export function AppRoutes() {
   }
 
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route
         path="/"
         element={<Navigate to="/live" replace />}
@@ -217,8 +220,43 @@ export function AppRoutes() {
         )}
       />
       <Route path="*" element={<Navigate to="/live" replace />} />
-    </Routes>
+      </Routes>
+      <PasswordChangeRequiredModal isOpen={passwordChangeRequired} />
+    </>
   )
+}
+
+function PasswordChangeRequiredModal({ isOpen }: { isOpen: boolean }) {
+  const dispatch = useAppDispatch()
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function submit() {
+    setError('')
+    if (newPassword.length < 8) {
+      setError('새 비밀번호는 8자 이상이어야 합니다.')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setError('새 비밀번호가 일치하지 않습니다.')
+      return
+    }
+    setSaving(true)
+    try {
+      await authService.changePassword(newPassword)
+      dispatch(passwordChangeCompleted())
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '비밀번호 변경에 실패했습니다.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return <Modal isOpen={isOpen} onClose={() => undefined} title="비밀번호 변경" className="max-w-md"><p className="text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정해 주세요.</p><div className="mt-4 space-y-3"><input aria-label="새 비밀번호" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="새 비밀번호" className="w-full border px-3 py-2 dark:bg-slate-900" /><input aria-label="새 비밀번호 확인" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" className="w-full border px-3 py-2 dark:bg-slate-900" />{error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}<button type="button" onClick={() => void submit()} disabled={saving} className="w-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? '저장 중...' : '비밀번호 저장'}</button></div></Modal>
 }
 
 export function App() {
