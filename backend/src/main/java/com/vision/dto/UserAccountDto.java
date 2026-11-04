@@ -34,7 +34,8 @@ public record UserAccountDto(
         LocalDateTime accountStatusChangedAt,
         Long accountStatusChangedBy,
         String accountStatusReason,
-        LocalDateTime appliedAt
+        LocalDateTime appliedAt,
+        boolean passwordResetRequired
 ) {
 
     public static UserAccountDto from(UserAccount user) {
@@ -85,6 +86,7 @@ public record UserAccountDto(
                 .accountStatusChangedBy(user.getAccountStatusChangedBy())
                 .accountStatusReason(user.getAccountStatusReason())
                 .appliedAt(user.getAppliedAt())
+                .passwordResetRequired(user.getPasswordHash() == null || user.getPasswordHash().isBlank())
                 .build();
     }
 }

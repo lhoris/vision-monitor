@@ -35,6 +35,7 @@ export interface UserAccount {
   employeeNo?: string
   remarks?: string
   dataEndStatus?: 'N' | 'Y'
+  passwordResetRequired?: boolean
 }
 
 export interface UserManagementFilters {
