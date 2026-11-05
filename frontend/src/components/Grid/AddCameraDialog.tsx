@@ -182,6 +182,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                       <button
                         key={`video-source-${source.id}`}
                         type="button"
+                        data-onboarding={!alreadyAdded ? 'live-video-source' : undefined}
                         onClick={() => {
                           if (!alreadyAdded) {
                             handleSelectVideoSource(source)

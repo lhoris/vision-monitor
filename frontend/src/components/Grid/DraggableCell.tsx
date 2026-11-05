@@ -346,6 +346,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   ) : (
     <button
       data-testid="add-camera-tile"
+      data-onboarding="live-empty-cell"
       style={style}
       onClick={onAddCamera}
       onDragOver={handleDragOver}

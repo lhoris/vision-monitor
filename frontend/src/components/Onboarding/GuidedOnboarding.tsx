@@ -17,8 +17,9 @@ export function resolveOnboardingRoute(pathname: string): OnboardingRoute {
 
 export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): boolean {
   stopGuidedOnboarding()
-  const steps = getOnboardingSteps(screen, t).filter((step) => document.querySelector(step.element))
-  if (!steps.length) return false
+  const configuredSteps = getOnboardingSteps(screen, t)
+  if (!configuredSteps.some((step) => document.querySelector(step.element))) return false
+  const steps = configuredSteps.filter((step) => step.allowMissing || document.querySelector(step.element))
 
   const onboarding = driver({
     showProgress: true,
@@ -31,6 +32,9 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
     progressText: t('onboarding.progress'),
     steps: steps.map((step) => ({
       element: step.element,
+      skipMissingElement: step.allowMissing,
+      waitForElement: step.waitForElement,
+      advanceOnClick: step.advanceOnClick,
       popover: {
         title: step.title,
         description: step.description,
