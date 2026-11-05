@@ -35,7 +35,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         title: step.title,
         description: step.description,
         side: step.side,
-        align: 'center' as const,
+        align: step.align ?? 'center',
       },
     })),
   })
