@@ -85,6 +85,18 @@ class AuthSessionServiceTest {
     }
 
     @Test
+    void resolvesSessionForResetAccountWithoutTransientStatusValues() {
+        user.setEnabled(null);
+        user.setEmploymentStatus(null);
+        String token = service.createSession(user);
+        AuthSession stored = savedSession();
+        when(sessionRepository.findByTokenHashAndDataEndStatusAndRevokedTimestampIsNullAndExpiresTimestampAfter(
+                eq(stored.getTokenHash()), eq("N"), any(LocalDateTime.class))).thenReturn(Optional.of(stored));
+
+        assertThat(service.resolveUser(token)).isPresent();
+    }
+
+    @Test
     void rejectsExpiredAndRevokedSessions() {
         String token = service.createSession(user);
         AuthSession stored = savedSession();

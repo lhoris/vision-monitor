@@ -119,9 +119,11 @@ public class AuthSessionService {
     }
 
     private boolean canLogin(UserAccount user) {
-        return Boolean.TRUE.equals(user.getEnabled())
+        boolean enabled = user.getEnabled() == null || user.getEnabled();
+        String employmentStatus = user.getEmploymentStatus() == null ? "employed" : user.getEmploymentStatus();
+        return enabled
                 && "active".equalsIgnoreCase(user.getAccountStatus())
-                && "employed".equalsIgnoreCase(user.getEmploymentStatus())
+                && "employed".equalsIgnoreCase(employmentStatus)
                 && !"Y".equalsIgnoreCase(user.getDataEndStatus());
     }
 
