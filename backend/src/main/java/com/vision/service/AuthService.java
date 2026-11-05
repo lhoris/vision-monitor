@@ -31,9 +31,13 @@ public class AuthService {
     private static final String ACTIVE = "active";
     private static final String PENDING = "pending";
     private static final String REJECTED = "rejected";
+    private static final String INACTIVE = "inactive";
+    private static final String LOCKED = "locked";
+    private static final String DISABLED = "disabled";
     private static final String EMPLOYED = "employed";
+    private static final String LEAVE = "leave";
+    private static final String RETIRED = "retired";
     private static final String AUTH_FAILED = "AUTH_FAILED";
-    private static final String AUTH_FAILED_MESSAGE = "Invalid username or password";
     private static final String LEGACY_FOUNDATION_PASSWORD_HASH = "$2a$10$wuWXa/hwpl7jxTu1D6LTWu0GjOiIi.eKs0Pepl5tfBmGhEUZ96Z2a";
 
     private final UserAccountRepository userRepository;
@@ -77,7 +81,7 @@ public class AuthService {
 
         UserAccount user = userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(this::usernameNotFound);
-        if (!canLogin(user)) throw loginStatusError(user);
+        validateLoginAccount(user);
         boolean passwordChangeRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
         if (!passwordChangeRequired) {
             boolean passwordMatches = password != null
@@ -256,6 +260,48 @@ public class AuthService {
                         && !"Y".equalsIgnoreCase(auth.getDataEndStatus()));
     }
 
+    private void validateLoginAccount(UserAccount user) {
+        if ("Y".equalsIgnoreCase(user.getDataEndStatus())) {
+            throw new ApiException("ACCOUNT_DELETED", "삭제 처리된 계정입니다.");
+        }
+        if (Boolean.FALSE.equals(user.getEnabled())) {
+            throw new ApiException("ACCOUNT_DISABLED", "사용 중지된 계정입니다.");
+        }
+
+        String accountStatus = normalizeStatus(user.getAccountStatus(), ACTIVE);
+        switch (accountStatus) {
+            case PENDING -> throw new ApiException("ACCOUNT_PENDING", "관리자 승인 대기 중인 계정입니다.");
+            case REJECTED -> throw new ApiException("ACCOUNT_REJECTED", rejectionMessage(user));
+            case INACTIVE -> throw new ApiException("ACCOUNT_INACTIVE", "비활성화된 계정입니다.");
+            case LOCKED -> throw new ApiException("ACCOUNT_LOCKED", "잠긴 계정입니다.");
+            case DISABLED -> throw new ApiException("ACCOUNT_DISABLED", "사용 중지된 계정입니다.");
+            case ACTIVE -> { }
+            default -> throw new ApiException("ACCOUNT_INACTIVE", "현재 로그인할 수 없는 계정 상태입니다.");
+        }
+
+        String employmentStatus = normalizeStatus(user.getEmploymentStatus(), EMPLOYED);
+        if (LEAVE.equals(employmentStatus)) {
+            throw new ApiException("ACCOUNT_ON_LEAVE", "휴직 상태의 계정은 로그인할 수 없습니다.");
+        }
+        if (RETIRED.equals(employmentStatus)) {
+            throw new ApiException("ACCOUNT_RETIRED", "퇴직 상태의 계정은 로그인할 수 없습니다.");
+        }
+        if (!EMPLOYED.equals(employmentStatus)) {
+            throw new ApiException("ACCOUNT_INACTIVE", "현재 로그인할 수 없는 재직 상태입니다.");
+        }
+    }
+
+    private String normalizeStatus(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String rejectionMessage(UserAccount user) {
+        String reason = user.getAccountStatusReason();
+        return reason == null || reason.isBlank()
+                ? "가입 신청이 반려된 계정입니다."
+                : "가입 신청이 반려된 계정입니다. 사유: " + reason;
+    }
+
     private boolean canLogin(UserAccount user) {
         boolean enabled = user.getEnabled() == null || user.getEnabled();
         String employmentStatus = user.getEmploymentStatus() == null ? EMPLOYED : user.getEmploymentStatus();
@@ -266,7 +312,7 @@ public class AuthService {
     }
 
     private ApiException authFailed() {
-        return new ApiException(AUTH_FAILED, AUTH_FAILED_MESSAGE);
+        return new ApiException(AUTH_FAILED, "인증에 실패했습니다.");
     }
 
     private ApiException usernameNotFound() {
@@ -275,19 +321,6 @@ public class AuthService {
 
     private ApiException passwordMismatch() {
         return new ApiException("LOGIN_PASSWORD_INVALID", "비밀번호가 올바르지 않습니다.");
-    }
-
-    private ApiException loginStatusError(UserAccount user) {
-        if (PENDING.equalsIgnoreCase(user.getAccountStatus())) {
-            return new ApiException("ACCOUNT_PENDING", "관리자 승인 대기 중인 계정입니다.");
-        }
-        if (REJECTED.equalsIgnoreCase(user.getAccountStatus())) {
-            String reason = user.getAccountStatusReason();
-            return new ApiException("ACCOUNT_REJECTED", reason == null || reason.isBlank()
-                    ? "가입 신청이 반려되었습니다."
-                    : "가입 신청이 반려되었습니다: " + reason);
-        }
-        return authFailed();
     }
 
     private void validateSignup(SignupRequest request) {

@@ -160,7 +160,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void rejectsDisabledLockedAndRetiredAccountsWithGenericAuthFailure() {
+    void returnsSpecificMessagesForUnavailableAccountStates() {
         UserAccount disabled = user("disabled", "ADMIN");
         disabled.setPasswordHash(encoder.encode("admin"));
         disabled.setEnabled(false);
@@ -176,9 +176,16 @@ class AuthServiceTest {
         retired.setEmploymentStatus("retired");
         when(userRepository.findByUsernameIgnoreCase("retired")).thenReturn(Optional.of(retired));
 
-        assertEquals("AUTH_FAILED", assertThrows(ApiException.class, () -> service.login(new LoginRequest("disabled", "admin"))).getCode());
-        assertEquals("AUTH_FAILED", assertThrows(ApiException.class, () -> service.login(new LoginRequest("locked", "admin"))).getCode());
-        assertEquals("AUTH_FAILED", assertThrows(ApiException.class, () -> service.login(new LoginRequest("retired", "admin"))).getCode());
+        ApiException disabledException = assertThrows(ApiException.class, () -> service.login(new LoginRequest("disabled", "admin")));
+        ApiException lockedException = assertThrows(ApiException.class, () -> service.login(new LoginRequest("locked", "admin")));
+        ApiException retiredException = assertThrows(ApiException.class, () -> service.login(new LoginRequest("retired", "admin")));
+
+        assertEquals("ACCOUNT_DISABLED", disabledException.getCode());
+        assertEquals("사용 중지된 계정입니다.", disabledException.getMessage());
+        assertEquals("ACCOUNT_LOCKED", lockedException.getCode());
+        assertEquals("잠긴 계정입니다.", lockedException.getMessage());
+        assertEquals("ACCOUNT_RETIRED", retiredException.getCode());
+        assertEquals("퇴직 상태의 계정은 로그인할 수 없습니다.", retiredException.getMessage());
     }
 
     private UserAccount user(String username, String role) {

@@ -27,7 +27,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private HttpStatus resolveStatus(String code) {
         return switch (code) {
             case "UNAUTHENTICATED", "AUTH_FAILED", "AUTH_REQUIRED", "LOGIN_PASSWORD_INVALID" -> HttpStatus.UNAUTHORIZED;
-            case "FORBIDDEN" -> HttpStatus.FORBIDDEN;
+            case "FORBIDDEN", "ACCOUNT_DELETED", "ACCOUNT_PENDING", "ACCOUNT_REJECTED", "ACCOUNT_INACTIVE",
+                 "ACCOUNT_LOCKED", "ACCOUNT_DISABLED", "ACCOUNT_ON_LEAVE", "ACCOUNT_RETIRED" -> HttpStatus.FORBIDDEN;
             case "USER_NOT_FOUND", "LOGIN_USERNAME_NOT_FOUND", "LAYOUT_NOT_FOUND", "CODE_NOT_FOUND", "CODE_DETAIL_NOT_FOUND" -> HttpStatus.NOT_FOUND;
             case "DUPLICATE_USERNAME", "DUPLICATE_CODE", "DUPLICATE_CODE_VALUE", "LAST_ADMIN_RISK", "SELF_LOCKOUT_RISK", "VERSION_CONFLICT", "USERNAME_IMMUTABLE" -> HttpStatus.CONFLICT;
             case "VALIDATION_ERROR", "CONFIRMATION_REQUIRED", "INVALID_LAYOUT" -> HttpStatus.UNPROCESSABLE_ENTITY;
