@@ -238,6 +238,8 @@ function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean;
   const dispatch = useAppDispatch()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -265,7 +267,7 @@ function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean;
     }
   }
 
-  return <Modal isOpen={isOpen} onClose={() => undefined} title="비밀번호 변경" className="max-w-md"><p className="text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정해 주세요.</p><div className="mt-4 space-y-3"><input aria-label="새 비밀번호" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="새 비밀번호" className="w-full border px-3 py-2 dark:bg-slate-900" /><input aria-label="새 비밀번호 확인" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" className="w-full border px-3 py-2 dark:bg-slate-900" />{error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}<button type="button" onClick={() => void submit()} disabled={saving} className="w-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? '저장 중...' : '비밀번호 저장'}</button></div></Modal>
+  return <Modal isOpen={isOpen} onClose={() => undefined} dismissible={false} title="비밀번호 변경" className="max-w-md"><p className="text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정해 주세요.</p><div className="mt-4 space-y-3"><div className="relative"><input aria-label="새 비밀번호" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="새 비밀번호" className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" /><button type="button" aria-label={showNewPassword ? '새 비밀번호 숨기기' : '새 비밀번호 표시'} onClick={() => setShowNewPassword((visible) => !visible)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500">{showNewPassword ? '◉' : '◌'}</button></div><div className="relative"><input aria-label="새 비밀번호 확인" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" /><button type="button" aria-label={showConfirmPassword ? '새 비밀번호 확인 숨기기' : '새 비밀번호 확인 표시'} onClick={() => setShowConfirmPassword((visible) => !visible)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500">{showConfirmPassword ? '◉' : '◌'}</button></div>{error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}<button type="button" onClick={() => void submit()} disabled={saving} className="w-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? '저장 중...' : '비밀번호 저장'}</button></div></Modal>
 }
 
 export function App() {

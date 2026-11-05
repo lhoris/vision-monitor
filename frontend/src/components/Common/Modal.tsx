@@ -7,6 +7,7 @@ interface ModalProps {
   children: ReactNode
   className?: string
   bodyClassName?: string
+  dismissible?: boolean
 }
 
 export function Modal({
@@ -16,17 +17,18 @@ export function Modal({
   children,
   className,
   bodyClassName,
+  dismissible = true,
 }: ModalProps) {
   const titleId = useId()
 
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (dismissible && event.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [dismissible, isOpen, onClose])
 
   if (!isOpen) return null
 
@@ -36,7 +38,7 @@ export function Modal({
       <div
         role="presentation"
         className="absolute inset-0 bg-black opacity-50"
-        onClick={onClose}
+        onClick={dismissible ? onClose : undefined}
       />
 
       {/* Modal */}
@@ -59,7 +61,7 @@ export function Modal({
             <button
               onClick={onClose}
               aria-label="닫기"
-              className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+              className={`text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 ${dismissible ? '' : 'hidden'}`}
             >
               <svg
                 className="w-6 h-6"
