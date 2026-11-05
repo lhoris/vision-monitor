@@ -104,6 +104,23 @@ class UserManagementServiceTest {
         assertNull(target.getPasswordHash());
     }
 
+    @Test
+    void restoresDataEndStatusWhenDeletedUserIsChangedToAnotherAccountStatus() {
+        UserAccount admin = user(1L, "admin", "ADMIN");
+        UserAccount target = user(2L, "other-user", "USER");
+        target.setDataEndStatus("Y");
+        when(userRepository.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
+        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.save(any(UserAccount.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.updateUser("admin", 2L, new UserMutationRequest(
+                "other-user", "Other User", null, null, null, null, null,
+                List.of("USER"), "active", "employed", false
+        ));
+
+        assertEquals("N", target.getDataEndStatus());
+    }
+
     private UserAccount user(Long id, String username, String role) {
         return UserAccount.builder()
                 .id(id)

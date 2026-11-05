@@ -190,6 +190,9 @@ public class UserManagementService {
         user.setAccountStatus(nextAccountStatus);
         user.setEmploymentStatus(nextEmploymentStatus);
         user.setEnabled(isEnabled(nextAccountStatus, nextEmploymentStatus));
+        if (!INACTIVE.equals(nextAccountStatus)) {
+            user.setDataEndStatus("N");
+        }
         user.setUpdatedBy(actor.getUsername());
         user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
