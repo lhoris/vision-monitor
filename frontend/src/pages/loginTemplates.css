@@ -305,6 +305,7 @@
   color: #a7f3d0;
   padding: 10px 12px;
   font-size: 13px;
+  white-space: pre-line;
 }
 
 .vm-login-demo {

@@ -216,7 +216,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
       await authService.signup(input)
       const admin = await authService.getSignupAdminContact().catch(() => null)
       const adminContact = admin
-        ? ` 승인 담당자: ${admin.name}${admin.email ? ` / ${admin.email}` : ''}${admin.phone ? ` / ${admin.phone}` : ''}`
+        ? `\n승인 담당자: ${admin.name}${admin.email ? ` / ${admin.email}` : ''}${admin.phone ? ` / ${admin.phone}` : ''}`
         : ''
       onSuccess(`가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.${adminContact}`)
     } catch (reason) {
@@ -233,7 +233,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 
   const renderField = ([field, label, required]: [keyof SignupInput, string, boolean]) => {
     const checkable = field === 'username' || field === 'email'
-    const checkState = field === 'username' ? usernameCheck : emailCheck
+    const checkState = field === 'username' ? usernameCheck : field === 'email' ? emailCheck : 'idle'
     return <div key={field} className="vm-signup-field"><label htmlFor={`signup-${field}`}>{label}{required ? <span className="vm-signup-required"> *</span> : null}</label><div className={checkable ? 'vm-signup-field-control' : undefined}><input id={`signup-${field}`} type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} inputMode={field === 'phone' ? 'numeric' : undefined} placeholder={field === 'phone' ? '010-1234-5678' : undefined} maxLength={field === 'phone' ? 13 : undefined} value={input[field] ?? ''} required={required} onChange={(event) => update(field, field === 'phone' ? formatPhoneNumber(event.target.value) : event.target.value)} />{checkable ? <button type="button" onClick={() => void checkAvailability(field)} disabled={checkState === 'checking'}>{checkState === 'checking' ? '확인 중...' : '중복 확인'}</button> : null}</div>{checkState === 'available' ? <small className="vm-signup-check-success">사용할 수 있습니다.</small> : null}{checkState === 'unavailable' ? <small className="vm-signup-check-error">이미 사용 중입니다.</small> : null}</div>
   }
 
