@@ -61,7 +61,7 @@ describe('MetadataSectionEditor', () => {
   it('shows the query description with the query id', () => {
     renderEditor({ queries, onSave: vi.fn(), onClose: vi.fn() })
 
-    expect(screen.getByRole('option', { name: 'camera.status' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'camera.status (카메라 상태 조회)' })).toBeInTheDocument()
     expect(screen.getByLabelText('쿼리 설명')).toHaveValue('카메라 상태 조회')
   })
 
