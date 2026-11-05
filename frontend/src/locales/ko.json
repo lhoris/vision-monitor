@@ -169,6 +169,34 @@
     "subtitle": "포항 4선재",
     "language": "언어"
   },
+  "onboarding": {
+    "helpButton": "도움말",
+    "unsupported": "현재 화면은 단계별 안내 대상이 아닙니다.",
+    "next": "다음",
+    "previous": "이전",
+    "done": "완료",
+    "progress": "{{current}} / {{total}}",
+    "login": {
+      "usernameTitle": "사용자 ID",
+      "usernameDescription": "로그인할 사용자 ID를 입력합니다.",
+      "passwordTitle": "비밀번호",
+      "passwordDescription": "계정 비밀번호를 입력하고 눈 아이콘을 눌러 입력 내용을 확인할 수 있습니다.",
+      "submitTitle": "로그인",
+      "submitDescription": "입력한 계정 정보로 시스템에 로그인합니다.",
+      "signupTitle": "회원가입",
+      "signupDescription": "계정이 없으면 회원가입을 신청하고 관리자 승인 후 로그인할 수 있습니다."
+    },
+    "live": {
+      "processTitle": "공정 선택",
+      "processDescription": "공정 탭을 선택해 확인할 업무 영역을 전환합니다.",
+      "subTabTitle": "세부공정 선택",
+      "subTabDescription": "세부공정 탭을 선택해 해당 영상 배치를 확인합니다.",
+      "videoTitle": "영상과 화면 배치",
+      "videoDescription": "영상이 배치된 그리드에서 영상을 확인하고, 빈 영역을 눌러 영상을 추가하거나 영상을 확대할 수 있습니다.",
+      "alarmTitle": "실시간 알람",
+      "alarmDescription": "벨 아이콘에서 미확인 알람을 확인하고 알람 목록으로 이동할 수 있습니다."
+    }
+  },
   "navigation": {
     "live": "라이브",
     "playback": "녹화",

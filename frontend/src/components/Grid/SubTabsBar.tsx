@@ -92,7 +92,7 @@ export const SubTabsBar: React.FC<SubTabsBarProps> = ({
   }
 
   return (
-    <div className="process-subtabs-bar bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container">
+    <div className="process-subtabs-bar bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 subtab-container" data-onboarding="live-sub-tabs">
       <div className="process-subtabs-inner px-6 pt-2">
         <div className="flex items-center gap-3 justify-between">
           {/* Sub Tabs Container */}

@@ -31,6 +31,12 @@ describe('Login', () => {
     expect(ACTIVE_LOGIN_TEMPLATE).toBe(2)
   })
 
+  it('shows the onboarding help button on the login card', () => {
+    renderLogin()
+
+    expect(screen.getByRole('button', { name: /Help|도움말/ })).toBeInTheDocument()
+  })
+
   it('keeps demo credentials and prefilled tester account', () => {
     renderLogin()
 

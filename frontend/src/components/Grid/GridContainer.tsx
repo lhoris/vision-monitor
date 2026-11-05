@@ -530,6 +530,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
       <div className="min-h-0 flex-1 overflow-hidden p-3 sm:p-4">
         <div
           data-testid="live-grid"
+          data-onboarding="live-grid"
           className="grid h-full min-h-0 w-full"
           style={{
             display: 'grid',

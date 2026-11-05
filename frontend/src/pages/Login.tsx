@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { loginUser } from '@/store/slices/authSlice'
 import { authService, type SignupInput } from '@/services/authService'
@@ -15,6 +16,7 @@ import type3Background from '../../bak/login_html/img/bg_img04.png'
 import type3CctvIcon from '../../bak/login_html/img/bg_icon01.png'
 import loginVideo from '../../bak/login_html/img/login_video.mp4'
 import './loginTemplates.css'
+import { HelpButton, startGuidedOnboarding, stopGuidedOnboarding } from '@/components/Onboarding'
 
 type LoginTemplateId = 1 | 2 | 3
 
@@ -45,6 +47,7 @@ interface LoginFormProps {
   onPasswordChange: (value: string) => void
   onSubmit: (event: React.FormEvent) => void
   onSignup: () => void
+  onHelp: () => void
   buttonClassName: string
 }
 
@@ -58,13 +61,15 @@ function LoginFields({
   onPasswordChange,
   onSubmit,
   onSignup,
+  onHelp,
   buttonClassName,
 }: LoginFormProps) {
   const [isPasswordRevealed, setIsPasswordRevealed] = useState(false)
 
   return (
     <form className="vm-login-form" onSubmit={onSubmit}>
-      <div className="vm-login-field">
+      <HelpButton className="vm-login-help" onClick={onHelp} />
+      <div className="vm-login-field" data-onboarding="login-username">
         <label htmlFor="login-username">USER ID</label>
         <input
           id="login-username"
@@ -77,7 +82,7 @@ function LoginFields({
         />
       </div>
 
-      <div className="vm-login-field">
+      <div className="vm-login-field" data-onboarding="login-password">
         <label htmlFor="login-password">PASSWORD</label>
         <div className="vm-password-input-wrap">
           <input
@@ -129,13 +134,13 @@ function LoginFields({
 
       {error && <p className={success ? 'vm-login-success' : 'vm-login-error'} role={success ? 'status' : 'alert'}>{error}</p>}
 
-      <button type="submit" className={buttonClassName} disabled={loading}>
+      <button type="submit" className={buttonClassName} disabled={loading} data-onboarding="login-submit">
         {loading ? 'Signing In...' : 'Login'}
       </button>
 
       <div className="vm-signup-prompt">
         <span>계정이 없으신가요?</span>
-        <button type="button" className="vm-login-link vm-signup-link" onClick={onSignup}>회원가입</button>
+        <button type="button" className="vm-login-link vm-signup-link" onClick={onSignup} data-onboarding="login-signup">회원가입</button>
       </div>
 
       <DemoCredentials />
@@ -420,6 +425,7 @@ function Type3Login(props: LoginFormProps) {
 export const Login: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const loading = useAppSelector((state) => state.auth.loading)
   const [username, setUsername] = useState(DEMO_USERNAME)
   const [password, setPassword] = useState(DEMO_PASSWORD)
@@ -429,6 +435,8 @@ export const Login: React.FC = () => {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isSignupOpen, setIsSignupOpen] = useState(false)
+
+  useEffect(() => () => stopGuidedOnboarding(), [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -481,6 +489,7 @@ export const Login: React.FC = () => {
     onPasswordChange: setPassword,
     onSubmit: handleLogin,
     onSignup: () => setIsSignupOpen(true),
+    onHelp: () => { startGuidedOnboarding('login', t) },
     buttonClassName: '',
   }
 

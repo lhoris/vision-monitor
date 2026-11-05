@@ -21,11 +21,11 @@ function CurrentPath() {
   return <output data-testid="current-path">{location.pathname}</output>
 }
 
-function renderHeader() {
+function renderHeader(initialPath = '/live') {
   return render(
     <Provider store={store}>
       <I18nextProvider i18n={i18n}>
-        <MemoryRouter initialEntries={['/live']}>
+        <MemoryRouter initialEntries={[initialPath]}>
           <Header />
           <CurrentPath />
         </MemoryRouter>
@@ -61,6 +61,14 @@ describe('Header account menu', () => {
     expect(screen.getByRole('dialog', { name: /Account Center/ })).toHaveClass('!max-w-6xl')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('shows a non-blocking notice for unsupported screens', async () => {
+    await i18n.changeLanguage('en')
+    renderHeader('/settings')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }))
+    expect(screen.getByText(/not available on this screen/i)).toBeInTheDocument()
   })
 
   it('opens Settings inside the account center modal', async () => {

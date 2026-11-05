@@ -169,6 +169,34 @@
     "subtitle": "Pohang Wire No.4",
     "language": "Language"
   },
+  "onboarding": {
+    "helpButton": "Help",
+    "unsupported": "Step-by-step guidance is not available on this screen.",
+    "next": "Next",
+    "previous": "Previous",
+    "done": "Done",
+    "progress": "{{current}} / {{total}}",
+    "login": {
+      "usernameTitle": "User ID",
+      "usernameDescription": "Enter the user ID for the account you want to sign in with.",
+      "passwordTitle": "Password",
+      "passwordDescription": "Enter the account password. Press the eye icon to reveal the value while holding it.",
+      "submitTitle": "Sign in",
+      "submitDescription": "Sign in to the system with the entered account information.",
+      "signupTitle": "Sign up",
+      "signupDescription": "If you do not have an account, submit a sign-up request and wait for administrator approval."
+    },
+    "live": {
+      "processTitle": "Select a process",
+      "processDescription": "Select a process tab to switch the work area you want to monitor.",
+      "subTabTitle": "Select an equipment tab",
+      "subTabDescription": "Select an equipment tab to view its video layout.",
+      "videoTitle": "Videos and layout",
+      "videoDescription": "Review videos in the grid. Use an empty area to add a video or open a video in focus view.",
+      "alarmTitle": "Real-time alarms",
+      "alarmDescription": "Use the bell icon to review unacknowledged alarms and open the alarm list."
+    }
+  },
   "navigation": {
     "live": "Live",
     "playback": "Playback",

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { saveUserLanguage, type SupportedLanguage } from '@/i18n'
 import { useAppDispatch, useAppSelector } from '@/store'
@@ -15,6 +15,7 @@ import { useAppBranding } from '@/hooks/useAppBranding'
 import { AccountCenterModal } from './AccountCenterModal'
 import type { AccountTab } from './AccountCenterModal'
 import { getEventDescription, getEventTypeLabel } from '@/utils/eventPresentation'
+import { HelpButton, resolveOnboardingRoute, startGuidedOnboarding, stopGuidedOnboarding } from '@/components/Onboarding'
 
 const themeOptions: Array<{
   id: ThemeMode
@@ -61,6 +62,7 @@ const getThemeDescription = (theme: ThemeMode, language: string): string => {
 export function Header() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { i18n, t } = useTranslation()
   const branding = useAppBranding()
   const themeMode = useAppSelector((state) => state.ui.themeMode)
@@ -73,6 +75,7 @@ export function Header() {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [themeMenuOpen, setThemeMenuOpen] = useState(false)
   const [alarmMenuOpen, setAlarmMenuOpen] = useState(false)
+  const [onboardingNotice, setOnboardingNotice] = useState('')
   const languageMenuRef = useRef<HTMLDivElement>(null)
   const themeMenuRef = useRef<HTMLDivElement>(null)
   const accountMenuRef = useRef<HTMLDivElement>(null)
@@ -80,6 +83,14 @@ export function Header() {
   const openAlarms = events.filter((event) => !event.acknowledged)
   const selectedTheme = themeOptions.find((theme) => theme.id === themeMode) ?? themeOptions[1]
   const selectedThemeLabel = getThemeLabel(selectedTheme.id, i18n.language)
+
+  useEffect(() => {
+    if (!onboardingNotice) return undefined
+    const timeoutId = window.setTimeout(() => setOnboardingNotice(''), 2800)
+    return () => window.clearTimeout(timeoutId)
+  }, [onboardingNotice])
+
+  useEffect(() => () => stopGuidedOnboarding(), [location.pathname])
 
   const handleThemeChange = (theme: ThemeMode) => {
     dispatch(setThemeMode(theme))
@@ -128,6 +139,15 @@ export function Header() {
     setAccountMenuOpen(false)
     setAccountModalTab(tab)
     setAccountModalOpen(true)
+  }
+
+  const handleHelp = () => {
+    const route = resolveOnboardingRoute(window.location.pathname)
+    if (route === 'unsupported') {
+      setOnboardingNotice(t('onboarding.unsupported'))
+      return
+    }
+    if (!startGuidedOnboarding(route, t)) setOnboardingNotice(t('onboarding.unsupported'))
   }
 
   return (
@@ -280,6 +300,7 @@ export function Header() {
           <div className="relative" ref={alarmMenuRef}>
             <button
               type="button"
+              data-onboarding="live-alarm"
               onClick={() => setAlarmMenuOpen((open) => !open)}
               className="relative rounded-lg p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
               title={t('events.notificationButton', { count: openAlarms.length })}
@@ -351,6 +372,8 @@ export function Header() {
               </section>
             )}
           </div>
+
+          <HelpButton onClick={handleHelp} />
 
           {/* Separator */}
           <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
@@ -449,6 +472,7 @@ export function Header() {
       </div>
     </header>
     <AccountCenterModal isOpen={accountModalOpen} initialTab={accountModalTab} onClose={() => setAccountModalOpen(false)} onLogout={handleLogout} />
+    {onboardingNotice ? <div role="status" className="animate-toast-in-out fixed right-6 top-20 z-[90] rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 shadow-lg dark:border-blue-800 dark:bg-blue-950/90 dark:text-blue-200">{onboardingNotice}</div> : null}
     </>
   )
 }

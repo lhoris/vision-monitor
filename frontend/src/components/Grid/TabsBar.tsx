@@ -98,7 +98,7 @@ export const TabsBar: React.FC<TabsBarProps> = ({
   }
 
   return (
-    <div className="process-tabs-bar border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950">
+    <div className="process-tabs-bar border-b border-gray-300 bg-gray-100 dark:border-gray-700 dark:bg-gray-950" data-onboarding="live-process-tabs">
       <div className="process-tabs-inner px-4 pt-2 sm:px-6">
         <div className="flex min-h-12 items-end gap-2 overflow-x-auto">
           {/* Tabs */}
