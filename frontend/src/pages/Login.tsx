@@ -214,7 +214,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     }
     try {
       await authService.signup(input)
-      const admin = await authService.getSignupAdminContact().catch(() => null)
+      const admin = await authService.getSignupAdminContact(input.department).catch(() => null)
       const adminContact = admin
         ? `\n승인 담당자: ${admin.name}${admin.email ? ` / ${admin.email}` : ''}${admin.phone ? ` / ${admin.phone}` : ''}`
         : ''

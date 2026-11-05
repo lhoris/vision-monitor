@@ -58,8 +58,8 @@ class AuthService {
     return result
   }
 
-  async getSignupAdminContact(): Promise<SignupAdminContact | null> {
-    const response = await apiClient.get<SignupAdminContact | null>('/auth/signup/contact')
+  async getSignupAdminContact(department?: string): Promise<SignupAdminContact | null> {
+    const response = await apiClient.get<SignupAdminContact | null>('/auth/signup/contact', department ? { department } : undefined)
     return getResponseData<SignupAdminContact | null>(response, null)
   }
 

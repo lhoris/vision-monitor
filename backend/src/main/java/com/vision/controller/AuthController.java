@@ -50,8 +50,10 @@ public class AuthController {
     }
 
     @GetMapping("/signup/contact")
-    public ApiResponse<SignupAdminContactDto> getSignupAdminContact() {
-        return ApiResponse.success(authService.getSignupAdminContact());
+    public ApiResponse<SignupAdminContactDto> getSignupAdminContact(
+            @RequestParam(required = false) String department
+    ) {
+        return ApiResponse.success(authService.getSignupAdminContact(department));
     }
 
     @PostMapping("/signup/reapply")

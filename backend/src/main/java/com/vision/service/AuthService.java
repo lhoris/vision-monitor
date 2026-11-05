@@ -117,7 +117,17 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public SignupAdminContactDto getSignupAdminContact() {
-        return userRepository.findFirstActiveAdministrator()
+        return getSignupAdminContact(null);
+    }
+
+    @Transactional(readOnly = true)
+    public SignupAdminContactDto getSignupAdminContact(String department) {
+        String normalizedDepartment = normalizeOptional(department);
+        var administrator = normalizedDepartment == null
+                ? userRepository.findFirstActiveAdministrator()
+                : userRepository.findFirstActiveAdministratorByDepartment(normalizedDepartment)
+                        .or(() -> userRepository.findFirstActiveAdministrator());
+        return administrator
                 .map(user -> new SignupAdminContactDto(
                         user.getName() == null || user.getName().isBlank() ? user.getUsername() : user.getName(),
                         user.getEmail(),
