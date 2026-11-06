@@ -16,6 +16,7 @@ import com.vision.repository.UserAccountRepository;
 import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAuthorizationRepository;
+import com.vision.sse.AlarmEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
 
 @Service
@@ -44,6 +47,7 @@ public class AuthService {
     private final AuthorizationRepository authorizationRepository;
     private final UserAuthorizationRepository userAuthorizationRepository;
     private final AuthSessionService sessionService;
+    private final AlarmEventPublisher alarmEventPublisher;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
@@ -51,12 +55,14 @@ public class AuthService {
             UserAccountRepository userRepository,
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository,
-            AuthSessionService sessionService
+            AuthSessionService sessionService,
+            AlarmEventPublisher alarmEventPublisher
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
         this.sessionService = sessionService;
+        this.alarmEventPublisher = alarmEventPublisher;
     }
 
     public AuthService(
@@ -66,7 +72,8 @@ public class AuthService {
             AuthSessionRepository authSessionRepository
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
-                new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository));
+                new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository),
+                null);
     }
 
     // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
@@ -165,7 +172,9 @@ public class AuthService {
                 .build();
         user.setCreatedBy("SYSTEM");
         user.setUpdatedBy("SYSTEM");
-        return UserAccountDto.from(userRepository.save(user));
+        UserAccount savedUser = userRepository.save(user);
+        publishSignupAlarm(savedUser);
+        return UserAccountDto.from(savedUser);
     }
 
     @Transactional
@@ -192,7 +201,34 @@ public class AuthService {
         user.setAccountStatusReason("재가입 신청");
         user.setAppliedAt(java.time.LocalDateTime.now());
         user.setEnabled(false);
-        return UserAccountDto.from(userRepository.save(user));
+        UserAccount savedUser = userRepository.save(user);
+        publishSignupAlarm(savedUser);
+        return UserAccountDto.from(savedUser);
+    }
+
+    private void publishSignupAlarm(UserAccount signup) {
+        if (alarmEventPublisher == null) return;
+        Map<String, Object> alarm = Map.of(
+                "id", signup.getId(),
+                "cameraId", 0,
+                "type", "USER_SIGNUP_REQUEST",
+                "severity", "info",
+                "description", "신규 사용자 가입신청이 접수되었습니다.",
+                "timestamp", OffsetDateTime.now().toString(),
+                "acknowledged", false,
+                "metadata", Map.of(
+                        "username", signup.getUsername(),
+                        "name", signup.getName(),
+                        "department", signup.getDepartment() == null ? "" : signup.getDepartment()
+                )
+        );
+        alarmEventPublisher.publishToUsers(
+                userRepository.findAllActiveAdministrators().stream()
+                        .map(UserAccount::getUsername)
+                        .filter(username -> username != null && !username.isBlank())
+                        .toList(),
+                alarm
+        );
     }
 
     @Transactional

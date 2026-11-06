@@ -7,6 +7,7 @@ import com.vision.dto.MyProfileDto;
 import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
+import com.vision.sse.AlarmEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -34,13 +36,16 @@ class AuthServiceTest {
     @Mock
     private AuthSessionService sessionService;
 
+    @Mock
+    private AlarmEventPublisher alarmEventPublisher;
+
     private AuthService service;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @BeforeEach
     void setUp() {
-        service = new AuthService(userRepository, null, null, sessionService);
+        service = new AuthService(userRepository, null, null, sessionService, alarmEventPublisher);
         lenient().when(sessionService.createSession(org.mockito.ArgumentMatchers.any(UserAccount.class)))
                 .thenReturn("session-test-token");
     }
@@ -144,6 +149,25 @@ class AuthServiceTest {
 
         assertEquals("admin", response.user().username());
         assertTrue(response.passwordChangeRequired());
+    }
+
+    @Test
+    void publishesSignupAlarmToEveryActiveAdministrator() {
+        UserAccount admin = user("admin", "ADMIN");
+        UserAccount savedSignup = user("new-user", "USER");
+        savedSignup.setName("New User");
+        when(userRepository.existsByUsernameIgnoreCase("new-user")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("new@example.com")).thenReturn(false);
+        when(userRepository.save(any(UserAccount.class))).thenReturn(savedSignup);
+        when(userRepository.findAllActiveAdministrators()).thenReturn(java.util.List.of(admin));
+
+        service.signup(new com.vision.dto.SignupRequest(
+                "new-user", "password1", "password1", "New User", "new@example.com", "010-1234-5678", "QA", "Engineer"));
+
+        org.mockito.ArgumentCaptor<java.util.Map<String, Object>> alarmCaptor = org.mockito.ArgumentCaptor.forClass(java.util.Map.class);
+        verify(alarmEventPublisher).publishToUsers(org.mockito.ArgumentMatchers.eq(java.util.List.of("admin")), alarmCaptor.capture());
+        assertEquals("USER_SIGNUP_REQUEST", alarmCaptor.getValue().get("type"));
+        assertEquals("신규 사용자 가입신청이 접수되었습니다.", alarmCaptor.getValue().get("description"));
     }
 
     @Test

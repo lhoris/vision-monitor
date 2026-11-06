@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long>, JpaSpecificationExecutor<UserAccount> {
@@ -23,6 +24,14 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
             + "AND ua.DATA_END_STATUS = 'N' AND a.DATA_END_STATUS = 'N' AND a.AUTH_CODE = 'ADMIN' "
             + "ORDER BY u.USER_ID LIMIT 1", nativeQuery = true)
     Optional<UserAccount> findFirstActiveAdministrator();
+
+    @Query(value = "SELECT DISTINCT u.* FROM TB_M26_USER u "
+            + "JOIN TB_M26_USER_AUTH ua ON ua.USER_ID = u.USER_ID "
+            + "JOIN TB_M26_AUTH a ON a.AUTH_ID = ua.AUTH_ID "
+            + "WHERE u.DATA_END_STATUS = 'N' AND COALESCE(u.ACCOUNT_STATUS, 'active') = 'active' "
+            + "AND ua.DATA_END_STATUS = 'N' AND a.DATA_END_STATUS = 'N' AND a.AUTH_CODE = 'ADMIN' "
+            + "ORDER BY u.USER_ID", nativeQuery = true)
+    List<UserAccount> findAllActiveAdministrators();
 
     @Query(value = "SELECT u.* FROM TB_M26_USER u "
             + "JOIN TB_M26_USER_AUTH ua ON ua.USER_ID = u.USER_ID "

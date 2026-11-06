@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Collection;
 
 /** Application boundary for future alarm producers. */
 @Component
@@ -21,5 +22,9 @@ public class AlarmEventPublisher {
 
     public void publishToAll(Map<String, Object> alarm) {
         broker.publishToAll(AlarmSseEvent.alarm(alarm));
+    }
+
+    public void publishToUsers(Collection<String> usernames, Map<String, Object> alarm) {
+        usernames.forEach(username -> publishToUser(username, alarm));
     }
 }
