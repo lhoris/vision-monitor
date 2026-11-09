@@ -70,11 +70,20 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         side: step.side,
         align: step.align ?? 'center',
         showButtons: step.showButtons,
-        onNextClick: step.skipNextIfMissing || step.autoAction || step.openOnNext || step.closeOnNext
+        onNextClick: step.skipNextIfMissing || step.autoAction || step.autoSelect || step.openOnNext || step.closeOnNext
           ? (_element, _nextStep, opts) => {
               if (step.closeOnNext) {
                 const closeTarget = document.querySelector(step.closeOnNext)
                 if (closeTarget instanceof HTMLElement) closeTarget.click()
+              }
+              if (step.autoSelect) {
+                const selectTarget = document.querySelector(step.autoSelect)
+                if (selectTarget instanceof HTMLElement) {
+                  selectTarget.click()
+                  return
+                }
+                opts.driver.moveNext()
+                return
               }
               if (step.autoAction && step.skipNextIfMissing && !document.querySelector(step.skipNextIfMissing)) {
                 const actionTarget = document.querySelector(step.autoAction)
@@ -90,6 +99,8 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                   const trigger = document.querySelector(`${step.openOnNext} > button`)
                   if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
                 }
+                window.setTimeout(() => opts.driver.moveNext(), 50)
+                return
               }
               if (!step.skipNextIfMissing || document.querySelector(step.skipNextIfMissing)) {
                 opts.driver.moveNext()
