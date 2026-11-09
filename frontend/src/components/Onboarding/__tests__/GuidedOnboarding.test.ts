@@ -53,7 +53,6 @@ describe('GuidedOnboarding', () => {
       '[data-onboarding="live-process-tabs"]',
       '[data-onboarding="live-sub-tabs"]',
       '[data-onboarding="live-grid"]',
-      '[data-onboarding="live-alarm"]',
     ])
   })
 

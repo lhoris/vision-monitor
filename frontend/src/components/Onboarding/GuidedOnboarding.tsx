@@ -70,7 +70,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         side: step.side,
         align: step.align ?? 'center',
         showButtons: step.showButtons,
-        onNextClick: step.skipNextIfMissing || step.autoAction || step.autoOpen || step.closeOnNext
+        onNextClick: step.skipNextIfMissing || step.autoAction || step.openOnNext || step.closeOnNext
           ? (_element, _nextStep, opts) => {
               if (step.closeOnNext) {
                 const closeTarget = document.querySelector(step.closeOnNext)
@@ -80,13 +80,16 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                 const actionTarget = document.querySelector(step.autoAction)
                 if (actionTarget instanceof HTMLElement) {
                   actionTarget.click()
-                  opts.driver.moveNext()
                   return
                 }
               }
-              if (step.autoOpen) {
-                const trigger = document.querySelector(`${step.autoOpen} > button`)
-                if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') === 'true') trigger.click()
+              if (step.openOnNext) {
+                if (step.element === '[data-onboarding="live-video-titlebar"]') {
+                  openContextMenu(step.openOnNext)
+                } else {
+                  const trigger = document.querySelector(`${step.openOnNext} > button`)
+                  if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+                }
               }
               if (!step.skipNextIfMissing || document.querySelector(step.skipNextIfMissing)) {
                 opts.driver.moveNext()
@@ -95,13 +98,16 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               opts.driver.moveTo((opts.index ?? 0) + 2)
             }
           : undefined,
-        onPopoverRender: step.autoOpen || step.autoContextMenu || step.advanceOnAction
+        onPrevClick: step.closeOnPrevious
+          ? (_element, _previousStep, opts) => {
+              const closeTarget = document.querySelector(step.closeOnPrevious as string)
+              if (closeTarget instanceof HTMLElement) closeTarget.click()
+              opts.driver.movePrevious()
+            }
+          : undefined,
+        onPopoverRender: step.autoContextMenu || step.advanceOnAction
           ? (_popover, opts) => {
               if (step.autoContextMenu) openContextMenu(step.autoContextMenu)
-              if (step.autoOpen) {
-                const trigger = document.querySelector(`${step.autoOpen} > button`)
-                if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
-              }
               if (!step.advanceOnAction) return
               const eventName = step.actionEvent ?? 'click'
               const handleAction = (event: MouseEvent) => {

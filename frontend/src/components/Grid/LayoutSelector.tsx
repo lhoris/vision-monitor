@@ -61,6 +61,7 @@ export const LayoutSelector: React.FC<LayoutSelectorProps> = ({
           <div
             className="fixed inset-0 z-40"
             aria-hidden="true"
+            data-onboarding="live-grid-layout-overlay"
             onClick={() => {
               setIsOpen(false)
               setPreview(null)
