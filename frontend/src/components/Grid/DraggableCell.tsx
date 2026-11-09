@@ -221,6 +221,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
         <>
           <div
             className="fixed inset-0 z-40"
+            data-onboarding="live-video-context-menu-overlay"
             onClick={() => setContextMenu(null)}
           />
           <div

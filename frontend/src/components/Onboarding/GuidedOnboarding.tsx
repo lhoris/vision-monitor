@@ -9,6 +9,19 @@ export type OnboardingRoute = OnboardingScreen | 'unsupported'
 
 let activeOnboarding: ReturnType<typeof driver> | null = null
 
+function openContextMenu(selector: string): void {
+  const target = document.querySelector(selector)
+  if (!(target instanceof HTMLElement)) return
+
+  const rect = target.getBoundingClientRect()
+  target.dispatchEvent(new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left + Math.min(rect.width / 2, 160),
+    clientY: rect.top + Math.min(rect.height / 2, 24),
+  }))
+}
+
 export function resolveOnboardingRoute(pathname: string): OnboardingRoute {
   if (pathname === '/login') return 'login'
   if (pathname === '/live') return 'live'
@@ -57,8 +70,20 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         side: step.side,
         align: step.align ?? 'center',
         showButtons: step.showButtons,
-        onNextClick: step.skipNextIfMissing || step.autoOpen
+        onNextClick: step.skipNextIfMissing || step.autoAction || step.autoOpen || step.closeOnNext
           ? (_element, _nextStep, opts) => {
+              if (step.closeOnNext) {
+                const closeTarget = document.querySelector(step.closeOnNext)
+                if (closeTarget instanceof HTMLElement) closeTarget.click()
+              }
+              if (step.autoAction && step.skipNextIfMissing && !document.querySelector(step.skipNextIfMissing)) {
+                const actionTarget = document.querySelector(step.autoAction)
+                if (actionTarget instanceof HTMLElement) {
+                  actionTarget.click()
+                  opts.driver.moveNext()
+                  return
+                }
+              }
               if (step.autoOpen) {
                 const trigger = document.querySelector(`${step.autoOpen} > button`)
                 if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') === 'true') trigger.click()
@@ -70,8 +95,9 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               opts.driver.moveTo((opts.index ?? 0) + 2)
             }
           : undefined,
-        onPopoverRender: step.autoOpen || step.advanceOnAction
+        onPopoverRender: step.autoOpen || step.autoContextMenu || step.advanceOnAction
           ? (_popover, opts) => {
+              if (step.autoContextMenu) openContextMenu(step.autoContextMenu)
               if (step.autoOpen) {
                 const trigger = document.querySelector(`${step.autoOpen} > button`)
                 if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
