@@ -77,7 +77,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
     onPrevClick: (_element, _step, opts) => opts.driver.movePrevious(),
     steps: steps.map((step) => ({
       element: step.element,
-      skipMissingElement: step.allowMissing,
+      skipMissingElement: step.allowMissing && !step.waitForElement,
       waitForElement: step.waitForElement,
       popover: {
         title: step.title,

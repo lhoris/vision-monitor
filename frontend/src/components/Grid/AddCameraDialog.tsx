@@ -137,7 +137,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => {
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" data-onboarding="live-video-source-dialog-overlay" onClick={() => {
       if (contextMenu) {
         setContextMenu(null)
         return
