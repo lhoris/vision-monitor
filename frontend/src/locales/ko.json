@@ -215,6 +215,12 @@
       "selectVideoDescription": "영상 추가 창에서 사용할 영상 소스를 직접 클릭하세요. 선택한 영상이 현재 세부공정에 배치되면 다음 단계로 진행합니다.",
       "videoTitle": "영상과 화면 배치",
       "videoDescription": "영상이 배치된 그리드에서 영상을 확인하고, 빈 영역을 눌러 영상을 추가하거나 영상을 확대할 수 있습니다.",
+      "titleBarTitle": "영상 타이틀바 메뉴",
+      "titleBarDescription": "영상 타이틀바에서 마우스 오른쪽 버튼을 눌러 이름 변경과 플레이어 영역 조정 메뉴를 열어보세요.",
+      "contextMenuTitle": "영상 우클릭 메뉴",
+      "contextMenuDescription": "우클릭 메뉴에서 영상 이름 변경, 플레이어 영역 크기 변경, 현재 세부공정에서 영상 제거를 사용할 수 있습니다.",
+      "layoutTitle": "그리드 레이아웃",
+      "layoutDescription": "세부공정 탭의 레이아웃 버튼에서 행·열 구성을 선택해 영상 그리드 크기를 변경할 수 있습니다.",
       "alarmTitle": "실시간 알람",
       "alarmDescription": "벨 아이콘에서 미확인 알람을 확인하고 알람 목록으로 이동할 수 있습니다."
     }

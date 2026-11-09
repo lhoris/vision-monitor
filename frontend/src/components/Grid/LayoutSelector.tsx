@@ -38,7 +38,7 @@ export const LayoutSelector: React.FC<LayoutSelectorProps> = ({
   }
 
   return (
-    <div className="relative">
+    <div className="relative" data-onboarding="live-grid-layout">
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
@@ -69,6 +69,7 @@ export const LayoutSelector: React.FC<LayoutSelectorProps> = ({
           <div
             role="dialog"
             aria-label="그리드 레이아웃 선택"
+            data-onboarding="live-grid-layout-menu"
             className="absolute right-0 top-full z-50 mt-2 w-[270px] rounded-md border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-800"
             onKeyDown={(event) => {
               if (event.key === 'Escape') {

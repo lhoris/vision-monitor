@@ -56,15 +56,34 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         side: step.side,
         align: step.align ?? 'center',
         showButtons: step.showButtons,
-        onPopoverRender: step.advanceOnAction
+        onNextClick: step.skipNextIfMissing || step.autoOpen
+          ? (_element, _nextStep, opts) => {
+              if (step.autoOpen) {
+                const trigger = document.querySelector(`${step.autoOpen} > button`)
+                if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') === 'true') trigger.click()
+              }
+              if (!step.skipNextIfMissing || document.querySelector(step.skipNextIfMissing)) {
+                opts.driver.moveNext()
+                return
+              }
+              opts.driver.moveTo((opts.index ?? 0) + 2)
+            }
+          : undefined,
+        onPopoverRender: step.autoOpen || step.advanceOnAction
           ? (_popover, opts) => {
-              const handleActionClick = (event: MouseEvent) => {
+              if (step.autoOpen) {
+                const trigger = document.querySelector(`${step.autoOpen} > button`)
+                if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+              }
+              if (!step.advanceOnAction) return
+              const eventName = step.actionEvent ?? 'click'
+              const handleAction = (event: MouseEvent) => {
                 const target = event.target instanceof Element ? event.target.closest(step.element) : null
                 if (!target) return
-                document.removeEventListener('click', handleActionClick, true)
+                document.removeEventListener(eventName, handleAction, true)
                 window.setTimeout(() => opts.driver.moveNext(), 50)
               }
-              document.addEventListener('click', handleActionClick, true)
+              document.addEventListener(eventName, handleAction, true)
             }
           : undefined,
       },

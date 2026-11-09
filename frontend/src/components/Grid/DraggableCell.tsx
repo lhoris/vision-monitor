@@ -171,7 +171,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
       <div
         draggable
         onDragStart={handleDragStart}
-            className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
+        className="camera-tile-header flex h-9 shrink-0 cursor-move items-center justify-between gap-2 border-b px-2"
+        data-onboarding="live-video-titlebar"
       >
         <div className="flex min-w-0 items-center gap-2">
           <span
@@ -224,6 +225,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
           />
           <div
             className="fixed z-50 min-w-36 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+            data-onboarding="live-video-context-menu"
             style={{
               top: `${contextMenu.y}px`,
               left: `${contextMenu.x}px`,

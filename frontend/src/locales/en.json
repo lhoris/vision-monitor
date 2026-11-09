@@ -215,6 +215,12 @@
       "selectVideoDescription": "Click a video source in the add dialog. Once it is placed in the current equipment tab, the guide continues.",
       "videoTitle": "Videos and layout",
       "videoDescription": "Review videos in the grid. Use an empty area to add a video or open a video in focus view.",
+      "titleBarTitle": "Video title bar menu",
+      "titleBarDescription": "Right-click the video title bar to open options for renaming the video and changing its player area.",
+      "contextMenuTitle": "Video context menu",
+      "contextMenuDescription": "Use the context menu to rename the video, change its player area, or remove it from the current detail tab.",
+      "layoutTitle": "Grid layout",
+      "layoutDescription": "Use the layout control on the detail tab to choose the number of rows and columns for the video grid.",
       "alarmTitle": "Real-time alarms",
       "alarmDescription": "Use the bell icon to review unacknowledged alarms and open the alarm list."
     }
