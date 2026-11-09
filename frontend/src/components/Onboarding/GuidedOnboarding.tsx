@@ -12,6 +12,16 @@ let activeOnboarding: ReturnType<typeof driver> | null = null
 export function resolveOnboardingRoute(pathname: string): OnboardingRoute {
   if (pathname === '/login') return 'login'
   if (pathname === '/live') return 'live'
+  if (pathname.startsWith('/live/cameras/')) return 'cameraFocus'
+  if (pathname === '/playback') return 'playback'
+  if (pathname === '/events') return 'events'
+  if (pathname === '/settings') return 'settings'
+  if (pathname === '/admin/videos') return 'adminVideos'
+  if (pathname === '/admin/users') return 'adminUsers'
+  if (pathname === '/admin/common-codes') return 'adminCommonCodes'
+  if (pathname === '/admin/query-management') return 'adminQueries'
+  if (pathname === '/admin/model-management' || pathname === '/admin/model-restart') return 'adminModels'
+  if (pathname.startsWith('/admin/')) return 'adminOther'
   return 'unsupported'
 }
 

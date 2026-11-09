@@ -126,6 +126,7 @@ export function Sidebar() {
       )}
 
       <nav
+        data-onboarding="page-navigation"
         className={`fixed z-50 flex h-screen w-72 flex-col border-r border-gray-800 bg-gray-900 text-white transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}

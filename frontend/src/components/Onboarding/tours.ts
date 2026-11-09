@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 
-export type OnboardingScreen = 'login' | 'live'
+export type OnboardingScreen = 'login' | 'live' | 'cameraFocus' | 'playback' | 'events' | 'settings' | 'adminVideos' | 'adminUsers' | 'adminCommonCodes' | 'adminQueries' | 'adminModels' | 'adminOther'
 
 export interface OnboardingStep {
   element: string
@@ -21,13 +21,19 @@ export function getOnboardingSteps(screen: OnboardingScreen, t: TFunction): Onbo
         { element: '[data-onboarding="login-submit"]', title: t('onboarding.login.submitTitle'), description: t('onboarding.login.submitDescription'), side: 'top' as const },
         { element: '[data-onboarding="login-signup"]', title: t('onboarding.login.signupTitle'), description: t('onboarding.login.signupDescription'), side: 'top' as const },
       ]
-    : [
+    : screen === 'live'
+    ? [
         { element: '[data-onboarding="live-process-tabs"]', title: t('onboarding.live.processTitle'), description: t('onboarding.live.processDescription'), side: 'bottom' as const, align: 'start' as const },
         { element: '[data-onboarding="live-sub-tabs"]', title: t('onboarding.live.subTabTitle'), description: t('onboarding.live.subTabDescription'), side: 'bottom' as const, align: 'start' as const },
         { element: '[data-onboarding="live-empty-cell"]', title: t('onboarding.live.addVideoTitle'), description: t('onboarding.live.addVideoDescription'), side: 'top' as const, allowMissing: true, advanceOnClick: true },
         { element: '[data-onboarding="live-video-source"]', title: t('onboarding.live.selectVideoTitle'), description: t('onboarding.live.selectVideoDescription'), side: 'right' as const, allowMissing: true, waitForElement: 5000, advanceOnClick: true },
         { element: '[data-onboarding="live-grid"]', title: t('onboarding.live.videoTitle'), description: t('onboarding.live.videoDescription'), side: 'top' as const },
         { element: '[data-onboarding="live-alarm"]', title: t('onboarding.live.alarmTitle'), description: t('onboarding.live.alarmDescription'), side: 'bottom' as const },
+      ]
+    : [
+        { element: '[data-onboarding="page-navigation-button"]', title: t('onboarding.common.navigationTitle'), description: t('onboarding.common.navigationDescription'), side: 'bottom' as const },
+        { element: '[data-onboarding="page-content"]', title: t(`onboarding.screens.${screen}.title`), description: t(`onboarding.screens.${screen}.description`), side: 'top' as const },
+        { element: '[data-onboarding="live-alarm"]', title: t('onboarding.common.alarmTitle'), description: t('onboarding.common.alarmDescription'), side: 'bottom' as const },
       ]
 
   return steps.map((step, index) => ({ ...step, order: index + 1 }))

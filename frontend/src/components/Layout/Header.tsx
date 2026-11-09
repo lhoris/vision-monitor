@@ -162,6 +162,7 @@ export function Header() {
         {/* Left */}
         <div className="flex items-center gap-4">
           <button
+            data-onboarding="page-navigation-button"
             onClick={(event) => {
               event.stopPropagation()
               dispatch(toggleSidebar())

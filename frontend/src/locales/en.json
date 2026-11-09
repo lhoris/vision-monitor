@@ -176,6 +176,24 @@
     "previous": "Previous",
     "done": "Done",
     "progress": "{{current}} / {{total}}",
+    "common": {
+      "navigationTitle": "Move between screens",
+      "navigationDescription": "Use the side menu to move between live monitoring, alarms, settings, and management screens.",
+      "alarmTitle": "Alarm notifications",
+      "alarmDescription": "Open the bell to review recent real-time alarms and move to the alarm list."
+    },
+    "screens": {
+      "cameraFocus": { "title": "Camera focus view", "description": "Review one camera in detail, inspect alarms, and view metadata or recordings." },
+      "playback": { "title": "Playback", "description": "Select a managed video source and time range to review recorded footage." },
+      "events": { "title": "Alarm list", "description": "Search alarms, inspect details, download recordings, and acknowledge alarms." },
+      "settings": { "title": "Notification settings", "description": "Manage your contact information and notification preferences." },
+      "adminVideos": { "title": "Video management", "description": "Register, edit, duplicate, and remove video sources used by live monitoring." },
+      "adminUsers": { "title": "User management", "description": "Manage user accounts, approval status, roles, and account settings." },
+      "adminCommonCodes": { "title": "Common code management", "description": "Manage reusable common codes and their detail values." },
+      "adminQueries": { "title": "Query management", "description": "Manage metadata queries used by the focus view." },
+      "adminModels": { "title": "Model management", "description": "Monitor model processes and manage their operational controls." },
+      "adminOther": { "title": "Administrator screen", "description": "Review the available administrator functions on this screen." }
+    },
     "login": {
       "usernameTitle": "User ID",
       "usernameDescription": "Enter the user ID for the account you want to sign in with.",
