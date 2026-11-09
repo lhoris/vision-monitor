@@ -86,7 +86,7 @@ export function CameraFocusShell({
           화면 확대 보기
         </h1>
         {cameraList.length > 0 ? (
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="카메라 목록">
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="카메라 목록" data-onboarding="camera-focus-cameras">
             {cameraList.map((cameraItem) => {
               const isSelected = (camera?.cameraId ?? selectedCameraId) === cameraItem.id
 
@@ -137,7 +137,7 @@ export function CameraFocusShell({
           </div>
         ) : null}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex gap-2" role="tablist" aria-label="영상 모드">
+          <div className="flex gap-2" role="tablist" aria-label="영상 모드" data-onboarding="camera-focus-mode">
             <button
               type="button"
               role="tab"
@@ -184,7 +184,7 @@ export function CameraFocusShell({
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
-      <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row">
+      <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row" data-onboarding="camera-focus-content">
         <FocusVideoStage
           mode={mode}
           selectedEventId={selectedEventId}

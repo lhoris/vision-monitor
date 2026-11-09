@@ -18,33 +18,43 @@ function screenSteps(screen: Exclude<OnboardingScreen, 'login' | 'live'>, t: TFu
     element: '[data-onboarding="page-content"]', title, description, side: 'top',
   })
   const steps: Record<typeof screen, OnboardingStep[]> = {
-    cameraFocus: [page(t('onboarding.screens.cameraFocus.title'), t('onboarding.screens.cameraFocus.description'))],
-    playback: [page(t('onboarding.screens.playback.title'), t('onboarding.screens.playback.description'))],
+    cameraFocus: [
+      { element: '[data-onboarding="camera-focus-cameras"]', title: t('onboarding.screens.cameraFocus.camerasTitle'), description: t('onboarding.screens.cameraFocus.camerasDescription'), side: 'bottom' },
+      { element: '[data-onboarding="camera-focus-mode"]', title: t('onboarding.screens.cameraFocus.modeTitle'), description: t('onboarding.screens.cameraFocus.modeDescription'), side: 'bottom' },
+      { element: '[data-onboarding="camera-focus-content"]', title: t('onboarding.screens.cameraFocus.contentTitle'), description: t('onboarding.screens.cameraFocus.contentDescription'), side: 'top' },
+    ],
+    playback: [
+      { element: '[data-onboarding="playback-settings"]', title: t('onboarding.screens.playback.settingsTitle'), description: t('onboarding.screens.playback.settingsDescription'), side: 'left' },
+      { element: '[data-onboarding="playback-player"]', title: t('onboarding.screens.playback.playerTitle'), description: t('onboarding.screens.playback.playerDescription'), side: 'top' },
+    ],
     events: [
-      { element: '[data-onboarding="events-filters"]', title: t('onboarding.screens.events.title'), description: t('onboarding.screens.events.description'), side: 'bottom' },
-      { element: '[data-onboarding="events-grid"]', title: t('onboarding.screens.events.title'), description: t('onboarding.screens.events.description'), side: 'top' },
+      { element: '[data-onboarding="events-filters"]', title: t('onboarding.screens.events.filtersTitle'), description: t('onboarding.screens.events.filtersDescription'), side: 'bottom' },
+      { element: '[data-onboarding="events-grid"]', title: t('onboarding.screens.events.gridTitle'), description: t('onboarding.screens.events.gridDescription'), side: 'top' },
     ],
     settings: [
-      { element: '[data-onboarding="settings-preferences"]', title: t('onboarding.screens.settings.title'), description: t('onboarding.screens.settings.description'), side: 'top' },
-      { element: '[data-onboarding="settings-save"]', title: t('onboarding.screens.settings.title'), description: t('onboarding.screens.settings.description'), side: 'top' },
+      { element: '[data-onboarding="settings-preferences"]', title: t('onboarding.screens.settings.preferencesTitle'), description: t('onboarding.screens.settings.preferencesDescription'), side: 'top' },
+      { element: '[data-onboarding="settings-save"]', title: t('onboarding.screens.settings.saveTitle'), description: t('onboarding.screens.settings.saveDescription'), side: 'top' },
     ],
     adminVideos: [
-      { element: '[data-onboarding="video-management-actions"]', title: t('onboarding.screens.adminVideos.title'), description: t('onboarding.screens.adminVideos.description'), side: 'bottom' },
-      { element: '[data-onboarding="video-management-grid"]', title: t('onboarding.screens.adminVideos.title'), description: t('onboarding.screens.adminVideos.description'), side: 'top' },
+      { element: '[data-onboarding="video-management-actions"]', title: t('onboarding.screens.adminVideos.actionsTitle'), description: t('onboarding.screens.adminVideos.actionsDescription'), side: 'bottom' },
+      { element: '[data-onboarding="video-management-grid"]', title: t('onboarding.screens.adminVideos.gridTitle'), description: t('onboarding.screens.adminVideos.gridDescription'), side: 'top' },
     ],
     adminUsers: [
-      { element: '[data-onboarding="user-management-grid"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'top' },
-      { element: '[data-onboarding="user-management-approval"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'right', allowMissing: true },
-      { element: '[data-onboarding="user-management-role"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'left', allowMissing: true },
+      { element: '[data-onboarding="user-management-grid"]', title: t('onboarding.screens.adminUsers.accountTitle'), description: t('onboarding.screens.adminUsers.accountDescription'), side: 'top' },
+      { element: '[data-onboarding="user-management-approval"]', title: t('onboarding.screens.adminUsers.approvalTitle'), description: t('onboarding.screens.adminUsers.approvalDescription'), side: 'right', allowMissing: true },
+      { element: '[data-onboarding="user-management-role"]', title: t('onboarding.screens.adminUsers.roleTitle'), description: t('onboarding.screens.adminUsers.roleDescription'), side: 'left', allowMissing: true },
     ],
     adminCommonCodes: [
-      { element: '[data-onboarding="common-code-list"]', title: t('onboarding.screens.adminCommonCodes.title'), description: t('onboarding.screens.adminCommonCodes.description'), side: 'right' },
-      { element: '[data-onboarding="common-code-detail"]', title: t('onboarding.screens.adminCommonCodes.title'), description: t('onboarding.screens.adminCommonCodes.description'), side: 'left' },
+      { element: '[data-onboarding="common-code-list"]', title: t('onboarding.screens.adminCommonCodes.listTitle'), description: t('onboarding.screens.adminCommonCodes.listDescription'), side: 'right' },
+      { element: '[data-onboarding="common-code-detail"]', title: t('onboarding.screens.adminCommonCodes.detailTitle'), description: t('onboarding.screens.adminCommonCodes.detailDescription'), side: 'left' },
     ],
     adminQueries: [
-      { element: '[data-onboarding="page-content"]', title: t('onboarding.screens.adminQueries.title'), description: t('onboarding.screens.adminQueries.description'), side: 'top' },
+      { element: '[data-onboarding="page-content"]', title: t('onboarding.screens.adminQueries.managementTitle'), description: t('onboarding.screens.adminQueries.managementDescription'), side: 'top' },
     ],
-    adminModels: [page(t('onboarding.screens.adminModels.title'), t('onboarding.screens.adminModels.description'))],
+    adminModels: [
+      { element: '[data-onboarding="model-management-page"]', title: t('onboarding.screens.adminModels.dashboardTitle'), description: t('onboarding.screens.adminModels.dashboardDescription'), side: 'top' },
+      { element: '[data-onboarding="page-content"]', title: t('onboarding.screens.adminModels.viewTitle'), description: t('onboarding.screens.adminModels.viewDescription'), side: 'top' },
+    ],
     adminOther: [page(t('onboarding.screens.adminOther.title'), t('onboarding.screens.adminOther.description'))],
   }
   return steps[screen]

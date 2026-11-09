@@ -183,15 +183,15 @@
       "alarmDescription": "벨 아이콘에서 최근 실시간 알람을 확인하고 알람 목록으로 이동할 수 있습니다."
     },
     "screens": {
-      "cameraFocus": { "title": "화면 확대 보기", "description": "카메라 영상을 상세히 확인하고 알람, 메타데이터 및 녹화 영상을 확인합니다." },
-      "playback": { "title": "녹화 영상 재생", "description": "영상 소스와 시간 범위를 선택해 녹화 영상을 확인합니다." },
-      "events": { "title": "알람 목록", "description": "알람을 검색하고 상세 내용을 확인하며 영상을 내려받거나 확인 처리합니다." },
-      "settings": { "title": "알림 설정", "description": "연락처 정보와 알림 수신 설정을 관리합니다." },
-      "adminVideos": { "title": "영상 관리", "description": "라이브 모니터링에 사용하는 영상 소스를 등록·수정·복제·삭제합니다." },
-      "adminUsers": { "title": "사용자 관리", "description": "로그인 계정 정보를 확인하고 가입 신청을 승인·반려하며 사용자별 권한과 계정 상태를 제어합니다." },
-      "adminCommonCodes": { "title": "공통코드 관리", "description": "시스템에서 재사용하는 공통코드와 상세값을 관리합니다." },
-      "adminQueries": { "title": "쿼리 관리", "description": "화면 확대 보기에서 사용하는 메타데이터 쿼리를 관리합니다." },
-      "adminModels": { "title": "모델 관리", "description": "모델 프로세스 상태를 확인하고 운영 제어 기능을 사용합니다." },
+      "cameraFocus": { "title": "화면 확대 보기", "description": "카메라 영상을 상세히 확인하고 알람, 메타데이터 및 녹화 영상을 확인합니다.", "camerasTitle": "카메라 선택", "camerasDescription": "카메라 탭을 선택하면 해당 카메라의 상세 화면으로 전환됩니다.", "modeTitle": "실시간·녹화 전환", "modeDescription": "선택한 카메라의 실시간 영상과 녹화 영상을 전환해 확인할 수 있습니다.", "contentTitle": "상세 화면 구성", "contentDescription": "영상 영역에서 카메라를 확인하고 메타데이터 영역에서 쿼리 기반 섹션을 조회하거나 설정합니다." },
+      "playback": { "title": "녹화 영상 재생", "description": "영상 소스와 시간 범위를 선택해 녹화 영상을 확인합니다.", "settingsTitle": "재생 조건", "settingsDescription": "카메라, 날짜, 시작·종료 시간을 선택한 뒤 녹화 영상 조회를 실행합니다.", "playerTitle": "재생 조작", "playerDescription": "조회된 영상은 타임라인, 재생 버튼, 재생 속도로 확인합니다. 재생 세션이 있으면 다운로드도 가능합니다." },
+      "events": { "title": "알람 목록", "description": "알람을 검색하고 상세 내용을 확인하며 영상을 내려받거나 확인 처리합니다.", "filtersTitle": "알람 검색", "filtersDescription": "공정, AI 모델, 판정, 확인 상태로 필터링하거나 검색어를 입력해 알람을 찾습니다.", "gridTitle": "알람 결과", "gridDescription": "알람을 선택해 상세 내용과 관련 영상을 확인하고 처리한 알람은 확인 처리합니다." },
+      "settings": { "title": "알림 설정", "description": "연락처 정보와 알림 수신 설정을 관리합니다.", "preferencesTitle": "연락처·알림 설정", "preferencesDescription": "이메일과 연락처를 변경하고 받을 알림 채널을 선택합니다.", "saveTitle": "설정 저장", "saveDescription": "연락처나 알림 수신 옵션을 변경한 뒤 저장 버튼을 선택합니다." },
+      "adminVideos": { "title": "영상 관리", "description": "라이브 모니터링에 사용하는 영상 소스를 등록·수정·복제·삭제합니다.", "actionsTitle": "영상 소스 작업", "actionsDescription": "검색·새로고침으로 목록을 확인하고 선택한 행에 추가, 복제, 저장, 삭제 기능을 사용합니다.", "gridTitle": "영상 소스 그리드", "gridDescription": "그리드에서 영상명, 프로토콜, 주소, 모델 프로세스 연결, 상태, 위치와 구역을 편집합니다." },
+      "adminUsers": { "title": "사용자 관리", "description": "로그인 계정 정보를 확인하고 가입 신청을 승인·반려하며 사용자별 권한과 계정 상태를 제어합니다.", "accountTitle": "로그인 계정 관리", "accountDescription": "로그인 계정이나 이름으로 사용자를 검색하고 연락처, 부서, 직책, 상태, 비고를 확인합니다.", "approvalTitle": "가입 신청 승인", "approvalDescription": "가입 요청 상태의 계정은 상태를 변경해 승인하거나 반려할 수 있으며, 반려 사유도 입력할 수 있습니다.", "roleTitle": "권한·계정 상태 제어", "roleDescription": "권한 셀에서 사용자 권한을 설정하고 계정 상태 셀에서 활성, 비활성, 잠금 등의 상태를 관리합니다." },
+      "adminCommonCodes": { "title": "공통코드 관리", "description": "시스템에서 재사용하는 공통코드와 상세값을 관리합니다.", "listTitle": "공통코드 목록", "listDescription": "공통코드를 선택하면 연결된 상세값이 표시되며 코드 등록과 수정이 가능합니다.", "detailTitle": "상세값 관리", "detailDescription": "시스템에서 사용할 상세값을 추가·수정하고 순서와 활성 상태를 관리합니다." },
+      "adminQueries": { "title": "쿼리 관리", "description": "화면 확대 보기에서 사용하는 메타데이터 쿼리를 관리합니다.", "managementTitle": "메타데이터 쿼리", "managementDescription": "키워드나 상태로 쿼리를 검색하고 등록·수정하며, 참조되지 않은 쿼리는 활성화·비활성화·삭제할 수 있습니다." },
+      "adminModels": { "title": "모델 관리", "description": "모델 프로세스 상태를 확인하고 운영 제어 기능을 사용합니다.", "dashboardTitle": "모델 운영 현황", "dashboardDescription": "모델과 VM 프로세스 상태를 확인하고 프로세스를 선택해 로그와 제어 기능을 사용합니다.", "viewTitle": "대시보드·관리 그리드", "viewDescription": "운영 대시보드와 관리 그리드를 전환해 모델 프로세스를 모니터링하고 필터링·설정·삭제합니다." },
       "adminOther": { "title": "관리자 화면", "description": "현재 관리자 화면에서 제공하는 기능을 확인합니다." }
     },
     "login": {

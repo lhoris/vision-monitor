@@ -33,7 +33,7 @@ export function Playback() {
   }))
 
   return (
-    <div className="flex min-h-full flex-col gap-4 p-4 lg:h-full lg:min-h-0 lg:overflow-hidden lg:p-6">
+    <div className="flex min-h-full flex-col gap-4 p-4 lg:h-full lg:min-h-0 lg:overflow-hidden lg:p-6" data-onboarding="playback-page">
       {/* Header */}
       <div className="shrink-0">
         <h1 className="mb-1 text-2xl font-bold text-gray-900 dark:text-white lg:text-3xl">
@@ -46,7 +46,7 @@ export function Playback() {
 
       <div className="grid min-h-0 grid-cols-1 gap-4 lg:flex-1 lg:grid-cols-4 lg:gap-6 lg:overflow-hidden">
         {/* Main Playback Area */}
-        <div className="min-h-0 lg:col-span-3 lg:flex lg:min-h-0 lg:flex-col">
+        <div className="min-h-0 lg:col-span-3 lg:flex lg:min-h-0 lg:flex-col" data-onboarding="playback-player">
           {/* Video Player */}
           <Card className="lg:flex lg:h-full lg:min-h-0 lg:flex-col">
               <div className="flex aspect-video w-full shrink-0 items-center justify-center bg-black lg:h-[min(56vh,36rem)] lg:aspect-auto">
@@ -131,7 +131,7 @@ export function Playback() {
         </div>
 
         {/* Sidebar Controls */}
-        <div className="space-y-4">
+        <div className="space-y-4" data-onboarding="playback-settings">
           <Card>
             <CardHeader>
               <h3 className="font-semibold text-gray-900 dark:text-white">
