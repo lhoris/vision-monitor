@@ -6,6 +6,14 @@
 @import './tailwind.css';
 @import './tabulator.css';
 
+.driver-active-element[data-onboarding='live-empty-cell'],
+.driver-active-element[data-onboarding='live-video-source'] {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 0 4px rgb(251 191 36 / 45%), 0 0 22px rgb(251 191 36 / 55%) !important;
+  position: relative;
+  z-index: 100001;
+}
+
 @layer base {
   * {
     margin: 0;

@@ -74,8 +74,8 @@ export function getOnboardingSteps(screen: OnboardingScreen, t: TFunction): Onbo
     ? [
         { element: '[data-onboarding="live-process-tabs"]', title: t('onboarding.live.processTitle'), description: t('onboarding.live.processDescription'), side: 'bottom' as const, align: 'start' as const },
         { element: '[data-onboarding="live-sub-tabs"]', title: t('onboarding.live.subTabTitle'), description: t('onboarding.live.subTabDescription'), side: 'bottom' as const, align: 'start' as const },
-        { element: '[data-onboarding="live-empty-cell"]', title: t('onboarding.live.addVideoTitle'), description: t('onboarding.live.addVideoDescription'), side: 'top' as const, advanceOnAction: true, showButtons: ['previous', 'close'] as Array<'previous' | 'close'> },
-        { element: '[data-onboarding="live-video-source"]', title: t('onboarding.live.selectVideoTitle'), description: t('onboarding.live.selectVideoDescription'), side: 'right' as const, allowMissing: true, requires: '[data-onboarding="live-empty-cell"]', waitForElement: 5000, advanceOnAction: true, showButtons: ['previous', 'close'] as Array<'previous' | 'close'> },
+        { element: '[data-onboarding="live-empty-cell"]', title: t('onboarding.live.addVideoTitle'), description: t('onboarding.live.addVideoDescription'), side: 'top' as const, advanceOnAction: true, showButtons: ['previous', 'next', 'close'] as Array<'previous' | 'next' | 'close'> },
+        { element: '[data-onboarding="live-video-source"]', title: t('onboarding.live.selectVideoTitle'), description: t('onboarding.live.selectVideoDescription'), side: 'right' as const, allowMissing: true, requires: '[data-onboarding="live-empty-cell"]', waitForElement: 5000, advanceOnAction: true, showButtons: ['previous', 'next', 'close'] as Array<'previous' | 'next' | 'close'> },
         { element: '[data-onboarding="live-grid"]', title: t('onboarding.live.videoTitle'), description: t('onboarding.live.videoDescription'), side: 'top' as const },
         { element: '[data-onboarding="live-alarm"]', title: t('onboarding.live.alarmTitle'), description: t('onboarding.live.alarmDescription'), side: 'bottom' as const },
       ]
