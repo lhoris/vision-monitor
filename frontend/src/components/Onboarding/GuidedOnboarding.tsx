@@ -47,13 +47,23 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
       element: step.element,
       skipMissingElement: step.allowMissing,
       waitForElement: step.waitForElement,
-      advanceOnClick: step.advanceOnClick,
       popover: {
         title: step.title,
         description: step.description,
         side: step.side,
         align: step.align ?? 'center',
         showButtons: step.showButtons,
+        onPopoverRender: step.advanceOnAction
+          ? (_popover, opts) => {
+              const handleActionClick = (event: MouseEvent) => {
+                const target = event.target instanceof Element ? event.target.closest(step.element) : null
+                if (!target) return
+                document.removeEventListener('click', handleActionClick, true)
+                window.setTimeout(() => opts.driver.moveNext(), 50)
+              }
+              document.addEventListener('click', handleActionClick, true)
+            }
+          : undefined,
       },
     })),
   })
