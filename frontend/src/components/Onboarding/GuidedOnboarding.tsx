@@ -95,6 +95,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               if (step.openOnNext) {
                 if (step.element === '[data-onboarding="live-video-titlebar"]') {
                   openContextMenu(step.openOnNext)
+                  return
                 } else {
                   const trigger = document.querySelector(`${step.openOnNext} > button`)
                   if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
@@ -109,10 +110,22 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               opts.driver.moveTo((opts.index ?? 0) + 2)
             }
           : undefined,
-        onPrevClick: step.closeOnPrevious
+        onPrevClick: step.closeOnPrevious || step.openOnPrevious
           ? (_element, _previousStep, opts) => {
-              const closeTarget = document.querySelector(step.closeOnPrevious as string)
-              if (closeTarget instanceof HTMLElement) closeTarget.click()
+              if (step.closeOnPrevious) {
+                const closeTarget = document.querySelector(step.closeOnPrevious)
+                if (closeTarget instanceof HTMLElement) closeTarget.click()
+              }
+              if (step.openOnPrevious) {
+                if (step.element === '[data-onboarding="live-grid-layout"]') {
+                  openContextMenu(step.openOnPrevious)
+                } else {
+                  const trigger = document.querySelector(step.openOnPrevious)
+                  if (trigger instanceof HTMLElement) trigger.click()
+                }
+                window.setTimeout(() => opts.driver.movePrevious(), 50)
+                return
+              }
               opts.driver.movePrevious()
             }
           : undefined,
