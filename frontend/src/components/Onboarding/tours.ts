@@ -13,6 +13,43 @@ export interface OnboardingStep {
   advanceOnClick?: boolean
 }
 
+function screenSteps(screen: Exclude<OnboardingScreen, 'login' | 'live'>, t: TFunction): OnboardingStep[] {
+  const page = (title: string, description: string): OnboardingStep => ({
+    element: '[data-onboarding="page-content"]', title, description, side: 'top',
+  })
+  const steps: Record<typeof screen, OnboardingStep[]> = {
+    cameraFocus: [page(t('onboarding.screens.cameraFocus.title'), t('onboarding.screens.cameraFocus.description'))],
+    playback: [page(t('onboarding.screens.playback.title'), t('onboarding.screens.playback.description'))],
+    events: [
+      { element: '[data-onboarding="events-filters"]', title: t('onboarding.screens.events.title'), description: t('onboarding.screens.events.description'), side: 'bottom' },
+      { element: '[data-onboarding="events-grid"]', title: t('onboarding.screens.events.title'), description: t('onboarding.screens.events.description'), side: 'top' },
+    ],
+    settings: [
+      { element: '[data-onboarding="settings-preferences"]', title: t('onboarding.screens.settings.title'), description: t('onboarding.screens.settings.description'), side: 'top' },
+      { element: '[data-onboarding="settings-save"]', title: t('onboarding.screens.settings.title'), description: t('onboarding.screens.settings.description'), side: 'top' },
+    ],
+    adminVideos: [
+      { element: '[data-onboarding="video-management-actions"]', title: t('onboarding.screens.adminVideos.title'), description: t('onboarding.screens.adminVideos.description'), side: 'bottom' },
+      { element: '[data-onboarding="video-management-grid"]', title: t('onboarding.screens.adminVideos.title'), description: t('onboarding.screens.adminVideos.description'), side: 'top' },
+    ],
+    adminUsers: [
+      { element: '[data-onboarding="user-management-grid"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'top' },
+      { element: '[data-onboarding="user-management-approval"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'right', allowMissing: true },
+      { element: '[data-onboarding="user-management-role"]', title: t('onboarding.screens.adminUsers.title'), description: t('onboarding.screens.adminUsers.description'), side: 'left', allowMissing: true },
+    ],
+    adminCommonCodes: [
+      { element: '[data-onboarding="common-code-list"]', title: t('onboarding.screens.adminCommonCodes.title'), description: t('onboarding.screens.adminCommonCodes.description'), side: 'right' },
+      { element: '[data-onboarding="common-code-detail"]', title: t('onboarding.screens.adminCommonCodes.title'), description: t('onboarding.screens.adminCommonCodes.description'), side: 'left' },
+    ],
+    adminQueries: [
+      { element: '[data-onboarding="page-content"]', title: t('onboarding.screens.adminQueries.title'), description: t('onboarding.screens.adminQueries.description'), side: 'top' },
+    ],
+    adminModels: [page(t('onboarding.screens.adminModels.title'), t('onboarding.screens.adminModels.description'))],
+    adminOther: [page(t('onboarding.screens.adminOther.title'), t('onboarding.screens.adminOther.description'))],
+  }
+  return steps[screen]
+}
+
 export function getOnboardingSteps(screen: OnboardingScreen, t: TFunction): OnboardingStep[] {
   const steps = screen === 'login'
     ? [
@@ -30,11 +67,7 @@ export function getOnboardingSteps(screen: OnboardingScreen, t: TFunction): Onbo
         { element: '[data-onboarding="live-grid"]', title: t('onboarding.live.videoTitle'), description: t('onboarding.live.videoDescription'), side: 'top' as const },
         { element: '[data-onboarding="live-alarm"]', title: t('onboarding.live.alarmTitle'), description: t('onboarding.live.alarmDescription'), side: 'bottom' as const },
       ]
-    : [
-        { element: '[data-onboarding="page-navigation-button"]', title: t('onboarding.common.navigationTitle'), description: t('onboarding.common.navigationDescription'), side: 'bottom' as const },
-        { element: '[data-onboarding="page-content"]', title: t(`onboarding.screens.${screen}.title`), description: t(`onboarding.screens.${screen}.description`), side: 'top' as const },
-        { element: '[data-onboarding="live-alarm"]', title: t('onboarding.common.alarmTitle'), description: t('onboarding.common.alarmDescription'), side: 'bottom' as const },
-      ]
+    : screenSteps(screen, t)
 
   return steps.map((step, index) => ({ ...step, order: index + 1 }))
 }

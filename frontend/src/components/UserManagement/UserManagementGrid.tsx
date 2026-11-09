@@ -967,7 +967,7 @@ export function UserManagementGrid({
 
   return (
     <>
-      <DataGridToolbar className="mb-2">
+      <DataGridToolbar className="mb-2" data-onboarding="user-management-actions">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); void executeSearch() }}>
           <label htmlFor="user-login-account-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.loginAccount')}</label>
           <input id="user-login-account-search" aria-label={t('userManagement.loginAccountSearch')} value={loginAccountQuery} onChange={(event) => setLoginAccountQuery(event.target.value)} placeholder={t('userManagement.loginAccountSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
@@ -1015,7 +1015,7 @@ export function UserManagementGrid({
       )}
 
       <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu}>
-        <DataGridTable className="w-full min-w-[980px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+        <DataGridTable className="w-full min-w-[980px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700" data-onboarding="user-management-grid">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
@@ -1066,7 +1066,7 @@ export function UserManagementGrid({
                     {row.passwordResetRequired ? t('userManagement.passwordResetDone') : t('userManagement.resetAction')}
                   </button>
                 </td>
-                <td className={bodyCellClass} title={row.accountStatus === 'rejected' && row.accountStatusReason ? t('userManagement.rejectionReasonTooltip', { reason: row.accountStatusReason }) : undefined}>{renderSelectCell(row, 'accountStatus', t('userManagement.accountStatus'), row.accountStatus, [
+                <td className={bodyCellClass} data-onboarding={row.accountStatus === 'pending' ? 'user-management-approval' : undefined} title={row.accountStatus === 'rejected' && row.accountStatusReason ? t('userManagement.rejectionReasonTooltip', { reason: row.accountStatusReason }) : undefined}>{renderSelectCell(row, 'accountStatus', t('userManagement.accountStatus'), row.accountStatus, [
                   { value: 'active', label: t('userManagement.accountStatuses.active') },
                   { value: 'pending', label: t('userManagement.accountStatuses.pending') },
                   { value: 'inactive', label: t('userManagement.accountStatuses.inactive') },
@@ -1074,7 +1074,7 @@ export function UserManagementGrid({
                   { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
                   { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
                 ])}</td>
-                <td className={bodyCellClass}>{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
+                <td className={bodyCellClass} data-onboarding="user-management-role">{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', t('userManagement.remarks'))}{renderError(row, 'displayName')}</td>
               </tr>
             ))}

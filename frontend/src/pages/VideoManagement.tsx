@@ -414,7 +414,7 @@ export function VideoManagement() {
       <Toast message={notice} variant="success" onClose={() => setNotice('')} />
       <Toast message={error} variant="error" onClose={() => setError('')} />
 
-      <DataGridToolbar className="mb-2">
+      <DataGridToolbar className="mb-2" data-onboarding="video-management-actions">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); setAppliedQuery(query) }}>
           <label htmlFor="video-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">영상</label>
           <input id="video-search" aria-label="영상 검색" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름 또는 주소 입력" className="h-8 w-64 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
@@ -451,7 +451,7 @@ export function VideoManagement() {
           </div>
         ) : null}
 
-        <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu}>
+        <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu} data-onboarding="video-management-grid">
           <DataGridTable className="w-full min-w-[1120px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>

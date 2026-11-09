@@ -188,7 +188,7 @@
       "events": { "title": "Alarm list", "description": "Search alarms, inspect details, download recordings, and acknowledge alarms." },
       "settings": { "title": "Notification settings", "description": "Manage your contact information and notification preferences." },
       "adminVideos": { "title": "Video management", "description": "Register, edit, duplicate, and remove video sources used by live monitoring." },
-      "adminUsers": { "title": "User management", "description": "Manage user accounts, approval status, roles, and account settings." },
+      "adminUsers": { "title": "User management", "description": "Review login accounts, approve or reject sign-up requests, and control each user's roles and account status." },
       "adminCommonCodes": { "title": "Common code management", "description": "Manage reusable common codes and their detail values." },
       "adminQueries": { "title": "Query management", "description": "Manage metadata queries used by the focus view." },
       "adminModels": { "title": "Model management", "description": "Monitor model processes and manage their operational controls." },

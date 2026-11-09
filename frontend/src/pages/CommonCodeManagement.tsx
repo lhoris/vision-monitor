@@ -105,7 +105,7 @@ export default function CommonCodeManagement() {
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.6fr)]">
-        <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+        <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800" data-onboarding="common-code-list">
           <div className="flex h-12 items-center justify-between border-b border-slate-200 px-3 dark:border-slate-700">
             <h2 className="text-sm font-semibold text-slate-900 dark:text-white">공통코드</h2>
             <span className="text-xs text-slate-500 dark:text-slate-400">전체 {codes.length}건</span>
@@ -139,7 +139,7 @@ export default function CommonCodeManagement() {
           </div>
         </section>
 
-        <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
+        <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800" data-onboarding="common-code-detail">
           <div className="flex min-h-12 flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-700">
             <div>
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{selected?.name ?? '상세코드'}</h2>

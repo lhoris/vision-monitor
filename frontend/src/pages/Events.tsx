@@ -235,6 +235,7 @@ export function Events() {
         </p>
       </header>
       <section
+        data-onboarding="events-filters"
         aria-label={t("events.filters")}
         className="flex flex-wrap items-end gap-3 rounded border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900"
       >
@@ -309,6 +310,7 @@ export function Events() {
         </div>
       )}
       <section
+        data-onboarding="events-grid"
         className={`grid min-h-0 flex-1 overflow-hidden rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 ${gridCollapsed ? "xl:grid-cols-[48px_minmax(0,1fr)]" : "xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]"}`}
       >
         <div

@@ -74,7 +74,7 @@ export function Settings() {
       {loading ? <p role="status" className="text-sm text-gray-500">{t('common.loading')}</p> : null}
       {error && !settings ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
       {settings ? (
-        <section className="max-w-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+        <section className="max-w-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800" data-onboarding="settings-preferences">
           <h2 className="text-lg font-semibold">{t('settings.notificationSettings')}</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -98,7 +98,7 @@ export function Settings() {
           </div>
           {error ? <p role="alert" className="mt-4 text-sm text-red-600">{error}</p> : null}
           {notice ? <p role="status" className="mt-4 text-sm text-emerald-600">{notice}</p> : null}
-          <div className="mt-5 flex justify-end">
+          <div className="mt-5 flex justify-end" data-onboarding="settings-save">
             <Button type="button" onClick={() => void save()} disabled={!dirty} isLoading={saving}>{t('common.save')}</Button>
           </div>
         </section>

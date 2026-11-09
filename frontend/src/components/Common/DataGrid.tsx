@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode, TableHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode, TableHTMLAttributes } from 'react'
 
 interface DataGridTableProps extends TableHTMLAttributes<HTMLTableElement> {
   children: ReactNode
@@ -10,9 +10,8 @@ interface DataGridTextProps {
   title?: string
 }
 
-interface DataGridToolbarProps {
+interface DataGridToolbarProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
-  className?: string
 }
 
 interface DataGridActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -27,8 +26,8 @@ export function DataGridText({ children, className = '', title }: DataGridTextPr
   return <span className={`grid-cell-value ${className}`} title={title}>{children}</span>
 }
 
-export function DataGridToolbar({ children, className = '' }: DataGridToolbarProps) {
-  return <div className={`data-grid-toolbar ${className}`}>{children}</div>
+export function DataGridToolbar({ children, className = '', ...props }: DataGridToolbarProps) {
+  return <div {...props} className={`data-grid-toolbar ${className}`}>{children}</div>
 }
 
 export function DataGridActionButton({ variant = 'secondary', className = '', children, ...props }: DataGridActionButtonProps) {
