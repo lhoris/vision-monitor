@@ -46,6 +46,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
     prevBtnText: t('onboarding.previous'),
     doneBtnText: t('onboarding.done'),
     progressText: t('onboarding.progress'),
+    onNextClick: (_element, _step, opts) => opts.driver.moveNext(),
     steps: steps.map((step) => ({
       element: step.element,
       skipMissingElement: step.allowMissing,
