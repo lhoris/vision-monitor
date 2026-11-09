@@ -5,6 +5,7 @@
 export { Button } from './Button'
 export { Card, CardHeader, CardBody, CardFooter } from './Card'
 export { GridColumnFilterRow } from './GridColumnFilterRow'
+export { DataGridActionButton, DataGridTable, DataGridText, DataGridToolbar } from './DataGrid'
 export { Modal } from './Modal'
 export { ConfirmDialog } from './ConfirmDialog'
 export type { ConfirmDialogVariant } from './ConfirmDialog'

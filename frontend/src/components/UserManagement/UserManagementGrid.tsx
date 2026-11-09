@@ -10,7 +10,7 @@ import type {
   UserGridRowState,
   UserMutationRequest,
 } from '@/types/userManagement'
-import { ConfirmDialog, GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
+import { ConfirmDialog, DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
 import { canPerformDangerAction, validateUserMutation, type UserValidationErrors } from '@/services/userManagementValidation'
 import { accountStatusLabel, employmentStatusLabel } from './UserStatusBadge'
 
@@ -114,7 +114,7 @@ const headerCellClass = 'h-8 border-b border-r border-[#9dcced] bg-[#dff2ff] px-
 const bodyCellClass = 'h-9 border-b border-r border-[#b7d8ee] p-0 align-middle dark:border-slate-700'
 const editableCellClass = 'box-border h-9 w-full rounded-none border border-[#6ab6e8] bg-white px-2 text-sm leading-none text-slate-900 outline-none disabled:border-transparent disabled:bg-[#f4f9fc] disabled:text-slate-500 dark:border-sky-500 dark:bg-slate-900 dark:text-slate-100 dark:disabled:bg-slate-800'
 const selectCellClass = 'box-border h-9 w-full rounded-none border border-[#6ab6e8] bg-white px-2 text-sm leading-none text-slate-900 outline-none dark:border-sky-500 dark:bg-slate-900 dark:text-slate-100'
-const cellValueClass = 'box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none hover:border-[#9dcced] hover:bg-[#eef8ff] focus:border-[#58aee4] focus:bg-[#eef8ff] dark:text-slate-100 dark:hover:border-sky-700 dark:hover:bg-slate-700 dark:focus:border-sky-500 dark:focus:bg-slate-700'
+const cellValueClass = 'grid-cell-value box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none hover:border-[#9dcced] hover:bg-[#eef8ff] focus:border-[#58aee4] focus:bg-[#eef8ff] dark:text-slate-100 dark:hover:border-sky-700 dark:hover:bg-slate-700 dark:focus:border-sky-500 dark:focus:bg-slate-700'
 const selectedCellClass = 'border-[#4aa3df] bg-[#cfeaff] shadow-[inset_0_0_0_1px_#4aa3df] dark:border-sky-500 dark:bg-sky-950/60'
 const selectableColumns: SelectableCellField[] = ['state', 'id', 'username', 'name', 'displayName', 'dataEndStatus', 'createdAt', 'updatedAt']
 
@@ -987,7 +987,7 @@ export function UserManagementGrid({
 
   return (
     <>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
+      <DataGridToolbar className="mb-2">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); void executeSearch() }}>
           <label htmlFor="user-login-account-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.loginAccount')}</label>
           <input id="user-login-account-search" aria-label={t('userManagement.loginAccountSearch')} value={loginAccountQuery} onChange={(event) => setLoginAccountQuery(event.target.value)} placeholder={t('userManagement.loginAccountSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
@@ -995,11 +995,11 @@ export function UserManagementGrid({
           <input id="user-name-search" aria-label={t('userManagement.nameSearch')} value={nameQuery} onChange={(event) => setNameQuery(event.target.value)} placeholder={t('userManagement.nameSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => void executeSearch()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{t('userManagement.search')}</button>
-        <button type="button" onClick={() => void saveRows()} disabled={saving || selectedChangedRows.length === 0} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">{t('userManagement.save')}</button>
-        <button type="button" onClick={() => void deleteRows()} disabled={saving || selectedRows.every((row) => !row.id)} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">{t('userManagement.delete')}</button>
+          <DataGridActionButton type="button" onClick={() => void executeSearch()} disabled={saving}>{t('userManagement.search')}</DataGridActionButton>
+        <DataGridActionButton type="button" variant="primary" onClick={() => void saveRows()} disabled={saving || selectedChangedRows.length === 0}>{t('userManagement.save')}</DataGridActionButton>
+        <DataGridActionButton type="button" variant="danger" onClick={() => void deleteRows()} disabled={saving || selectedRows.every((row) => !row.id)}>{t('userManagement.delete')}</DataGridActionButton>
         </div>
-      </div>
+      </DataGridToolbar>
 
       <section className="relative flex min-h-0 flex-1 flex-col border border-[#9dcced] bg-white shadow-none dark:border-slate-700 dark:bg-slate-800">
       {contextMenu && (
@@ -1035,7 +1035,7 @@ export function UserManagementGrid({
       )}
 
       <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu}>
-        <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+        <DataGridTable className="w-full min-w-[980px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
@@ -1100,7 +1100,7 @@ export function UserManagementGrid({
             ))}
             {!visibleRows.length && <tr><td colSpan={11} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
           </tbody>
-        </table>
+        </DataGridTable>
 
         {false && <table className="hidden w-full min-w-[1536px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
