@@ -1,6 +1,7 @@
 import type { MetadataPollingState, MetadataSectionConfig } from '@/types/metadataConfig'
 import { MetadataSectionStatus } from './MetadataSectionStatus'
 import { displayValue } from './TextMetadataSection'
+import { DataGridTable, DataGridText } from '@/components/Common'
 
 interface GridMetadataSectionProps {
   section: MetadataSectionConfig
@@ -16,7 +17,7 @@ export function GridMetadataSection({ section, polling, onSelectEvent }: GridMet
       <MetadataSectionStatus status={polling.status} message={polling.error?.message} />
       {polling.result?.rows.length ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse text-xs"><thead><tr>{mapping.columns.map((column) => <th key={column.field} className="border border-slate-200 bg-slate-50 px-2 py-1 text-left font-semibold dark:border-slate-700 dark:bg-slate-900">{column.label ?? polling.result?.schema.find((field) => field.name === column.field)?.label ?? column.field}</th>)}{mapping.playbackAvailableField ? <th className="border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-700 dark:bg-slate-900">재생</th> : null}</tr></thead><tbody>{polling.result.rows.map((row, index) => <tr key={`${section.id}-${index}`}>{mapping.columns.map((column) => <td key={column.field} className="border border-slate-200 px-2 py-1 dark:border-slate-700">{formatCell(row[column.field], column.format)}</td>)}{mapping.playbackAvailableField ? <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700">{row[mapping.playbackAvailableField] ? <button type="button" className="text-blue-600 underline" onClick={() => { const value = mapping.eventIdField ? row[mapping.eventIdField] : undefined; if (typeof value === 'number') onSelectEvent?.(value) }}>재생</button> : '-'}</td> : null}</tr>)}</tbody></table>
+          <DataGridTable className="min-w-full border-collapse text-xs"><thead><tr>{mapping.columns.map((column) => <th key={column.field} className="border border-slate-200 bg-slate-50 px-2 py-1 text-left font-semibold dark:border-slate-700 dark:bg-slate-900"><DataGridText>{column.label ?? polling.result?.schema.find((field) => field.name === column.field)?.label ?? column.field}</DataGridText></th>)}{mapping.playbackAvailableField ? <th className="border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-700 dark:bg-slate-900">재생</th> : null}</tr></thead><tbody>{polling.result.rows.map((row, index) => <tr key={`${section.id}-${index}`}>{mapping.columns.map((column) => <td key={column.field} className="border border-slate-200 px-2 py-1 dark:border-slate-700"><DataGridText title={formatCell(row[column.field], column.format)}>{formatCell(row[column.field], column.format)}</DataGridText></td>)}{mapping.playbackAvailableField ? <td className="border border-slate-200 px-2 py-1 text-center dark:border-slate-700">{row[mapping.playbackAvailableField] ? <button type="button" className="text-blue-600 underline" onClick={() => { const value = mapping.eventIdField ? row[mapping.eventIdField] : undefined; if (typeof value === 'number') onSelectEvent?.(value) }}>재생</button> : '-'}</td> : null}</tr>)}</tbody></DataGridTable>
         </div>
       ) : null}
     </div>

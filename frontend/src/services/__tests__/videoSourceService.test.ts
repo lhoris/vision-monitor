@@ -23,6 +23,7 @@ describe('video source camera adapter', () => {
       streamUrl: 'http://localhost:8889/sample001/whep',
       streamProtocol: 'webrtc',
       status: 'online',
+      modelProcessId: null,
     })
   })
 

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { commonCodeService } from '@/services/commonCodeService'
+import { DataGridActionButton, DataGridTable, DataGridText } from '@/components/Common'
 import type { CommonCode, CommonCodeDetail, CommonCodeDetailInput, CommonCodeInput } from '@/types/commonCode'
 
 const emptyCode: CommonCodeInput = { name: '', description: '', type: '', remarks: '' }
@@ -98,9 +99,9 @@ export default function CommonCodeManagement() {
           <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">공통코드 관리</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">공통코드와 상세코드를 그리드에서 관리합니다.</p>
         </div>
-        <button className="rounded bg-blue-600 px-3 py-2 text-sm font-semibold text-white" onClick={() => startCode()}>
+        <DataGridActionButton variant="primary" onClick={() => startCode()}>
           공통코드 등록
-        </button>
+        </DataGridActionButton>
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(360px,0.9fr)_minmax(0,1.6fr)]">
@@ -110,7 +111,7 @@ export default function CommonCodeManagement() {
             <span className="text-xs text-slate-500 dark:text-slate-400">전체 {codes.length}건</span>
           </div>
           <div className="min-h-0 flex-1 overflow-auto">
-            <table className="w-full min-w-[520px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+            <DataGridTable className="w-full min-w-[520px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
               <thead className="sticky top-0 z-10">
                 <tr>
                   <th className={`w-40 ${headerCell}`}>코드명</th>
@@ -125,8 +126,8 @@ export default function CommonCodeManagement() {
                     onClick={() => void selectCode(code)}
                     className={`${selected?.id === code.id ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 cursor-pointer text-slate-800 hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:bg-slate-700`}
                   >
-                    <td className={`${bodyCell} truncate font-mono font-semibold`} title={code.name}>{code.name}</td>
-                    <td className={`${bodyCell} truncate`} title={code.description ?? ''}>{code.description || '-'}</td>
+                    <td className={`${bodyCell} font-mono font-semibold`}><DataGridText title={code.name}>{code.name}</DataGridText></td>
+                    <td className={bodyCell}><DataGridText title={code.description ?? undefined}>{code.description || '-'}</DataGridText></td>
                     <td className={`${bodyCell} text-center`}>
                       <span className={code.dataEndStatus === 'N' ? 'text-emerald-600' : 'text-slate-500'}>{code.dataEndStatus === 'N' ? '활성' : '비활성'}</span>
                     </td>
@@ -134,7 +135,7 @@ export default function CommonCodeManagement() {
                 ))}
                 {!codes.length ? <tr><td colSpan={3} className="p-8 text-center text-sm text-slate-500">등록된 공통코드가 없습니다.</td></tr> : null}
               </tbody>
-            </table>
+            </DataGridTable>
           </div>
         </section>
 
@@ -156,7 +157,7 @@ export default function CommonCodeManagement() {
             </div>
           </div>
           <div className="min-h-0 flex-1 overflow-auto">
-            <table className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+            <DataGridTable className="w-full min-w-[980px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
               <thead className="sticky top-0 z-10">
                 <tr>
                   <th className={`w-44 ${headerCell}`}>코드값</th>
@@ -171,10 +172,10 @@ export default function CommonCodeManagement() {
               <tbody>
                 {details.map((detail) => (
                   <tr key={detail.id} className="h-9 bg-white text-slate-800 hover:bg-[#eef8ff] dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">
-                    <td className={`${bodyCell} truncate font-mono font-semibold`} title={detail.value}>{detail.value}</td>
-                    <td className={`${bodyCell} truncate`} title={detail.name}>{detail.name}</td>
-                    <td className={`${bodyCell} truncate`} title={detail.nameKo ?? ''}>{detail.nameKo || '-'}</td>
-                    <td className={`${bodyCell} truncate`} title={detail.nameEn ?? ''}>{detail.nameEn || '-'}</td>
+                    <td className={`${bodyCell} font-mono font-semibold`}><DataGridText title={detail.value}>{detail.value}</DataGridText></td>
+                    <td className={bodyCell}><DataGridText title={detail.name}>{detail.name}</DataGridText></td>
+                    <td className={bodyCell}><DataGridText title={detail.nameKo ?? undefined}>{detail.nameKo || '-'}</DataGridText></td>
+                    <td className={bodyCell}><DataGridText title={detail.nameEn ?? undefined}>{detail.nameEn || '-'}</DataGridText></td>
                     <td className={`${bodyCell} text-center`}>{detail.sortOrder}</td>
                     <td className={`${bodyCell} text-center`}>
                       <span className={detail.dataEndStatus === 'N' ? 'text-emerald-600' : 'text-slate-500'}>{detail.dataEndStatus === 'N' ? '활성' : '비활성'}</span>
@@ -191,7 +192,7 @@ export default function CommonCodeManagement() {
                 ))}
                 {!details.length ? <tr><td colSpan={7} className="p-8 text-center text-sm text-slate-500">조회된 상세코드가 없습니다.</td></tr> : null}
               </tbody>
-            </table>
+            </DataGridTable>
           </div>
         </section>
       </div>

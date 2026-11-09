@@ -36,7 +36,7 @@ describe('modelManagementService', () => {
   it('returns event types with model process event logs', async () => {
     vi.mocked(apiClient.get).mockResolvedValue({ data: [{ id: 'log-1', modelProcessId: 'model-001', occurredAt: '2026-10-14T01:00:00Z', severity: 'info', eventType: 'MODEL_REGISTERED', message: 'registered', detectionSummary: '-' }] })
     const logs = await listEventLogs('model-001')
-    expect(apiClient.get).toHaveBeenCalledWith('/model-processes/model-001/event-logs')
+    expect(apiClient.get).toHaveBeenCalledWith('/model-processes/model-001/event-logs', expect.objectContaining({ _refresh: expect.any(Number) }))
     expect(logs[0].eventType).toBe('MODEL_REGISTERED')
   })
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/store";
-import { Toast } from "@/components/Common";
+import { DataGridActionButton, DataGridTable, DataGridText, Toast } from "@/components/Common";
 import {
   getAlarmOffsetConfig,
   getAlarmRecordingClip,
@@ -367,7 +367,7 @@ export function Events() {
           </div>
           {!gridCollapsed && (
             <div className="h-[calc(100%-3rem)] overflow-auto">
-              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+              <DataGridTable className="w-full min-w-[1050px] border-collapse text-left text-sm">
                 <thead className="sticky top-0 z-10 bg-gray-50 text-xs font-semibold text-gray-500 dark:bg-gray-800">
                   <tr>
                     <th className="px-3 py-3">{t("events.process")}</th>
@@ -408,7 +408,7 @@ export function Events() {
                           onClick={() => setSelectedId(event.id)}
                           className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/70 ${selected?.id === event.id ? "bg-blue-50/70 dark:bg-blue-950/30" : ""}`}
                         >
-                          <td className="px-3 py-3">{event.processName ?? "-"}</td>
+                          <td className="px-3 py-3"><DataGridText>{event.processName ?? "-"}</DataGridText></td>
                           <td className="px-3 py-3">
                             <button
                               type="button"
@@ -427,28 +427,24 @@ export function Events() {
                           <td className="whitespace-nowrap px-3 py-3 text-xs tabular-nums">
                             {dateTime(event.timestamp)}
                           </td>
-                          <td className="px-3 py-3">
-                            {event.location ?? cameraName(event.cameraId)}
-                          </td>
-                          <td className="max-w-[220px] truncate px-3 py-3">
-                            {event.modelName ?? "-"}
-                          </td>
+                          <td className="px-3 py-3"><DataGridText>{event.location ?? cameraName(event.cameraId)}</DataGridText></td>
+                          <td className="px-3 py-3"><DataGridText>{event.modelName ?? "-"}</DataGridText></td>
                           <td
                             className={`px-3 py-3 font-semibold ${event.judgment === "NG" ? "text-rose-600" : "text-emerald-600"}`}
                           >
                             {event.judgment ?? "-"}
                           </td>
                           <td className="px-3 py-3">
-                            <button
+                            <DataGridActionButton
+                              className="px-2 py-1 text-xs"
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 void download(event);
                               }}
-                              className="text-blue-700 hover:underline"
                             >
                               {t("events.download")}
-                            </button>
+                            </DataGridActionButton>
                           </td>
                           <td className="px-3 py-3">
                             {acknowledged ? (
@@ -456,16 +452,16 @@ export function Events() {
                                 {t("events.statuses.acknowledged")}
                               </span>
                             ) : (
-                              <button
+                              <DataGridActionButton
+                                className="px-2 py-1 text-xs"
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   acknowledge(event);
                                 }}
-                                className="rounded bg-blue-700 px-2 py-1 text-xs font-semibold text-white"
                               >
                                 {t("events.acknowledge")}
-                              </button>
+                              </DataGridActionButton>
                             )}
                           </td>
                         </tr>
@@ -473,7 +469,7 @@ export function Events() {
                     })
                   )}
                 </tbody>
-              </table>
+              </DataGridTable>
             </div>
           )}
         </div>

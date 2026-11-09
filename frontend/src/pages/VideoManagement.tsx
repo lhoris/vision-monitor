@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import { GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
+import { DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
 import { videoSourceService } from '@/services/videoSourceService'
 import { listProcesses } from '@/services/modelManagementService'
 import type { ModelProcess } from '@/types/modelManagement'
 import { useAppSelector } from '@/store'
 import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
+import { useDataGridSelection } from '@/hooks/useDataGridSelection'
 
 const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
 
@@ -26,7 +27,7 @@ type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
 const headerCell = 'h-8 border-b border-r border-[#9dcced] bg-[#dff2ff] px-2 text-center align-middle text-[13px] font-semibold normal-case text-[#266b9f] dark:border-slate-700 dark:bg-slate-900 dark:text-sky-100'
 const bodyCell = 'h-9 border-b border-r border-[#b7d8ee] p-0 align-middle dark:border-slate-700'
-const cellValue = 'box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none dark:text-slate-100'
+const cellValue = 'grid-cell-value box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none dark:text-slate-100'
 const editableCell = 'box-border h-9 w-full rounded-none border border-[#6ab6e8] bg-white px-2 text-sm leading-none text-slate-900 outline-none dark:border-sky-500 dark:bg-slate-900 dark:text-slate-100'
 
 interface VideoSourceModalProps {
@@ -136,7 +137,6 @@ export function VideoManagement() {
   const [modelProcesses, setModelProcesses] = useState<ModelProcess[]>([])
   const [modelProcessesLoading, setModelProcessesLoading] = useState(true)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
   const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '' })
   const [query, setQuery] = useState('')
@@ -159,7 +159,7 @@ export function VideoManagement() {
     setError('')
     try {
       setRows((await videoSourceService.list()).map((item) => ({ ...item, rowState: 'clean' })))
-      setSelectedIds(new Set())
+      clearSelection()
       setEditingCell(null)
       setLastLoadedAt(new Date())
     } catch (exception) {
@@ -212,34 +212,18 @@ export function VideoManagement() {
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize))
   const safePage = Math.min(page, totalPages)
   const visibleRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize)
+  const { selectedIds, allVisibleSelected, toggle: toggleRow, select: selectRow, toggleVisible, clear: clearSelection } = useDataGridSelection(visibleRows.map((item) => item.id))
   const changedRows = rows.filter((row) => row.rowState === 'dirty')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
-  const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((item) => selectedIds.has(item.id))
 
   const setFilter = (key: FilterKey, value: string) => setFilters((current) => ({ ...current, [key]: value }))
-  const toggleRow = (id: number) => setSelectedIds((current) => {
-    const next = new Set(current)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    return next
-  })
-  const toggleVisible = () => setSelectedIds((current) => {
-    const next = new Set(current)
-    visibleRows.forEach((item) => allVisibleSelected ? next.delete(item.id) : next.add(item.id))
-    return next
-  })
 
   const updateRow = (id: number, field: EditableVideoField, value: string) => {
     setRows((current) => current.map((row) => {
       if (row.id !== id) return row
       return { ...row, [field]: value, rowState: 'dirty' }
     }))
-    setSelectedIds((current) => {
-      if (current.has(id)) return current
-      const next = new Set(current)
-      next.add(id)
-      return next
-    })
+    selectRow(id)
   }
 
   const cellKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -389,12 +373,7 @@ export function VideoManagement() {
           setRows((current) => current.map((item) => item.id === row.id
             ? { ...item, modelProcessId, rowState: 'dirty' }
             : item))
-          setSelectedIds((current) => {
-            if (current.has(row.id)) return current
-            const next = new Set(current)
-            next.add(row.id)
-            return next
-          })
+          selectRow(row.id)
           setEditingCell(null)
         }}
         onBlur={() => setEditingCell(null)}
@@ -435,20 +414,20 @@ export function VideoManagement() {
       <Toast message={notice} variant="success" onClose={() => setNotice('')} />
       <Toast message={error} variant="error" onClose={() => setError('')} />
 
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
+      <DataGridToolbar className="mb-2">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); setAppliedQuery(query) }}>
           <label htmlFor="video-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">영상</label>
           <input id="video-search" aria-label="영상 검색" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름 또는 주소 입력" className="h-8 w-64 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setAppliedQuery(query)} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">조회</button>
-          <button type="button" onClick={() => void saveRows()} disabled={saving || changedRows.length === 0} className="rounded bg-blue-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">저장</button>
-          <button type="button" onClick={() => openAdd()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">추가</button>
-          <button type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">복제</button>
-          <button type="button" onClick={() => void deleteSelected()} disabled={!selectedIds.size || saving} className="rounded border border-rose-300 bg-white px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-rose-950/30">삭제</button>
-          <button type="button" onClick={() => void load()} disabled={saving} className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">새로고침</button>
+          <DataGridActionButton type="button" onClick={() => setAppliedQuery(query)} disabled={saving}>조회</DataGridActionButton>
+          <DataGridActionButton type="button" variant="primary" onClick={() => void saveRows()} disabled={saving || changedRows.length === 0}>저장</DataGridActionButton>
+          <DataGridActionButton type="button" onClick={() => openAdd()} disabled={saving}>추가</DataGridActionButton>
+          <DataGridActionButton type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving}>복제</DataGridActionButton>
+          <DataGridActionButton type="button" variant="danger" onClick={() => void deleteSelected()} disabled={!selectedIds.size || saving}>삭제</DataGridActionButton>
+          <DataGridActionButton type="button" onClick={() => void load()} disabled={saving}>새로고침</DataGridActionButton>
         </div>
-      </div>
+      </DataGridToolbar>
 
       <div className="-mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
         {loading ? <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-blue-500" aria-label="조회 중" /> : null}
@@ -473,7 +452,7 @@ export function VideoManagement() {
         ) : null}
 
         <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu}>
-          <table className="w-full min-w-[1120px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+          <DataGridTable className="w-full min-w-[1120px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
@@ -502,7 +481,7 @@ export function VideoManagement() {
               ))}
               {!visibleRows.length ? <tr><td colSpan={8} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
-          </table>
+          </DataGridTable>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">

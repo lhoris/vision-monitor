@@ -11,6 +11,7 @@ import type {
   UserMutationRequest,
 } from '@/types/userManagement'
 import { ConfirmDialog, DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
+import { useDataGridSelection } from '@/hooks/useDataGridSelection'
 import { canPerformDangerAction, validateUserMutation, type UserValidationErrors } from '@/services/userManagementValidation'
 import { accountStatusLabel, employmentStatusLabel } from './UserStatusBadge'
 
@@ -256,7 +257,6 @@ export function UserManagementGrid({
   const [editingCell, setEditingCell] = useState<{ rowId: string; field: EditableField; initialValue?: string } | null>(null)
   const [selectedCellRange, setSelectedCellRange] = useState<{ start: SelectedCell; end: SelectedCell } | null>(null)
   const [draggingCellRange, setDraggingCellRange] = useState(false)
-  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [localError, setLocalError] = useState('')
   const [localNotice, setLocalNotice] = useState('')
@@ -273,7 +273,6 @@ export function UserManagementGrid({
 
   useEffect(() => {
     setRows(users.map(toGridRow))
-    setSelectedRowIds(new Set())
     setLocalError('')
   }, [users])
 
@@ -314,12 +313,15 @@ export function UserManagementGrid({
   const safeCurrentPage = Math.min(currentPage, totalPages)
   const pageStart = (safeCurrentPage - 1) * pageSize
   const visibleRows = filteredRows.slice(pageStart, pageStart + pageSize)
+  const { selectedIds: selectedRowIds, allVisibleSelected, toggle: toggleRow, select: selectRow, selectMany: selectManyRows, toggleVisible, clear: clearSelection } = useDataGridSelection(visibleRows.map((row) => row.rowId))
+  useEffect(() => {
+    clearSelection()
+  }, [users, clearSelection])
   const changedRows = rows.filter((row) => row.state === 'new' || row.state === 'dirty')
   const selectedPersistedRows = rows.filter((row) => selectedRowIds.has(row.rowId) && row.id)
   const selectedRows = rows.filter((row) => selectedRowIds.has(row.rowId))
   const selectedDraftRows = selectedRows.filter((row) => !row.id)
   const selectedChangedRows = changedRows.filter((row) => selectedRowIds.has(row.rowId))
-  const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((row) => selectedRowIds.has(row.rowId))
   const updateColumnFilter = (key: UserColumnFilterKey, value: string) => {
     setColumnFilters((current) => ({ ...current, [key]: value }))
   }
@@ -475,17 +477,13 @@ export function UserManagementGrid({
       const next = { ...row, [field]: value, roles: nextRoles, fieldErrors: { ...row.fieldErrors, [field]: undefined } }
       return { ...next, state: row.state === 'new' ? 'new' : 'dirty' }
     }))
-    setSelectedRowIds((current) => {
-      const next = new Set(current)
-      next.add(rowId)
-      return next
-    })
+    selectRow(rowId)
   }
 
   const addRow = () => {
     const draft = createDraftRow(roles)
     setRows((current) => [draft, ...current])
-    setSelectedRowIds(new Set([draft.rowId]))
+    selectManyRows([draft.rowId])
     setLocalError('')
   }
 
@@ -512,7 +510,7 @@ export function UserManagementGrid({
     })
 
     setRows((current) => [...drafts, ...current])
-    setSelectedRowIds(new Set(drafts.map((row) => row.rowId)))
+    selectManyRows(drafts.map((row) => row.rowId))
     setLocalError('')
     setCurrentPage(1)
   }
@@ -529,7 +527,7 @@ export function UserManagementGrid({
 
     const draftRowIds = new Set(selectedDraftRows.map((row) => row.rowId))
     setRows((current) => current.filter((row) => !draftRowIds.has(row.rowId)))
-    setSelectedRowIds((current) => new Set([...current].filter((rowId) => !draftRowIds.has(rowId))))
+    selectManyRows([...selectedRowIds].filter((rowId) => !draftRowIds.has(rowId)))
     setLocalNotice(t('userManagement.draftDeleteSuccess', { count: selectedDraftRows.length }))
   }
 
@@ -594,31 +592,13 @@ export function UserManagementGrid({
     setSaving(true)
     try {
       await onSaveChanges(changes.map(({ row, input }) => ({ rowId: row.rowId, userId: row.id, input })))
-      setSelectedRowIds(new Set())
+      clearSelection()
     } catch (saveError) {
       setRows((current) => current.map((row) => row.state === 'saving' ? { ...row, state: row.id ? 'dirty' : 'new' } : row))
       setLocalError(saveError instanceof Error ? saveError.message : '사용자 저장에 실패했습니다.')
     } finally {
       setSaving(false)
     }
-  }
-
-  const toggleRow = (rowId: string) => {
-    setSelectedRowIds((current) => {
-      const next = new Set(current)
-      if (next.has(rowId)) next.delete(rowId)
-      else next.add(rowId)
-      return next
-    })
-  }
-
-  const toggleVisibleRows = () => {
-    setSelectedRowIds((current) => {
-      const next = new Set(current)
-      if (allVisibleSelected) visibleRows.forEach((row) => next.delete(row.rowId))
-      else visibleRows.forEach((row) => next.add(row.rowId))
-      return next
-    })
   }
 
   const runBatchAction = async (action: UserDangerAction, rowIds = [...selectedRowIds], skipConfirmation = false) => {
@@ -1038,7 +1018,7 @@ export function UserManagementGrid({
         <DataGridTable className="w-full min-w-[980px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
-              <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} /></th>
+              <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
               <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
               <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[190px] ${headerCellClass}`}>{t('userManagement.email')}</th>
@@ -1106,7 +1086,7 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-12 ${headerCellClass}`}>
-                <input aria-label="표시 행 전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisibleRows} />
+                <input aria-label="표시 행 전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} />
               </th>
               <th className={`w-28 ${headerCellClass}`}>상태</th>
               <th className={`w-44 ${headerCellClass}`}>사용자 ID</th>
