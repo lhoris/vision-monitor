@@ -8,6 +8,7 @@ export type { OnboardingScreen } from './tours'
 export type OnboardingRoute = OnboardingScreen | 'unsupported'
 
 let activeOnboarding: ReturnType<typeof driver> | null = null
+let activeActionCleanup: (() => void) | null = null
 
 function moveNextWhenReady(driverInstance: { moveNext: () => void }, selector: string): void {
   const deadline = Date.now() + 1000
@@ -152,6 +153,8 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
           : undefined,
         onPopoverRender: step.autoContextMenu || step.advanceOnAction
           ? (_popover, opts) => {
+              activeActionCleanup?.()
+              activeActionCleanup = null
               if (step.autoContextMenu) openContextMenu(step.autoContextMenu)
               if (!step.advanceOnAction) return
               const eventName = step.actionEvent ?? 'click'
@@ -159,10 +162,12 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                 if ((event as MouseEvent & { onboardingAuto?: boolean }).onboardingAuto) return
                 const target = event.target instanceof Element ? event.target.closest(step.element) : null
                 if (!target) return
-                document.removeEventListener(eventName, handleAction, true)
+                activeActionCleanup?.()
+                activeActionCleanup = null
                 window.setTimeout(() => opts.driver.moveNext(), 50)
               }
               document.addEventListener(eventName, handleAction, true)
+              activeActionCleanup = () => document.removeEventListener(eventName, handleAction, true)
             }
           : undefined,
       },
@@ -175,6 +180,8 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
 }
 
 export function stopGuidedOnboarding(): void {
+  activeActionCleanup?.()
+  activeActionCleanup = null
   activeOnboarding?.destroy()
   activeOnboarding = null
 }
