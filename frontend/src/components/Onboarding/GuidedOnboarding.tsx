@@ -29,7 +29,10 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
   stopGuidedOnboarding()
   const configuredSteps = getOnboardingSteps(screen, t)
   if (!configuredSteps.some((step) => document.querySelector(step.element))) return false
-  const steps = configuredSteps.filter((step) => step.allowMissing || document.querySelector(step.element))
+  const steps = configuredSteps.filter((step) => {
+    if (step.requires && !document.querySelector(step.requires)) return false
+    return Boolean(document.querySelector(step.element)) || Boolean(step.allowMissing)
+  })
 
   const onboarding = driver({
     showProgress: true,
@@ -50,6 +53,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
         description: step.description,
         side: step.side,
         align: step.align ?? 'center',
+        showButtons: step.showButtons,
       },
     })),
   })

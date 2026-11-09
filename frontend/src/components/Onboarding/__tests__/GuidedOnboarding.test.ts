@@ -44,6 +44,19 @@ describe('GuidedOnboarding', () => {
     expect(driver).not.toHaveBeenCalled()
   })
 
+  it('skips video-add steps when the live grid has no empty cell', () => {
+    document.body.innerHTML = '<div data-onboarding="live-process-tabs"></div><div data-onboarding="live-sub-tabs"></div><div data-onboarding="live-grid"></div><button data-onboarding="live-alarm"></button>'
+
+    expect(startGuidedOnboarding('live', ((key: string) => key) as never)).toBe(true)
+    const options = vi.mocked(driver).mock.calls[0]?.[0] as { steps: Array<{ element: string }> }
+    expect(options.steps.map((step) => step.element)).toEqual([
+      '[data-onboarding="live-process-tabs"]',
+      '[data-onboarding="live-sub-tabs"]',
+      '[data-onboarding="live-grid"]',
+      '[data-onboarding="live-alarm"]',
+    ])
+  })
+
   it('starts a screen-specific tour without common navigation or alarm steps', () => {
     document.body.innerHTML = '<section data-onboarding="events-filters"></section><section data-onboarding="events-grid"></section><button data-onboarding="page-navigation-button"></button><button data-onboarding="live-alarm"></button>'
 
