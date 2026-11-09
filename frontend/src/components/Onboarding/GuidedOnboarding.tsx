@@ -9,17 +9,31 @@ export type OnboardingRoute = OnboardingScreen | 'unsupported'
 
 let activeOnboarding: ReturnType<typeof driver> | null = null
 
+function moveNextWhenReady(driverInstance: { moveNext: () => void }, selector: string): void {
+  const deadline = Date.now() + 1000
+  const move = () => {
+    if (document.querySelector(selector) || Date.now() >= deadline) {
+      driverInstance.moveNext()
+      return
+    }
+    window.setTimeout(move, 25)
+  }
+  move()
+}
+
 function openContextMenu(selector: string): void {
   const target = document.querySelector(selector)
   if (!(target instanceof HTMLElement)) return
 
   const rect = target.getBoundingClientRect()
-  target.dispatchEvent(new MouseEvent('contextmenu', {
+  const event = new MouseEvent('contextmenu', {
     bubbles: true,
     cancelable: true,
     clientX: rect.left + Math.min(rect.width / 2, 160),
     clientY: rect.top + Math.min(rect.height / 2, 24),
-  }))
+  }) as MouseEvent & { onboardingAuto?: boolean }
+  event.onboardingAuto = true
+  target.dispatchEvent(event)
 }
 
 export function resolveOnboardingRoute(pathname: string): OnboardingRoute {
@@ -55,8 +69,8 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
     overlayOpacity: 0.55,
     stagePadding: 8,
     stageRadius: 10,
-    nextBtnText: t('onboarding.next'),
-    prevBtnText: t('onboarding.previous'),
+    nextBtnText: `${t('onboarding.next')} →`,
+    prevBtnText: `← ${t('onboarding.previous')}`,
     doneBtnText: t('onboarding.done'),
     progressText: t('onboarding.progress'),
     onNextClick: (_element, _step, opts) => opts.driver.moveNext(),
@@ -95,13 +109,14 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               if (step.openOnNext) {
                 if (step.element === '[data-onboarding="live-video-titlebar"]') {
                   openContextMenu(step.openOnNext)
+                  moveNextWhenReady(opts.driver, '[data-onboarding="live-video-context-menu"]')
                   return
                 } else {
                   const trigger = document.querySelector(`${step.openOnNext} > button`)
                   if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+                  moveNextWhenReady(opts.driver, '[data-onboarding="live-grid-layout-menu"]')
+                  return
                 }
-                window.setTimeout(() => opts.driver.moveNext(), 50)
-                return
               }
               if (!step.skipNextIfMissing || document.querySelector(step.skipNextIfMissing)) {
                 opts.driver.moveNext()
@@ -135,6 +150,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               if (!step.advanceOnAction) return
               const eventName = step.actionEvent ?? 'click'
               const handleAction = (event: MouseEvent) => {
+                if ((event as MouseEvent & { onboardingAuto?: boolean }).onboardingAuto) return
                 const target = event.target instanceof Element ? event.target.closest(step.element) : null
                 if (!target) return
                 document.removeEventListener(eventName, handleAction, true)
