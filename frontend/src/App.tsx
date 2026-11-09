@@ -81,10 +81,10 @@ export function AppRoutes() {
   }, [themeMode])
 
   useEffect(() => {
-    if (isAuthenticated && commonCodeStatus === 'idle') {
+    if (isAuthenticated && sessionStatus === 'valid' && commonCodeStatus === 'idle') {
       void dispatch(fetchCommonCodes())
     }
-  }, [commonCodeStatus, dispatch, isAuthenticated])
+  }, [commonCodeStatus, dispatch, isAuthenticated, sessionStatus])
 
   useEffect(() => {
     if (isAuthenticated && sessionStatus === 'idle') {
@@ -99,7 +99,7 @@ export function AppRoutes() {
   }, [passwordChangeNotice])
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || sessionStatus !== 'valid') {
       eventFetchStarted.current = false
       return
     }
@@ -107,7 +107,7 @@ export function AppRoutes() {
       eventFetchStarted.current = true
       void dispatch(fetchEvents({ page: 0, pageSize: 100 }))
     }
-  }, [dispatch, isAuthenticated])
+  }, [dispatch, isAuthenticated, sessionStatus])
 
   useEffect(() => {
     if (!isAuthenticated || sessionStatus !== 'valid') return undefined
