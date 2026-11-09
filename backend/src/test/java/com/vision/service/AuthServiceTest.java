@@ -8,6 +8,7 @@ import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
 import com.vision.sse.AlarmEventPublisher;
+import com.vision.repository.AlarmLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,13 +40,16 @@ class AuthServiceTest {
     @Mock
     private AlarmEventPublisher alarmEventPublisher;
 
+    @Mock
+    private AlarmLogRepository alarmLogRepository;
+
     private AuthService service;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @BeforeEach
     void setUp() {
-        service = new AuthService(userRepository, null, null, sessionService, alarmEventPublisher);
+        service = new AuthService(userRepository, null, null, sessionService, alarmEventPublisher, alarmLogRepository);
         lenient().when(sessionService.createSession(org.mockito.ArgumentMatchers.any(UserAccount.class)))
                 .thenReturn("session-test-token");
     }
@@ -165,7 +169,8 @@ class AuthServiceTest {
                 "new-user", "password1", "password1", "New User", "new@example.com", "010-1234-5678", "QA", "Engineer"));
 
         org.mockito.ArgumentCaptor<java.util.Map<String, Object>> alarmCaptor = org.mockito.ArgumentCaptor.forClass(java.util.Map.class);
-        verify(alarmEventPublisher).publishToUsers(org.mockito.ArgumentMatchers.eq(java.util.List.of("admin")), alarmCaptor.capture());
+        verify(alarmLogRepository).save(any(com.vision.entity.AlarmLog.class));
+        verify(alarmEventPublisher).publishToUser(org.mockito.ArgumentMatchers.eq("admin"), alarmCaptor.capture());
         assertEquals("USER_SIGNUP_REQUEST", alarmCaptor.getValue().get("type"));
         assertEquals("신규 사용자 가입신청이 접수되었습니다.", alarmCaptor.getValue().get("description"));
     }

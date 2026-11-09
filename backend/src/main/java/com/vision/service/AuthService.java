@@ -11,11 +11,13 @@ import com.vision.dto.UserAccountDto;
 import com.vision.dto.SignupAvailabilityDto;
 import com.vision.dto.SignupAdminContactDto;
 import com.vision.entity.UserAccount;
+import com.vision.entity.AlarmLog;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAuthorizationRepository;
+import com.vision.repository.AlarmLogRepository;
 import com.vision.sse.AlarmEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Locale;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.List;
 
 
 @Service
@@ -48,6 +51,7 @@ public class AuthService {
     private final UserAuthorizationRepository userAuthorizationRepository;
     private final AuthSessionService sessionService;
     private final AlarmEventPublisher alarmEventPublisher;
+    private final AlarmLogRepository alarmLogRepository;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
@@ -56,13 +60,26 @@ public class AuthService {
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository,
             AuthSessionService sessionService,
-            AlarmEventPublisher alarmEventPublisher
+            AlarmEventPublisher alarmEventPublisher,
+            AlarmLogRepository alarmLogRepository
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
         this.sessionService = sessionService;
         this.alarmEventPublisher = alarmEventPublisher;
+        this.alarmLogRepository = alarmLogRepository;
+    }
+
+    public AuthService(
+            UserAccountRepository userRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository,
+            AuthSessionService sessionService,
+            AlarmEventPublisher alarmEventPublisher
+    ) {
+        this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
+                alarmEventPublisher, null);
     }
 
     public AuthService(
@@ -73,7 +90,7 @@ public class AuthService {
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
                 new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository),
-                null);
+                null, null);
     }
 
     // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
@@ -207,7 +224,6 @@ public class AuthService {
     }
 
     private void publishSignupAlarm(UserAccount signup) {
-        if (alarmEventPublisher == null) return;
         Map<String, Object> alarm = Map.of(
                 "id", signup.getId(),
                 "cameraId", 0,
@@ -222,13 +238,26 @@ public class AuthService {
                         "department", signup.getDepartment() == null ? "" : signup.getDepartment()
                 )
         );
-        alarmEventPublisher.publishToUsers(
-                userRepository.findAllActiveAdministrators().stream()
-                        .map(UserAccount::getUsername)
-                        .filter(username -> username != null && !username.isBlank())
-                        .toList(),
-                alarm
-        );
+        List<UserAccount> administrators = userRepository.findAllActiveAdministrators();
+        administrators.stream()
+                .filter(administrator -> administrator.getUsername() != null && !administrator.getUsername().isBlank())
+                .forEach(administrator -> {
+                    if (alarmLogRepository != null) {
+                        alarmLogRepository.save(AlarmLog.builder()
+                                .alarmType("USER_SIGNUP_REQUEST")
+                                .severity("info")
+                                .message("신규 사용자 가입신청이 접수되었습니다.")
+                                .sourceType("USER")
+                                .sourceId(String.valueOf(signup.getId()))
+                                .occurredTimestamp(java.time.LocalDateTime.now())
+                                .targetUserId(administrator.getId())
+                                .context("username=" + signup.getUsername() + ";name=" + signup.getName())
+                                .build());
+                    }
+                    if (alarmEventPublisher != null) {
+                        alarmEventPublisher.publishToUser(administrator.getUsername(), alarm);
+                    }
+                });
     }
 
     @Transactional
