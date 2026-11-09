@@ -69,11 +69,12 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
     overlayOpacity: 0.55,
     stagePadding: 8,
     stageRadius: 10,
-    nextBtnText: `${t('onboarding.next')} →`,
-    prevBtnText: `← ${t('onboarding.previous')}`,
+    nextBtnText: `${t('onboarding.next')} ›`,
+    prevBtnText: `‹ ${t('onboarding.previous')}`,
     doneBtnText: t('onboarding.done'),
     progressText: t('onboarding.progress'),
     onNextClick: (_element, _step, opts) => opts.driver.moveNext(),
+    onPrevClick: (_element, _step, opts) => opts.driver.movePrevious(),
     steps: steps.map((step) => ({
       element: step.element,
       skipMissingElement: step.allowMissing,
@@ -136,7 +137,12 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                   openContextMenu(step.openOnPrevious)
                 } else {
                   const trigger = document.querySelector(step.openOnPrevious)
-                  if (trigger instanceof HTMLElement) trigger.click()
+                  if (trigger instanceof HTMLElement) {
+                    trigger.click()
+                  } else {
+                    opts.driver.moveTo(Math.max(0, (opts.index ?? 0) - 2))
+                    return
+                  }
                 }
                 window.setTimeout(() => opts.driver.movePrevious(), 50)
                 return
