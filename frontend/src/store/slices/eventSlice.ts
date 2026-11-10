@@ -146,6 +146,9 @@ const eventSlice = createSlice({
       if (state.events.some((event) => event.id === action.payload.id)) return
       state.events.unshift(action.payload)
     },
+    removeEvent: (state, action: PayloadAction<number>) => {
+      state.events = state.events.filter((event) => event.id !== action.payload)
+    },
     setPersistedAlarms: (state, action: PayloadAction<Event[]>) => {
       state.events = [...action.payload, ...state.events.filter((event) => !action.payload.some((alarm) => alarm.id === event.id))]
     },
@@ -360,6 +363,7 @@ export const {
   setEvents,
   setSelectedEvent,
   addEvent,
+  removeEvent,
   setPersistedAlarms,
   updateEvent,
   acknowledgeEvent,

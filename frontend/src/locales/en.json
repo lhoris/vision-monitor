@@ -416,6 +416,7 @@
     "notificationsTitle": "Unacknowledged Alarms",
     "noUnacknowledged": "There are no unacknowledged alarms.",
     "viewAlarmList": "View alarm list",
+    "dismissAlarm": "Acknowledge and dismiss alarm",
     "asOf": "As of {{date}}",
     "open": "Unacknowledged",
     "critical": "Unacknowledged Critical",

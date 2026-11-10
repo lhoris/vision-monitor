@@ -11,6 +11,7 @@ import {
 import type { ThemeMode } from '@/store/slices/uiSlice'
 import { saveThemePreference } from '@/store/slices/layoutSlice'
 import { logoutUser } from '@/store/slices/authSlice'
+import { acknowledgePersistedAlarm, removeEvent } from '@/store/slices/eventSlice'
 import { useAppBranding } from '@/hooks/useAppBranding'
 import { AccountCenterModal } from './AccountCenterModal'
 import type { AccountTab } from './AccountCenterModal'
@@ -103,6 +104,15 @@ export function Header() {
     setAccountModalOpen(false)
     dispatch(logoutUser())
     navigate('/login')
+  }
+
+  const dismissAlarm = async (eventId: number) => {
+    try {
+      await dispatch(acknowledgePersistedAlarm(eventId)).unwrap()
+    } catch {
+      // Realtime-only alarms are not persisted and can still be dismissed locally.
+    }
+    dispatch(removeEvent(eventId))
   }
 
   const handleLanguageChange = async (lang: SupportedLanguage) => {
@@ -352,8 +362,27 @@ export function Header() {
                         >
                           <span className="flex items-center justify-between gap-3">
                             <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{getEventTypeLabel(event.type, t)}</span>
-                            <span className={`shrink-0 text-[10px] font-bold uppercase ${event.severity === 'critical' ? 'text-rose-600 dark:text-rose-400' : event.severity === 'high' ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                              {t(`events.severities.${event.severity}`)}
+                            <span className="flex shrink-0 items-center gap-2">
+                              <span className={`text-[10px] font-bold uppercase ${event.severity === 'critical' ? 'text-rose-600 dark:text-rose-400' : event.severity === 'high' ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                {t(`events.severities.${event.severity}`)}
+                              </span>
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                aria-label={t('events.dismissAlarm')}
+                                title={t('events.dismissAlarm')}
+                                onClick={(clickEvent) => { clickEvent.stopPropagation(); void dismissAlarm(event.id) }}
+                                onKeyDown={(keyEvent) => {
+                                  if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+                                    keyEvent.preventDefault()
+                                    keyEvent.stopPropagation()
+                                    void dismissAlarm(event.id)
+                                  }
+                                }}
+                                className="inline-flex h-5 w-5 items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                              >
+                                <span aria-hidden="true">×</span>
+                              </span>
                             </span>
                           </span>
                           <span className="mt-1 block line-clamp-2 text-xs leading-5 text-gray-600 dark:text-gray-300">

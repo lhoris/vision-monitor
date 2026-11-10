@@ -416,6 +416,7 @@
     "notificationsTitle": "미확인 알람",
     "noUnacknowledged": "미확인 알람이 없습니다.",
     "viewAlarmList": "알람 목록 보기",
+    "dismissAlarm": "알람 확인 및 닫기",
     "asOf": "기준일 {{date}}",
     "open": "미확인 알람",
     "critical": "미확인 긴급 알람",
