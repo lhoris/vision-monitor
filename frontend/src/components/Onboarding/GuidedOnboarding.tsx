@@ -141,7 +141,6 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                   if (trigger instanceof HTMLElement) {
                     trigger.click()
                   } else {
-                    opts.driver.moveTo(Math.max(0, (opts.index ?? 0) - 2))
                     return
                   }
                 }
