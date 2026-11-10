@@ -5,6 +5,7 @@
 
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
 import { eventService } from '@/services/eventService'
+import { alarmService } from '@/services/alarmService'
 import type { Event, AlertSetting } from '@/types'
 
 interface EventFilter {
@@ -54,6 +55,16 @@ export const fetchEvents = createAsyncThunk(
     const response = await eventService.getEvents(params)
     return response
   }
+)
+
+export const fetchPersistedAlarms = createAsyncThunk(
+  'event/fetchPersistedAlarms',
+  async () => alarmService.getUnacknowledged()
+)
+
+export const acknowledgePersistedAlarm = createAsyncThunk(
+  'event/acknowledgePersistedAlarm',
+  async (alarmId: number) => alarmService.acknowledge(alarmId)
 )
 
 export const fetchCameraEvents = createAsyncThunk(
@@ -135,6 +146,9 @@ const eventSlice = createSlice({
       if (state.events.some((event) => event.id === action.payload.id)) return
       state.events.unshift(action.payload)
     },
+    setPersistedAlarms: (state, action: PayloadAction<Event[]>) => {
+      state.events = [...action.payload, ...state.events.filter((event) => !action.payload.some((alarm) => alarm.id === event.id))]
+    },
     updateEvent: (state, action: PayloadAction<Event>) => {
       const index = state.events.findIndex(e => e.id === action.payload.id)
       if (index !== -1) {
@@ -195,6 +209,15 @@ const eventSlice = createSlice({
       .addCase(fetchEvents.rejected, (state, action) => {
         state.loading = false
         state.error = action.error.message || 'Failed to fetch events'
+      })
+
+    builder
+      .addCase(fetchPersistedAlarms.fulfilled, (state, action) => {
+        state.events = [...action.payload, ...state.events.filter((event) => !action.payload.some((alarm) => alarm.id === event.id))]
+        state.pagination.total = state.events.length
+      })
+      .addCase(acknowledgePersistedAlarm.fulfilled, (state, action) => {
+        state.events = state.events.filter((event) => event.id !== action.payload.id)
       })
 
     // fetchCameraEvents
@@ -337,6 +360,7 @@ export const {
   setEvents,
   setSelectedEvent,
   addEvent,
+  setPersistedAlarms,
   updateEvent,
   acknowledgeEvent,
   setFilter,

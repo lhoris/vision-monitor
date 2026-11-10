@@ -195,6 +195,6 @@ describe('eventService', () => {
 
     expect(response.success).toBe(true)
     expect(response.data?.status).toBe('acknowledged')
-    expect(mockedApiClient.put).toHaveBeenCalledWith('/events/50001/acknowledge', {})
+    expect(mockedApiClient.put).toHaveBeenCalledWith('/alarms/50001/acknowledge')
   })
 })

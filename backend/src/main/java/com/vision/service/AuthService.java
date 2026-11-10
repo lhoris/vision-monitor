@@ -232,6 +232,8 @@ public class AuthService {
                 "description", "신규 사용자 가입신청이 접수되었습니다.",
                 "timestamp", OffsetDateTime.now().toString(),
                 "acknowledged", false,
+                "sourceType", "USER",
+                "sourceId", String.valueOf(signup.getId()),
                 "metadata", Map.of(
                         "username", signup.getUsername(),
                         "name", signup.getName(),
@@ -242,8 +244,9 @@ public class AuthService {
         administrators.stream()
                 .filter(administrator -> administrator.getUsername() != null && !administrator.getUsername().isBlank())
                 .forEach(administrator -> {
+                    AlarmLog savedAlarm = null;
                     if (alarmLogRepository != null) {
-                        alarmLogRepository.save(AlarmLog.builder()
+                        savedAlarm = alarmLogRepository.save(AlarmLog.builder()
                                 .alarmType("USER_SIGNUP_REQUEST")
                                 .severity("info")
                                 .message("신규 사용자 가입신청이 접수되었습니다.")
@@ -255,7 +258,10 @@ public class AuthService {
                                 .build());
                     }
                     if (alarmEventPublisher != null) {
-                        alarmEventPublisher.publishToUser(administrator.getUsername(), alarm);
+                        Map<String, Object> realtimeAlarm = new java.util.LinkedHashMap<>(alarm);
+                        realtimeAlarm.put("id", savedAlarm != null && savedAlarm.getId() != null
+                                ? savedAlarm.getId() : signup.getId());
+                        alarmEventPublisher.publishToUser(administrator.getUsername(), realtimeAlarm);
                     }
                 });
     }

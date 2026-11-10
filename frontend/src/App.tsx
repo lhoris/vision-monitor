@@ -18,7 +18,7 @@ import { VideoManagement } from '@/pages/VideoManagement'
 import { store } from '@/store'
 import { useEffect, useRef, useState } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
-import { addEvent, fetchEvents } from '@/store/slices/eventSlice'
+import { addEvent, fetchPersistedAlarms } from '@/store/slices/eventSlice'
 import { hasAdminAccess, logout, passwordChangeCompleted, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n, { getUserLanguage } from '@/i18n'
@@ -42,7 +42,7 @@ export function AppRoutes() {
   const passwordChangeRequired = useAppSelector((state) => state.auth.passwordChangeRequired)
   const [sessionExpired, setSessionExpired] = useState(false)
   const [passwordChangeNotice, setPasswordChangeNotice] = useState('')
-  const eventFetchStarted = useRef(false)
+  const alarmFetchStarted = useRef(false)
   const canAccessAdminRoutes = hasAdminAccess(user)
 
   useEffect(() => {
@@ -100,12 +100,12 @@ export function AppRoutes() {
 
   useEffect(() => {
     if (!isAuthenticated || sessionStatus !== 'valid') {
-      eventFetchStarted.current = false
+      alarmFetchStarted.current = false
       return
     }
-    if (!eventFetchStarted.current) {
-      eventFetchStarted.current = true
-      void dispatch(fetchEvents({ page: 0, pageSize: 100 }))
+    if (!alarmFetchStarted.current) {
+      alarmFetchStarted.current = true
+      void dispatch(fetchPersistedAlarms())
     }
   }, [dispatch, isAuthenticated, sessionStatus])
 

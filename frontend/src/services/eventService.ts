@@ -168,9 +168,9 @@ class EventService {
 
   async acknowledgeEvent(eventId: number): Promise<Event | null> {
     return withServiceFallback(
-      async () => requireData(await apiClient.put<Event>(`/events/${eventId}/acknowledge`, {}), 'Acknowledged event was not returned'),
+      async () => requireData(await apiClient.put<Event>(`/alarms/${eventId}/acknowledge`), 'Acknowledged alarm was not returned'),
       null,
-      'Failed to acknowledge event:'
+      'Failed to acknowledge alarm:'
     )
   }
 

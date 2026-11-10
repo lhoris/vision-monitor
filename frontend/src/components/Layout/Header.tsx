@@ -344,7 +344,10 @@ export function Header() {
                       <li key={event.id}>
                         <button
                           type="button"
-                          onClick={() => { setAlarmMenuOpen(false); navigate('/events') }}
+                          onClick={() => {
+                            setAlarmMenuOpen(false)
+                            navigate(event.type === 'USER_SIGNUP_REQUEST' ? '/admin/users?accountStatus=pending' : '/events')
+                          }}
                           className="block w-full px-4 py-3 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:hover:bg-gray-800 dark:focus:bg-gray-800"
                         >
                           <span className="flex items-center justify-between gap-3">

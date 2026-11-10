@@ -29,6 +29,7 @@ export const store = configureStore({
         ignoredActions: [
           'layout/fetchUserLayout/fulfilled',
           'event/fetchEvents/fulfilled',
+          'event/fetchPersistedAlarms/fulfilled',
           'event/fetchCameraEvents/fulfilled',
           'event/fetchAlertSettings/fulfilled',
         ],
