@@ -244,11 +244,11 @@
   },
   "cameraFocus": {
     "metadataPanel": {
-      "ariaLabel": "Camera metadata",
-      "title": "Metadata",
+      "ariaLabel": "Camera model basics",
+      "title": "Model basics",
       "addSection": "Add section",
       "restoreDefaults": "Defaults",
-      "restoreDefaultsTitle": "Restore default metadata sections",
+      "restoreDefaultsTitle": "Restore default model basics sections",
       "description": "Drag sections to change their order for each video source.",
       "temporarySourceError": "Metadata settings cannot be saved for a temporary video. Use a video registered in Video Management.",
       "saveError": "Unable to save metadata settings. Please try again later.",
@@ -259,11 +259,11 @@
       "empty": "No sections to display. Add a section or restore the defaults.",
       "selectedAlarm": "Selected alarm",
       "confirmTitle": "Confirm settings change",
-      "restoreConfirm": "Restore the default metadata sections for this video source?",
+      "restoreConfirm": "Restore the default model basics sections for this video source?",
       "removeConfirm": "Delete the '{{title}}' section?"
     },
     "metadata": {
-      "sectionSettings": "Metadata section settings",
+      "sectionSettings": "Model basics settings",
       "title": "Title",
       "displayFormat": "Display format",
       "text": "Text",
