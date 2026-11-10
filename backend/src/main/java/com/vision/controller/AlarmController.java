@@ -10,6 +10,7 @@ import com.vision.repository.AlarmLogRepository;
 import com.vision.sse.AlarmEventPublisher;
 import com.vision.sse.AlarmSseBroker;
 import com.vision.util.ApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ public class AlarmController {
     private final AlarmLogRepository alarmLogRepository;
     private final String modelServerKey;
 
+    @Autowired
     public AlarmController(
             AlarmSseBroker broker,
             AlarmEventPublisher publisher,
