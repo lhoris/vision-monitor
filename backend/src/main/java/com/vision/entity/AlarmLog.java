@@ -16,7 +16,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "TB_M26_ALARAM_LOG")
+@Table(name = "TB_M26_ALARM_LOG")
 @Getter
 @Setter
 @Builder
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 public class AlarmLog extends BaseAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ALARAM_LOG_ID")
+    @Column(name = "ALARM_LOG_ID")
     private Long id;
 
     @Column(name = "ALARM_TYPE", nullable = false, length = 50)
