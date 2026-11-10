@@ -9,6 +9,7 @@ export type OnboardingRoute = OnboardingScreen | 'unsupported'
 
 let activeOnboarding: ReturnType<typeof driver> | null = null
 let activeActionCleanup: (() => void) | null = null
+let suppressActionAdvance = false
 
 function moveNextWhenReady(driverInstance: { moveNext: () => void }, selector: string): void {
   const deadline = Date.now() + 1000
@@ -115,7 +116,11 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
                   return
                 } else {
                   const trigger = document.querySelector(`${step.openOnNext} > button`)
-                  if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+                  if (trigger instanceof HTMLButtonElement && trigger.getAttribute('aria-expanded') !== 'true') {
+                    suppressActionAdvance = true
+                    trigger.click()
+                    suppressActionAdvance = false
+                  }
                   moveNextWhenReady(opts.driver, '[data-onboarding="live-grid-layout-menu"]')
                   return
                 }
@@ -159,6 +164,7 @@ export function startGuidedOnboarding(screen: OnboardingScreen, t: TFunction): b
               const eventName = step.actionEvent ?? 'click'
               const handleAction = (event: MouseEvent) => {
                 if ((event as MouseEvent & { onboardingAuto?: boolean }).onboardingAuto) return
+                if (suppressActionAdvance) return
                 const target = event.target instanceof Element ? event.target.closest(step.element) : null
                 if (!target) return
                 activeActionCleanup?.()
