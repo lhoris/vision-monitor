@@ -44,6 +44,10 @@ public record UserAccountDto(
     }
 
     public static UserAccountDto from(UserAccount user, List<RoleSummaryDto> availableRoles) {
+        return from(user, availableRoles, List.of(user.getRole() == null ? "USER" : user.getRole().toLowerCase()));
+    }
+
+    public static UserAccountDto from(UserAccount user, List<RoleSummaryDto> availableRoles, List<String> assignedRoleIds) {
         String role = user.getRole() == null ? "USER" : user.getRole();
         boolean systemAdmin = "ADMIN".equalsIgnoreCase(role);
         boolean passwordResetRequired = user.getPasswordHash() == null || user.getPasswordHash().isBlank();
@@ -69,8 +73,14 @@ public record UserAccountDto(
                 .department(user.getDepartment())
                 .position(user.getPosition())
                 .phone(user.getPhone())
-                .roleIds(List.of(role.toLowerCase()))
-                .roles(List.of(roleSummary))
+                .roleIds(assignedRoleIds == null || assignedRoleIds.isEmpty() ? List.of(role.toLowerCase()) : assignedRoleIds)
+                .roles((assignedRoleIds == null || assignedRoleIds.isEmpty() ? List.of(role.toLowerCase()) : assignedRoleIds).stream()
+                        .map(roleId -> availableRoles.stream()
+                                .filter(candidate -> candidate.id().equalsIgnoreCase(roleId) || candidate.name().equalsIgnoreCase(roleId))
+                                .findFirst()
+                                .orElse(roleSummary))
+                        .distinct()
+                        .toList())
                 .accountStatus(user.getAccountStatus())
                 .employmentStatus(user.getEmploymentStatus())
                 .lastLoginAt(user.getLastLoginAt())

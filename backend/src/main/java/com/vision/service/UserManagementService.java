@@ -161,7 +161,7 @@ public class UserManagementService {
             user.setPasswordHash(defaultPasswordHash(user.getUsername()));
         }
         UserAccount saved = userRepository.save(user);
-        syncUserAuthorization(saved, saved.getRole());
+        syncUserAuthorization(saved, request.roleIds());
         return toDto(saved, availableRoles());
     }
 
@@ -197,7 +197,7 @@ public class UserManagementService {
         user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         UserAccount saved = userRepository.save(user);
-        syncUserAuthorization(saved, nextRole);
+        syncUserAuthorization(saved, request.roleIds());
         return toDto(saved, availableRoles());
     }
 
@@ -338,7 +338,7 @@ public class UserManagementService {
         }
         user.setEnabled(ACTIVE.equalsIgnoreCase(user.getAccountStatus())
                 && EMPLOYED.equalsIgnoreCase(user.getEmploymentStatus()));
-        return UserAccountDto.from(user, roles);
+        return UserAccountDto.from(user, roles, resolveRoleIds(user));
     }
 
     private UserAccount findUser(Long userId) {
@@ -405,19 +405,39 @@ public class UserManagementService {
         return ROLE_USER;
     }
 
-    private void syncUserAuthorization(UserAccount user, String role) {
+    private void syncUserAuthorization(UserAccount user, List<String> roleIds) {
         if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) return;
         userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").forEach(link -> {
             link.setDataEndStatus("Y");
             userAuthorizationRepository.save(link);
         });
-        authorizationRepository.findByCodeIgnoreCaseAndDataEndStatus(role, "N").ifPresent(auth -> userAuthorizationRepository.save(
-                com.vision.entity.UserAuthorization.builder()
-                        .userId(user.getId())
-                        .authId(auth.getId())
-                        .grantStartDate("20260101")
-                        .build()
-        ));
+        List<String> requestedRoles = roleIds == null ? List.of() : roleIds.stream()
+                .filter(role -> role != null && !role.isBlank())
+                .toList();
+        if (requestedRoles.isEmpty()) requestedRoles = List.of(ROLE_USER);
+        for (String role : requestedRoles) {
+            authorizationRepository.findByCodeIgnoreCaseAndDataEndStatus(role, "N").ifPresent(auth -> userAuthorizationRepository.save(
+                    com.vision.entity.UserAuthorization.builder()
+                            .userId(user.getId())
+                            .authId(auth.getId())
+                            .grantStartDate("20260101")
+                            .dataEndStatus("N")
+                            .build()
+            ));
+        }
+    }
+
+    private List<String> resolveRoleIds(UserAccount user) {
+        if (authorizationRepository == null || userAuthorizationRepository == null || user.getId() == null) {
+            return List.of((user.getRole() == null ? ROLE_USER : user.getRole()).toLowerCase(Locale.ROOT));
+        }
+        List<String> roleIds = userAuthorizationRepository.findAllByUserIdAndDataEndStatus(user.getId(), "N").stream()
+                .map(link -> authorizationRepository.findById(link.getAuthId()).orElse(null))
+                .filter(auth -> auth != null && "N".equalsIgnoreCase(auth.getDataEndStatus()))
+                .map(auth -> auth.getCode().toLowerCase(Locale.ROOT))
+                .distinct()
+                .toList();
+        return roleIds.isEmpty() ? List.of(ROLE_USER.toLowerCase(Locale.ROOT)) : roleIds;
     }
 
     private String normalizeAccountStatus(String value) {
