@@ -4,6 +4,7 @@ import VideoManagement from './VideoManagement'
 import CommonCodeManagement from './CommonCodeManagement'
 import ModelManagement from './ModelManagement'
 import QueryManagement from './QueryManagement'
+import AlarmManagement from './AlarmManagement'
 
 const adminPageLabels: Record<string, string> = {
   '/admin/model-management': '모델 관리',
@@ -12,6 +13,7 @@ const adminPageLabels: Record<string, string> = {
   '/admin/users': '사용자 관리',
   '/admin/videos': '영상 관리',
   '/admin/common-codes': '공통코드 관리',
+  '/admin/alarm-management': '알람 관리',
 }
 
 export function AdminPlaceholder() {
@@ -20,6 +22,7 @@ export function AdminPlaceholder() {
   if (location.pathname === '/admin/videos') return <VideoManagement />
   if (location.pathname === '/admin/common-codes') return <CommonCodeManagement />
   if (location.pathname === '/admin/query-management') return <QueryManagement />
+  if (location.pathname === '/admin/alarm-management') return <AlarmManagement />
   if (location.pathname === '/admin/model-management' || location.pathname === '/admin/model-restart') return <ModelManagement />
   const title = adminPageLabels[location.pathname] ?? '관리자 메뉴'
 

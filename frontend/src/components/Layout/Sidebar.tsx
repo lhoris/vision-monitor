@@ -77,6 +77,7 @@ const adminNavGroups: NavGroup[] = [
       { path: '/admin/users', labelKey: 'navigation.admin.users', icon: <UserAccessIcon /> },
       { path: '/admin/common-codes', labelKey: 'navigation.admin.commonCodes', icon: <SettingsIcon /> },
       { path: '/admin/query-management', labelKey: 'navigation.admin.queries', icon: <SettingsIcon /> },
+      { path: '/admin/alarm-management', labelKey: 'navigation.admin.alarmManagement', icon: <AlarmIcon /> },
     ],
   },
 ]

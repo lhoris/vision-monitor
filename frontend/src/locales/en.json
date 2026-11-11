@@ -238,9 +238,27 @@
       "videos": "Video Management",
       "commonCodes": "Common Code Management",
       "queries": "Query Management",
+      "alarmManagement": "Alarm Management",
       "systemManagement": "System Management",
       "users": "User Management"
     }
+  },
+  "alarmManagement": {
+    "title": "Alarm Management",
+    "description": "Manage recipients, acknowledgement scope, persistence, and notification channels by alarm type.",
+    "typePolicy": "Alarm type policy",
+    "userOverrides": "User notification and channel settings",
+    "general": "General alarm",
+    "model": "Model alarm",
+    "allAdmins": "All active super administrators",
+    "selectedUsers": "Selected users",
+    "groupAck": "Shared acknowledgement",
+    "individualAck": "Individual acknowledgement",
+    "allAdminsHint": "All active super administrators are the default recipients. User-specific channel overrides can be set here.",
+    "selectedUsersHint": "Only selected users and channels receive this alarm type.",
+    "channels": { "email": "Email" },
+    "columns": { "category": "Category", "name": "Alarm type", "recipient": "Recipients", "acknowledgement": "Acknowledgement", "save": "Save", "push": "Push", "email": "Email", "teams": "Teams", "user": "User", "receiver": "Receive", "action": "Action" },
+    "messages": { "typeSaved": "Alarm type policy saved.", "userSaved": "User alarm settings saved." }
   },
   "cameraFocus": {
     "metadataPanel": {

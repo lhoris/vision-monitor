@@ -12,12 +12,17 @@ import com.vision.dto.SignupAvailabilityDto;
 import com.vision.dto.SignupAdminContactDto;
 import com.vision.entity.UserAccount;
 import com.vision.entity.AlarmLog;
+import com.vision.entity.CodeDetail;
+import com.vision.entity.UserAlertPreference;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAuthorizationRepository;
 import com.vision.repository.AlarmLogRepository;
+import com.vision.repository.CodeDetailRepository;
+import com.vision.repository.CodeRepository;
+import com.vision.repository.UserAlertPreferenceRepository;
 import com.vision.sse.AlarmEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,6 +34,7 @@ import java.util.Locale;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.List;
+import java.util.UUID;
 
 
 @Service
@@ -52,6 +58,9 @@ public class AuthService {
     private final AuthSessionService sessionService;
     private final AlarmEventPublisher alarmEventPublisher;
     private final AlarmLogRepository alarmLogRepository;
+    private final CodeRepository codeRepository;
+    private final CodeDetailRepository codeDetailRepository;
+    private final UserAlertPreferenceRepository userAlertPreferenceRepository;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
@@ -61,7 +70,10 @@ public class AuthService {
             UserAuthorizationRepository userAuthorizationRepository,
             AuthSessionService sessionService,
             AlarmEventPublisher alarmEventPublisher,
-            AlarmLogRepository alarmLogRepository
+            AlarmLogRepository alarmLogRepository,
+            CodeRepository codeRepository,
+            CodeDetailRepository codeDetailRepository,
+            UserAlertPreferenceRepository userAlertPreferenceRepository
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
@@ -69,6 +81,9 @@ public class AuthService {
         this.sessionService = sessionService;
         this.alarmEventPublisher = alarmEventPublisher;
         this.alarmLogRepository = alarmLogRepository;
+        this.codeRepository = codeRepository;
+        this.codeDetailRepository = codeDetailRepository;
+        this.userAlertPreferenceRepository = userAlertPreferenceRepository;
     }
 
     public AuthService(
@@ -79,7 +94,19 @@ public class AuthService {
             AlarmEventPublisher alarmEventPublisher
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
-                alarmEventPublisher, null);
+                alarmEventPublisher, null, null, null, null);
+    }
+
+    public AuthService(
+            UserAccountRepository userRepository,
+            AuthorizationRepository authorizationRepository,
+            UserAuthorizationRepository userAuthorizationRepository,
+            AuthSessionService sessionService,
+            AlarmEventPublisher alarmEventPublisher,
+            AlarmLogRepository alarmLogRepository
+    ) {
+        this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
+                alarmEventPublisher, alarmLogRepository, null, null, null);
     }
 
     public AuthService(
@@ -90,7 +117,7 @@ public class AuthService {
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
                 new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository),
-                null, null);
+                null, null, null, null, null);
     }
 
     // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
@@ -224,6 +251,13 @@ public class AuthService {
     }
 
     private void publishSignupAlarm(UserAccount signup) {
+        CodeDetail policy = resolveAlarmPolicy("USER_SIGNUP_REQUEST");
+        boolean saveLog = policy == null || enabled(policy.getDefaultSaveStatus(), true);
+        boolean defaultReceive = policy == null || enabled(policy.getDefaultReceiveStatus(), true);
+        boolean defaultPush = policy == null || enabled(policy.getDefaultPushStatus(), true);
+        boolean groupAcknowledgement = policy != null && "GROUP".equalsIgnoreCase(policy.getAcknowledgementScope());
+        String recipientScope = policy == null || policy.getRecipientScope() == null ? "ALL_ADMIN" : policy.getRecipientScope();
+        String groupId = groupAcknowledgement ? UUID.randomUUID().toString() : null;
         Map<String, Object> alarm = Map.of(
                 "id", signup.getId(),
                 "cameraId", 0,
@@ -244,20 +278,26 @@ public class AuthService {
         administrators.stream()
                 .filter(administrator -> administrator.getUsername() != null && !administrator.getUsername().isBlank())
                 .forEach(administrator -> {
+                    UserAlertPreference preference = findPreference(administrator.getId(), "USER_SIGNUP_REQUEST");
+                    boolean selected = preference == null ? defaultReceive : enabled(preference.getReceiverStatus(), defaultReceive);
+                    if ("SELECTED_USER".equalsIgnoreCase(recipientScope) && !selected) return;
+                    if ("ALL_ADMIN".equalsIgnoreCase(recipientScope) && preference != null && !selected) return;
+                    boolean pushEnabled = preference == null ? defaultPush : enabled(preference.getPushEnabled(), defaultPush);
                     AlarmLog savedAlarm = null;
-                    if (alarmLogRepository != null) {
+                    if (alarmLogRepository != null && saveLog) {
                         savedAlarm = alarmLogRepository.save(AlarmLog.builder()
                                 .alarmType("USER_SIGNUP_REQUEST")
                                 .severity("info")
                                 .message("신규 사용자 가입신청이 접수되었습니다.")
                                 .sourceType("USER")
                                 .sourceId(String.valueOf(signup.getId()))
+                                .alarmGroupId(groupId)
                                 .occurredTimestamp(java.time.LocalDateTime.now())
                                 .targetUserId(administrator.getId())
                                 .context("username=" + signup.getUsername() + ";name=" + signup.getName())
                                 .build());
                     }
-                    if (alarmEventPublisher != null) {
+                    if (alarmEventPublisher != null && pushEnabled) {
                         Map<String, Object> realtimeAlarm = new java.util.LinkedHashMap<>(alarm);
                         realtimeAlarm.put("id", savedAlarm != null && savedAlarm.getId() != null
                                 ? savedAlarm.getId() : signup.getId());
@@ -265,6 +305,21 @@ public class AuthService {
                     }
                 });
     }
+
+    private CodeDetail resolveAlarmPolicy(String alarmType) {
+        if (codeRepository == null || codeDetailRepository == null) return null;
+        return codeRepository.findByNameIgnoreCase("ALARM_TYPE")
+                .flatMap(code -> codeDetailRepository.findAllByCodeIdOrderBySortOrderAscIdAsc(code.getId()).stream()
+                        .filter(detail -> alarmType.equalsIgnoreCase(detail.getValue())).findFirst())
+                .orElse(null);
+    }
+
+    private UserAlertPreference findPreference(Long userId, String alarmType) {
+        if (userAlertPreferenceRepository == null) return null;
+        return userAlertPreferenceRepository.findByUserIdAndAlarmTypeCode(userId, alarmType).orElse(null);
+    }
+
+    private boolean enabled(String value, boolean fallback) { return value == null ? fallback : "Y".equalsIgnoreCase(value); }
 
     @Transactional
     public void changePassword(String username, ChangePasswordRequest request) {

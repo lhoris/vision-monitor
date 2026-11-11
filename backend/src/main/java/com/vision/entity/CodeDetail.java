@@ -21,4 +21,12 @@ public class CodeDetail extends BaseAudit {
     @Column(name = "SORT_ORDER") private Integer sortOrder;
     @Column(name = "DEFAULT_VALUE", length = 30) private String defaultValue;
     @Column(name = "REMARKS", length = 4000) private String remarks;
+    @Column(name = "ALARM_CATEGORY", length = 20) private String alarmCategory;
+    @Column(name = "DEFAULT_SAVE_STATUS", length = 1) private String defaultSaveStatus;
+    @Column(name = "DEFAULT_RECEIVE_STATUS", length = 1) private String defaultReceiveStatus;
+    @Column(name = "RECIPIENT_SCOPE", length = 20) private String recipientScope;
+    @Column(name = "DEFAULT_PUSH_STATUS", length = 1) private String defaultPushStatus;
+    @Column(name = "DEFAULT_EMAIL_STATUS", length = 1) private String defaultEmailStatus;
+    @Column(name = "DEFAULT_TEAMS_STATUS", length = 1) private String defaultTeamsStatus;
+    @Column(name = "ACKNOWLEDGEMENT_SCOPE", length = 20) private String acknowledgementScope;
 }

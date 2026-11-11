@@ -43,6 +43,9 @@ public class AlarmLog extends BaseAudit {
     @Column(name = "ALARM_SOURCE_ID", length = 100)
     private String sourceId;
 
+    @Column(name = "ALARM_GROUP_ID", length = 100)
+    private String alarmGroupId;
+
     @Column(name = "OCCURRED_TIMESTAMP", nullable = false)
     private LocalDateTime occurredTimestamp;
 

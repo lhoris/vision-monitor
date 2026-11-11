@@ -25,10 +25,25 @@ public class UserAlertPreference extends BaseAudit {
     @Column(name = "USER_ID", nullable = false)
     private Long userId;
 
+    @Column(name = "ALARM_TYPE_CODE", nullable = false, length = 50)
+    private String alarmTypeCode = "*";
+
+    @Column(name = "RECEIVE_STATUS", nullable = false, length = 1)
+    private String receiveStatus = "Y";
+
+    @Column(name = "RECEIVER_STATUS", nullable = false, length = 1)
+    private String receiverStatus = "Y";
+
+    @Column(name = "PUSH_ENABLED", nullable = false, length = 1)
+    private String pushEnabled = "Y";
+
     @Column(name = "EMAIL_ENABLED", nullable = false, length = 1)
     private String emailEnabled = "N";
 
     @Column(name = "SMS_ENABLED", nullable = false, length = 1)
     private String smsEnabled = "N";
+
+    @Column(name = "TEAMS_ENABLED", nullable = false, length = 1)
+    private String teamsEnabled = "N";
 
 }
