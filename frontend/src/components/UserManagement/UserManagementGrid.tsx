@@ -881,7 +881,7 @@ export function UserManagementGrid({
           type="button"
           aria-label="권한 셀"
           onMouseDown={(event) => {
-            event.preventDefault()
+            event.stopPropagation()
             setEditingCell({ rowId: row.rowId, field: 'roleIds' })
           }}
           onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'roleIds' })}
