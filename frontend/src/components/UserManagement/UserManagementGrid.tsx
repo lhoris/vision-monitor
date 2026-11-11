@@ -880,8 +880,10 @@ export function UserManagementGrid({
         <button
           type="button"
           aria-label="권한 셀"
-          {...selectableCellProps(row.rowId, 'role')}
-          onClick={() => setEditingCell({ rowId: row.rowId, field: 'roleIds' })}
+          onMouseDown={(event) => {
+            event.preventDefault()
+            setEditingCell({ rowId: row.rowId, field: 'roleIds' })
+          }}
           onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'roleIds' })}
           onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'roleIds')}
           className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'role')}`}
