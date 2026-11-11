@@ -11,8 +11,8 @@ import com.vision.dto.UserAccountDto;
 import com.vision.dto.SignupAvailabilityDto;
 import com.vision.dto.SignupAdminContactDto;
 import com.vision.entity.UserAccount;
+import com.vision.entity.AlarmRule;
 import com.vision.entity.AlarmLog;
-import com.vision.entity.CodeDetail;
 import com.vision.entity.UserAlertPreference;
 import com.vision.exception.ApiException;
 import com.vision.repository.UserAccountRepository;
@@ -20,8 +20,7 @@ import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAuthorizationRepository;
 import com.vision.repository.AlarmLogRepository;
-import com.vision.repository.CodeDetailRepository;
-import com.vision.repository.CodeRepository;
+import com.vision.repository.AlarmRuleRepository;
 import com.vision.repository.UserAlertPreferenceRepository;
 import com.vision.sse.AlarmEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +57,7 @@ public class AuthService {
     private final AuthSessionService sessionService;
     private final AlarmEventPublisher alarmEventPublisher;
     private final AlarmLogRepository alarmLogRepository;
-    private final CodeRepository codeRepository;
-    private final CodeDetailRepository codeDetailRepository;
+    private final AlarmRuleRepository alarmRuleRepository;
     private final UserAlertPreferenceRepository userAlertPreferenceRepository;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -71,8 +69,7 @@ public class AuthService {
             AuthSessionService sessionService,
             AlarmEventPublisher alarmEventPublisher,
             AlarmLogRepository alarmLogRepository,
-            CodeRepository codeRepository,
-            CodeDetailRepository codeDetailRepository,
+            AlarmRuleRepository alarmRuleRepository,
             UserAlertPreferenceRepository userAlertPreferenceRepository
     ) {
         this.userRepository = userRepository;
@@ -81,8 +78,7 @@ public class AuthService {
         this.sessionService = sessionService;
         this.alarmEventPublisher = alarmEventPublisher;
         this.alarmLogRepository = alarmLogRepository;
-        this.codeRepository = codeRepository;
-        this.codeDetailRepository = codeDetailRepository;
+        this.alarmRuleRepository = alarmRuleRepository;
         this.userAlertPreferenceRepository = userAlertPreferenceRepository;
     }
 
@@ -94,7 +90,7 @@ public class AuthService {
             AlarmEventPublisher alarmEventPublisher
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
-                alarmEventPublisher, null, null, null, null);
+                alarmEventPublisher, null, null, null);
     }
 
     public AuthService(
@@ -106,7 +102,7 @@ public class AuthService {
             AlarmLogRepository alarmLogRepository
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
-                alarmEventPublisher, alarmLogRepository, null, null, null);
+                alarmEventPublisher, alarmLogRepository, null, null);
     }
 
     public AuthService(
@@ -117,7 +113,7 @@ public class AuthService {
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
                 new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository),
-                null, null, null, null, null);
+                null, null, null, null);
     }
 
     // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
@@ -251,10 +247,10 @@ public class AuthService {
     }
 
     private void publishSignupAlarm(UserAccount signup) {
-        CodeDetail policy = resolveAlarmPolicy("USER_SIGNUP_REQUEST");
-        boolean saveLog = policy == null || enabled(policy.getDefaultSaveStatus(), true);
-        boolean defaultReceive = policy == null || enabled(policy.getDefaultReceiveStatus(), true);
-        boolean defaultPush = policy == null || enabled(policy.getDefaultPushStatus(), true);
+        AlarmRule policy = resolveAlarmPolicy("USER_SIGNUP_REQUEST");
+        boolean saveLog = policy == null || enabled(policy.getSaveStatus(), true);
+        boolean defaultReceive = policy == null || enabled(policy.getReceiveStatus(), true);
+        boolean defaultPush = policy == null || enabled(policy.getPushStatus(), true);
         boolean groupAcknowledgement = policy != null && "GROUP".equalsIgnoreCase(policy.getAcknowledgementScope());
         String recipientScope = policy == null || policy.getRecipientScope() == null ? "ALL_ADMIN" : policy.getRecipientScope();
         String groupId = groupAcknowledgement ? UUID.randomUUID().toString() : null;
@@ -306,12 +302,9 @@ public class AuthService {
                 });
     }
 
-    private CodeDetail resolveAlarmPolicy(String alarmType) {
-        if (codeRepository == null || codeDetailRepository == null) return null;
-        return codeRepository.findByNameIgnoreCase("ALARM_TYPE")
-                .flatMap(code -> codeDetailRepository.findAllByCodeIdOrderBySortOrderAscIdAsc(code.getId()).stream()
-                        .filter(detail -> alarmType.equalsIgnoreCase(detail.getValue())).findFirst())
-                .orElse(null);
+    private AlarmRule resolveAlarmPolicy(String alarmType) {
+        if (alarmRuleRepository == null) return null;
+        return alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus(alarmType, "N").orElse(null);
     }
 
     private UserAlertPreference findPreference(Long userId, String alarmType) {

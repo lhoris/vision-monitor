@@ -273,6 +273,10 @@ html[data-theme='theme3'].dark .dark\:to-indigo-400 {
   overflow: hidden;
 }
 
+.data-grid-table td.user-role-editor-cell {
+  overflow: visible;
+}
+
 .data-grid-toolbar {
   display: flex;
   flex-wrap: wrap;

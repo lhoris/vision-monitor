@@ -6,9 +6,8 @@ import com.vision.dto.AuthenticatedUserDto;
 import com.vision.dto.AlarmLogDto;
 import com.vision.exception.ApiException;
 import com.vision.entity.AlarmLog;
+import com.vision.repository.AlarmRuleRepository;
 import com.vision.repository.AlarmLogRepository;
-import com.vision.repository.CodeDetailRepository;
-import com.vision.repository.CodeRepository;
 import com.vision.sse.AlarmEventPublisher;
 import com.vision.sse.AlarmSseBroker;
 import com.vision.util.ApiResponse;
@@ -40,8 +39,7 @@ public class AlarmController {
     private final AlarmEventPublisher publisher;
     private final AlarmLogRepository alarmLogRepository;
     private final String modelServerKey;
-    private final CodeRepository codeRepository;
-    private final CodeDetailRepository codeDetailRepository;
+    private final AlarmRuleRepository alarmRuleRepository;
 
     @Autowired
     public AlarmController(
@@ -49,19 +47,17 @@ public class AlarmController {
             AlarmEventPublisher publisher,
             AlarmLogRepository alarmLogRepository,
             @Value("${vision.sse.model-server-key:}") String modelServerKey,
-            CodeRepository codeRepository,
-            CodeDetailRepository codeDetailRepository
+            AlarmRuleRepository alarmRuleRepository
     ) {
         this.broker = broker;
         this.publisher = publisher;
         this.alarmLogRepository = alarmLogRepository;
         this.modelServerKey = modelServerKey;
-        this.codeRepository = codeRepository;
-        this.codeDetailRepository = codeDetailRepository;
+        this.alarmRuleRepository = alarmRuleRepository;
     }
 
     public AlarmController(AlarmSseBroker broker, AlarmEventPublisher publisher, String modelServerKey) {
-        this(broker, publisher, null, modelServerKey, null, null);
+        this(broker, publisher, null, modelServerKey, null);
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -120,11 +116,9 @@ public class AlarmController {
     }
 
     private boolean isGroupAcknowledgement(String alarmType) {
-        if (codeRepository == null || codeDetailRepository == null) return false;
-        return codeRepository.findByNameIgnoreCase("ALARM_TYPE")
-                .flatMap(code -> codeDetailRepository.findAllByCodeIdOrderBySortOrderAscIdAsc(code.getId()).stream()
-                        .filter(detail -> alarmType.equalsIgnoreCase(detail.getValue())).findFirst())
-                .map(detail -> "GROUP".equalsIgnoreCase(detail.getAcknowledgementScope()))
+        if (alarmRuleRepository == null) return false;
+        return alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus(alarmType, "N")
+                .map(rule -> "GROUP".equalsIgnoreCase(rule.getAcknowledgementScope()))
                 .orElse(false);
     }
 }

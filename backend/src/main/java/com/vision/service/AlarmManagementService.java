@@ -1,13 +1,12 @@
 package com.vision.service;
 
 import com.vision.dto.AlarmManagementDto;
-import com.vision.entity.CodeDetail;
+import com.vision.entity.AlarmRule;
 import com.vision.entity.UserAccount;
 import com.vision.entity.UserAlertPreference;
 import com.vision.exception.ApiException;
 import com.vision.repository.AuthorizationRepository;
-import com.vision.repository.CodeDetailRepository;
-import com.vision.repository.CodeRepository;
+import com.vision.repository.AlarmRuleRepository;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.UserAlertPreferenceRepository;
 import com.vision.repository.UserAuthorizationRepository;
@@ -24,10 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AlarmManagementService {
     private static final String ACTIVE = "N";
-    private static final String ALARM_TYPE_CODE = "ALARM_TYPE";
-
-    private final CodeRepository codeRepository;
-    private final CodeDetailRepository detailRepository;
+    private final AlarmRuleRepository alarmRuleRepository;
     private final UserAccountRepository userRepository;
     private final UserAlertPreferenceRepository preferenceRepository;
     private final AuthorizationRepository authorizationRepository;
@@ -36,13 +32,13 @@ public class AlarmManagementService {
     @Transactional(readOnly = true)
     public AlarmManagementDto.Overview overview(String actorUsername) {
         requireAdmin(actorUsername);
-        List<CodeDetail> details = alarmDetails();
-        List<String> codes = details.stream().map(CodeDetail::getValue).toList();
+        List<AlarmRule> rules = alarmRules();
+        List<String> codes = rules.stream().map(AlarmRule::getCode).toList();
         Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings = new HashMap<>();
         preferenceRepository.findAllByAlarmTypeCodeIn(codes).forEach(preference -> settings
                 .computeIfAbsent(preference.getUserId(), ignored -> new HashMap<>())
                 .put(preference.getAlarmTypeCode(), toChannelPolicy(preference)));
-        List<AlarmManagementDto.TypePolicy> types = details.stream().map(this::toTypePolicy).toList();
+        List<AlarmManagementDto.TypePolicy> types = rules.stream().map(this::toTypePolicy).toList();
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
                 .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
@@ -59,17 +55,17 @@ public class AlarmManagementService {
                 || !isAckScope(request.acknowledgementScope())) {
             throw new ApiException("VALIDATION_ERROR", "알람 정책 값이 올바르지 않습니다.");
         }
-        CodeDetail detail = detailRepository.findById(detailId)
+        AlarmRule detail = alarmRuleRepository.findById(detailId)
                 .orElseThrow(() -> new ApiException("CODE_DETAIL_NOT_FOUND", "알람 유형을 찾을 수 없습니다."));
-        detail.setAlarmCategory(request.category());
+        detail.setCategory(request.category());
         detail.setRecipientScope(request.recipientScope());
         detail.setAcknowledgementScope(request.acknowledgementScope());
-        detail.setDefaultSaveStatus(status(request.defaultSave()));
-        detail.setDefaultReceiveStatus(status(request.defaultReceive()));
-        detail.setDefaultPushStatus(status(request.defaultPush()));
-        detail.setDefaultEmailStatus(status(request.defaultEmail()));
-        detail.setDefaultTeamsStatus(status(request.defaultTeams()));
-        return toTypePolicy(detailRepository.save(detail));
+        detail.setSaveStatus(status(request.defaultSave()));
+        detail.setReceiveStatus(status(request.defaultReceive()));
+        detail.setPushStatus(status(request.defaultPush()));
+        detail.setEmailStatus(status(request.defaultEmail()));
+        detail.setTeamsStatus(status(request.defaultTeams()));
+        return toTypePolicy(alarmRuleRepository.save(detail));
     }
 
     @Transactional
@@ -81,7 +77,7 @@ public class AlarmManagementService {
         if (request == null || request.overrides() == null) {
             throw new ApiException("VALIDATION_ERROR", "알람 수신 설정이 없습니다.");
         }
-        List<String> codes = alarmDetails().stream().map(CodeDetail::getValue).toList();
+        List<String> codes = alarmRules().stream().map(AlarmRule::getCode).toList();
         request.overrides().forEach((code, value) -> {
             if (!codes.contains(code) || value == null) return;
             UserAlertPreference preference = preferenceRepository.findByUserIdAndAlarmTypeCode(userId, code)
@@ -109,25 +105,23 @@ public class AlarmManagementService {
 
     private AlarmManagementDto.UserSetting overviewForUser(UserAccount user) {
         Map<String, AlarmManagementDto.ChannelPolicy> settings = new HashMap<>();
-        preferenceRepository.findAllByAlarmTypeCodeIn(alarmDetails().stream().map(CodeDetail::getValue).toList()).stream()
+        preferenceRepository.findAllByAlarmTypeCodeIn(alarmRules().stream().map(AlarmRule::getCode).toList()).stream()
                 .filter(preference -> user.getId().equals(preference.getUserId()))
                 .forEach(preference -> settings.put(preference.getAlarmTypeCode(), toChannelPolicy(preference)));
         return new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(), settings);
     }
 
-    private List<CodeDetail> alarmDetails() {
-        return codeRepository.findByNameIgnoreCase(ALARM_TYPE_CODE)
-                .map(code -> detailRepository.findAllByCodeIdAndDataEndStatusOrderBySortOrderAscIdAsc(code.getId(), ACTIVE))
-                .orElse(List.of());
+    private List<AlarmRule> alarmRules() {
+        return alarmRuleRepository.findAllByDataEndStatusOrderByIdAsc(ACTIVE);
     }
 
-    private AlarmManagementDto.TypePolicy toTypePolicy(CodeDetail detail) {
-        return new AlarmManagementDto.TypePolicy(detail.getId(), detail.getValue(), detail.getName(), detail.getNameKo(),
-                detail.getNameEn(), detail.getDescription(), value(detail.getAlarmCategory(), "GENERAL"),
+    private AlarmManagementDto.TypePolicy toTypePolicy(AlarmRule detail) {
+        return new AlarmManagementDto.TypePolicy(detail.getId(), detail.getCode(), detail.getName(), detail.getNameKo(),
+                detail.getNameEn(), detail.getDescription(), value(detail.getCategory(), "GENERAL"),
                 value(detail.getRecipientScope(), "ALL_ADMIN"), value(detail.getAcknowledgementScope(), "INDIVIDUAL"),
-                enabled(detail.getDefaultSaveStatus(), true), enabled(detail.getDefaultReceiveStatus(), true),
-                enabled(detail.getDefaultPushStatus(), true), enabled(detail.getDefaultEmailStatus(), false),
-                enabled(detail.getDefaultTeamsStatus(), false));
+                enabled(detail.getSaveStatus(), true), enabled(detail.getReceiveStatus(), true),
+                enabled(detail.getPushStatus(), true), enabled(detail.getEmailStatus(), false),
+                enabled(detail.getTeamsStatus(), false));
     }
 
     private AlarmManagementDto.ChannelPolicy toChannelPolicy(UserAlertPreference preference) {

@@ -1077,7 +1077,7 @@ export function UserManagementGrid({
                   { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
                   { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
                 ])}</td>
-                <td className={bodyCellClass} data-onboarding="user-management-role">{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
+                <td className={`${bodyCellClass} ${isEditing(row.rowId, 'roleIds') ? 'user-role-editor-cell' : ''}`} data-onboarding="user-management-role">{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', t('userManagement.remarks'))}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
