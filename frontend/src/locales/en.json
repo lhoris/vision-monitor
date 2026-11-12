@@ -86,6 +86,7 @@
   },
   "userManagement": {
     "title": "User Management",
+    "unassignedClass": "Unassigned",
     "subtitle": "Create users, edit information, and manage account status in the grid.",
     "loading": "Loading users...",
     "loadError": "Unable to load user management data.",

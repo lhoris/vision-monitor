@@ -85,6 +85,7 @@
   },
   "userManagement": {
     "title": "사용자 관리",
+    "unassignedClass": "미지정",
     "subtitle": "그리드에서 신규 사용자 생성, 정보 수정, 계정 상태 변경을 처리합니다.",
     "loading": "사용자 목록을 불러오는 중...",
     "loadError": "사용자관리 데이터를 불러올 수 없습니다.",

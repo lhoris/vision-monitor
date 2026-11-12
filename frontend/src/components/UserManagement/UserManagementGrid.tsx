@@ -480,6 +480,7 @@ export function UserManagementGrid({
     { id: 'email', ariaLabel: `${t('userManagement.email')} 필터`, value: columnFilters.email, widthClassName: 'w-[190px]', onChange: (value) => updateColumnFilter('email', value) },
     { id: 'phone', ariaLabel: `${t('userManagement.phone')} 필터`, value: columnFilters.phone, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('phone', value) },
     { id: 'department', ariaLabel: `${t('userManagement.department')} 필터`, value: columnFilters.department, widthClassName: 'w-[150px]', onChange: (value) => updateColumnFilter('department', value) },
+    { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: columnFilters.classCode, widthClassName: 'w-[80px]', onChange: (value) => updateColumnFilter('classCode', value), options: classOptions.map((option) => ({ value: option.value, label: option.value ? option.label : '전체' })) },
     { id: 'position', ariaLabel: `${t('userManagement.position')} 필터`, value: columnFilters.position, widthClassName: 'w-[100px]', onChange: (value) => updateColumnFilter('position', value) },
     { id: 'resetPassword', ariaLabel: `${t('userManagement.password')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[90px]' },
     { id: 'accountStatus', ariaLabel: `${t('userManagement.accountStatus')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[110px]' },
@@ -910,10 +911,10 @@ export function UserManagementGrid({
     const value = row.classCode ?? ''
     if (isEditing(row.rowId, 'classCode')) {
       return <select aria-label="반" autoFocus value={value} onBlur={() => setEditingCell(null)} onChange={(event) => { updateRow(row.rowId, 'classCode', event.target.value); setEditingCell(null) }} className={selectCellClass}>
-        {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        {classOptions.map((option) => <option key={option.value} value={option.value}>{option.value ? option.label : t('userManagement.unassignedClass')}</option>)}
       </select>
     }
-    return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
+    return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{classOptions.find((option) => option.value === value)?.label ?? t('userManagement.unassignedClass')}</button>
   }
 
   const renderRoleSelectCell = (row: UserGridRow) => {
@@ -1016,6 +1017,10 @@ export function UserManagementGrid({
     <>
       <DataGridToolbar className="mb-2" data-onboarding="user-management-actions">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); void executeSearch() }}>
+          <label htmlFor="user-class-filter" className="text-sm font-medium text-slate-700 dark:text-slate-200">반</label>
+          <select id="user-class-filter" aria-label="반 조회조건" value={columnFilters.classCode} onChange={(event) => updateColumnFilter('classCode', event.target.value)} className="h-8 w-24 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+            {classOptions.map((option) => <option key={option.value} value={option.value}>{option.value ? option.label : '전체'}</option>)}
+          </select>
           <label htmlFor="user-login-account-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.loginAccount')}</label>
           <input id="user-login-account-search" aria-label={t('userManagement.loginAccountSearch')} value={loginAccountQuery} onChange={(event) => setLoginAccountQuery(event.target.value)} placeholder={t('userManagement.loginAccountSearch')} className="h-8 w-48 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
           <label htmlFor="user-name-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('userManagement.name')}</label>

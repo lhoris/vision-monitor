@@ -24,8 +24,14 @@ const emptyForm: VideoSourceInput = {
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
+type SelectableVideoField = 'name' | 'protocol' | 'url' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
 type VideoGridRowState = 'clean' | 'dirty' | 'new'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
+
+interface SelectedVideoCell {
+  id: number
+  field: SelectableVideoField
+}
 
 const headerCell = 'h-8 border-b border-r border-[#9dcced] bg-[#dff2ff] px-2 text-center align-middle text-[13px] font-semibold normal-case text-[#266b9f] dark:border-slate-700 dark:bg-slate-900 dark:text-sky-100'
 const bodyCell = 'h-9 border-b border-r border-[#b7d8ee] p-0 align-middle dark:border-slate-700'
@@ -150,6 +156,8 @@ export function VideoManagement() {
   const classCode = useCommonCode('USER_CLASS')
   const classOptions = useMemo(() => (classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => ({ value: item.value, label: item.nameKo || item.name })), [classCode])
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
+  const [selectedCellRange, setSelectedCellRange] = useState<{ start: SelectedVideoCell; end: SelectedVideoCell } | null>(null)
+  const [draggingCellRange, setDraggingCellRange] = useState(false)
   const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '', classCode: '' })
   const [query, setQuery] = useState('')
   const [appliedQuery, setAppliedQuery] = useState('')
@@ -213,6 +221,12 @@ export function VideoManagement() {
     document.addEventListener('click', closeContextMenu)
     return () => document.removeEventListener('click', closeContextMenu)
   }, [contextMenu])
+  useEffect(() => {
+    if (!draggingCellRange) return undefined
+    const stopDragging = () => setDraggingCellRange(false)
+    window.addEventListener('mouseup', stopDragging)
+    return () => window.removeEventListener('mouseup', stopDragging)
+  }, [draggingCellRange])
 
   const filteredRows = useMemo(() => rows.filter((item) => {
     const search = appliedQuery.trim().toLowerCase()
@@ -230,6 +244,101 @@ export function VideoManagement() {
   const { selectedIds, allVisibleSelected, toggle: toggleRow, select: selectRow, toggleVisible, clear: clearSelection } = useDataGridSelection(visibleRows.map((item) => item.id))
   const changedRows = rows.filter((row) => row.rowState !== 'clean')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
+
+  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
+  const getCellDisplayValue = (row: VideoGridRow, field: SelectableVideoField) => {
+    if (field === 'modelProcessId') return row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`
+    if (field === 'classCode') return classOptions.find((option) => option.value === row.classCode)?.label ?? (row.classCode ? row.classCode : '미지정')
+    return String(row[field] ?? '') || '-'
+  }
+
+  const getSelectedRangeBounds = () => {
+    if (!selectedCellRange) return null
+    const startRowIndex = visibleRows.findIndex((row) => row.id === selectedCellRange.start.id)
+    const endRowIndex = visibleRows.findIndex((row) => row.id === selectedCellRange.end.id)
+    const startColumnIndex = selectableColumns.indexOf(selectedCellRange.start.field)
+    const endColumnIndex = selectableColumns.indexOf(selectedCellRange.end.field)
+    if ([startRowIndex, endRowIndex, startColumnIndex, endColumnIndex].some((index) => index < 0)) return null
+    return {
+      minRow: Math.min(startRowIndex, endRowIndex),
+      maxRow: Math.max(startRowIndex, endRowIndex),
+      minColumn: Math.min(startColumnIndex, endColumnIndex),
+      maxColumn: Math.max(startColumnIndex, endColumnIndex),
+    }
+  }
+
+  const isCellInSelectedRange = (id: number, field: SelectableVideoField) => {
+    const bounds = getSelectedRangeBounds()
+    if (!bounds) return false
+    const rowIndex = visibleRows.findIndex((row) => row.id === id)
+    const columnIndex = selectableColumns.indexOf(field)
+    return rowIndex >= bounds.minRow && rowIndex <= bounds.maxRow && columnIndex >= bounds.minColumn && columnIndex <= bounds.maxColumn
+  }
+
+  const getSelectedRangeText = () => {
+    const bounds = getSelectedRangeBounds()
+    if (!bounds) return ''
+    return visibleRows.slice(bounds.minRow, bounds.maxRow + 1)
+      .map((row) => selectableColumns.slice(bounds.minColumn, bounds.maxColumn + 1).map((field) => getCellDisplayValue(row, field)).join('\t'))
+      .join('\n')
+  }
+
+  const copySelectedCellRange = async () => {
+    const selectedText = getSelectedRangeText()
+    if (!selectedText) return
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(selectedText)
+        return
+      }
+      const textarea = document.createElement('textarea')
+      textarea.value = selectedText
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const copied = document.execCommand('copy')
+      textarea.remove()
+      if (!copied) throw new Error('clipboard copy failed')
+    } catch {
+      setError('선택한 셀을 클립보드에 복사하지 못했습니다.')
+    }
+  }
+
+  const startCellRangeSelection = (event: MouseEvent<HTMLElement>, id: number, field: SelectableVideoField) => {
+    if (event.button !== 0) return
+    event.preventDefault()
+    event.currentTarget.focus()
+    setEditingCell(null)
+    if (event.shiftKey && selectedCellRange) {
+      setSelectedCellRange((current) => current ? { ...current, end: { id, field } } : { start: { id, field }, end: { id, field } })
+      setDraggingCellRange(false)
+      return
+    }
+    setSelectedCellRange({ start: { id, field }, end: { id, field } })
+    setDraggingCellRange(true)
+  }
+
+  const extendCellRangeSelection = (id: number, field: SelectableVideoField) => {
+    if (!draggingCellRange) return
+    setSelectedCellRange((current) => current ? { ...current, end: { id, field } } : current)
+  }
+
+  const selectableCellProps = (id: number, field: SelectableVideoField) => ({
+    onMouseDown: (event: MouseEvent<HTMLElement>) => startCellRangeSelection(event, id, field),
+    onMouseEnter: () => extendCellRangeSelection(id, field),
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+        event.preventDefault()
+        void copySelectedCellRange()
+      }
+    },
+  })
+
+  const selectedCellStateClass = (id: number, field: SelectableVideoField) => (
+    isCellInSelectedRange(id, field) ? 'bg-[#d6edff] ring-1 ring-inset ring-[#58aee4] dark:bg-sky-950/40 dark:ring-sky-500' : ''
+  )
 
   const setFilter = (key: FilterKey, value: string) => setFilters((current) => ({ ...current, [key]: value }))
 
@@ -250,6 +359,11 @@ export function VideoManagement() {
   }
 
   const cellKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'c') {
+      event.preventDefault()
+      void copySelectedCellRange()
+      return
+    }
     if (event.key === 'Enter' || event.key === 'Escape') setEditingCell(null)
   }
 
@@ -405,7 +519,7 @@ export function VideoManagement() {
       )
     }
     return (
-      <button type="button" aria-label={`${field} 셀`} onDoubleClick={() => setEditingCell({ id: row.id, field })} className={`${cellValue} ${className}`} title={value}>
+      <button type="button" aria-label={`${field} 셀`} {...selectableCellProps(row.id, field)} onDoubleClick={() => setEditingCell({ id: row.id, field })} className={`${cellValue} ${selectedCellStateClass(row.id, field)} ${className}`} title={value}>
         {value || '-'}
       </button>
     )
@@ -432,7 +546,7 @@ export function VideoManagement() {
       )
     }
     return (
-      <button type="button" aria-label={`${field} 셀`} onClick={() => setEditingCell({ id: row.id, field })} className={cellValue}>
+      <button type="button" aria-label={`${field} 셀`} {...selectableCellProps(row.id, field)} onClick={() => setEditingCell({ id: row.id, field })} className={`${cellValue} ${selectedCellStateClass(row.id, field)}`}>
         {field === 'status' ? <span className={row.status === 'ACTIVE' ? 'text-emerald-600' : 'text-slate-500'}>{row.status}</span> : row.protocol}
       </button>
     )
@@ -461,7 +575,7 @@ export function VideoManagement() {
         {modelProcesses.map((process) => <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" key={process.id} value={process.id}>{process.modelName || process.processName} ({process.id})</option>)}
       </select>
     ) : (
-      <button type="button" aria-label={`${row.name} 모델 프로세스 셀`} onClick={() => setEditingCell({ id: row.id, field: 'modelProcessId' })} className={`${cellValue} min-w-0 truncate`} title={row.modelProcessId == null ? '연결하지 않음' : String(row.modelProcessId)}>
+      <button type="button" aria-label={`${row.name} 모델 프로세스 셀`} {...selectableCellProps(row.id, 'modelProcessId')} onClick={() => setEditingCell({ id: row.id, field: 'modelProcessId' })} className={`${cellValue} ${selectedCellStateClass(row.id, 'modelProcessId')} min-w-0 truncate`} title={row.modelProcessId == null ? '연결하지 않음' : String(row.modelProcessId)}>
         {row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`}
       </button>
     )
@@ -475,7 +589,7 @@ export function VideoManagement() {
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     }
-    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value || '미지정'}>{classOptions.find((option) => option.value === value)?.label ?? (value || '미지정')}</button>
+    return <button type="button" aria-label={`${row.name} 반`} {...selectableCellProps(row.id, 'classCode')} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} ${selectedCellStateClass(row.id, 'classCode')} min-w-0 truncate`} title={value || '미지정'}>{classOptions.find((option) => option.value === value)?.label ?? (value || '미지정')}</button>
   }
 
   const columnFilters: GridColumnFilter[] = [
