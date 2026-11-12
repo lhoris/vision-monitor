@@ -6,7 +6,7 @@ import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.VideoSourceRepository;
 import com.vision.repository.UserAccountRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +15,16 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
-@RequiredArgsConstructor
 public class VideoSourceService {
     private static final List<String> PROTOCOLS = List.of("WEBRTC", "HLS");
     private final VideoSourceRepository repository;
     private final UserAccountRepository userRepository;
+
+    @Autowired
+    public VideoSourceService(VideoSourceRepository repository, UserAccountRepository userRepository) {
+        this.repository = repository;
+        this.userRepository = userRepository;
+    }
 
     public VideoSourceService(VideoSourceRepository repository) {
         this(repository, null);

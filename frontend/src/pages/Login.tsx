@@ -18,6 +18,7 @@ import loginVideo from '../../bak/login_html/img/login_video.mp4'
 import './loginTemplates.css'
 import { HelpButton, startGuidedOnboarding, stopGuidedOnboarding } from '@/components/Onboarding'
 import { useCommonCode } from '@/hooks/useCommonCode'
+import { fetchCommonCodeNames } from '@/store/slices/commonCodeSlice'
 
 type LoginTemplateId = 1 | 2 | 3
 
@@ -160,12 +161,17 @@ function DemoCredentials() {
 }
 
 function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: (message: string) => void }) {
+  const dispatch = useAppDispatch()
   const classCode = useCommonCode('USER_CLASS')
   const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '', classCode: 'COMMON' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
   const [emailCheck, setEmailCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
+  useEffect(() => {
+    if (!classCode) void dispatch(fetchCommonCodeNames(['USER_CLASS']))
+  }, [classCode, dispatch])
+
   const update = (field: keyof SignupInput, value: string) => {
     setInput((current) => ({ ...current, [field]: value }))
     if (field === 'username') setUsernameCheck('idle')
