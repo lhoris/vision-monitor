@@ -175,14 +175,14 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
 
         {mode === 'catalog' ? (
           <>
-            <div className="p-4">
-              <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">반
-                <select value={classFilter} disabled={Boolean(userClassCode)} onChange={(event) => setClassFilter(event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+            <div className="flex items-end gap-2 p-4">
+              <label className="shrink-0 text-sm font-semibold text-gray-700 dark:text-gray-200">반
+                <select value={classFilter} disabled={Boolean(userClassCode)} onChange={(event) => setClassFilter(event.target.value)} className="ml-2 h-9 w-24 rounded border border-gray-300 px-2 text-sm font-normal dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                   {!userClassCode ? <option value="">전체</option> : null}
                   {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
-              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
+              <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="h-9 min-w-0 flex-1 rounded border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
             </div>
             <div className="max-h-80 overflow-y-auto border-t border-gray-100 dark:border-gray-700">
               {filteredVideoSources.length === 0 ? (
