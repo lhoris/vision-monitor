@@ -28,9 +28,6 @@ public class UserAlertPreference extends BaseAudit {
     @Column(name = "ALARM_TYPE_CODE", nullable = false, length = 50)
     private String alarmTypeCode = "*";
 
-    @Column(name = "RECEIVE_STATUS", nullable = false, length = 1)
-    private String receiveStatus = "Y";
-
     @Column(name = "RECEIVER_STATUS", nullable = false, length = 1)
     private String receiverStatus = "Y";
 

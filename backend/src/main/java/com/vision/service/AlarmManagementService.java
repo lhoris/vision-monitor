@@ -83,7 +83,6 @@ public class AlarmManagementService {
             UserAlertPreference preference = preferenceRepository.findByUserIdAndAlarmTypeCode(userId, code)
                     .orElseGet(() -> newPreference(actorUsername, userId, code));
             preference.setReceiverStatus(status(value.receiver()));
-            preference.setReceiveStatus(status(value.receiver()));
             preference.setPushEnabled(status(value.push()));
             preference.setEmailEnabled(status(value.email()));
             preference.setTeamsEnabled(status(value.teams()));
