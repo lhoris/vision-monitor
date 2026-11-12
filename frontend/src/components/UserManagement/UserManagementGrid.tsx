@@ -843,7 +843,8 @@ export function UserManagementGrid({
           if (!disabled) setEditingCell({ rowId: row.rowId, field })
         }}
         onKeyDown={(event) => {
-          if (!disabled) handleEditableCellKeyDown(event, row.rowId, field)
+          if (disabled) handleReadOnlyCellKeyDown(event)
+          else handleEditableCellKeyDown(event, row.rowId, field)
         }}
         className={`${cellValueClass} ${selectedCellStateClass(row.rowId, field)} ${disabled ? 'cursor-default text-slate-500 dark:text-slate-400' : ''}`}
       >
@@ -1065,12 +1066,12 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
-              <th className={`w-[170px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
+              <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[190px] ${headerCellClass}`}>{t('userManagement.email')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.phone')}</th>
               <th className={`w-[150px] ${headerCellClass}`}>{t('userManagement.department')}</th>
-              <th className={`w-[60px] ${headerCellClass}`}>반</th>
+              <th className={`w-[80px] ${headerCellClass}`}>반</th>
               <th className={`w-[100px] ${headerCellClass}`}>{t('userManagement.position')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-[110px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
