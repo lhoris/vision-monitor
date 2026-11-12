@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import { DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
+import { ConfirmDialog, DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, Toast, type GridColumnFilter } from '@/components/Common'
 import { videoSourceService } from '@/services/videoSourceService'
 import { listProcesses } from '@/services/modelManagementService'
 import type { ModelProcess } from '@/types/modelManagement'
@@ -164,6 +164,9 @@ export function VideoManagement() {
   const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
+  const [saveTargets, setSaveTargets] = useState<VideoGridRow[] | null>(null)
+  const [pendingModalSave, setPendingModalSave] = useState<VideoSourceInput | null>(null)
+  const [pendingDeleteCount, setPendingDeleteCount] = useState(0)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -253,9 +256,16 @@ export function VideoManagement() {
     classCode: row.classCode ?? 'COMMON',
   })
 
-  const saveRows = async () => {
+  const saveRows = () => {
     const targets = selectedChangedRows.length ? selectedChangedRows : changedRows
     if (!targets.length) return
+    setSaveTargets(targets)
+  }
+
+  const confirmSaveRows = async () => {
+    const targets = saveTargets
+    if (!targets?.length) return
+    setSaveTargets(null)
     setSaving(true)
     try {
       await Promise.all(targets.map((row) => videoSourceService.update(row.id, toInput(row))))
@@ -275,6 +285,13 @@ export function VideoManagement() {
   }
 
   const save = async (value: VideoSourceInput) => {
+    setPendingModalSave(value)
+  }
+
+  const confirmModalSave = async () => {
+    const value = pendingModalSave
+    if (!value) return
+    setPendingModalSave(null)
     setSaving(true)
     setModalError('')
     try {
@@ -290,8 +307,14 @@ export function VideoManagement() {
     }
   }
 
-  const deleteSelected = async () => {
-    if (!selectedIds.size || !window.confirm(`선택한 ${selectedIds.size}건의 영상 주소를 삭제하시겠습니까?`)) return
+  const deleteSelected = () => {
+    if (!selectedIds.size) return
+    setPendingDeleteCount(selectedIds.size)
+  }
+
+  const confirmDeleteSelected = async () => {
+    if (!pendingDeleteCount) return
+    setPendingDeleteCount(0)
     setSaving(true)
     try {
       await Promise.all([...selectedIds].map((id) => videoSourceService.remove(id)))
@@ -444,12 +467,8 @@ export function VideoManagement() {
           <input id="video-search" aria-label="영상 검색" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름 또는 주소 입력" className="h-8 w-64 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>
         <div className="flex items-center gap-2">
-          <DataGridActionButton type="button" onClick={() => setAppliedQuery(query)} disabled={saving}>조회</DataGridActionButton>
+          <DataGridActionButton type="button" onClick={() => { setAppliedQuery(query); setNotice('영상 목록을 조회했습니다.') }} disabled={saving}>조회</DataGridActionButton>
           <DataGridActionButton type="button" variant="primary" onClick={() => void saveRows()} disabled={saving || changedRows.length === 0}>저장</DataGridActionButton>
-          <DataGridActionButton type="button" onClick={() => openAdd()} disabled={saving}>추가</DataGridActionButton>
-          <DataGridActionButton type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving}>복제</DataGridActionButton>
-          <DataGridActionButton type="button" variant="danger" onClick={() => void deleteSelected()} disabled={!selectedIds.size || saving}>삭제</DataGridActionButton>
-          <DataGridActionButton type="button" onClick={() => void load()} disabled={saving}>새로고침</DataGridActionButton>
         </div>
       </DataGridToolbar>
 
@@ -511,6 +530,12 @@ export function VideoManagement() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
+          <div className="flex flex-wrap items-center gap-1">
+            <button type="button" onClick={() => openAdd()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">행 추가</button>
+            <button type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">복제</button>
+            <button type="button" onClick={deleteSelected} disabled={!selectedIds.size || saving} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">행 삭제</button>
+            <button type="button" onClick={() => { void load().then(() => setNotice('영상 목록을 새로고침했습니다.')) }} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">새로고침</button>
+          </div>
           <span>선택 {selectedIds.size}건</span>
           <span className="text-slate-300">|</span>
           <span>전체 {filteredRows.length}건</span>
@@ -529,6 +554,17 @@ export function VideoManagement() {
         </div>
       </section>
 
+      <ConfirmDialog
+        isOpen={Boolean(saveTargets || pendingModalSave || pendingDeleteCount)}
+        title={pendingDeleteCount ? '영상 삭제 확인' : '영상 저장 확인'}
+        message={pendingDeleteCount ? `선택한 ${pendingDeleteCount}건의 영상을 삭제하시겠습니까?` : saveTargets ? `${saveTargets.length}건의 영상 변경사항을 저장하시겠습니까?` : '새 영상 정보를 저장하시겠습니까?'}
+        confirmLabel={pendingDeleteCount ? '삭제' : '저장'}
+        cancelLabel="취소"
+        busy={saving}
+        variant={pendingDeleteCount ? 'danger' : 'default'}
+        onCancel={() => { if (!saving) { setSaveTargets(null); setPendingModalSave(null); setPendingDeleteCount(0) } }}
+        onConfirm={pendingDeleteCount ? confirmDeleteSelected : saveTargets ? confirmSaveRows : confirmModalSave}
+      />
       <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} modelProcessesLoading={modelProcessesLoading} classOptions={classOptions} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
     </section>
   )
