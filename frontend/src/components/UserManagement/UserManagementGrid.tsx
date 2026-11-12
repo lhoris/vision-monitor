@@ -296,6 +296,18 @@ export function UserManagementGrid({
     return () => window.removeEventListener('mouseup', stopDragging)
   }, [draggingCellRange])
 
+  useEffect(() => {
+    if (!editingCell || editingCell.field !== 'roleIds') return undefined
+
+    const closeRoleEditor = (event: globalThis.MouseEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-user-role-editor]')) return
+      setEditingCell(null)
+    }
+
+    document.addEventListener('mousedown', closeRoleEditor)
+    return () => document.removeEventListener('mousedown', closeRoleEditor)
+  }, [editingCell])
+
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
       if (appliedLoginAccountQuery.trim() && !row.username.toLowerCase().includes(appliedLoginAccountQuery.trim().toLowerCase())) return false
@@ -876,7 +888,7 @@ export function UserManagementGrid({
     const roleText = roleDisplayValue(row.roleIds, roles)
 
     return (
-      <div className="relative h-9">
+      <div className="relative h-9" data-user-role-editor="true">
         <button
           type="button"
           aria-label="권한 셀"
