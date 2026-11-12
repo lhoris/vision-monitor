@@ -184,16 +184,21 @@
 
 .vm-signup-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
 }
 
 .vm-signup-field {
   display: block;
+  grid-column: span 3;
   min-width: 0;
   color: #cbd5e1;
   font-size: 12px;
   font-weight: 700;
+}
+
+.vm-signup-org-field {
+  grid-column: span 2;
 }
 
 .vm-signup-field span {
@@ -249,7 +254,8 @@
   color: #fb7185;
 }
 
-.vm-signup-field input {
+.vm-signup-field input,
+.vm-signup-field select {
   box-sizing: border-box;
   display: block;
   width: 100%;
@@ -263,7 +269,8 @@
   outline: none;
 }
 
-.vm-signup-field input:focus {
+.vm-signup-field input:focus,
+.vm-signup-field select:focus {
   border-color: #38bdf8;
   box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
 }
@@ -291,6 +298,11 @@
 @media (max-width: 560px) {
   .vm-signup-grid {
     grid-template-columns: 1fr;
+  }
+
+  .vm-signup-field,
+  .vm-signup-org-field {
+    grid-column: span 1;
   }
 }
 
