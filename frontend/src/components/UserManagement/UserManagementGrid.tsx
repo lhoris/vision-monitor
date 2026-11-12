@@ -914,7 +914,7 @@ export function UserManagementGrid({
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.value ? option.label : t('userManagement.unassignedClass')}</option>)}
       </select>
     }
-    return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{classOptions.find((option) => option.value === value)?.label ?? t('userManagement.unassignedClass')}</button>
+    return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{value ? classOptions.find((option) => option.value === value)?.label ?? value : t('userManagement.unassignedClass')}</button>
   }
 
   const renderRoleSelectCell = (row: UserGridRow) => {
