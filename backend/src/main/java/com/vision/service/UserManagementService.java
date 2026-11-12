@@ -13,6 +13,10 @@ import com.vision.repository.CodeDetailRepository;
 import com.vision.repository.CodeRepository;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.UserAuthorizationRepository;
+import com.vision.repository.UserPersonalRepository;
+import com.vision.repository.AuthSessionRepository;
+import com.vision.repository.UserAlertPreferenceRepository;
+import com.vision.repository.AlarmLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,6 +58,10 @@ public class UserManagementService {
     private final UserAuthorizationRepository userAuthorizationRepository;
     private final CodeRepository codeRepository;
     private final CodeDetailRepository codeDetailRepository;
+    private final UserPersonalRepository userPersonalRepository;
+    private final AuthSessionRepository authSessionRepository;
+    private final UserAlertPreferenceRepository userAlertPreferenceRepository;
+    private final AlarmLogRepository alarmLogRepository;
 
     @Autowired
     public UserManagementService(
@@ -61,13 +69,21 @@ public class UserManagementService {
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository,
             CodeRepository codeRepository,
-            CodeDetailRepository codeDetailRepository
+            CodeDetailRepository codeDetailRepository,
+            UserPersonalRepository userPersonalRepository,
+            AuthSessionRepository authSessionRepository,
+            UserAlertPreferenceRepository userAlertPreferenceRepository,
+            AlarmLogRepository alarmLogRepository
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
         this.userAuthorizationRepository = userAuthorizationRepository;
         this.codeRepository = codeRepository;
         this.codeDetailRepository = codeDetailRepository;
+        this.userPersonalRepository = userPersonalRepository;
+        this.authSessionRepository = authSessionRepository;
+        this.userAlertPreferenceRepository = userAlertPreferenceRepository;
+        this.alarmLogRepository = alarmLogRepository;
     }
 
     public UserManagementService(
@@ -75,11 +91,11 @@ public class UserManagementService {
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository
     ) {
-        this(userRepository, authorizationRepository, userAuthorizationRepository, null, null);
+        this(userRepository, authorizationRepository, userAuthorizationRepository, null, null, null, null, null, null);
     }
 
     public UserManagementService(UserAccountRepository userRepository) {
-        this(userRepository, null, null, null, null);
+        this(userRepository, null, null, null, null, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -248,6 +264,12 @@ public class UserManagementService {
             if (!Boolean.TRUE.equals(safeRequest.confirmedImpact())) {
                 throw new ApiException("CONFIRMATION_REQUIRED", "삭제 영향 확인이 필요합니다.");
             }
+            if (INACTIVE.equalsIgnoreCase(user.getAccountStatus()) || DISABLED.equalsIgnoreCase(user.getAccountStatus())
+                    || "Y".equalsIgnoreCase(user.getDataEndStatus())) {
+                UserAccountDto deletedUser = toDto(user, availableRoles());
+                permanentlyDeleteUser(user);
+                return deletedUser;
+            }
             user.setAccountStatus(INACTIVE);
             user.setEnabled(false);
             user.setDeletionRequestedAt(LocalDateTime.now());
@@ -261,6 +283,18 @@ public class UserManagementService {
         user.setUpdatedTimestamp(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         return toDto(userRepository.save(user), availableRoles());
+    }
+
+    private void permanentlyDeleteUser(UserAccount user) {
+        Long userId = user.getId();
+        if (userId == null) return;
+        if (userAuthorizationRepository != null) userAuthorizationRepository.deleteAllByUserId(userId);
+        if (userPersonalRepository != null) userPersonalRepository.deleteAllByUserId(userId);
+        if (authSessionRepository != null) authSessionRepository.deleteAllByUserId(userId);
+        if (userAlertPreferenceRepository != null) userAlertPreferenceRepository.deleteAllByUserId(userId);
+        if (alarmLogRepository != null) alarmLogRepository.deleteAllByTargetUserId(userId);
+        userRepository.deleteById(userId);
+        userRepository.flush();
     }
 
     private Specification<UserAccount> buildSpecification(String query, String roleId, String accountStatus, String employmentStatus) {

@@ -8,4 +8,6 @@ import java.util.List;
 public interface UserAuthorizationRepository extends JpaRepository<UserAuthorization, Long> {
 
     List<UserAuthorization> findAllByUserIdAndDataEndStatus(Long userId, String dataEndStatus);
+
+    void deleteAllByUserId(Long userId);
 }

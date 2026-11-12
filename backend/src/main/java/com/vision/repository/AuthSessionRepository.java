@@ -17,4 +17,6 @@ public interface AuthSessionRepository extends JpaRepository<AuthSession, Long> 
             String tokenHash,
             String dataEndStatus
     );
+
+    void deleteAllByUserId(Long userId);
 }

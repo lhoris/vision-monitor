@@ -10,4 +10,6 @@ public interface UserAlertPreferenceRepository extends JpaRepository<UserAlertPr
     Optional<UserAlertPreference> findByUserId(Long userId);
     Optional<UserAlertPreference> findByUserIdAndAlarmTypeCode(Long userId, String alarmTypeCode);
     List<UserAlertPreference> findAllByAlarmTypeCodeIn(List<String> alarmTypeCodes);
+
+    void deleteAllByUserId(Long userId);
 }

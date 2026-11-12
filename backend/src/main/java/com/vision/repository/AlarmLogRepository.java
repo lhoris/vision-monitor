@@ -13,4 +13,6 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
     Optional<AlarmLog> findByIdAndTargetUserIdAndDataEndStatus(Long id, Long targetUserId, String dataEndStatus);
 
     List<AlarmLog> findAllByAlarmGroupIdAndDataEndStatus(String alarmGroupId, String dataEndStatus);
+
+    void deleteAllByTargetUserId(Long targetUserId);
 }

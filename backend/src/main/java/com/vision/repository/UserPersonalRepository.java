@@ -8,4 +8,6 @@ import java.util.List;
 public interface UserPersonalRepository extends JpaRepository<UserPersonal, Long> {
 
     List<UserPersonal> findAllByUserIdAndDataEndStatusOrderBySortOrderAsc(Long userId, String dataEndStatus);
+
+    void deleteAllByUserId(Long userId);
 }
