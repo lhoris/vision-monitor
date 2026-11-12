@@ -177,7 +177,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
           <>
             <div className="flex items-end gap-2 p-4">
               <label className="shrink-0 text-sm font-semibold text-gray-700 dark:text-gray-200">반
-                <select value={classFilter} disabled={Boolean(userClassCode)} onChange={(event) => setClassFilter(event.target.value)} className="ml-2 h-9 w-24 rounded border border-gray-300 px-2 text-sm font-normal dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                <select value={classFilter} disabled={Boolean(userClassCode)} onChange={(event) => setClassFilter(event.target.value)} className="ml-2 h-9 w-[100px] rounded border border-gray-300 px-2 text-sm font-normal dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                   {!userClassCode ? <option value="">전체</option> : null}
                   {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
