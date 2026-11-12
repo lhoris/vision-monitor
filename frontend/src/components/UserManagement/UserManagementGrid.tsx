@@ -473,12 +473,12 @@ export function UserManagementGrid({
 
   const masterColumnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-8' },
-    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-[200px]', onChange: (value) => updateColumnFilter('username', value) },
-    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[200px]', onChange: (value) => updateColumnFilter('name', value) },
+    { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-[170px]', onChange: (value) => updateColumnFilter('username', value) },
+    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[170px]', onChange: (value) => updateColumnFilter('name', value) },
     { id: 'email', ariaLabel: `${t('userManagement.email')} 필터`, value: columnFilters.email, widthClassName: 'w-[190px]', onChange: (value) => updateColumnFilter('email', value) },
     { id: 'phone', ariaLabel: `${t('userManagement.phone')} 필터`, value: columnFilters.phone, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('phone', value) },
     { id: 'department', ariaLabel: `${t('userManagement.department')} 필터`, value: columnFilters.department, widthClassName: 'w-[150px]', onChange: (value) => updateColumnFilter('department', value) },
-    { id: 'position', ariaLabel: `${t('userManagement.position')} 필터`, value: columnFilters.position, widthClassName: 'w-[130px]', onChange: (value) => updateColumnFilter('position', value) },
+    { id: 'position', ariaLabel: `${t('userManagement.position')} 필터`, value: columnFilters.position, widthClassName: 'w-[100px]', onChange: (value) => updateColumnFilter('position', value) },
     { id: 'resetPassword', ariaLabel: `${t('userManagement.password')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[90px]' },
     { id: 'accountStatus', ariaLabel: `${t('userManagement.accountStatus')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[140px]' },
     { id: 'role', ariaLabel: `${t('userManagement.role')} 필터`, kind: 'select', value: columnFilters.role, widthClassName: 'w-[240px]', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
@@ -1049,15 +1049,15 @@ export function UserManagementGrid({
           <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
-              <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
-              <th className={`w-[200px] ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-[170px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
+              <th className={`w-[170px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[190px] ${headerCellClass}`}>{t('userManagement.email')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.phone')}</th>
               <th className={`w-[150px] ${headerCellClass}`}>{t('userManagement.department')}</th>
-              <th className={`w-[130px] ${headerCellClass}`}>{t('userManagement.position')}</th>
+              <th className={`w-[120px] ${headerCellClass}`}>반</th>
+              <th className={`w-[100px] ${headerCellClass}`}>{t('userManagement.position')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
-              <th className={`w-[120px] ${headerCellClass}`}>반</th>
               <th className={`w-[240px] ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
@@ -1072,6 +1072,7 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'email', t('userManagement.email'))}{renderError(row, 'email')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'phone', t('userManagement.phone'))}{renderError(row, 'phone')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'department', t('userManagement.department'))}{renderError(row, 'department')}</td>
+                <td className={bodyCellClass}>{renderClassSelectCell(row)}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'position', t('userManagement.position'))}{renderError(row, 'position')}</td>
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" title={row.username?.toLowerCase() === currentUsername.toLowerCase() ? t('userManagement.resetPasswordSelfDisabled') : undefined} className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id || Boolean(row.passwordResetRequired) || row.username?.toLowerCase() === currentUsername.toLowerCase()} onClick={() => {
@@ -1105,7 +1106,6 @@ export function UserManagementGrid({
                   { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
                   { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
                 ])}</td>
-                <td className={bodyCellClass}>{renderClassSelectCell(row)}</td>
                 <td className={`${bodyCellClass} ${isEditing(row.rowId, 'roleIds') ? 'user-role-editor-cell' : ''}`} data-onboarding="user-management-role">{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', t('userManagement.remarks'))}{renderError(row, 'displayName')}</td>
               </tr>
