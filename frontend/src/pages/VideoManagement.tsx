@@ -267,6 +267,11 @@ export function VideoManagement() {
   const saveRows = () => {
     const targets = selectedChangedRows.length ? selectedChangedRows : changedRows
     if (!targets.length) return
+    const invalidTarget = targets.find((row) => !row.name.trim() || !row.url.trim())
+    if (invalidTarget) {
+      setError(`${invalidTarget.name || '신규 영상'}: 영상명과 영상 주소를 입력한 후 저장해 주세요.`)
+      return
+    }
     setSaveTargets(targets)
   }
 
