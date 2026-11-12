@@ -151,7 +151,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
       }
       onClose()
     }}>
-      <div className="relative w-[min(560px,100%)] overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title" onClick={(event) => event.stopPropagation()}>
+      <div className="relative flex h-[min(640px,calc(100vh-2rem))] w-[min(560px,100%)] flex-col overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" role="dialog" aria-modal="true" aria-labelledby="add-camera-dialog-title" onClick={(event) => event.stopPropagation()}>
         <header className="flex items-center justify-between border-b border-gray-200 p-5 dark:border-gray-700">
           <div>
             <h2 id="add-camera-dialog-title" className="text-xl font-bold text-gray-900 dark:text-white">
@@ -184,7 +184,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
               </label>
               <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="h-9 min-w-0 flex-1 rounded border border-gray-300 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
             </div>
-            <div className="max-h-80 overflow-y-auto border-t border-gray-100 dark:border-gray-700">
+            <div className="min-h-0 flex-1 overflow-y-auto border-t border-gray-100 dark:border-gray-700">
               {filteredVideoSources.length === 0 ? (
                 <p className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">{t('live.addCameraDialog.noResults')}</p>
               ) : (
