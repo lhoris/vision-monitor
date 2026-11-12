@@ -92,7 +92,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     return videoSources
       .filter((source) => source.status === 'ACTIVE')
       .filter((source) => source.protocol === 'WEBRTC' || source.protocol === 'HLS')
-      .filter((source) => !classFilter || !source.classCode || source.classCode === classFilter)
+      .filter((source) => !classFilter || source.classCode === classFilter)
       .filter((source) =>
         !term || [source.name, source.location, source.zone, source.url].some((value) => (value ?? '').toLowerCase().includes(term))
       )

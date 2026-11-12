@@ -48,7 +48,7 @@ public class VideoSourceService {
         String classCode = user == null ? null : normalizeClassCode(user.getClassCode());
         return repository.findAll().stream()
                 .filter(source -> status == null || status.isBlank() || (source.getStatus() != null && source.getStatus().equalsIgnoreCase(status)))
-                .filter(source -> administrator || classCode == null || normalizeClassCode(source.getClassCode()) == null || classCode.equals(normalizeClassCode(source.getClassCode())))
+                .filter(source -> administrator || classCode == null || classCode.equals(normalizeClassCode(source.getClassCode())))
                 .map(VideoSourceDto::from).toList();
     }
 

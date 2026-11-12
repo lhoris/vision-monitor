@@ -118,7 +118,7 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
           <label className="text-sm text-slate-700 dark:text-slate-200">
             반
             <select value={value.classCode ?? ''} onChange={(event) => setValue((current) => ({ ...current, classCode: event.target.value }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
-              <option value="">전체</option>
+              <option value="">미지정</option>
               {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
@@ -471,11 +471,11 @@ export function VideoManagement() {
     const value = row.classCode ?? ''
     if (editingCell?.id === row.id && editingCell.field === 'classCode') {
       return <select autoFocus aria-label={`${row.name} 반 편집`} value={value} onChange={(event) => { updateRow(row.id, 'classCode', event.target.value); setEditingCell(null) }} onBlur={() => setEditingCell(null)} className={editableCell}>
-        <option value="">전체</option>
+        <option value="">미지정</option>
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     }
-    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value || '전체'}>{classOptions.find((option) => option.value === value)?.label ?? (value || '전체')}</button>
+    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value || '미지정'}>{classOptions.find((option) => option.value === value)?.label ?? (value || '미지정')}</button>
   }
 
   const columnFilters: GridColumnFilter[] = [
