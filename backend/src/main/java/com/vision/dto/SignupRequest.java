@@ -13,6 +13,6 @@ public record SignupRequest(
 ) {
     public SignupRequest(String username, String password, String passwordConfirm, String name,
                          String email, String phone, String department, String position) {
-        this(username, password, passwordConfirm, name, email, phone, department, position, "COMMON");
+        this(username, password, passwordConfirm, name, email, phone, department, position, null);
     }
 }

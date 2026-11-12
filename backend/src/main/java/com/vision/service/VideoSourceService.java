@@ -45,10 +45,10 @@ public class VideoSourceService {
         UserAccount user = username == null || userRepository == null
                 ? null
                 : userRepository.findByUsernameIgnoreCase(username).orElse(null);
-        String classCode = user == null ? "COMMON" : normalizeClassCode(user.getClassCode());
+        String classCode = user == null ? null : normalizeClassCode(user.getClassCode());
         return repository.findAll().stream()
                 .filter(source -> status == null || status.isBlank() || (source.getStatus() != null && source.getStatus().equalsIgnoreCase(status)))
-                .filter(source -> administrator || "COMMON".equals(classCode) || classCode.equals(normalizeClassCode(source.getClassCode())) || "COMMON".equals(normalizeClassCode(source.getClassCode())))
+                .filter(source -> administrator || classCode == null || normalizeClassCode(source.getClassCode()) == null || classCode.equals(normalizeClassCode(source.getClassCode())))
                 .map(VideoSourceDto::from).toList();
     }
 
@@ -119,8 +119,9 @@ public class VideoSourceService {
     private String trimOrNull(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 
     private String normalizeClassCode(String value) {
-        String normalized = value == null || value.isBlank() ? "COMMON" : value.trim().toUpperCase(Locale.ROOT);
-        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT", "COMMON").contains(normalized)) {
+        if (value == null || value.isBlank()) return null;
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT").contains(normalized)) {
             throw new ApiException("VALIDATION_ERROR", "유효하지 않은 반입니다.");
         }
         return normalized;

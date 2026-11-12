@@ -2,7 +2,7 @@
 
 ## 기술 방향
 
-- 반 종류는 기존 공통코드 체계의 `USER_CLASS`로 관리한다.
+- 반 종류는 기존 공통코드 체계의 `USER_CLASS`로 관리하며, 반 미지정은 NULL로 저장해 전체 범위를 의미한다.
 - `TB_M26_USER.CLASS_CODE`와 `TB_M26_VIDEO_SOURCE.CLASS_CODE`를 추가한다.
 - 사용자 세션에 `classCode`를 포함하고, 영상 조회 서비스에서 사용자별 접근 범위를 강제한다.
 - 기존 API 구조를 유지하고 응답 DTO에 반 필드를 추가한다.

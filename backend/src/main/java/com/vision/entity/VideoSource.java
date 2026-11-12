@@ -51,6 +51,6 @@ public class VideoSource extends BaseAudit {
     @Column(name = "MODEL_PROCESS_ID")
     private Long modelProcessId;
 
-    @Column(name = "CLASS_CODE", nullable = false, length = 30)
-    private String classCode = "COMMON";
+    @Column(name = "CLASS_CODE", length = 30)
+    private String classCode;
 }

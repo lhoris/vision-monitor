@@ -56,8 +56,8 @@ public class UserAccount extends BaseAudit {
     @Column(name = "USER_POSITION", length = 200)
     private String position;
 
-    @Column(name = "CLASS_CODE", nullable = false, length = 30)
-    @Builder.Default private String classCode = "COMMON";
+    @Column(name = "CLASS_CODE", length = 30)
+    private String classCode;
 
     @Column(name = "ACCOUNT_STATUS", nullable = false, length = 20)
     @Builder.Default private String accountStatus = "active";

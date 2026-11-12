@@ -57,7 +57,7 @@ function readStoredUser(): User | null {
         return {
           id: typeof user.id === 'number' ? user.id : 0,
           username: user.username,
-          classCode: typeof user.classCode === 'string' ? user.classCode : 'COMMON',
+          classCode: typeof user.classCode === 'string' ? user.classCode : undefined,
           role: user.role,
           permissions: Array.isArray(user.permissions) ? user.permissions : [],
         }
@@ -74,7 +74,7 @@ function readStoredUser(): User | null {
   return {
     id: 0,
     username,
-    classCode: 'COMMON',
+    classCode: undefined,
     role: 'user',
     permissions: [],
   }

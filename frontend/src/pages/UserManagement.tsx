@@ -156,7 +156,7 @@ export function UserManagement() {
       <UserManagementGrid
         users={users}
         roles={roles}
-        classOptions={(classCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name }))}
+        classOptions={[{ value: '', label: '전체' }, ...(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => ({ value: item.value, label: item.nameKo || item.name }))]}
         currentUsername={currentUsername}
         onBatchAction={runBatchAction}
         onSaveChanges={saveChanges}

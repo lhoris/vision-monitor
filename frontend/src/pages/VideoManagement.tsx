@@ -19,7 +19,7 @@ const emptyForm: VideoSourceInput = {
   status: 'ACTIVE',
   remarks: '',
   modelProcessId: null,
-  classCode: 'COMMON',
+  classCode: '',
 }
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
@@ -117,7 +117,8 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             반
-            <select value={value.classCode ?? 'COMMON'} onChange={(event) => setValue((current) => ({ ...current, classCode: event.target.value }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+            <select value={value.classCode ?? ''} onChange={(event) => setValue((current) => ({ ...current, classCode: event.target.value }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+              <option value="">전체</option>
               {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
@@ -147,7 +148,7 @@ export function VideoManagement() {
   const [modelProcessesLoading, setModelProcessesLoading] = useState(true)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
   const classCode = useCommonCode('USER_CLASS')
-  const classOptions = useMemo(() => (classCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name })), [classCode])
+  const classOptions = useMemo(() => (classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => ({ value: item.value, label: item.nameKo || item.name })), [classCode])
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
   const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '', classCode: '' })
   const [query, setQuery] = useState('')
@@ -261,7 +262,7 @@ export function VideoManagement() {
     status: row.status,
     remarks: row.remarks ?? '',
     modelProcessId: row.modelProcessId ?? null,
-    classCode: row.classCode ?? 'COMMON',
+    classCode: row.classCode ?? '',
   })
 
   const saveRows = () => {
@@ -364,7 +365,7 @@ export function VideoManagement() {
       status: item.status,
       remarks: item.remarks ?? '',
       modelProcessId: item.modelProcessId ?? null,
-      classCode: item.classCode ?? 'COMMON',
+      classCode: item.classCode ?? '',
     })
   }
 
@@ -467,13 +468,14 @@ export function VideoManagement() {
   )
 
   const renderClassCell = (row: VideoGridRow) => {
-    const value = row.classCode ?? 'COMMON'
+    const value = row.classCode ?? ''
     if (editingCell?.id === row.id && editingCell.field === 'classCode') {
       return <select autoFocus aria-label={`${row.name} 반 편집`} value={value} onChange={(event) => { updateRow(row.id, 'classCode', event.target.value); setEditingCell(null) }} onBlur={() => setEditingCell(null)} className={editableCell}>
+        <option value="">전체</option>
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     }
-    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
+    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value || '전체'}>{classOptions.find((option) => option.value === value)?.label ?? (value || '전체')}</button>
   }
 
   const columnFilters: GridColumnFilter[] = [
@@ -484,7 +486,7 @@ export function VideoManagement() {
     { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
     { id: 'location', ariaLabel: '위치 필터', value: filters.location, widthClassName: 'w-36', onChange: (value) => setFilter('location', value) },
     { id: 'zone', ariaLabel: '구역 필터', value: filters.zone, widthClassName: 'w-28', onChange: (value) => setFilter('zone', value) },
-    { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: filters.classCode, widthClassName: 'w-24', options: [{ value: '', label: '전체' }, ...classOptions], onChange: (value) => setFilter('classCode', value) },
+    { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: filters.classCode, widthClassName: 'w-24', options: [{ value: '', label: '전체' }, ...classOptions.filter((option) => option.value !== 'COMMON')], onChange: (value) => setFilter('classCode', value) },
   ]
 
   return (
@@ -502,6 +504,11 @@ export function VideoManagement() {
 
       <DataGridToolbar className="mb-2" data-onboarding="video-management-actions">
         <form className="flex items-center gap-2" onSubmit={(event) => { event.preventDefault(); setAppliedQuery(query) }}>
+          <label htmlFor="video-class-filter" className="text-sm font-medium text-slate-700 dark:text-slate-200">반</label>
+          <select id="video-class-filter" aria-label="반 조회조건" value={filters.classCode} onChange={(event) => setFilter('classCode', event.target.value)} className="h-8 w-28 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100">
+            <option value="">전체</option>
+            {classOptions.filter((option) => option.value !== 'COMMON').map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
           <label htmlFor="video-search" className="text-sm font-medium text-slate-700 dark:text-slate-200">영상</label>
           <input id="video-search" aria-label="영상 검색" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="이름 또는 주소 입력" className="h-8 w-64 rounded border border-slate-300 bg-white px-2 text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100" />
         </form>

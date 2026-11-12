@@ -91,7 +91,7 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
   videoSources = [],
-  userClassCode = 'COMMON',
+  userClassCode = '',
   classOptions = [],
 }) => {
   const { t } = useTranslation()

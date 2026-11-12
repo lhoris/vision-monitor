@@ -18,7 +18,7 @@ import type { VideoSource } from '@/types/videoSource'
 export function Live() {
   const dispatch = useAppDispatch()
   const username = useAppSelector((state) => state.auth.user?.username)
-  const userClassCode = useAppSelector((state) => state.auth.user?.classCode ?? 'COMMON')
+  const userClassCode = useAppSelector((state) => state.auth.user?.classCode ?? '')
   const classCode = useAppSelector((state) => state.commonCode.codes.USER_CLASS)
   const restoredForUser = useAppSelector((state) => state.layout.restoredForUser)
   const loading = useAppSelector((state) => state.layout.loading)
@@ -67,7 +67,7 @@ export function Live() {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col h-full">
       <LayoutPersistStatus />
-      <GridContainer cameras={videoSourcesToCameras(videoSources)} videoSources={videoSources} userClassCode={userClassCode} classOptions={(classCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name }))} />
+      <GridContainer cameras={videoSourcesToCameras(videoSources)} videoSources={videoSources} userClassCode={userClassCode} classOptions={(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => ({ value: item.value, label: item.nameKo || item.name }))} />
     </div>
   )
 }

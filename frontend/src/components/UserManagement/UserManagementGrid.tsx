@@ -134,7 +134,7 @@ function toGridRow(user: UserAccount): UserGridRow {
     position: user.position,
     email: user.email,
     phone: user.phone,
-    classCode: user.classCode ?? 'COMMON',
+    classCode: user.classCode ?? '',
     roleIds: user.roleIds,
     roles: user.roles,
     accountStatus: user.accountStatus,
@@ -159,7 +159,7 @@ function toMutationRequest(row: UserGridRow): UserMutationRequest {
     position: row.position,
     email: row.email,
     phone: row.phone,
-    classCode: row.classCode ?? 'COMMON',
+    classCode: row.classCode ?? '',
     roleIds: row.roleIds,
     accountStatus: row.accountStatus,
     employmentStatus: row.employmentStatus,
@@ -183,7 +183,7 @@ function createDraftRow(roles: RoleSummary[]): UserGridRow {
     accountStatus: 'active',
     employmentStatus: 'employed',
     resetPassword: false,
-    classCode: 'COMMON',
+    classCode: '',
     state: 'new',
     fieldErrors: {},
   }
@@ -213,7 +213,7 @@ function getColumnFilterValue(row: UserGridRow, key: UserColumnFilterKey): strin
     createdAt: formatDate(row.createdAt),
     updatedAt: formatDate(row.updatedAt),
     department: row.department,
-    classCode: row.classCode ?? 'COMMON',
+    classCode: row.classCode ?? '',
     position: row.position,
     email: row.email,
     phone: row.phone,
@@ -907,7 +907,7 @@ export function UserManagementGrid({
   }
 
   const renderClassSelectCell = (row: UserGridRow) => {
-    const value = row.classCode ?? 'COMMON'
+    const value = row.classCode ?? ''
     if (isEditing(row.rowId, 'classCode')) {
       return <select aria-label="반" autoFocus value={value} onBlur={() => setEditingCell(null)} onChange={(event) => { updateRow(row.rowId, 'classCode', event.target.value); setEditingCell(null) }} className={selectCellClass}>
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}

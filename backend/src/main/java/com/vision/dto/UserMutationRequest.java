@@ -20,6 +20,6 @@ public record UserMutationRequest(
                                String department, String position, String phone, List<String> roleIds,
                                String accountStatus, String employmentStatus, Boolean resetPassword) {
         this(username, name, displayName, email, department, position, phone, roleIds,
-                accountStatus, employmentStatus, resetPassword, "COMMON");
+                accountStatus, employmentStatus, resetPassword, null);
     }
 }

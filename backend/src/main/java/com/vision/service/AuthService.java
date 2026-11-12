@@ -503,8 +503,9 @@ public class AuthService {
     }
 
     private String normalizeClassCode(String value) {
-        String normalized = value == null || value.isBlank() ? "COMMON" : value.trim().toUpperCase(Locale.ROOT);
-        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT", "COMMON").contains(normalized)) {
+        if (value == null || value.isBlank()) return null;
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT").contains(normalized)) {
             throw new ApiException("VALIDATION_ERROR", "유효하지 않은 반입니다.");
         }
         return normalized;

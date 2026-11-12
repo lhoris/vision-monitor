@@ -12,7 +12,7 @@ public record AuthenticatedUserDto(
     List<String> permissions
 ) {
     public AuthenticatedUserDto(Long id, String username, String role, List<String> permissions) {
-        this(id, username, "COMMON", role, permissions);
+        this(id, username, null, role, permissions);
     }
 
     public static AuthenticatedUserDto from(UserAccount user) {

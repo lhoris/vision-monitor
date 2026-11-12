@@ -163,7 +163,7 @@ function DemoCredentials() {
 function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: (message: string) => void }) {
   const dispatch = useAppDispatch()
   const classCode = useCommonCode('USER_CLASS')
-  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '', classCode: 'COMMON' })
+  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '', classCode: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
@@ -251,7 +251,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     const checkState = field === 'username' ? usernameCheck : field === 'email' ? emailCheck : 'idle'
     const orgFieldClass = field === 'department' || field === 'classCode' || field === 'position' ? ' vm-signup-org-field' : ''
     if (field === 'classCode') {
-      return <label key={field} className={`vm-signup-field${orgFieldClass}`} htmlFor="signup-class-code">{label}<span className="vm-signup-required"> *</span><select id="signup-class-code" value={input.classCode ?? 'COMMON'} required onChange={(event) => update('classCode', event.target.value)}>{(classCode?.items ?? []).map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
+      return <label key={field} className={`vm-signup-field${orgFieldClass}`} htmlFor="signup-class-code">{label}<select id="signup-class-code" value={input.classCode ?? ''} onChange={(event) => update('classCode', event.target.value)}><option value="">전체</option>{(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
     }
     return <div key={field} className={`vm-signup-field${orgFieldClass}`}><label htmlFor={`signup-${field}`}>{label}{required ? <span className="vm-signup-required"> *</span> : null}</label><div className={checkable ? 'vm-signup-field-control' : undefined}><input id={`signup-${field}`} type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} inputMode={field === 'phone' ? 'numeric' : undefined} placeholder={field === 'phone' ? '010-1234-5678' : undefined} maxLength={field === 'phone' ? 13 : undefined} value={input[field] ?? ''} required={required} onChange={(event) => update(field, field === 'phone' ? formatPhoneNumber(event.target.value) : event.target.value)} />{checkable ? <button type="button" onClick={() => void checkAvailability(field)} disabled={checkState === 'checking'}>{checkState === 'checking' ? '확인 중...' : '중복 확인'}</button> : null}</div>{checkState === 'available' ? <small className="vm-signup-check-success">사용할 수 있습니다.</small> : null}{checkState === 'unavailable' ? <small className="vm-signup-check-error">이미 사용 중입니다.</small> : null}</div>
   }

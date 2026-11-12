@@ -47,7 +47,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   isOpen,
   cameras,
   videoSources = [],
-  userClassCode = 'COMMON',
+  userClassCode = '',
   classOptions = [],
   usedCameraIds,
   existingTemporaryUrls = [],
@@ -78,7 +78,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     setError(null)
     setNotice(null)
     setContextMenu(null)
-    setClassFilter(userClassCode === 'COMMON' ? '' : userClassCode)
+    setClassFilter(userClassCode)
   }, [isOpen, initialSource, userClassCode])
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     return videoSources
       .filter((source) => source.status === 'ACTIVE')
       .filter((source) => source.protocol === 'WEBRTC' || source.protocol === 'HLS')
-      .filter((source) => !classFilter || source.classCode === 'COMMON' || source.classCode === classFilter)
+      .filter((source) => !classFilter || !source.classCode || source.classCode === classFilter)
       .filter((source) =>
         !term || [source.name, source.location, source.zone, source.url].some((value) => (value ?? '').toLowerCase().includes(term))
       )
@@ -177,8 +177,8 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
           <>
             <div className="p-4">
               <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">반
-                <select value={classFilter} disabled={userClassCode !== 'COMMON'} onChange={(event) => setClassFilter(event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                  {userClassCode === 'COMMON' ? <option value="">전체</option> : null}
+                <select value={classFilter} disabled={Boolean(userClassCode)} onChange={(event) => setClassFilter(event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                  {!userClassCode ? <option value="">전체</option> : null}
                   {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
