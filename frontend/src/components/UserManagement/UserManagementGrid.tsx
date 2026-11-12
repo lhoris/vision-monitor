@@ -39,7 +39,7 @@ interface UserManagementGridProps {
 
 type EditableField = keyof UserMutationRequest
 type EditableTextField = 'username' | 'name' | 'displayName' | 'department' | 'position' | 'email' | 'phone'
-type UserColumnFilterKey = 'state' | 'id' | 'username' | 'name' | 'displayName' | 'dataEndStatus' | 'createdAt' | 'updatedAt' | 'department' | 'position' | 'email' | 'phone' | 'role' | 'accountStatus' | 'employmentStatus' | 'lastLoginAt'
+type UserColumnFilterKey = 'state' | 'id' | 'username' | 'name' | 'displayName' | 'dataEndStatus' | 'createdAt' | 'updatedAt' | 'department' | 'classCode' | 'position' | 'email' | 'phone' | 'role' | 'accountStatus' | 'employmentStatus' | 'lastLoginAt'
 type SelectableCellField = UserColumnFilterKey
 
 interface SelectedCell {
@@ -79,6 +79,7 @@ const initialColumnFilters: Record<UserColumnFilterKey, string> = {
   createdAt: '',
   updatedAt: '',
   department: '',
+  classCode: '',
   position: '',
   email: '',
   phone: '',
@@ -212,6 +213,7 @@ function getColumnFilterValue(row: UserGridRow, key: UserColumnFilterKey): strin
     createdAt: formatDate(row.createdAt),
     updatedAt: formatDate(row.updatedAt),
     department: row.department,
+    classCode: row.classCode ?? 'COMMON',
     position: row.position,
     email: row.email,
     phone: row.phone,
@@ -741,7 +743,20 @@ export function UserManagementGrid({
     if (!selectedText) return
 
     try {
-      await navigator.clipboard?.writeText(selectedText)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(selectedText)
+        return
+      }
+      const textarea = document.createElement('textarea')
+      textarea.value = selectedText
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      const copied = document.execCommand('copy')
+      textarea.remove()
+      if (!copied) throw new Error('clipboard copy failed')
     } catch {
       setLocalError('선택한 셀을 클립보드에 복사하지 못했습니다.')
     }
@@ -880,6 +895,7 @@ export function UserManagementGrid({
         type="button"
         aria-label={`${label} 셀`}
         {...selectableCellProps(row.rowId, selectionField)}
+        onClick={() => setEditingCell({ rowId: row.rowId, field })}
         onDoubleClick={() => setEditingCell({ rowId: row.rowId, field })}
         onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, field)}
         className={`${cellValueClass} ${selectedCellStateClass(row.rowId, selectionField)}`}
@@ -896,7 +912,7 @@ export function UserManagementGrid({
         {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
     }
-    return <button type="button" aria-label="반 셀" onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} className={cellValueClass}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
+    return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
   }
 
   const renderRoleSelectCell = (row: UserGridRow) => {
