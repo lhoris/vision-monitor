@@ -22,6 +22,7 @@ export interface UserAccount {
   position: string
   email: string
   phone: string
+  classCode?: string
   roleIds: string[]
   roles: RoleSummary[]
   accountStatus: AccountStatus
@@ -57,6 +58,7 @@ export interface UserMutationRequest {
   accountStatus: AccountStatus
   employmentStatus: EmploymentStatus
   resetPassword?: boolean
+  classCode?: string
 }
 
 export type UserDangerAction = 'lock' | 'unlock' | 'disable' | 'retire' | 'delete-request'

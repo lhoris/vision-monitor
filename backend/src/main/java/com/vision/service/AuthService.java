@@ -202,6 +202,7 @@ public class AuthService {
                 .phone(normalizeOptional(request.phone()))
                 .department(normalizeOptional(request.department()))
                 .position(normalizeOptional(request.position()))
+                .classCode(normalizeClassCode(request.classCode()))
                 .accountStatus(PENDING)
                 .accountStatusChangedAt(java.time.LocalDateTime.now())
                 .accountStatusReason("가입 신청")
@@ -235,6 +236,7 @@ public class AuthService {
         user.setPhone(normalizeOptional(request.phone()));
         user.setDepartment(normalizeOptional(request.department()));
         user.setPosition(normalizeOptional(request.position()));
+        user.setClassCode(normalizeClassCode(request.classCode()));
         user.setAccountStatus(PENDING);
         user.setAccountStatusChangedAt(java.time.LocalDateTime.now());
         user.setAccountStatusChangedBy(null);
@@ -477,6 +479,7 @@ public class AuthService {
         if (request.name() == null || request.name().isBlank()) {
             throw new ApiException("VALIDATION_ERROR", "이름은 필수입니다.");
         }
+        normalizeClassCode(request.classCode());
         String email = normalizeOptional(request.email());
         if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
             throw new ApiException("VALIDATION_ERROR", "올바른 이메일을 입력해야 합니다.");
@@ -497,6 +500,14 @@ public class AuthService {
         if (value == null) return null;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String normalizeClassCode(String value) {
+        String normalized = value == null || value.isBlank() ? "COMMON" : value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT", "COMMON").contains(normalized)) {
+            throw new ApiException("VALIDATION_ERROR", "유효하지 않은 반입니다.");
+        }
+        return normalized;
     }
 
 }

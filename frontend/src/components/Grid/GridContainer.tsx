@@ -42,6 +42,8 @@ interface GridContainerProps {
   userId?: number
   cameras?: Camera[]
   videoSources?: VideoSource[]
+  userClassCode?: string
+  classOptions?: { value: string; label: string }[]
 }
 
 export function updateTemporarySourcePositions(
@@ -89,6 +91,8 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   userId: _userId,
   cameras = [],
   videoSources = [],
+  userClassCode = 'COMMON',
+  classOptions = [],
 }) => {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
@@ -598,6 +602,8 @@ export const GridContainer: React.FC<GridContainerProps> = ({
         isOpen={showCameraSelector}
         cameras={cameras}
         videoSources={videoSources}
+        userClassCode={userClassCode}
+        classOptions={classOptions}
         usedCameraIds={usedCameraIds}
         existingTemporaryUrls={existingTemporaryUrls}
         initialSource={editingTemporaryId !== null

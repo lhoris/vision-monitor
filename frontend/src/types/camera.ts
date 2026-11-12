@@ -15,6 +15,7 @@ export interface Camera {
   fps?: number
   streamProtocol?: 'hls' | 'webrtc' | 'rtsp'
   modelProcessId?: number | null
+  classCode?: string
 }
 
 export interface Stream {

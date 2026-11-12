@@ -9,9 +9,11 @@ import type {
   UserGridSaveRequest,
   UserListResponse,
 } from '@/types/userManagement'
+import { useCommonCode } from '@/hooks/useCommonCode'
 
 export function UserManagement() {
   const { t } = useTranslation()
+  const classCode = useCommonCode('USER_CLASS')
   const [users, setUsers] = useState<UserAccount[]>([])
   const [roles, setRoles] = useState<RoleSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -154,6 +156,7 @@ export function UserManagement() {
       <UserManagementGrid
         users={users}
         roles={roles}
+        classOptions={(classCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name }))}
         currentUsername={currentUsername}
         onBatchAction={runBatchAction}
         onSaveChanges={saveChanges}

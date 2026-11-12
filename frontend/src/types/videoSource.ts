@@ -11,6 +11,7 @@ export interface VideoSource {
   status: VideoSourceStatus
   remarks?: string
   modelProcessId?: number | null
+  classCode?: string
   createdAt?: string
   updatedAt?: string
 }

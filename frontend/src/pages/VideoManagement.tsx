@@ -6,6 +6,7 @@ import type { ModelProcess } from '@/types/modelManagement'
 import { useAppSelector } from '@/store'
 import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
 import { useDataGridSelection } from '@/hooks/useDataGridSelection'
+import { useCommonCode } from '@/hooks/useCommonCode'
 
 const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
 
@@ -18,9 +19,10 @@ const emptyForm: VideoSourceInput = {
   status: 'ACTIVE',
   remarks: '',
   modelProcessId: null,
+  classCode: 'COMMON',
 }
 
-type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status'
+type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
 type VideoGridRowState = 'clean' | 'dirty'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
@@ -35,6 +37,7 @@ interface VideoSourceModalProps {
   initialValue: VideoSourceInput
   modelProcesses: ModelProcess[]
   modelProcessesLoading: boolean
+  classOptions: { value: string; label: string }[]
   title: string
   saving: boolean
   error: string
@@ -46,7 +49,7 @@ function normalizeManagedProtocol(protocol: VideoSource['protocol']): VideoProto
   return VIDEO_PROTOCOLS.includes(protocol) ? protocol : 'WEBRTC'
 }
 
-function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLoading, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
+function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLoading, classOptions, title, saving, error, onClose, onSubmit }: VideoSourceModalProps) {
   const [value, setValue] = useState(initialValue)
 
   useEffect(() => {
@@ -113,6 +116,12 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             <input value={value.remarks ?? ''} onChange={(event) => update('remarks', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
+            반
+            <select value={value.classCode ?? 'COMMON'} onChange={(event) => setValue((current) => ({ ...current, classCode: event.target.value }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+              {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label className="text-sm text-slate-700 dark:text-slate-200">
             모델 프로세스
             <select disabled={modelProcessesLoading} value={value.modelProcessId ?? ''} onChange={(event) => setValue((current) => ({ ...current, modelProcessId: event.target.value ? Number(event.target.value) : null }))} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 disabled:bg-slate-100 dark:border-slate-600 dark:bg-slate-900 dark:text-white dark:disabled:bg-slate-700">
               <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="">{modelProcessesLoading ? '모델 프로세스 조회 중...' : '연결하지 않음'}</option>
@@ -137,8 +146,10 @@ export function VideoManagement() {
   const [modelProcesses, setModelProcesses] = useState<ModelProcess[]>([])
   const [modelProcessesLoading, setModelProcessesLoading] = useState(true)
   const sessionStatus = useAppSelector((state) => state.auth.sessionStatus)
+  const classCode = useCommonCode('USER_CLASS')
+  const classOptions = useMemo(() => (classCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name })), [classCode])
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
-  const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '' })
+  const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '', classCode: '' })
   const [query, setQuery] = useState('')
   const [appliedQuery, setAppliedQuery] = useState('')
   const [filtersVisible, setFiltersVisible] = useState(false)
@@ -239,6 +250,7 @@ export function VideoManagement() {
     status: row.status,
     remarks: row.remarks ?? '',
     modelProcessId: row.modelProcessId ?? null,
+    classCode: row.classCode ?? 'COMMON',
   })
 
   const saveRows = async () => {
@@ -304,6 +316,7 @@ export function VideoManagement() {
       status: item.status,
       remarks: item.remarks ?? '',
       modelProcessId: item.modelProcessId ?? null,
+      classCode: item.classCode ?? 'COMMON',
     })
   }
 
@@ -391,6 +404,16 @@ export function VideoManagement() {
     )
   )
 
+  const renderClassCell = (row: VideoGridRow) => {
+    const value = row.classCode ?? 'COMMON'
+    if (editingCell?.id === row.id && editingCell.field === 'classCode') {
+      return <select autoFocus aria-label={`${row.name} 반 편집`} value={value} onChange={(event) => { updateRow(row.id, 'classCode', event.target.value); setEditingCell(null) }} onBlur={() => setEditingCell(null)} className={editableCell}>
+        {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    }
+    return <button type="button" aria-label={`${row.name} 반`} onClick={() => setEditingCell({ id: row.id, field: 'classCode' })} className={`${cellValue} min-w-0 truncate`} title={value}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
+  }
+
   const columnFilters: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', widthClassName: 'w-12', value: '' },
     { id: 'name', ariaLabel: '영상 제목 필터', value: filters.name, widthClassName: 'w-44', onChange: (value) => setFilter('name', value) },
@@ -399,6 +422,7 @@ export function VideoManagement() {
     { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
     { id: 'location', ariaLabel: '위치 필터', value: filters.location, widthClassName: 'w-36', onChange: (value) => setFilter('location', value) },
     { id: 'zone', ariaLabel: '구역 필터', value: filters.zone, widthClassName: 'w-28', onChange: (value) => setFilter('zone', value) },
+    { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: filters.classCode, widthClassName: 'w-24', options: [{ value: '', label: '전체' }, ...classOptions], onChange: (value) => setFilter('classCode', value) },
   ]
 
   return (
@@ -461,6 +485,7 @@ export function VideoManagement() {
                 <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
                 <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
+                <th className={`w-24 ${headerCell}`}>반</th>
                 <th className={`w-36 ${headerCell}`}>위치</th>
                 <th className={`w-28 ${headerCell}`}>구역</th>
               </tr>
@@ -475,11 +500,12 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderTextCell(item, 'url', 'truncate font-mono text-xs')}</td>
                   <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
+                  <td className={bodyCell}>{renderClassCell(item)}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
-              {!visibleRows.length ? <tr><td colSpan={8} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
+              {!visibleRows.length ? <tr><td colSpan={9} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
           </DataGridTable>
         </div>
@@ -503,7 +529,7 @@ export function VideoManagement() {
         </div>
       </section>
 
-      <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} modelProcessesLoading={modelProcessesLoading} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
+      <VideoSourceModal open={modalOpen} initialValue={modalValue} modelProcesses={modelProcesses} modelProcessesLoading={modelProcessesLoading} classOptions={classOptions} title="영상 추가" saving={saving} error={modalError} onClose={() => setModalOpen(false)} onSubmit={save} />
     </section>
   )
 }

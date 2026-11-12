@@ -15,6 +15,8 @@ interface AddCameraDialogProps {
   isOpen: boolean
   cameras: Camera[]
   videoSources?: VideoSource[]
+  userClassCode?: string
+  classOptions?: { value: string; label: string }[]
   usedCameraIds: number[]
   existingTemporaryUrls?: string[]
   initialSource?: TemporaryVideoSource
@@ -45,6 +47,8 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   isOpen,
   cameras,
   videoSources = [],
+  userClassCode = 'COMMON',
+  classOptions = [],
   usedCameraIds,
   existingTemporaryUrls = [],
   initialSource,
@@ -62,6 +66,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<{ source: VideoSource; x: number; y: number } | null>(null)
+  const [classFilter, setClassFilter] = useState('')
 
   useEffect(() => {
     if (!isOpen) return
@@ -73,7 +78,8 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     setError(null)
     setNotice(null)
     setContextMenu(null)
-  }, [isOpen, initialSource])
+    setClassFilter(userClassCode === 'COMMON' ? '' : userClassCode)
+  }, [isOpen, initialSource, userClassCode])
 
   useEffect(() => {
     if (!notice) return undefined
@@ -86,10 +92,11 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
     return videoSources
       .filter((source) => source.status === 'ACTIVE')
       .filter((source) => source.protocol === 'WEBRTC' || source.protocol === 'HLS')
+      .filter((source) => !classFilter || source.classCode === 'COMMON' || source.classCode === classFilter)
       .filter((source) =>
         !term || [source.name, source.location, source.zone, source.url].some((value) => (value ?? '').toLowerCase().includes(term))
       )
-  }, [videoSources, searchTerm])
+  }, [videoSources, searchTerm, classFilter])
 
   if (!isOpen) return null
 
@@ -169,6 +176,12 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
         {mode === 'catalog' ? (
           <>
             <div className="p-4">
+              <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">반
+                <select value={classFilter} disabled={userClassCode !== 'COMMON'} onChange={(event) => setClassFilter(event.target.value)} className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                  {userClassCode === 'COMMON' ? <option value="">전체</option> : null}
+                  {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </label>
               <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('live.addCameraDialog.searchPlaceholder')} className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" aria-label={t('live.addCameraDialog.searchLabel')} />
             </div>
             <div className="max-h-80 overflow-y-auto border-t border-gray-100 dark:border-gray-700">

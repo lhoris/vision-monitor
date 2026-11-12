@@ -150,6 +150,7 @@ public class UserManagementService {
                 .department(valueOrNull(request.department()))
                 .position(valueOrNull(request.position()))
                 .phone(valueOrNull(request.phone()))
+                .classCode(normalizeClassCode(request.classCode()))
                 .role(resolveRole(request))
                 .accountStatus(normalizeAccountStatus(request.accountStatus()))
                 .employmentStatus(normalizeEmploymentStatus(request.employmentStatus()))
@@ -186,6 +187,7 @@ public class UserManagementService {
         user.setDepartment(valueOrNull(request.department()));
         user.setPosition(valueOrNull(request.position()));
         user.setPhone(valueOrNull(request.phone()));
+        user.setClassCode(normalizeClassCode(request.classCode()));
         user.setRole(nextRole);
         user.setAccountStatus(nextAccountStatus);
         user.setEmploymentStatus(nextEmploymentStatus);
@@ -380,6 +382,7 @@ public class UserManagementService {
         }
         normalizeAccountStatus(request.accountStatus());
         normalizeEmploymentStatus(request.employmentStatus());
+        normalizeClassCode(request.classCode());
     }
 
     private String resolveRole(UserMutationRequest request) {
@@ -487,6 +490,14 @@ public class UserManagementService {
 
     private String valueOrNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private String normalizeClassCode(String value) {
+        String normalized = value == null || value.isBlank() ? "COMMON" : value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT", "COMMON").contains(normalized)) {
+            throw new ApiException("VALIDATION_ERROR", "유효하지 않은 반입니다.");
+        }
+        return normalized;
     }
 
     private String defaultPasswordHash(String username) {

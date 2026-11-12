@@ -16,6 +16,7 @@ export interface SignupInput {
   phone?: string
   department?: string
   position?: string
+  classCode?: string
 }
 
 export interface SignupAvailability {
@@ -42,6 +43,7 @@ export interface MyProfile {
   role: 'admin' | 'manager' | 'user'
   email: string | null
   phone: string | null
+  classCode?: string | null
 }
 
 interface LoginApiResponse {

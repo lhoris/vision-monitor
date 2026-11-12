@@ -17,6 +17,7 @@ import type3CctvIcon from '../../bak/login_html/img/bg_icon01.png'
 import loginVideo from '../../bak/login_html/img/login_video.mp4'
 import './loginTemplates.css'
 import { HelpButton, startGuidedOnboarding, stopGuidedOnboarding } from '@/components/Onboarding'
+import { useCommonCode } from '@/hooks/useCommonCode'
 
 type LoginTemplateId = 1 | 2 | 3
 
@@ -159,7 +160,8 @@ function DemoCredentials() {
 }
 
 function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: (message: string) => void }) {
-  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '' })
+  const classCode = useCommonCode('USER_CLASS')
+  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '', classCode: 'COMMON' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
@@ -236,9 +238,14 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     ['phone', '연락처', false], ['department', '부서', false], ['position', '직책', false],
   ]
 
+  fields.push(['classCode', '반', true])
+
   const renderField = ([field, label, required]: [keyof SignupInput, string, boolean]) => {
     const checkable = field === 'username' || field === 'email'
     const checkState = field === 'username' ? usernameCheck : field === 'email' ? emailCheck : 'idle'
+    if (field === 'classCode') {
+      return <label key={field} className="vm-signup-field" htmlFor="signup-class-code">{label}<span className="vm-signup-required"> *</span><select id="signup-class-code" value={input.classCode ?? 'COMMON'} required onChange={(event) => update('classCode', event.target.value)}>{(classCode?.items ?? []).map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
+    }
     return <div key={field} className="vm-signup-field"><label htmlFor={`signup-${field}`}>{label}{required ? <span className="vm-signup-required"> *</span> : null}</label><div className={checkable ? 'vm-signup-field-control' : undefined}><input id={`signup-${field}`} type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} inputMode={field === 'phone' ? 'numeric' : undefined} placeholder={field === 'phone' ? '010-1234-5678' : undefined} maxLength={field === 'phone' ? 13 : undefined} value={input[field] ?? ''} required={required} onChange={(event) => update(field, field === 'phone' ? formatPhoneNumber(event.target.value) : event.target.value)} />{checkable ? <button type="button" onClick={() => void checkAvailability(field)} disabled={checkState === 'checking'}>{checkState === 'checking' ? '확인 중...' : '중복 확인'}</button> : null}</div>{checkState === 'available' ? <small className="vm-signup-check-success">사용할 수 있습니다.</small> : null}{checkState === 'unavailable' ? <small className="vm-signup-check-error">이미 사용 중입니다.</small> : null}</div>
   }
 

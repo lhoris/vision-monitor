@@ -22,6 +22,7 @@ public class VideoSourceDto {
     private String status;
     private String remarks;
     private Long modelProcessId;
+    private String classCode;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,6 +31,7 @@ public class VideoSourceDto {
                 .id(id).name(name).url(url).protocol(protocol)
                 .location(location).zone(zone).status(status).remarks(remarks)
                 .modelProcessId(modelProcessId)
+                .classCode(classCode)
                 .build();
     }
 
@@ -39,6 +41,7 @@ public class VideoSourceDto {
                 .protocol(source.getProtocol()).location(source.getLocation())
                 .zone(source.getZone()).status(source.getStatus()).remarks(source.getRemarks())
                 .modelProcessId(source.getModelProcessId())
+                .classCode(source.getClassCode())
                 .createdAt(source.getCreatedAt()).updatedAt(source.getUpdatedAt()).build();
     }
 }

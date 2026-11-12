@@ -17,6 +17,7 @@ public record UserAccountDto(
         String department,
         String position,
         String phone,
+        String classCode,
         List<String> roleIds,
         List<RoleSummaryDto> roles,
         String accountStatus,
@@ -73,6 +74,7 @@ public record UserAccountDto(
                 .department(user.getDepartment())
                 .position(user.getPosition())
                 .phone(user.getPhone())
+                .classCode(user.getClassCode())
                 .roleIds(assignedRoleIds == null || assignedRoleIds.isEmpty() ? List.of(role.toLowerCase()) : assignedRoleIds)
                 .roles((assignedRoleIds == null || assignedRoleIds.isEmpty() ? List.of(role.toLowerCase()) : assignedRoleIds).stream()
                         .map(roleId -> availableRoles.stream()

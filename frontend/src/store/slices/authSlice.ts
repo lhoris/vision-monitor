@@ -9,6 +9,7 @@ import { fetchCommonCodes } from './commonCodeSlice'
 export interface User {
   id: number
   username: string
+  classCode?: string
   role?: string
   permissions?: string[]
 }
@@ -56,6 +57,7 @@ function readStoredUser(): User | null {
         return {
           id: typeof user.id === 'number' ? user.id : 0,
           username: user.username,
+          classCode: typeof user.classCode === 'string' ? user.classCode : 'COMMON',
           role: user.role,
           permissions: Array.isArray(user.permissions) ? user.permissions : [],
         }
@@ -72,6 +74,7 @@ function readStoredUser(): User | null {
   return {
     id: 0,
     username,
+    classCode: 'COMMON',
     role: 'user',
     permissions: [],
   }

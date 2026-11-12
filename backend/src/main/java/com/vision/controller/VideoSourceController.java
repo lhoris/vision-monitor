@@ -1,6 +1,8 @@
 package com.vision.controller;
 
 import com.vision.dto.VideoSourceDto;
+import com.vision.config.AuthSessionInterceptor;
+import com.vision.dto.AuthenticatedUserDto;
 import com.vision.service.VideoSourceService;
 import com.vision.util.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,11 @@ public class VideoSourceController {
     private final VideoSourceService service;
 
     @GetMapping
-    public ApiResponse<List<VideoSourceDto>> list(@RequestParam(required = false) String status) {
-        return ApiResponse.success(service.list(status));
+    public ApiResponse<List<VideoSourceDto>> list(
+            @RequestParam(required = false) String status,
+            @RequestAttribute(value = AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE, required = false) AuthenticatedUserDto user
+    ) {
+        return ApiResponse.success(service.list(status, user == null ? null : user.username(), user != null && "admin".equalsIgnoreCase(user.role())));
     }
 
     @PostMapping

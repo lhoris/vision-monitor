@@ -2,8 +2,10 @@ package com.vision.service;
 
 import com.vision.dto.VideoSourceDto;
 import com.vision.entity.VideoSource;
+import com.vision.entity.UserAccount;
 import com.vision.exception.ApiException;
 import com.vision.repository.VideoSourceRepository;
+import com.vision.repository.UserAccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +19,31 @@ import java.util.Locale;
 public class VideoSourceService {
     private static final List<String> PROTOCOLS = List.of("WEBRTC", "HLS");
     private final VideoSourceRepository repository;
+    private final UserAccountRepository userRepository;
+
+    public VideoSourceService(VideoSourceRepository repository) {
+        this(repository, null);
+    }
 
     @Transactional(readOnly = true)
     public List<VideoSourceDto> list(String status) {
+        return list(status, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<VideoSourceDto> list(String status, String username) {
+        return list(status, username, false);
+    }
+
+    @Transactional(readOnly = true)
+    public List<VideoSourceDto> list(String status, String username, boolean administrator) {
+        UserAccount user = username == null || userRepository == null
+                ? null
+                : userRepository.findByUsernameIgnoreCase(username).orElse(null);
+        String classCode = user == null ? "COMMON" : normalizeClassCode(user.getClassCode());
         return repository.findAll().stream()
-                .filter(source -> status == null || status.isBlank() || source.getStatus().equalsIgnoreCase(status))
+                .filter(source -> status == null || status.isBlank() || (source.getStatus() != null && source.getStatus().equalsIgnoreCase(status)))
+                .filter(source -> administrator || "COMMON".equals(classCode) || classCode.equals(normalizeClassCode(source.getClassCode())) || "COMMON".equals(normalizeClassCode(source.getClassCode())))
                 .map(VideoSourceDto::from).toList();
     }
 
@@ -39,6 +61,7 @@ public class VideoSourceService {
         source.setLocation(trimOrNull(request.getLocation()));
         source.setZone(trimOrNull(request.getZone()));
         source.setRemarks(trimOrNull(request.getRemarks()));
+        source.setClassCode(normalizeClassCode(request.getClassCode()));
         return VideoSourceDto.from(repository.save(source));
     }
 
@@ -57,6 +80,7 @@ public class VideoSourceService {
         source.setStatus(normalizeStatus(request.getStatus()));
         source.setRemarks(trimOrNull(request.getRemarks()));
         source.setModelProcessId(request.getModelProcessId());
+        source.setClassCode(normalizeClassCode(request.getClassCode()));
         return VideoSourceDto.from(repository.save(source));
     }
 
@@ -72,6 +96,7 @@ public class VideoSourceService {
         try { URI.create(request.getUrl().trim()); } catch (IllegalArgumentException error) { throw new ApiException("VALIDATION_ERROR", "올바른 영상 주소를 입력하세요."); }
         normalizeProtocol(request.getProtocol());
         normalizeStatus(request.getStatus());
+        normalizeClassCode(request.getClassCode());
     }
 
     private String normalizeProtocol(String value) {
@@ -87,4 +112,12 @@ public class VideoSourceService {
     }
 
     private String trimOrNull(String value) { return value == null || value.isBlank() ? null : value.trim(); }
+
+    private String normalizeClassCode(String value) {
+        String normalized = value == null || value.isBlank() ? "COMMON" : value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("HEATING", "ROLLING", "COOLING", "TEST", "EQUIPMENT", "COMMON").contains(normalized)) {
+            throw new ApiException("VALIDATION_ERROR", "유효하지 않은 반입니다.");
+        }
+        return normalized;
+    }
 }

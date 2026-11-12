@@ -25,6 +25,7 @@ interface UserManagementGridToolbarOptions {
 interface UserManagementGridProps {
   users: UserAccount[]
   roles: RoleSummary[]
+  classOptions?: { value: string; label: string }[]
   currentUsername: string
   onBatchAction: (action: UserDangerAction, userIds: number[]) => Promise<void>
   onSaveChanges: (changes: UserGridSaveRequest[]) => Promise<void>
@@ -132,6 +133,7 @@ function toGridRow(user: UserAccount): UserGridRow {
     position: user.position,
     email: user.email,
     phone: user.phone,
+    classCode: user.classCode ?? 'COMMON',
     roleIds: user.roleIds,
     roles: user.roles,
     accountStatus: user.accountStatus,
@@ -156,6 +158,7 @@ function toMutationRequest(row: UserGridRow): UserMutationRequest {
     position: row.position,
     email: row.email,
     phone: row.phone,
+    classCode: row.classCode ?? 'COMMON',
     roleIds: row.roleIds,
     accountStatus: row.accountStatus,
     employmentStatus: row.employmentStatus,
@@ -179,6 +182,7 @@ function createDraftRow(roles: RoleSummary[]): UserGridRow {
     accountStatus: 'active',
     employmentStatus: 'employed',
     resetPassword: false,
+    classCode: 'COMMON',
     state: 'new',
     fieldErrors: {},
   }
@@ -233,6 +237,7 @@ function roleDisplayValue(roleIds: string[], roles: RoleSummary[]): string {
 export function UserManagementGrid({
   users,
   roles,
+  classOptions = [],
   currentUsername,
   onBatchAction,
   onSaveChanges,
@@ -659,7 +664,7 @@ export function UserManagementGrid({
       return
     }
 
-    if (field === 'roleIds' || field === 'accountStatus' || field === 'employmentStatus') return
+    if (field === 'roleIds' || field === 'classCode' || field === 'accountStatus' || field === 'employmentStatus') return
     if (event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) return
 
     event.preventDefault()
@@ -884,6 +889,16 @@ export function UserManagementGrid({
     )
   }
 
+  const renderClassSelectCell = (row: UserGridRow) => {
+    const value = row.classCode ?? 'COMMON'
+    if (isEditing(row.rowId, 'classCode')) {
+      return <select aria-label="반" autoFocus value={value} onBlur={() => setEditingCell(null)} onChange={(event) => { updateRow(row.rowId, 'classCode', event.target.value); setEditingCell(null) }} className={selectCellClass}>
+        {classOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    }
+    return <button type="button" aria-label="반 셀" onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} className={cellValueClass}>{classOptions.find((option) => option.value === value)?.label ?? value}</button>
+  }
+
   const renderRoleSelectCell = (row: UserGridRow) => {
     const roleText = roleDisplayValue(row.roleIds, roles)
 
@@ -1042,6 +1057,7 @@ export function UserManagementGrid({
               <th className={`w-[130px] ${headerCellClass}`}>{t('userManagement.position')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
+              <th className={`w-[120px] ${headerCellClass}`}>반</th>
               <th className={`w-[240px] ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
@@ -1089,11 +1105,12 @@ export function UserManagementGrid({
                   { value: 'rejected', label: t('userManagement.accountStatuses.rejected') },
                   { value: 'disabled', label: t('userManagement.accountStatuses.disabled') },
                 ])}</td>
+                <td className={bodyCellClass}>{renderClassSelectCell(row)}</td>
                 <td className={`${bodyCellClass} ${isEditing(row.rowId, 'roleIds') ? 'user-role-editor-cell' : ''}`} data-onboarding="user-management-role">{renderRoleSelectCell(row)}{renderError(row, 'roleIds')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', t('userManagement.remarks'))}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
-            {!visibleRows.length && <tr><td colSpan={11} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
+            {!visibleRows.length && <tr><td colSpan={12} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
           </tbody>
         </DataGridTable>
 

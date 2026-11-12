@@ -7,9 +7,14 @@ import java.util.List;
 public record AuthenticatedUserDto(
         Long id,
         String username,
+        String classCode,
         String role,
     List<String> permissions
 ) {
+    public AuthenticatedUserDto(Long id, String username, String role, List<String> permissions) {
+        this(id, username, "COMMON", role, permissions);
+    }
+
     public static AuthenticatedUserDto from(UserAccount user) {
         return from(user, "ADMIN".equalsIgnoreCase(user.getRole()));
     }
@@ -17,6 +22,6 @@ public record AuthenticatedUserDto(
     public static AuthenticatedUserDto from(UserAccount user, boolean administrator) {
         String role = administrator ? "admin" : "user";
         List<String> permissions = "admin".equals(role) ? List.of("admin:access") : List.of();
-        return new AuthenticatedUserDto(user.getId(), user.getUsername(), role, permissions);
+        return new AuthenticatedUserDto(user.getId(), user.getUsername(), user.getClassCode(), role, permissions);
     }
 }

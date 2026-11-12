@@ -15,6 +15,7 @@ export function videoSourceToCamera(source: VideoSource): Camera {
     streamProtocol: source.protocol.toLowerCase() as Camera['streamProtocol'],
     status: source.status === 'ACTIVE' ? 'online' : 'offline',
     modelProcessId: source.modelProcessId ?? null,
+    classCode: source.classCode ?? 'COMMON',
   }
 }
 
