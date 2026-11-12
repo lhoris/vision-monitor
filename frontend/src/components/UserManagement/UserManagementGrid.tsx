@@ -474,14 +474,14 @@ export function UserManagementGrid({
   const masterColumnFilterControls: GridColumnFilter[] = [
     { id: 'select', ariaLabel: '', kind: 'empty', value: '', widthClassName: 'w-8' },
     { id: 'username', ariaLabel: `${t('userManagement.loginAccount')} 필터`, value: columnFilters.username, widthClassName: 'w-[170px]', onChange: (value) => updateColumnFilter('username', value) },
-    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[170px]', onChange: (value) => updateColumnFilter('name', value) },
+    { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('name', value) },
     { id: 'email', ariaLabel: `${t('userManagement.email')} 필터`, value: columnFilters.email, widthClassName: 'w-[190px]', onChange: (value) => updateColumnFilter('email', value) },
     { id: 'phone', ariaLabel: `${t('userManagement.phone')} 필터`, value: columnFilters.phone, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('phone', value) },
     { id: 'department', ariaLabel: `${t('userManagement.department')} 필터`, value: columnFilters.department, widthClassName: 'w-[150px]', onChange: (value) => updateColumnFilter('department', value) },
     { id: 'position', ariaLabel: `${t('userManagement.position')} 필터`, value: columnFilters.position, widthClassName: 'w-[100px]', onChange: (value) => updateColumnFilter('position', value) },
     { id: 'resetPassword', ariaLabel: `${t('userManagement.password')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[90px]' },
-    { id: 'accountStatus', ariaLabel: `${t('userManagement.accountStatus')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[140px]' },
-    { id: 'role', ariaLabel: `${t('userManagement.role')} 필터`, kind: 'select', value: columnFilters.role, widthClassName: 'w-[240px]', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
+    { id: 'accountStatus', ariaLabel: `${t('userManagement.accountStatus')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[110px]' },
+    { id: 'role', ariaLabel: `${t('userManagement.role')} 필터`, kind: 'select', value: columnFilters.role, widthClassName: 'w-[210px]', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
     { id: 'displayName', ariaLabel: `${t('userManagement.remarks')} 필터`, value: columnFilters.displayName, widthClassName: 'w-auto', onChange: (value) => updateColumnFilter('displayName', value) },
   ]
 
@@ -1050,15 +1050,15 @@ export function UserManagementGrid({
             <tr>
               <th className={`w-8 ${headerCellClass}`}><input aria-label={t('userManagement.selectAll')} type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
               <th className={`w-[170px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
-              <th className={`w-[170px] ${headerCellClass}`}>{t('userManagement.name')}</th>
+              <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[190px] ${headerCellClass}`}>{t('userManagement.email')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.phone')}</th>
               <th className={`w-[150px] ${headerCellClass}`}>{t('userManagement.department')}</th>
-              <th className={`w-[120px] ${headerCellClass}`}>반</th>
+              <th className={`w-[60px] ${headerCellClass}`}>반</th>
               <th className={`w-[100px] ${headerCellClass}`}>{t('userManagement.position')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
-              <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
-              <th className={`w-[240px] ${headerCellClass}`}>{t('userManagement.role')}</th>
+              <th className={`w-[110px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
+              <th className={`w-[210px] ${headerCellClass}`}>{t('userManagement.role')}</th>
               <th className={`w-auto ${headerCellClass}`}>{t('userManagement.remarks')}</th>
             </tr>
             {columnFiltersVisible && <GridColumnFilterRow filters={masterColumnFilterControls} />}
