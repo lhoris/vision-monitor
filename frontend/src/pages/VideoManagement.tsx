@@ -29,7 +29,7 @@ type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
 const headerCell = 'h-8 border-b border-r border-[#9dcced] bg-[#dff2ff] px-2 text-center align-middle text-[13px] font-semibold normal-case text-[#266b9f] dark:border-slate-700 dark:bg-slate-900 dark:text-sky-100'
 const bodyCell = 'h-9 border-b border-r border-[#b7d8ee] p-0 align-middle dark:border-slate-700'
-const cellValue = 'grid-cell-value box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none dark:text-slate-100'
+const cellValue = 'grid-cell-value box-border flex h-9 w-full items-center border border-transparent bg-transparent px-2 text-left text-sm leading-none text-slate-900 outline-none hover:border-[#9dcced] hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:border-sky-700 dark:hover:bg-slate-700 focus:border-[#58aee4] focus:bg-[#eef8ff] dark:focus:border-sky-500 dark:focus:bg-slate-700'
 const editableCell = 'box-border h-9 w-full rounded-none border border-[#6ab6e8] bg-white px-2 text-sm leading-none text-slate-900 outline-none dark:border-sky-500 dark:bg-slate-900 dark:text-slate-100'
 
 interface VideoSourceModalProps {
@@ -559,7 +559,7 @@ export function VideoManagement() {
             </thead>
             <tbody>
               {visibleRows.map((item) => (
-                <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 hover:bg-[#eef8ff] dark:text-slate-100 dark:hover:bg-slate-700`}>
+                <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 dark:text-slate-100`}>
                   <td className={`${bodyCell} text-center`}><input aria-label={`${item.name} 선택`} type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleRow(item.id)} /></td>
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
