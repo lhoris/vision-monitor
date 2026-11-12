@@ -238,7 +238,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     ['phone', '연락처', false], ['department', '부서', false], ['position', '직책', false],
   ]
 
-  fields.push(['classCode', '반', true])
+  fields.splice(fields.findIndex(([field]) => field === 'position'), 0, ['classCode', '반', true])
 
   const renderField = ([field, label, required]: [keyof SignupInput, string, boolean]) => {
     const checkable = field === 'username' || field === 'email'
