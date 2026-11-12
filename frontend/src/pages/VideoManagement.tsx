@@ -24,7 +24,7 @@ const emptyForm: VideoSourceInput = {
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
-type VideoGridRowState = 'clean' | 'dirty'
+type VideoGridRowState = 'clean' | 'dirty' | 'new'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
 const headerCell = 'h-8 border-b border-r border-[#9dcced] bg-[#dff2ff] px-2 text-center align-middle text-[13px] font-semibold normal-case text-[#266b9f] dark:border-slate-700 dark:bg-slate-900 dark:text-sky-100'
@@ -227,7 +227,7 @@ export function VideoManagement() {
   const safePage = Math.min(page, totalPages)
   const visibleRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize)
   const { selectedIds, allVisibleSelected, toggle: toggleRow, select: selectRow, toggleVisible, clear: clearSelection } = useDataGridSelection(visibleRows.map((item) => item.id))
-  const changedRows = rows.filter((row) => row.rowState === 'dirty')
+  const changedRows = rows.filter((row) => row.rowState !== 'clean')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
 
   const setFilter = (key: FilterKey, value: string) => setFilters((current) => ({ ...current, [key]: value }))
@@ -235,9 +235,17 @@ export function VideoManagement() {
   const updateRow = (id: number, field: EditableVideoField, value: string) => {
     setRows((current) => current.map((row) => {
       if (row.id !== id) return row
-      return { ...row, [field]: value, rowState: 'dirty' }
+      return { ...row, [field]: value, rowState: row.rowState === 'new' ? 'new' : 'dirty' }
     }))
     selectRow(id)
+  }
+
+  const addRow = () => {
+    const rowId = -Date.now()
+    const draft: VideoGridRow = { id: rowId, ...emptyForm, rowState: 'new' }
+    setRows((current) => [draft, ...current])
+    selectRow(rowId)
+    setPage(1)
   }
 
   const cellKeyDown = (event: KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -268,7 +276,9 @@ export function VideoManagement() {
     setSaveTargets(null)
     setSaving(true)
     try {
-      await Promise.all(targets.map((row) => videoSourceService.update(row.id, toInput(row))))
+      await Promise.all(targets.map((row) => row.rowState === 'new'
+        ? videoSourceService.create(toInput(row))
+        : videoSourceService.update(row.id, toInput(row))))
       setNotice(`${targets.length}건을 저장했습니다.`)
       await load()
     } catch (exception) {
@@ -307,9 +317,18 @@ export function VideoManagement() {
     }
   }
 
+  const deleteDraftRows = () => {
+    const draftIds = new Set(rows.filter((row) => selectedIds.has(row.id) && row.rowState === 'new').map((row) => row.id))
+    if (!draftIds.size) return
+    setRows((current) => current.filter((row) => !draftIds.has(row.id)))
+    clearSelection()
+    setNotice(`${draftIds.size}건의 신규 행을 삭제했습니다.`)
+  }
+
   const deleteSelected = () => {
-    if (!selectedIds.size) return
-    setPendingDeleteCount(selectedIds.size)
+    const persistedIds = rows.filter((row) => selectedIds.has(row.id) && row.rowState !== 'new').map((row) => row.id)
+    if (!persistedIds.length) return
+    setPendingDeleteCount(persistedIds.length)
   }
 
   const confirmDeleteSelected = async () => {
@@ -317,8 +336,9 @@ export function VideoManagement() {
     setPendingDeleteCount(0)
     setSaving(true)
     try {
-      await Promise.all([...selectedIds].map((id) => videoSourceService.remove(id)))
-      setNotice(`${selectedIds.size}건을 삭제했습니다.`)
+      const targetIds = rows.filter((row) => selectedIds.has(row.id) && row.rowState !== 'new').map((row) => row.id)
+      await Promise.all(targetIds.map((id) => videoSourceService.remove(id)))
+      setNotice(`${targetIds.length}건을 삭제했습니다.`)
       await load()
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : '삭제에 실패했습니다.')
@@ -327,7 +347,7 @@ export function VideoManagement() {
     }
   }
 
-  const duplicateSelected = () => {
+  const duplicateSelectedWithModal = () => {
     const item = rows.find((entry) => selectedIds.has(entry.id))
     if (!item) return
     openAdd({
@@ -342,6 +362,20 @@ export function VideoManagement() {
       classCode: item.classCode ?? 'COMMON',
     })
   }
+
+  const duplicateSelected = () => {
+    const item = rows.find((entry) => selectedIds.has(entry.id))
+    if (!item) return
+    const rowId = -Date.now()
+    const duplicate: VideoGridRow = { ...item, id: rowId, name: `${item.name} 복사본`, rowState: 'new' }
+    setRows((current) => [duplicate, ...current])
+    clearSelection()
+    selectRow(rowId)
+    setPage(1)
+  }
+
+  // The modal duplicate flow remains available for compatibility with existing callers.
+  if (false) void duplicateSelectedWithModal
 
   const openContextMenu = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault()
@@ -407,7 +441,7 @@ export function VideoManagement() {
         onChange={(event) => {
           const modelProcessId = event.target.value ? Number(event.target.value) : null
           setRows((current) => current.map((item) => item.id === row.id
-            ? { ...item, modelProcessId, rowState: 'dirty' }
+            ? { ...item, modelProcessId, rowState: item.rowState === 'new' ? 'new' : 'dirty' }
             : item))
           selectRow(row.id)
           setEditingCell(null)
@@ -469,6 +503,7 @@ export function VideoManagement() {
         <div className="flex items-center gap-2">
           <DataGridActionButton type="button" onClick={() => { setAppliedQuery(query); setNotice('영상 목록을 조회했습니다.') }} disabled={saving}>조회</DataGridActionButton>
           <DataGridActionButton type="button" variant="primary" onClick={() => void saveRows()} disabled={saving || changedRows.length === 0}>저장</DataGridActionButton>
+          <DataGridActionButton type="button" variant="danger" onClick={deleteSelected} disabled={!rows.some((row) => selectedIds.has(row.id) && row.rowState !== 'new') || saving}>삭제</DataGridActionButton>
         </div>
       </DataGridToolbar>
 
@@ -531,17 +566,17 @@ export function VideoManagement() {
 
         <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300">
           <div className="flex flex-wrap items-center gap-1">
-            <button type="button" onClick={() => openAdd()} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">행 추가</button>
-            <button type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">복제</button>
-            <button type="button" onClick={deleteSelected} disabled={!selectedIds.size || saving} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">행 삭제</button>
+            <button type="button" onClick={addRow} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">행 추가</button>
+            <button type="button" onClick={duplicateSelected} disabled={selectedIds.size !== 1 || saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">행 복제</button>
+            <button type="button" onClick={deleteDraftRows} disabled={!rows.some((row) => selectedIds.has(row.id) && row.rowState === 'new') || saving} className="rounded border border-rose-300 px-2 py-1 font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50 dark:border-rose-700 dark:text-rose-300">행 삭제</button>
             <button type="button" onClick={() => { void load().then(() => setNotice('영상 목록을 새로고침했습니다.')) }} disabled={saving} className="rounded border border-slate-300 px-2 py-1 font-medium hover:bg-slate-100 disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700">새로고침</button>
           </div>
-          <span>선택 {selectedIds.size}건</span>
+          <span className="ml-auto">선택 {selectedIds.size}건</span>
           <span className="text-slate-300">|</span>
           <span>전체 {filteredRows.length}건</span>
           <span className="text-slate-300">|</span>
           <span>변경 {changedRows.length}건</span>
-          <span className="ml-auto">표시 건수</span>
+          <span>표시 건수</span>
           <select aria-label="표시 건수" value={pageSize} onChange={(event) => setPageSize(Number(event.target.value))} className="rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-900">
             <option value={10}>10</option>
             <option value={25}>25</option>
