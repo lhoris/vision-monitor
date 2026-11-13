@@ -81,6 +81,9 @@
     "loadError": "Unable to load queries.",
     "saveError": "Unable to save the query.",
     "actionError": "Unable to change the query status.",
+    "saveCompleted": "The query was saved.",
+    "deleteCompleted": "The query was deleted.",
+    "draftDeleted": "Deleted {{count}} new queries.",
     "deleteTitle": "Delete Query",
     "toggleTitle": "Change Query Status"
   },

@@ -56,6 +56,7 @@
     "subtitle": "화면 확대 보기 메타데이터에서 사용하는 조회 쿼리를 관리합니다.",
     "add": "쿼리 등록",
     "search": "검색",
+    "searchCompleted": "조회가 완료되었습니다.",
     "searchPlaceholder": "쿼리 ID 또는 명칭",
     "status": "상태",
     "all": "전체",
@@ -80,6 +81,9 @@
     "loadError": "쿼리 목록을 불러오지 못했습니다.",
     "saveError": "쿼리 저장에 실패했습니다.",
     "actionError": "쿼리 상태 변경에 실패했습니다.",
+    "saveCompleted": "쿼리를 저장했습니다.",
+    "deleteCompleted": "쿼리를 삭제했습니다.",
+    "draftDeleted": "신규 쿼리 {{count}}건을 삭제했습니다.",
     "deleteTitle": "쿼리 삭제 확인",
     "toggleTitle": "쿼리 상태 변경 확인"
   },
