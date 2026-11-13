@@ -15,6 +15,7 @@ const emptyInput: MetadataQueryAdminInput = {
 
 export function QueryEditorDialog({ query, busy = false, onClose, onSave }: Props) {
   const { t } = useTranslation()
+  const isExistingQuery = Boolean(query && query.id > 0)
   const [form, setForm] = useState<MetadataQueryAdminInput>(query ? {
     queryCode: query.queryCode, queryName: query.queryName, queryDescription: query.queryDescription ?? '', sqlText: query.sqlText,
     parameterSchema: query.parameterSchema ?? '', resultSchema: query.resultSchema ?? '', queryTimeoutSec: query.queryTimeoutSec, useStatus: query.enabled ? 'Y' : 'N',
@@ -28,10 +29,10 @@ export function QueryEditorDialog({ query, busy = false, onClose, onSave }: Prop
     await onSave({ ...form, queryCode: form.queryCode.trim(), queryName: form.queryName.trim(), queryTimeoutSec: Number(form.queryTimeoutSec) })
   }
   return <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/60 p-4">
-    <section role="dialog" aria-modal="true" className="max-h-[92vh] w-full max-w-3xl overflow-auto border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-      <div className="mb-5 flex items-start justify-between"><div><h2 className="text-xl font-bold text-slate-900 dark:text-white">{query ? t('queryManagement.edit') : t('queryManagement.add')}</h2><p className="mt-1 text-sm text-slate-500">{t('queryManagement.subtitle')}</p></div><button type="button" aria-label={t('common.close')} onClick={onClose} className="text-2xl text-slate-400">×</button></div>
+      <section role="dialog" aria-modal="true" className="max-h-[92vh] w-full max-w-3xl overflow-auto border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+      <div className="mb-5 flex items-start justify-between"><div><h2 className="text-xl font-bold text-slate-900 dark:text-white">{isExistingQuery ? t('queryManagement.edit') : t('queryManagement.add')}</h2><p className="mt-1 text-sm text-slate-500">{t('queryManagement.subtitle')}</p></div><button type="button" aria-label={t('common.close')} onClick={onClose} className="text-2xl text-slate-400">×</button></div>
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Query ID<input disabled={Boolean(query)} value={form.queryCode} onChange={(event) => update('queryCode', event.target.value)} className="mt-1 w-full border border-slate-300 px-3 py-2 font-mono font-normal dark:border-slate-600 dark:bg-slate-800" placeholder="camera.status" /></label>
+        <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Query ID<input disabled={isExistingQuery} value={form.queryCode} onChange={(event) => update('queryCode', event.target.value)} className="mt-1 w-full border border-slate-300 px-3 py-2 font-mono font-normal dark:border-slate-600 dark:bg-slate-800" placeholder="camera.status" /></label>
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Query 명칭<input value={form.queryName} onChange={(event) => update('queryName', event.target.value)} className="mt-1 w-full border border-slate-300 px-3 py-2 font-normal dark:border-slate-600 dark:bg-slate-800" /></label>
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-200 md:col-span-2">설명<input value={form.queryDescription} onChange={(event) => update('queryDescription', event.target.value)} className="mt-1 w-full border border-slate-300 px-3 py-2 font-normal dark:border-slate-600 dark:bg-slate-800" /></label>
         <label className="text-sm font-semibold text-slate-700 dark:text-slate-200 md:col-span-2">조회 SQL<textarea value={form.sqlText} onChange={(event) => update('sqlText', event.target.value)} rows={8} className="mt-1 w-full border border-slate-300 px-3 py-2 font-mono text-sm font-normal dark:border-slate-600 dark:bg-slate-800" placeholder="SELECT ... WHERE VIDEO_SOURCE_ID = :sourceId" /></label>
