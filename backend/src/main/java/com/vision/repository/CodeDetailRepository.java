@@ -9,4 +9,5 @@ public interface CodeDetailRepository extends JpaRepository<CodeDetail, Long> {
     List<CodeDetail> findAllByCodeIdOrderBySortOrderAscIdAsc(Long codeId);
     boolean existsByCodeIdAndValueIgnoreCaseAndDataEndStatus(Long codeId, String value, String dataEndStatus);
     boolean existsByCodeIdAndValueIgnoreCaseAndIdNot(Long codeId, String value, Long id);
+    void deleteAllByCodeId(Long codeId);
 }

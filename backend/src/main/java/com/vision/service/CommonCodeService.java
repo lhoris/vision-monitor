@@ -107,6 +107,15 @@ public class CommonCodeService {
     }
 
     @Transactional
+    public void deleteCode(String actorUsername, Long id) {
+        requireAdmin(actorUsername);
+        Code code = findCode(id);
+        if (!INACTIVE.equals(code.getDataEndStatus())) throw new ApiException("CODE_DELETE_REQUIRES_INACTIVE", "활성 공통코드는 먼저 비활성화해야 합니다.");
+        detailRepository.deleteAllByCodeId(id);
+        codeRepository.delete(code);
+    }
+
+    @Transactional
     public CommonCodeDetailDto createDetail(String actorUsername, Long codeId, CommonCodeDetailDto request) {
         requireAdmin(actorUsername); findCode(codeId); validateDetail(request);
         String value = normalizeValue(request.getValue());
@@ -145,6 +154,15 @@ public class CommonCodeService {
                 .orElseThrow(() -> new ApiException("CODE_DETAIL_NOT_FOUND", "공통코드 상세값을 찾을 수 없습니다."));
         if (detailRepository.existsByCodeIdAndValueIgnoreCaseAndDataEndStatus(codeId, detail.getValue(), ACTIVE)) throw new ApiException("DUPLICATE_CODE_VALUE", "이미 활성화된 코드값입니다.");
         detail.setDataEndStatus(ACTIVE); detailRepository.save(detail);
+    }
+
+    @Transactional
+    public void deleteDetail(String actorUsername, Long codeId, Long detailId) {
+        requireAdmin(actorUsername); findCode(codeId);
+        CodeDetail detail = detailRepository.findById(detailId).filter(value -> codeId.equals(value.getCodeId()))
+                .orElseThrow(() -> new ApiException("CODE_DETAIL_NOT_FOUND", "공통코드 상세값을 찾을 수 없습니다."));
+        if (!INACTIVE.equals(detail.getDataEndStatus())) throw new ApiException("CODE_DETAIL_DELETE_REQUIRES_INACTIVE", "활성 상세코드는 먼저 비활성화해야 합니다.");
+        detailRepository.delete(detail);
     }
 
     private RuntimeCommonCodeDto toRuntime(List<Code> codes) {

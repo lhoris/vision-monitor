@@ -25,6 +25,8 @@ public class CommonCodeAdminController {
     public ApiResponse<Void> deactivate(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { service.deactivateCode(actor, codeId); return ApiResponse.success(null); }
     @PostMapping("/{codeId}/activate")
     public ApiResponse<Void> activate(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { service.activateCode(actor, codeId); return ApiResponse.success(null); }
+    @DeleteMapping("/{codeId}")
+    public ApiResponse<Void> delete(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { service.deleteCode(actor, codeId); return ApiResponse.success(null); }
     @GetMapping("/{codeId}/details")
     public ApiResponse<List<CommonCodeDetailDto>> details(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId) { return ApiResponse.success(service.listDetails(actor, codeId)); }
     @PostMapping("/{codeId}/details")
@@ -35,4 +37,6 @@ public class CommonCodeAdminController {
     public ApiResponse<Void> deactivateDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId) { service.deactivateDetail(actor, codeId, detailId); return ApiResponse.success(null); }
     @PostMapping("/{codeId}/details/{detailId}/activate")
     public ApiResponse<Void> activateDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId) { service.activateDetail(actor, codeId, detailId); return ApiResponse.success(null); }
+    @DeleteMapping("/{codeId}/details/{detailId}")
+    public ApiResponse<Void> deleteDetail(@RequestHeader(value = "X-Actor-Username", required = false) String actor, @PathVariable Long codeId, @PathVariable Long detailId) { service.deleteDetail(actor, codeId, detailId); return ApiResponse.success(null); }
 }

@@ -17,11 +17,13 @@ class CommonCodeService {
   async update(id: number, input: CommonCodeInput): Promise<CommonCode> { return requireData(await apiClient.put<CommonCode>(`/admin/common-codes/${id}`, input), 'Updated common code was not returned') }
   async deactivate(id: number): Promise<void> { await apiClient.post(`/admin/common-codes/${id}/deactivate`) }
   async activate(id: number): Promise<void> { await apiClient.post(`/admin/common-codes/${id}/activate`) }
+  async remove(id: number): Promise<void> { await apiClient.delete(`/admin/common-codes/${id}`) }
   async listDetails(codeId: number): Promise<CommonCodeDetail[]> { return getResponseData(await apiClient.get<CommonCodeDetail[]>(`/admin/common-codes/${codeId}/details`), []) }
   async createDetail(codeId: number, input: CommonCodeDetailInput): Promise<CommonCodeDetail> { return requireData(await apiClient.post<CommonCodeDetail>(`/admin/common-codes/${codeId}/details`, input), 'Created common code detail was not returned') }
   async updateDetail(codeId: number, detailId: number, input: CommonCodeDetailInput): Promise<CommonCodeDetail> { return requireData(await apiClient.put<CommonCodeDetail>(`/admin/common-codes/${codeId}/details/${detailId}`, input), 'Updated common code detail was not returned') }
   async deactivateDetail(codeId: number, detailId: number): Promise<void> { await apiClient.post(`/admin/common-codes/${codeId}/details/${detailId}/deactivate`) }
   async activateDetail(codeId: number, detailId: number): Promise<void> { await apiClient.post(`/admin/common-codes/${codeId}/details/${detailId}/activate`) }
+  async removeDetail(codeId: number, detailId: number): Promise<void> { await apiClient.delete(`/admin/common-codes/${codeId}/details/${detailId}`) }
 }
 
 function requireData<T>(response: ApiResponse<T>, message: string): T {
