@@ -101,8 +101,12 @@ public class MetadataQueryAdminService {
         if (query.referenceCount() > 0) {
             throw new ApiException("METADATA_QUERY_REFERENCED", "The query cannot be deleted while it is referenced by a metadata section.");
         }
-        MetadataQuery entity = activeEntity(queryCode);
-        entity.setDataEndStatus("Y");
+        MetadataQuery entity = queryRepository.findByQueryCode(queryCode).orElseThrow(this::notFound);
+        if (query.deleted() || !query.enabled()) {
+            queryRepository.delete(entity);
+            return;
+        }
+        entity.setUseStatus("N");
         queryRepository.save(entity);
     }
 

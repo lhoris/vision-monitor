@@ -44,14 +44,18 @@ export default function QueryManagement() {
   const duplicateQuery = () => {
     if (selectedQueries.length !== 1) return
     const source = selectedQueries[0]
-    setEditor({ ...source, id: -Date.now(), queryCode: `${source.queryCode}_COPY`, queryName: `${source.queryName} 복사본`, deleted: false, enabled: true, referenceCount: 0, updatedAt: new Date().toISOString() })
+    const draft = { ...source, id: -Date.now(), queryCode: `${source.queryCode}_COPY`, queryName: `${source.queryName} 복사본`, deleted: false, enabled: true, referenceCount: 0, updatedAt: new Date().toISOString() }
+    setQueries((current) => [draft, ...current])
+    selection.clear()
+    selection.select(draft.id)
+    setEditor(draft)
   }
   const deleteDrafts = () => {
     const ids = new Set(selectedQueries.filter((query) => query.id < 0).map((query) => query.id))
     if (!ids.size) return
     setQueries((current) => current.filter((query) => !ids.has(query.id))); selection.clear(); setNotice(t('queryManagement.draftDeleted', { count: ids.size, defaultValue: `${ids.size}건의 신규 쿼리를 삭제했습니다.` }))
   }
-  const requestDelete = () => { const query = selectedQueries.find((item) => item.id > 0 && !item.deleted); if (query) setConfirm(query) }
+  const requestDelete = () => { const query = selectedQueries.find((item) => item.id > 0); if (query) setConfirm(query) }
   const confirmDelete = async () => {
     if (!confirm) return
     setBusy(true)

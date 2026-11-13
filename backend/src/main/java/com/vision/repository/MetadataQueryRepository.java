@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface MetadataQueryRepository extends JpaRepository<MetadataQuery, Long> {
     boolean existsByQueryCode(String queryCode);
     Optional<MetadataQuery> findByQueryCodeAndDataEndStatus(String queryCode, String dataEndStatus);
+    Optional<MetadataQuery> findByQueryCode(String queryCode);
 }
