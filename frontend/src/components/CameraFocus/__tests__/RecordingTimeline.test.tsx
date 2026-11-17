@@ -53,7 +53,7 @@ describe('RecordingTimeline', () => {
   it('renders an empty state when there are no segments or events', () => {
     renderTimeline({ playbackSession: { ...playbackSession, timelineSegments: [] }, events: [] })
 
-    expect(screen.getByText('표시할 녹화 구간이 없습니다.')).toBeInTheDocument()
+    expect(screen.getByText(/녹화 영상이 없습니다/)).toBeInTheDocument()
     expect(screen.queryByText('표시할 알람이 없습니다.')).not.toBeInTheDocument()
   })
 

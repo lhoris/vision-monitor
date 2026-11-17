@@ -320,6 +320,7 @@
     "wheelZoom": "마우스 휠: 타임라인 확대/축소",
     "contextAdjust": "선택 구간 우클릭: 시작·종료 시각 정밀 조절",
     "sampleAlarm": "MVP 예시 알람",
+    "noRecordingForDate": "{{date}} 날짜에는 녹화 영상이 없습니다.",
     "presetCurrent": "현재: {{label}}",
     "custom": "사용자 지정",
     "presets": { "30s": "30초", "1m": "1분", "3m": "3분", "5m": "5분", "10m": "10분", "30m": "30분", "1h": "1시간", "3h": "3시간", "infinite": "무한" }

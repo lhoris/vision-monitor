@@ -73,16 +73,16 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   const viewRange = { from: 0, to: DAY_SECONDS }
   const tickRange = { from: 0, to: DAY_SECONDS / zoom }
   const dayKey = dayStart.slice(0, 10)
-  const timelineEvents = events.length > 0 ? events : [createMvpAlarm(dayStart, t('recordingTimeline.sampleAlarm'))]
+  const visibleSegments = playbackSession.timelineSegments
+    .filter((segment) => segment.from.slice(0, 10) === dayKey)
+    .filter((segment) => isRangeOverlapping(dateToDaySeconds(segment.from, dayStart), dateToDaySeconds(segment.to, dayStart), viewRange))
+  const timelineEvents = events.length > 0 ? events : visibleSegments.length > 0 ? [createMvpAlarm(dayStart, t('recordingTimeline.sampleAlarm'))] : []
   const visibleEvents = timelineEvents
     .filter((event) => event.occurredAt.slice(0, 10) === dayKey)
     .filter((event) => {
       const seconds = dateToDaySeconds(event.occurredAt, dayStart)
       return isRangeOverlapping(seconds, seconds, viewRange)
     })
-  const visibleSegments = playbackSession.timelineSegments
-    .filter((segment) => segment.from.slice(0, 10) === dayKey)
-    .filter((segment) => isRangeOverlapping(dateToDaySeconds(segment.from, dayStart), dateToDaySeconds(segment.to, dayStart), viewRange))
   const ticks = useMemo(() => createTicks(tickRange), [tickRange.to])
 
   useEffect(() => {
@@ -242,7 +242,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
         <div ref={timelineViewportRef} className="overflow-x-auto rounded border border-slate-600 bg-slate-950">
           <div ref={timelineRef} className="focus-recording-timeline relative h-16 min-w-full cursor-crosshair overflow-visible" style={{ width: `${zoom * 100}%` }} role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(viewRange.from)} aria-valuemax={Math.round(viewRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, viewRange.from), viewRange.to))} tabIndex={0} onClick={seekFromTrack} onKeyDown={handleTrackKeyDown} onWheel={handleTimelineWheel} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
           {ticks.map((tick) => <span key={`grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-700" style={{ left: `${secondsToRangePercent(tick, viewRange)}%` }} />)}
-          <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{visibleSegments.length > 0 ? visibleSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={viewRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">표시할 녹화 구간이 없습니다.</p>}</div>
+          <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{visibleSegments.length > 0 ? visibleSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={viewRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">{t('recordingTimeline.noRecordingForDate', { date: dayKey })}</p>}</div>
           <WorkAreaSelection range={normalizedWorkArea} viewRange={viewRange} onPointerDown={beginDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag} onHandleKeyDown={moveHandleWithKeyboard} onContextMenu={openContextMenu} />
           {visibleEvents.map((event) => <AlarmMarker key={event.eventId} event={event} dayStart={dayStart} range={viewRange} onSelectEvent={onSelectEvent} onSeek={onSeek} />)}
           <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" style={{ left: `${secondsToRangePercent(playheadSeconds, viewRange)}%` }}><span className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-white shadow" /></span>
