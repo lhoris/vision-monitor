@@ -311,6 +311,17 @@
       "seriesFields": "Series fields"
     }
   },
+  "recordingTimeline": {
+    "workArea": "Selected range: recording playback range",
+    "playhead": "Current playback position",
+    "alarm": "Alarm",
+    "clickToSeek": "Click empty area: move position",
+    "wheelZoom": "Mouse wheel: zoom timeline",
+    "contextAdjust": "Right-click selected range: adjust start/end time",
+    "presetCurrent": "Current: {{label}}",
+    "custom": "Custom",
+    "presets": { "30s": "30 sec", "1m": "1 min", "3m": "3 min", "5m": "5 min", "10m": "10 min", "30m": "30 min", "1h": "1 hour", "3h": "3 hours", "infinite": "Unlimited" }
+  },
   "live": {
     "title": "Live Monitoring",
     "subtitle": "Real-time camera feeds",

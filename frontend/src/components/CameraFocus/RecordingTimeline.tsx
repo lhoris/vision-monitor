@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { CameraEventDto, PlaybackSessionDto, TimelineSegmentDto } from '@/types/cameraFocus'
 import {
   DAY_SECONDS,
@@ -58,6 +59,7 @@ const WORK_AREA_PRESETS = [
 ]
 
 export function RecordingTimeline({ playbackSession, events, dayStart, workArea, playheadTimestamp, loading = false, onDateChange, onPlay, onWorkAreaChange, onWorkAreaCommit, onSeek, onSelectEvent }: RecordingTimelineProps) {
+  const { t } = useTranslation()
   const timelineRef = useRef<HTMLDivElement>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [zoom, setZoom] = useState<TimelineZoomLevel>(1)
@@ -237,12 +239,12 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-4 rounded border-2 border-sky-300 bg-sky-400/20" />선택 구간(work area): 녹화 재생 범위</span>
-        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-4 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" />현재 재생 위치</span>
-        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-1 rounded bg-amber-400" />알람</span>
-        <span className="focus-recording-muted">빈 영역 클릭: 위치 이동</span>
-        <span className="focus-recording-muted">마우스 휠: 타임라인 확대/축소</span>
-        <span className="focus-recording-muted">work area 우클릭: 시작·종료 시각 정밀 조절</span>
+        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-4 rounded border-2 border-sky-300 bg-sky-400/20" />{t('recordingTimeline.workArea')}</span>
+        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-4 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" />{t('recordingTimeline.playhead')}</span>
+        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-1 rounded bg-amber-400" />{t('recordingTimeline.alarm')}</span>
+        <span className="focus-recording-muted">{t('recordingTimeline.clickToSeek')}</span>
+        <span className="focus-recording-muted">{t('recordingTimeline.wheelZoom')}</span>
+        <span className="focus-recording-muted">{t('recordingTimeline.contextAdjust')}</span>
       </div>
 
       {contextMenu ? <ManualRangeMenu draft={contextDraft} position={contextMenu} onChange={setContextDraft} onCancel={() => setContextMenu(null)} onApply={applyContextDraft} /> : null}
