@@ -54,7 +54,7 @@ describe('RecordingTimeline', () => {
     renderTimeline({ playbackSession: { ...playbackSession, timelineSegments: [] }, events: [] })
 
     expect(screen.getByText('표시할 녹화 구간이 없습니다.')).toBeInTheDocument()
-    expect(screen.getByText('표시할 알람이 없습니다.')).toBeInTheDocument()
+    expect(screen.queryByText('표시할 알람이 없습니다.')).not.toBeInTheDocument()
   })
 
   it('seeks by mouse click and keyboard arrows on the detail timeline', () => {

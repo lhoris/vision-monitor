@@ -237,11 +237,11 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-2 w-4 rounded bg-emerald-500" />녹화 가능</span>
-        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-2 w-4 rounded bg-slate-700" />녹화 공백</span>
+        <span className="focus-recording-muted">선택 구간(work area): 녹화 재생 범위</span>
         <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-1 rounded bg-amber-400" />알람</span>
         <span className="focus-recording-muted">빈 영역 클릭: 위치 이동 · 흰색 선: 현재 재생 위치</span>
-        {visibleEvents.length === 0 ? <span className="focus-recording-muted">표시할 알람이 없습니다.</span> : null}
+        <span className="focus-recording-muted">마우스 휠: 타임라인 확대/축소</span>
+        <span className="focus-recording-muted">work area 우클릭: 시작·종료 시각 정밀 조절</span>
       </div>
 
       {contextMenu ? <ManualRangeMenu draft={contextDraft} position={contextMenu} onChange={setContextDraft} onCancel={() => setContextMenu(null)} onApply={applyContextDraft} /> : null}
