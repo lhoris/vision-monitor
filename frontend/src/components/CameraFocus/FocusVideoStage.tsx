@@ -117,7 +117,7 @@ export function FocusVideoStage({
                   protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
                   label: seekTarget ? `seek:${seekTarget}` : undefined,
                 }}
-                autoplay={false}
+                autoplay
                 controls
                 className="h-[60vh] min-h-[480px] max-h-[720px] w-full"
               />

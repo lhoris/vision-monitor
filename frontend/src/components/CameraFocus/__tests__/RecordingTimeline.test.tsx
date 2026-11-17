@@ -96,13 +96,13 @@ describe('RecordingTimeline', () => {
     expect(timeline).toHaveAttribute('aria-valuemax', '52200')
   })
 
-  it('handles Ctrl+wheel inside the timeline without delegating zoom to the browser', () => {
+  it('handles regular wheel inside the timeline without scrolling the page', () => {
     renderTimeline({ events: [] })
     const timeline = screen.getByRole('slider', { name: '녹화 재생 위치' })
     const preventDefault = vi.spyOn(Event.prototype, 'preventDefault')
     const stopPropagation = vi.spyOn(Event.prototype, 'stopPropagation')
 
-    fireEvent.wheel(timeline, { ctrlKey: true, deltaY: -1 })
+    fireEvent.wheel(timeline, { deltaY: -1 })
 
     expect(screen.getByRole('button', { name: '전체 보기' })).toHaveTextContent('2x')
     expect(preventDefault).toHaveBeenCalled()
