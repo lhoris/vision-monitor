@@ -143,7 +143,7 @@ describe('RecordingTimeline', () => {
     renderTimeline({ onDateChange, onPlay })
 
     fireEvent.click(screen.getByRole('button', { name: '이전 날짜' }))
-    fireEvent.click(screen.getByRole('button', { name: '현재 구간 다시 재생' }))
+    fireEvent.click(screen.getByRole('button', { name: '녹화 재생' }))
 
     expect(onDateChange).toHaveBeenCalledWith('2026-08-14')
     expect(onPlay).toHaveBeenCalledTimes(1)

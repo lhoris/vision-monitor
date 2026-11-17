@@ -197,7 +197,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
           <input type="date" aria-label="탐색 날짜" value={dayKey} onChange={(event) => onDateChange?.(event.target.value)} className="border border-slate-500 bg-slate-900 px-2 py-1 text-xs font-semibold text-white" />
           <button type="button" className="focus-recording-zoom-button" aria-label="다음 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, 1))}>›</button>
         </div>
-        <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="현재 구간 다시 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '↻ 다시 재생'}</button>
+        <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="녹화 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '▶ 재생'}</button>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
