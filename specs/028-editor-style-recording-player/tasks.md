@@ -66,3 +66,4 @@
 - [X] T032 작업 구간 우클릭 정밀 조정 메뉴와 외부 클릭 닫기를 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 구현한다.
 - [X] T033 우클릭 입력·적용 회귀 테스트와 프론트엔드 빌드를 실행한다.
 - [X] T034 녹화 탭의 중복 알람 목록 렌더링을 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에서 제거한다.
+- [X] T035 녹화 플레이어의 고정 높이를 반응형 높이로 변경해 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에서 영상 영역을 확대한다.

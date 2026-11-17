@@ -67,7 +67,7 @@ export function FocusVideoStage({
 
   if (mode === 'live' && camera && liveStream) {
     return (
-      <section className="focus-video-stage min-h-[420px] flex-1">
+      <section className="focus-video-stage flex min-h-[420px] flex-1 flex-col">
         <LiveStreamPlayer
           camera={toPlayerCamera(camera, liveStream)}
           className="h-full min-h-[420px] w-full"
@@ -91,7 +91,7 @@ export function FocusVideoStage({
     })
 
     return (
-      <section className="focus-video-stage min-h-[420px] flex-1">
+    <section className="focus-video-stage flex min-h-[420px] flex-1 flex-col">
         {playbackSession ? (
           <>
             {playbackSession.playbackProtocol === 'mp4' ? (
@@ -113,7 +113,7 @@ export function FocusVideoStage({
                 }}
                 autoplay={false}
                 controls
-                className="h-[360px] w-full"
+                className="h-[60vh] min-h-[480px] max-h-[720px] w-full"
               />
             )}
             {timelineDate && recordingWorkArea ? (
@@ -136,7 +136,7 @@ export function FocusVideoStage({
             ) : null}
           </>
         ) : (
-          <div className="flex h-[360px] items-center justify-center">
+          <div className="flex h-[60vh] min-h-[480px] max-h-[720px] items-center justify-center">
             <p className="focus-video-stage__error text-sm">
               {playbackError === 'FORBIDDEN' ? '녹화 영상 접근 권한이 없습니다.' : '녹화 영상을 불러오지 못했습니다.'}
             </p>
@@ -207,7 +207,7 @@ function RecordingVideo({
       playsInline
       onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
-      className="h-[360px] w-full bg-black object-contain"
+      className="h-[60vh] min-h-[480px] max-h-[720px] w-full bg-black object-contain"
     />
   )
 }
