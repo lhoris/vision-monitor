@@ -98,6 +98,21 @@ describe('RecordingTimeline', () => {
     expect(screen.getByRole('img', { name: '24시간 녹화 개요' })).toBeInTheDocument()
   })
 
+  it('handles Ctrl+wheel inside the timeline without delegating zoom to the browser', () => {
+    renderTimeline({ events: [] })
+    const timeline = screen.getByRole('slider', { name: '녹화 재생 위치' })
+    const preventDefault = vi.spyOn(Event.prototype, 'preventDefault')
+    const stopPropagation = vi.spyOn(Event.prototype, 'stopPropagation')
+
+    fireEvent.wheel(timeline, { ctrlKey: true, deltaY: -1 })
+
+    expect(screen.getByRole('button', { name: '전체 보기' })).toHaveTextContent('2x')
+    expect(preventDefault).toHaveBeenCalled()
+    expect(stopPropagation).toHaveBeenCalled()
+    preventDefault.mockRestore()
+    stopPropagation.mockRestore()
+  })
+
   it('changes the work area duration with a preset while preserving the center', () => {
     const onWorkAreaChange = vi.fn()
     renderTimeline({ onWorkAreaChange })

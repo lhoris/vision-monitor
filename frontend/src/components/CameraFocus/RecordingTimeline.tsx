@@ -130,13 +130,22 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
     onWorkAreaChange?.(resizeWorkArea(normalizedWorkArea, edge, value + delta))
   }
 
-  function handleDetailWheel(event: React.WheelEvent<HTMLDivElement>) {
-    if (!event.ctrlKey && !event.metaKey) return
-    event.preventDefault()
-    const index = TIMELINE_ZOOM_LEVELS.indexOf(zoom)
-    const nextIndex = event.deltaY < 0 ? Math.min(index + 1, TIMELINE_ZOOM_LEVELS.length - 1) : Math.max(index - 1, 0)
-    setZoom(TIMELINE_ZOOM_LEVELS[nextIndex])
-  }
+  useEffect(() => {
+    const timeline = detailTimelineRef.current
+    if (!timeline) return
+
+    function handleDetailWheel(event: WheelEvent) {
+      if (!event.ctrlKey && !event.metaKey) return
+      event.preventDefault()
+      event.stopPropagation()
+      const index = TIMELINE_ZOOM_LEVELS.indexOf(zoom)
+      const nextIndex = event.deltaY < 0 ? Math.min(index + 1, TIMELINE_ZOOM_LEVELS.length - 1) : Math.max(index - 1, 0)
+      setZoom(TIMELINE_ZOOM_LEVELS[nextIndex])
+    }
+
+    timeline.addEventListener('wheel', handleDetailWheel, { passive: false })
+    return () => timeline.removeEventListener('wheel', handleDetailWheel)
+  }, [zoom])
 
   function openWorkAreaContextMenu(event: React.MouseEvent) {
     event.preventDefault()
@@ -191,7 +200,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
 
       <div className="relative px-1 pb-5 pt-1">
         <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between text-[10px] text-slate-400">{detailTicks.map((tick) => <span key={tick}>{formatTimelineScaleTime(tick)}</span>)}</div>
-        <div ref={detailTimelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(detailRange.from)} aria-valuemax={Math.round(detailRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, detailRange.from), detailRange.to))} tabIndex={0} onClick={(event) => seekFromRange(event, detailRange)} onKeyDown={handleDetailTrackKeyDown} onWheel={handleDetailWheel}>
+        <div ref={detailTimelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(detailRange.from)} aria-valuemax={Math.round(detailRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, detailRange.from), detailRange.to))} tabIndex={0} onClick={(event) => seekFromRange(event, detailRange)} onKeyDown={handleDetailTrackKeyDown}>
           {detailTicks.map((tick) => <span key={`grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-700" style={{ left: `${secondsToRangePercent(tick, detailRange)}%` }} />)}
           <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{detailSegments.length > 0 ? detailSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={detailRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">현재 확대 구간에 녹화가 없습니다.</p>}</div>
           <WorkAreaSelection range={normalizedWorkArea} viewRange={detailRange} onPointerDown={beginDrag} onHandleKeyDown={moveHandleWithKeyboard} onContextMenu={openWorkAreaContextMenu} />
