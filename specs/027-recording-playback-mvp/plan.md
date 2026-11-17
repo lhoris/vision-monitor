@@ -63,7 +63,7 @@
 - `CameraFocus`가 녹화 조회 범위의 source of truth가 된다.
 - `CameraFocusShell`은 녹화 입력 영역을 `FocusVideoStage` 위에 배치한다.
 - `FocusVideoStage`는 playback protocol이 `mp4`인 경우 native `<video controls>`를 사용하고 기존 HLS/WebRTC 흐름은 유지한다.
-- `RecordingTimeline`은 현재 조회 구간과 알람 marker를 계속 표시한다.
+- `RecordingTimeline`은 플레이어 하단의 메인 타임라인으로 동작하며 녹화 가능 구간, 현재 재생 위치, 알람 marker를 표시하고 마우스 클릭·방향키 seek를 제공한다.
 
 ### 상태 및 상호작용 흐름
 
@@ -103,6 +103,7 @@
 ## 7. 테스트 및 검증 계획
 
 - **단위/컴포넌트 테스트**: 시간 범위 검증, URL 조합, 수동 조회, 알람 자동 범위, MP4 player 렌더링
+- **단위/컴포넌트 테스트**: 시간 범위 검증, URL 조합, 수동 조회, 메인 타임라인 mouse/keyboard seek, 알람 자동 범위, MP4 player 렌더링
 - **통합 테스트**: `CameraFocus`에서 녹화 탭과 알람 선택 흐름 연결
 - **E2E/수동 검증**: 화면 확대 보기 → 녹화 → 조회 → native controls 조작, 알람 선택 후 구간 이동
 - **빌드/정적 검증**: `npm run build`, 관련 Vitest 테스트

@@ -29,7 +29,7 @@
 - [X] T009 [US1] 녹화 시작/종료 입력과 조회 버튼을 `frontend/src/components/CameraFocus/RecordingControls.tsx`에 구현한다.
 - [X] T010 [US1] 화면 상태와 recording controls를 `frontend/src/pages/CameraFocus.tsx` 및 `frontend/src/components/CameraFocus/CameraFocusShell.tsx`에 연결한다.
 - [X] T011 [US1] MP4 protocol 재생을 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에 연결하고 기존 HLS/WebRTC 분기를 보존한다.
-- [X] T012 [US1] 녹화 URL과 시간 범위가 플레이어 및 타임라인에 반영되는지 `frontend/src/components/CameraFocus/__tests__/FocusVideoStage.test.tsx`에 검증한다.
+- [X] T012 [US1] 녹화 URL과 시간 범위가 플레이어 및 타임라인에 반영되는지 `frontend/src/components/CameraFocus/__tests__/FocusVideoStage.test.tsx`와 `RecordingTimeline.test.tsx`에 검증한다.
 - [X] T013 [US1] 사용자 스토리 1 검증을 위해 관련 Vitest 테스트와 `npm run build`를 실행한다.
 
 ## Phase 4: 사용자 스토리 2 - 알람에서 관련 녹화 구간으로 이동 (우선순위: P2)

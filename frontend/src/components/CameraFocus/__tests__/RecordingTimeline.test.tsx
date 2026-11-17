@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { RecordingTimeline } from '../RecordingTimeline'
 import type { CameraEventDto, PlaybackSessionDto } from '@/types/cameraFocus'
 
@@ -64,5 +64,29 @@ describe('RecordingTimeline', () => {
 
     expect(screen.getByText('표시할 녹화 구간이 없습니다.')).toBeInTheDocument()
     expect(screen.getByText('표시할 알람이 없습니다.')).toBeInTheDocument()
+  })
+
+  it('seeks by mouse click and keyboard arrows on the main timeline', () => {
+    const onSeek = vi.fn()
+    render(<RecordingTimeline playbackSession={playbackSession} events={[]} onSeek={onSeek} />)
+
+    const timeline = screen.getByRole('slider', { name: '녹화 재생 위치' })
+    vi.spyOn(timeline, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      right: 100,
+      top: 0,
+      bottom: 56,
+      width: 100,
+      height: 56,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+
+    fireEvent.click(timeline, { clientX: 50 })
+    fireEvent.keyDown(timeline, { key: 'ArrowRight' })
+
+    expect(onSeek).toHaveBeenNthCalledWith(1, 1800)
+    expect(onSeek).toHaveBeenNthCalledWith(2, 1)
   })
 })

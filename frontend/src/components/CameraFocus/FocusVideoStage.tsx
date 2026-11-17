@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
 import { RecordingEventList } from './RecordingEventList'
@@ -40,6 +40,8 @@ export function FocusVideoStage({
   onSelectEvent,
 }: FocusVideoStageProps) {
   const title = mode === 'recording' ? '녹화 영상 영역' : '실시간 영상 영역'
+  const [recordingTimeSeconds, setRecordingTimeSeconds] = useState(0)
+  const [recordingSeekSeconds, setRecordingSeekSeconds] = useState<number | null>(null)
 
   if (mode === 'live' && liveLoading) {
     return <VideoStateMessage tone="neutral" message="영상을 불러오는 중입니다." />
@@ -89,6 +91,8 @@ export function FocusVideoStage({
                 url={playbackSession.playbackUrl}
                 seekTarget={seekTarget}
                 availableFrom={playbackSession.availableFrom}
+                seekSeconds={recordingSeekSeconds}
+                onTimeUpdate={setRecordingTimeSeconds}
               />
             ) : (
               <StreamPlayerComponent
@@ -103,7 +107,12 @@ export function FocusVideoStage({
                 className="h-[360px] w-full"
               />
             )}
-            <RecordingTimeline playbackSession={playbackSession} events={eventsError ? [] : events} />
+            <RecordingTimeline
+              playbackSession={playbackSession}
+              events={eventsError ? [] : events}
+              currentTimeSeconds={recordingTimeSeconds}
+              onSeek={setRecordingSeekSeconds}
+            />
           </>
         ) : (
           <div className="flex h-[360px] items-center justify-center">
@@ -141,8 +150,25 @@ export function FocusVideoStage({
   )
 }
 
-function RecordingVideo({ url, seekTarget, availableFrom }: { url: string; seekTarget: string | null; availableFrom: string }) {
+function RecordingVideo({
+  url,
+  seekTarget,
+  availableFrom,
+  seekSeconds,
+  onTimeUpdate,
+}: {
+  url: string
+  seekTarget: string | null
+  availableFrom: string
+  seekSeconds: number | null
+  onTimeUpdate: (seconds: number) => void
+}) {
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (seekSeconds === null || !videoRef.current) return
+    videoRef.current.currentTime = seekSeconds
+  }, [seekSeconds])
 
   useEffect(() => {
     if (!seekTarget || !videoRef.current) return
@@ -156,7 +182,19 @@ function RecordingVideo({ url, seekTarget, availableFrom }: { url: string; seekT
     return () => video.removeEventListener('loadedmetadata', seek)
   }, [availableFrom, seekTarget])
 
-  return <video data-testid="focus-recording-video" ref={videoRef} src={url} controls autoPlay playsInline className="h-[360px] w-full bg-black object-contain" />
+  return (
+    <video
+      data-testid="focus-recording-video"
+      ref={videoRef}
+      src={url}
+      controls
+      autoPlay
+      playsInline
+      onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
+      onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
+      className="h-[360px] w-full bg-black object-contain"
+    />
+  )
 }
 
 function getSeekTarget({
