@@ -58,6 +58,12 @@ export function FocusVideoStage({
   const [recordingTimeSeconds, setRecordingTimeSeconds] = useState(0)
   const [recordingSeekSeconds, setRecordingSeekSeconds] = useState<number | null>(null)
 
+  const [recordingMediaError, setRecordingMediaError] = useState(false)
+
+  useEffect(() => {
+    setRecordingMediaError(false)
+  }, [playbackSession?.playbackUrl])
+
   if (mode === 'live' && liveLoading) {
     return <VideoStateMessage tone="neutral" message="영상을 불러오는 중입니다." />
   }
@@ -100,7 +106,7 @@ export function FocusVideoStage({
     <section className="focus-video-stage flex min-h-0 flex-1 flex-col">
         {playbackSession ? (
           <>
-            <div className="flex min-h-0 flex-1 items-center justify-center">
+            <div className="relative flex min-h-0 flex-1 items-center justify-center">
               {playbackSession.playbackProtocol === 'mp4' ? (
               <RecordingVideo
                   key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
@@ -109,6 +115,7 @@ export function FocusVideoStage({
                   availableFrom={playbackSession.availableFrom}
                   seekSeconds={recordingSeekSeconds}
                   onTimeUpdate={setRecordingTimeSeconds}
+                  onError={() => setRecordingMediaError(true)}
                 />
               ) : (
                 <StreamPlayerComponent
@@ -123,6 +130,7 @@ export function FocusVideoStage({
                   className="h-full min-h-0 w-full"
                 />
               )}
+              {recordingMediaError ? <div className="absolute inset-0 flex items-center justify-center bg-black/80 px-4 text-center text-sm text-amber-200">선택한 구간에 녹화 영상이 없습니다.</div> : null}
             </div>
             {timelineDate && recordingWorkArea ? (
               <RecordingTimeline
@@ -150,7 +158,7 @@ export function FocusVideoStage({
         ) : (
           <div className="flex h-[60vh] min-h-[480px] max-h-[720px] items-center justify-center">
             <p className="focus-video-stage__error text-sm">
-              {playbackError === 'FORBIDDEN' ? '녹화 영상 접근 권한이 없습니다.' : '녹화 영상을 불러오지 못했습니다.'}
+              {playbackError === 'FORBIDDEN' ? '녹화 영상 접근 권한이 없습니다.' : isNoRecordingError(playbackError) ? '선택한 구간에 녹화 영상이 없습니다.' : '녹화 영상을 불러오지 못했습니다.'}
             </p>
           </div>
         )}
@@ -183,12 +191,14 @@ function RecordingVideo({
   availableFrom,
   seekSeconds,
   onTimeUpdate,
+  onError,
 }: {
   url: string
   seekTarget: string | null
   availableFrom: string
   seekSeconds: number | null
   onTimeUpdate: (seconds: number) => void
+  onError: () => void
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -235,11 +245,16 @@ function RecordingVideo({
       controls
       autoPlay
       playsInline
+      onError={onError}
       onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       className="h-full min-h-0 max-h-full w-full bg-black object-contain"
     />
   )
+}
+
+function isNoRecordingError(error: string | null | undefined) {
+  return error === 'NO_RECORDING' || error === 'NOT_FOUND' || error === '404'
 }
 
 function getPlaybackDurationSeconds(playbackSession: PlaybackSessionDto): number {
