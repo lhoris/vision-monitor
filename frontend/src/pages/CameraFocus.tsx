@@ -10,6 +10,21 @@ import type { ActiveAlertDto, CameraFocusDto, CameraPlaybackRange, EventDetailDt
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
 import type { Camera } from '@/types/camera'
+import {
+  DAY_SECONDS,
+  dateToDaySeconds,
+  daySecondsToDate,
+  formatTimelineDateTime,
+  normalizeWorkArea,
+  type TimelineRangeSeconds,
+} from '@/components/CameraFocus/recordingTimelineModel'
+
+const DEFAULT_RECORDING_DATE = DEFAULT_PLAYBACK_RANGE.from.slice(0, 10)
+const DEFAULT_RECORDING_DAY_START = `${DEFAULT_RECORDING_DATE}T00:00:00`
+const DEFAULT_RECORDING_WORK_AREA: TimelineRangeSeconds = {
+  from: dateToDaySeconds(DEFAULT_PLAYBACK_RANGE.from, DEFAULT_RECORDING_DAY_START),
+  to: dateToDaySeconds(DEFAULT_PLAYBACK_RANGE.to, DEFAULT_RECORDING_DAY_START),
+}
 
 export default function CameraFocus() {
   const { cameraId } = useParams<{ cameraId: string }>()
@@ -24,6 +39,8 @@ export default function CameraFocus() {
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
   const [recordingDraftRange, setRecordingDraftRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
   const [playbackRange, setPlaybackRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
+  const [recordingDate, setRecordingDate] = useState(DEFAULT_RECORDING_DATE)
+  const [recordingWorkArea, setRecordingWorkArea] = useState<TimelineRangeSeconds>(DEFAULT_RECORDING_WORK_AREA)
   const realtimeAlarm = useAppSelector((state) => state.event.realtimeEvent)
   const [catalogCameras, setCatalogCameras] = useState<Camera[] | null>(null)
   const temporarySources = useMemo(
@@ -268,6 +285,8 @@ export default function CameraFocus() {
     if (mode === 'recording') {
       setRecordingDraftRange(DEFAULT_PLAYBACK_RANGE)
       setPlaybackRange(DEFAULT_PLAYBACK_RANGE)
+      setRecordingDate(DEFAULT_RECORDING_DATE)
+      setRecordingWorkArea(DEFAULT_RECORDING_WORK_AREA)
     }
     setSearchParams(nextParams)
   }
@@ -288,6 +307,52 @@ export default function CameraFocus() {
 
   function handleRecordingSubmit() {
     setPlaybackRange({ ...recordingDraftRange, eventId: undefined })
+  }
+
+  function handleRecordingDraftChange(range: CameraPlaybackRange) {
+    setRecordingDraftRange(range)
+    const dayStart = `${recordingDate}T00:00:00`
+    setRecordingWorkArea(normalizeWorkArea({
+      from: dateToDaySeconds(range.from, dayStart),
+      to: dateToDaySeconds(range.to, dayStart),
+    }))
+  }
+
+  function handleRecordingDateChange(date: string) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
+    setRecordingDate(date)
+    const nextRange: CameraPlaybackRange = {
+      from: `${date}T00:00:00`,
+      to: `${date}T00:00:30`,
+    }
+    setRecordingDraftRange(nextRange)
+    setRecordingWorkArea({ from: 0, to: 30 })
+  }
+
+  function handleRecordingWorkAreaChange(range: TimelineRangeSeconds) {
+    const normalized = normalizeWorkArea(range)
+    const dayStart = `${recordingDate}T00:00:00`
+    setRecordingWorkArea(normalized)
+    setRecordingDraftRange({
+      from: formatTimelineDateTime(daySecondsToDate(normalized.from, dayStart)),
+      to: formatTimelineDateTime(daySecondsToDate(normalized.to, dayStart)),
+    })
+  }
+
+  function handleTimelineSeek(timestamp: string) {
+    const targetTime = new Date(timestamp).getTime()
+    const loadedFrom = new Date(playbackRange.from).getTime()
+    const loadedTo = new Date(playbackRange.to).getTime()
+    if (Number.isFinite(targetTime) && targetTime >= loadedFrom && targetTime <= loadedTo) {
+      return
+    }
+
+    const dayStart = `${recordingDate}T00:00:00`
+    const seconds = dateToDaySeconds(timestamp, dayStart)
+    const currentWidth = recordingWorkArea.to - recordingWorkArea.from
+    const halfWidth = Math.max(currentWidth / 2, 15)
+    const from = Math.max(0, Math.min(seconds - halfWidth, DAY_SECONDS - currentWidth))
+    handleRecordingWorkAreaChange({ from, to: from + currentWidth })
   }
 
   useEffect(() => {
@@ -370,8 +435,13 @@ export default function CameraFocus() {
       onTriggerTestAlert={handleTriggerTestAlert}
       onBackToLive={handleBackToLive}
       recordingRange={recordingDraftRange}
-      onRecordingRangeChange={setRecordingDraftRange}
+      onRecordingRangeChange={handleRecordingDraftChange}
+      onDateChange={handleRecordingDateChange}
       onRecordingSubmit={handleRecordingSubmit}
+      timelineDate={`${recordingDate}T00:00:00`}
+      recordingWorkArea={recordingWorkArea}
+      onRecordingWorkAreaChange={handleRecordingWorkAreaChange}
+      onTimelineSeek={handleTimelineSeek}
     />
   )
 }

@@ -14,6 +14,7 @@ import type {
   LiveStreamDto,
   PlaybackSessionDto,
 } from '@/types/cameraFocus'
+import type { TimelineRangeSeconds } from './recordingTimelineModel'
 
 interface CameraFocusShellProps {
   mode: CameraFocusMode
@@ -40,7 +41,12 @@ interface CameraFocusShellProps {
   onBackToLive?: () => void
   recordingRange?: { from: string; to: string; eventId?: number }
   onRecordingRangeChange?: (range: { from: string; to: string; eventId?: number }) => void
+  onDateChange?: (date: string) => void
   onRecordingSubmit?: () => void
+  timelineDate?: string
+  recordingWorkArea?: TimelineRangeSeconds
+  onRecordingWorkAreaChange?: (range: TimelineRangeSeconds) => void
+  onTimelineSeek?: (timestamp: string) => void
 }
 
 export function CameraFocusShell({
@@ -68,7 +74,12 @@ export function CameraFocusShell({
   onBackToLive,
   recordingRange,
   onRecordingRangeChange,
+  onDateChange,
   onRecordingSubmit,
+  timelineDate,
+  recordingWorkArea,
+  onRecordingWorkAreaChange,
+  onTimelineSeek,
 }: CameraFocusShellProps) {
   const { t } = useTranslation()
   const backToLiveLabel = t('cameraFocus.backToLive', '라이브로 돌아가기')
@@ -193,10 +204,12 @@ export function CameraFocusShell({
       <FocusAlertBanner alerts={alerts} />
       {mode === 'recording' && recordingRange ? (
         <RecordingControls
+          date={timelineDate?.slice(0, 10) ?? ''}
           range={recordingRange}
           loading={playbackLoading ?? false}
           error={playbackError}
           onChange={onRecordingRangeChange ?? (() => undefined)}
+          onDateChange={(date) => onDateChange?.(date)}
           onSubmit={onRecordingSubmit ?? (() => undefined)}
         />
       ) : null}
@@ -215,6 +228,10 @@ export function CameraFocusShell({
           eventsError={eventsError}
           selectedEventDetail={selectedEventDetail}
           onSelectEvent={onSelectEvent}
+          timelineDate={timelineDate}
+          recordingWorkArea={recordingWorkArea}
+          onRecordingWorkAreaChange={onRecordingWorkAreaChange}
+          onTimelineSeek={onTimelineSeek}
         />
         <FocusMetadataPanel camera={camera} metadataSourceId={metadataSourceId} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />
       </div>

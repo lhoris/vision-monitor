@@ -9,15 +9,17 @@ describe('RecordingControls', () => {
 
     render(
       <RecordingControls
+        date="2026-11-17"
         range={{ from: '2026-11-17T07:29:31', to: '2026-11-17T07:30:01' }}
         loading={false}
         onChange={onChange}
+        onDateChange={() => undefined}
         onSubmit={onSubmit}
       />
     )
 
     fireEvent.change(screen.getByLabelText('시작 시각'), { target: { value: '2026-11-17T07:29:40' } })
-    fireEvent.click(screen.getByRole('button', { name: '녹화 조회' }))
+    fireEvent.click(screen.getByRole('button', { name: '범위 조회/재생' }))
 
     expect(onChange).toHaveBeenCalledWith({ from: '2026-11-17T07:29:40.000', to: '2026-11-17T07:30:01', eventId: undefined })
     expect(onSubmit).toHaveBeenCalledTimes(1)
@@ -26,10 +28,12 @@ describe('RecordingControls', () => {
   it('shows an invalid range message', () => {
     render(
       <RecordingControls
+        date="2026-11-17"
         range={{ from: '2026-11-17T07:30:01', to: '2026-11-17T07:29:31' }}
         loading={false}
         error="INVALID_RANGE"
         onChange={() => undefined}
+        onDateChange={() => undefined}
         onSubmit={() => undefined}
       />
     )

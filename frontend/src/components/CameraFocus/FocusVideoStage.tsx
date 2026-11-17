@@ -7,6 +7,7 @@ import { StreamPlayerComponent } from '@/components/StreamPlayer/StreamPlayerCom
 import type { Camera } from '@/types/camera'
 import type { CameraEventDto, CameraFocusDto, EventDetailDto, LiveStreamDto, PlaybackSessionDto } from '@/types/cameraFocus'
 import type { StreamProtocol } from '@/types/streamPlayer'
+import type { TimelineRangeSeconds } from './recordingTimelineModel'
 
 interface FocusVideoStageProps {
   mode: CameraFocusMode
@@ -22,6 +23,10 @@ interface FocusVideoStageProps {
   selectedEventDetail?: EventDetailDto | null
   selectedEventId?: number
   onSelectEvent?: (eventId: number) => void
+  timelineDate?: string
+  recordingWorkArea?: TimelineRangeSeconds
+  onRecordingWorkAreaChange?: (range: TimelineRangeSeconds) => void
+  onTimelineSeek?: (timestamp: string) => void
 }
 
 export function FocusVideoStage({
@@ -38,6 +43,10 @@ export function FocusVideoStage({
   selectedEventDetail,
   selectedEventId,
   onSelectEvent,
+  timelineDate,
+  recordingWorkArea,
+  onRecordingWorkAreaChange,
+  onTimelineSeek,
 }: FocusVideoStageProps) {
   const title = mode === 'recording' ? '녹화 영상 영역' : '실시간 영상 영역'
   const [recordingTimeSeconds, setRecordingTimeSeconds] = useState(0)
@@ -86,7 +95,7 @@ export function FocusVideoStage({
         {playbackSession ? (
           <>
             {playbackSession.playbackProtocol === 'mp4' ? (
-              <RecordingVideo
+            <RecordingVideo
                 key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
                 url={playbackSession.playbackUrl}
                 seekTarget={seekTarget}
@@ -107,12 +116,24 @@ export function FocusVideoStage({
                 className="h-[360px] w-full"
               />
             )}
-            <RecordingTimeline
-              playbackSession={playbackSession}
-              events={eventsError ? [] : events}
-              currentTimeSeconds={recordingTimeSeconds}
-              onSeek={setRecordingSeekSeconds}
-            />
+            {timelineDate && recordingWorkArea ? (
+              <RecordingTimeline
+                playbackSession={playbackSession}
+                events={eventsError ? [] : events}
+                dayStart={timelineDate}
+                workArea={recordingWorkArea}
+                playheadTimestamp={getPlayheadTimestamp(playbackSession, recordingTimeSeconds)}
+                onWorkAreaChange={onRecordingWorkAreaChange}
+                onSeek={(timestamp) => {
+                  const targetSeconds = (new Date(timestamp).getTime() - new Date(playbackSession.availableFrom).getTime()) / 1000
+                  if (targetSeconds >= 0 && targetSeconds <= getPlaybackDurationSeconds(playbackSession)) {
+                    setRecordingSeekSeconds(Math.max(0, targetSeconds))
+                  }
+                  onTimelineSeek?.(timestamp)
+                }}
+                onSelectEvent={onSelectEvent}
+              />
+            ) : null}
           </>
         ) : (
           <div className="flex h-[360px] items-center justify-center">
@@ -195,6 +216,15 @@ function RecordingVideo({
       className="h-[360px] w-full bg-black object-contain"
     />
   )
+}
+
+function getPlaybackDurationSeconds(playbackSession: PlaybackSessionDto): number {
+  return Math.max(0, (new Date(playbackSession.availableTo).getTime() - new Date(playbackSession.availableFrom).getTime()) / 1000)
+}
+
+function getPlayheadTimestamp(playbackSession: PlaybackSessionDto, currentTimeSeconds: number): string {
+  const timestamp = new Date(new Date(playbackSession.availableFrom).getTime() + Math.max(0, currentTimeSeconds) * 1000)
+  return timestamp.toISOString()
 }
 
 function getSeekTarget({
