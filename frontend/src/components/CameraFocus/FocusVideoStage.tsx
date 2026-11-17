@@ -102,7 +102,7 @@ export function FocusVideoStage({
           <>
             {playbackSession.playbackProtocol === 'mp4' ? (
             <RecordingVideo
-                key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
+                key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
                 url={playbackSession.playbackUrl}
                 seekTarget={seekTarget}
                 availableFrom={playbackSession.availableFrom}
@@ -111,7 +111,7 @@ export function FocusVideoStage({
               />
             ) : (
               <StreamPlayerComponent
-                key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
+                key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
                 source={{
                   url: playbackSession.playbackUrl,
                   protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
@@ -206,6 +206,24 @@ function RecordingVideo({
     else video.addEventListener('loadedmetadata', seek, { once: true })
     return () => video.removeEventListener('loadedmetadata', seek)
   }, [availableFrom, seekTarget])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const playVideo = () => {
+      if (typeof video.play !== 'function') return
+      void video.play().catch(() => undefined)
+    }
+
+    if (video.readyState >= 2) {
+      playVideo()
+      return
+    }
+
+    video.addEventListener('canplay', playVideo, { once: true })
+    return () => video.removeEventListener('canplay', playVideo)
+  }, [url])
 
   return (
     <video
