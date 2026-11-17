@@ -213,7 +213,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="focus-recording-muted">선택 구간 <strong className="text-sm font-semibold text-amber-300">{formatTimelineClockTime(normalizedWorkArea.from)}</strong> ~ <strong className="text-sm font-semibold text-amber-300">{formatTimelineClockTime(normalizedWorkArea.to)}</strong></span>
+        <span className="focus-recording-muted">선택 구간 <strong className="text-sm font-semibold"><RangeClockTime value={normalizedWorkArea.from} compareTo={normalizedWorkArea.to} /></strong> ~ <strong className="text-sm font-semibold"><RangeClockTime value={normalizedWorkArea.to} compareTo={normalizedWorkArea.from} /></strong></span>
         <span className="focus-recording-muted">작업 구간 길이: <strong className="text-slate-200">{formatTimelineDuration(normalizedWorkArea.to - normalizedWorkArea.from)}</strong></span>
       </div>
 
@@ -281,6 +281,12 @@ function ManualRangeMenu({ draft, position, onChange, onCancel, onApply }: { dra
 
 function ClockField({ label, value, onChange }: { label: string; value: number; onChange: (value: number | null) => void }) {
   return <label className="flex flex-col gap-1 text-[11px] text-slate-300">{label}<input type="time" step="1" aria-label={label} value={formatTimelineClockTime(value)} onChange={(event) => onChange(parseTimelineClockTime(event.target.value))} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" /></label>
+}
+
+function RangeClockTime({ value, compareTo }: { value: number; compareTo: number }) {
+  const parts = formatTimelineClockTime(value).split(':')
+  const compareParts = formatTimelineClockTime(compareTo).split(':')
+  return <>{parts.map((part, index) => <span key={`${part}-${index}`} className={part === compareParts[index] ? 'text-slate-100' : 'text-amber-300'}>{index > 0 ? ':' : ''}{part}</span>)}</>
 }
 
 function WorkAreaSelection({ range, viewRange, onPointerDown, onPointerUp, onPointerCancel, onHandleKeyDown, onContextMenu }: { range: TimelineRangeSeconds; viewRange: TimelineRangeSeconds; onPointerDown: (mode: WorkAreaDragMode, event: React.PointerEvent) => void; onPointerUp: () => void; onPointerCancel: () => void; onHandleKeyDown: (edge: 'start' | 'end', delta: number) => void; onContextMenu: (event: React.MouseEvent) => void }) {
