@@ -237,9 +237,10 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
-        <span className="focus-recording-muted">선택 구간(work area): 녹화 재생 범위</span>
+        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-4 rounded border-2 border-sky-300 bg-sky-400/20" />선택 구간(work area): 녹화 재생 범위</span>
+        <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-4 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" />현재 재생 위치</span>
         <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-1 rounded bg-amber-400" />알람</span>
-        <span className="focus-recording-muted">빈 영역 클릭: 위치 이동 · 흰색 선: 현재 재생 위치</span>
+        <span className="focus-recording-muted">빈 영역 클릭: 위치 이동</span>
         <span className="focus-recording-muted">마우스 휠: 타임라인 확대/축소</span>
         <span className="focus-recording-muted">work area 우클릭: 시작·종료 시각 정밀 조절</span>
       </div>
