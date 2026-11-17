@@ -95,7 +95,7 @@ export function CameraFocusShell({
   }
 
   return (
-    <section className="focus-shell flex min-h-full flex-col" aria-labelledby="camera-focus-title">
+    <section className="focus-shell flex h-full min-h-0 flex-col overflow-hidden" aria-labelledby="camera-focus-title">
       <header className="focus-shell__header border-b px-5 py-4">
         <h1 id="camera-focus-title" className="focus-shell__title text-xl font-semibold">
           화면 확대 보기
