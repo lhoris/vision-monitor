@@ -129,7 +129,7 @@ describe('RecordingTimeline', () => {
 
     fireEvent.change(screen.getByLabelText('시작 시각'), { target: { value: '08:15:00' } })
     fireEvent.change(screen.getByLabelText('종료 시각'), { target: { value: '08:17:30' } })
-    fireEvent.click(screen.getByRole('button', { name: '적용' }))
+    fireEvent.click(screen.getByRole('button', { name: '작업 구간 적용' }))
 
     expect(onWorkAreaChange).toHaveBeenCalledWith({ from: 29700, to: 29850 })
   })
@@ -144,5 +144,15 @@ describe('RecordingTimeline', () => {
 
     expect(onDateChange).toHaveBeenCalledWith('2026-08-14')
     expect(onPlay).toHaveBeenCalledTimes(1)
+  })
+
+  it('sets a custom work area duration in seconds', () => {
+    const onWorkAreaChange = vi.fn()
+    renderTimeline({ onWorkAreaChange })
+
+    fireEvent.change(screen.getByLabelText('직접 길이(초)'), { target: { value: '90' } })
+    fireEvent.click(screen.getByRole('button', { name: '직접 길이 적용' }))
+
+    expect(onWorkAreaChange).toHaveBeenCalledWith({ from: 30555, to: 30645 })
   })
 })

@@ -56,6 +56,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   const [zoom, setZoom] = useState<TimelineZoomLevel>(1)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [contextDraft, setContextDraft] = useState<TimelineRangeSeconds>(normalizeWorkArea(workArea))
+  const [customDuration, setCustomDuration] = useState('')
   const normalizedWorkArea = normalizeWorkArea(workArea)
   const playheadSeconds = playheadTimestamp ? dateToDaySeconds(playheadTimestamp, dayStart) : normalizedWorkArea.from
   const viewRange = getTimelineViewRange(zoom, (normalizedWorkArea.from + normalizedWorkArea.to) / 2)
@@ -154,6 +155,12 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
     setContextMenu(null)
   }
 
+  function applyCustomDuration() {
+    const duration = Number(customDuration)
+    if (!Number.isFinite(duration)) return
+    onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, duration))
+  }
+
   return (
     <section className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 타임라인">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -173,6 +180,11 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="focus-recording-muted">빠른 설정</span>
         {WORK_AREA_PRESETS.map((preset) => <button key={preset.seconds} type="button" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={() => onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, preset.seconds))}>{preset.label}</button>)}
+        <label className="flex items-center gap-1 text-[11px] text-slate-300">
+          직접 입력
+          <input type="number" min={5} max={DAY_SECONDS} step={1} aria-label="직접 길이(초)" value={customDuration} placeholder="초" onChange={(event) => setCustomDuration(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') applyCustomDuration() }} className="h-6 w-20 border border-slate-500 bg-slate-900 px-2 text-[11px] text-white" />
+          <button type="button" aria-label="직접 길이 적용" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={applyCustomDuration}>적용</button>
+        </label>
         <span className="focus-recording-muted">핸들 드래그 또는 우클릭으로 정밀 조절</span>
         <div className="ml-auto flex items-center gap-1" aria-label="타임라인 확대 축소">
           <button type="button" className="focus-recording-zoom-button" aria-label="타임라인 축소" onClick={() => setZoom(TIMELINE_ZOOM_LEVELS[Math.max(TIMELINE_ZOOM_LEVELS.indexOf(zoom) - 1, 0)])} disabled={zoom === 1}>−</button>
@@ -215,7 +227,7 @@ function ManualRangeMenu({ draft, position, onChange, onCancel, onApply }: { dra
       </div>
       <label className="mt-2 flex flex-col gap-1 text-[11px] text-slate-300">길이(초)<input type="number" min={5} max={DAY_SECONDS} aria-label="작업 구간 길이(초)" value={Math.max(0, draft.to - draft.from)} onChange={(event) => { const duration = Number(event.target.value); if (Number.isFinite(duration)) onChange((current) => ({ from: current.from, to: Math.min(DAY_SECONDS, current.from + duration) })) }} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" /></label>
       <p className="mt-2 text-[11px] text-slate-400">시작·종료 시각 또는 길이를 입력한 뒤 적용하세요.</p>
-      <div className="mt-3 flex justify-end gap-2"><button type="button" className="border border-slate-500 px-2 py-1 text-xs" onClick={onCancel}>취소</button><button type="button" className="border border-sky-400 bg-sky-600 px-2 py-1 text-xs font-semibold" onClick={onApply}>적용</button></div>
+      <div className="mt-3 flex justify-end gap-2"><button type="button" className="border border-slate-500 px-2 py-1 text-xs" onClick={onCancel}>취소</button><button type="button" aria-label="작업 구간 적용" className="border border-sky-400 bg-sky-600 px-2 py-1 text-xs font-semibold" onClick={onApply}>적용</button></div>
     </div>
   )
 }
@@ -227,7 +239,7 @@ function ClockField({ label, value, onChange }: { label: string; value: number; 
 function WorkAreaSelection({ range, viewRange, onPointerDown, onHandleKeyDown, onContextMenu }: { range: TimelineRangeSeconds; viewRange: TimelineRangeSeconds; onPointerDown: (mode: WorkAreaDragMode, event: React.PointerEvent) => void; onHandleKeyDown: (edge: 'start' | 'end', delta: number) => void; onContextMenu: (event: React.MouseEvent) => void }) {
   const left = secondsToRangePercent(range.from, viewRange)
   const right = secondsToRangePercent(range.to, viewRange)
-  return <div className="absolute top-3 h-11 rounded border-2 border-sky-300 bg-sky-400/20 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]" style={{ left: `${left}%`, width: `${Math.max(right - left, 0.8)}%` }} onPointerDown={(event) => onPointerDown('move', event)} onContextMenu={onContextMenu} title="선택 구간을 드래그하여 이동 · 우클릭하여 정밀 조정"><button type="button" aria-label="녹화 선택 구간 시작 핸들" className="absolute -left-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('start', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('start', -1); if (event.key === 'ArrowRight') onHandleKeyDown('start', 1) }} /><button type="button" aria-label="녹화 선택 구간 종료 핸들" className="absolute -right-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('end', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('end', -1); if (event.key === 'ArrowRight') onHandleKeyDown('end', 1) }} /></div>
+  return <div className="absolute top-3 h-11 rounded border-2 border-sky-300 bg-sky-400/20 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]" style={{ left: `${left}%`, width: `${Math.max(right - left, 0.05)}%` }} onPointerDown={(event) => onPointerDown('move', event)} onContextMenu={onContextMenu} title="선택 구간을 드래그하여 이동 · 우클릭하여 정밀 조정"><button type="button" aria-label="녹화 선택 구간 시작 핸들" className="absolute -left-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('start', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('start', -1); if (event.key === 'ArrowRight') onHandleKeyDown('start', 1) }} /><button type="button" aria-label="녹화 선택 구간 종료 핸들" className="absolute -right-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('end', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('end', -1); if (event.key === 'ArrowRight') onHandleKeyDown('end', 1) }} /></div>
 }
 
 function AlarmMarker({ event, dayStart, range, onSelectEvent, onSeek }: { event: CameraEventDto; dayStart: string; range: TimelineRangeSeconds; onSelectEvent?: (eventId: number) => void; onSeek?: (timestamp: string) => void }) {

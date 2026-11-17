@@ -70,3 +70,4 @@
 - [X] T036 별도 녹화 조회조건 영역을 제거하고 날짜 이동·재생 실행을 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 통합한다.
 - [X] T037 24시간 개요와 상세 타임라인을 하나의 메인 타임라인으로 통합하고 페이지·컴포넌트 테스트를 갱신한다.
 - [X] T038 통합 타임라인 관련 테스트와 프론트엔드 빌드를 실행한다.
+- [X] T039 작업 구간 직접 초 입력과 적용 동작을 `frontend/src/components/CameraFocus/RecordingTimeline.tsx` 및 테스트에 반영한다.
