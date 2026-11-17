@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
-import { RecordingEventList } from './RecordingEventList'
 import { RecordingTimeline } from './RecordingTimeline'
 import { StreamPlayerComponent } from '@/components/StreamPlayer/StreamPlayerComponent'
 import type { Camera } from '@/types/camera'
@@ -147,13 +146,7 @@ export function FocusVideoStage({
           <p className="focus-recording-message focus-recording-message--error border-t px-4 py-3 text-xs">
             알람 목록을 불러오지 못했습니다.
           </p>
-        ) : (
-          <RecordingEventList
-            events={events}
-            selectedEventId={selectedEventId ?? null}
-            onSelectEvent={onSelectEvent ?? (() => undefined)}
-          />
-        )}
+        ) : null}
         {selectedEventId ? <p className="sr-only">선택 알람: {selectedEventId}</p> : null}
       </section>
     )

@@ -65,3 +65,4 @@
 - [X] T031 정밀 작업 구간 시각 포맷·파싱을 `frontend/src/components/CameraFocus/recordingTimelineModel.ts`와 테스트에 반영한다.
 - [X] T032 작업 구간 우클릭 정밀 조정 메뉴와 외부 클릭 닫기를 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 구현한다.
 - [X] T033 우클릭 입력·적용 회귀 테스트와 프론트엔드 빌드를 실행한다.
+- [X] T034 녹화 탭의 중복 알람 목록 렌더링을 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에서 제거한다.
