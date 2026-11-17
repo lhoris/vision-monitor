@@ -533,6 +533,27 @@ html[data-theme='theme3'] .camera-rename-dialog {
   background: var(--focus-control-bg);
 }
 
+.focus-recording-zoom-button {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--focus-panel-border);
+  background: var(--focus-control-bg);
+  color: var(--focus-control-text);
+  font-weight: 600;
+  line-height: 1;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.focus-recording-zoom-button:hover:not(:disabled) {
+  background: var(--focus-control-bg-hover);
+  border-color: var(--focus-selected-border);
+}
+
+.focus-recording-zoom-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .focus-recording-event {
   color: var(--focus-control-text);
 }

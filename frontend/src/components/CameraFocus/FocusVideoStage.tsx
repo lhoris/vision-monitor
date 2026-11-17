@@ -8,6 +8,7 @@ import type { Camera } from '@/types/camera'
 import type { CameraEventDto, CameraFocusDto, EventDetailDto, LiveStreamDto, PlaybackSessionDto } from '@/types/cameraFocus'
 import type { StreamProtocol } from '@/types/streamPlayer'
 import type { TimelineRangeSeconds } from './recordingTimelineModel'
+import { formatTimelineDateTime } from './recordingTimelineModel'
 
 interface FocusVideoStageProps {
   mode: CameraFocusMode
@@ -224,7 +225,7 @@ function getPlaybackDurationSeconds(playbackSession: PlaybackSessionDto): number
 
 function getPlayheadTimestamp(playbackSession: PlaybackSessionDto, currentTimeSeconds: number): string {
   const timestamp = new Date(new Date(playbackSession.availableFrom).getTime() + Math.max(0, currentTimeSeconds) * 1000)
-  return timestamp.toISOString()
+  return formatTimelineDateTime(timestamp)
 }
 
 function getSeekTarget({

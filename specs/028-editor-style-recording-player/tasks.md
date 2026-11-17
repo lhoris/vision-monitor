@@ -54,3 +54,14 @@
 2. P1의 24시간 timeline과 work area 조작을 완성한다.
 3. P1 검증 후 알람 marker/list 연계를 추가한다.
 4. 마지막에 시각 품질·접근성·회귀 검증을 수행한다.
+- [X] T023 [P] 줌 단계·상세 viewRange·가시 구간 시간축 계산을 `frontend/src/components/CameraFocus/recordingTimelineModel.ts`와 `frontend/src/components/CameraFocus/__tests__/recordingTimelineModel.test.ts`에 반영한다.
+- [X] T024 [US1] 24시간 개요와 확대 상세 타임라인을 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 구성한다.
+- [X] T025 [US1] 줌 버튼, 전체 보기, Ctrl/Command+휠 확대·축소와 가변 눈금을 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 구현한다.
+- [X] T026 [US1] 줌 상태 및 중복 타임라인 렌더링 회귀 테스트를 `frontend/src/components/CameraFocus/__tests__/RecordingTimeline.test.tsx`에 추가한다.
+- [X] T027 프론트엔드 타임라인 테스트와 빌드를 실행해 확대·축소 기능을 검증한다.
+- [X] T028 작업 구간 길이 계산·프리셋 변환을 `frontend/src/components/CameraFocus/recordingTimelineModel.ts`와 테스트에 반영한다.
+- [X] T029 작업 구간 길이 표시·빠른 설정·핸들 기반 임의 길이 조절 안내를 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 반영한다.
+- [X] T030 작업 구간 길이 변경 회귀 테스트와 빌드를 실행한다.
+- [X] T031 정밀 작업 구간 시각 포맷·파싱을 `frontend/src/components/CameraFocus/recordingTimelineModel.ts`와 테스트에 반영한다.
+- [X] T032 작업 구간 우클릭 정밀 조정 메뉴와 외부 클릭 닫기를 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 구현한다.
+- [X] T033 우클릭 입력·적용 회귀 테스트와 프론트엔드 빌드를 실행한다.
