@@ -73,7 +73,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   const viewRange = { from: 0, to: DAY_SECONDS }
   const tickRange = { from: 0, to: DAY_SECONDS / zoom }
   const dayKey = dayStart.slice(0, 10)
-  const timelineEvents = events.length > 0 ? events : [createMvpAlarm(normalizedWorkArea, dayStart, t('recordingTimeline.sampleAlarm'))]
+  const timelineEvents = events.length > 0 ? events : [createMvpAlarm(dayStart, t('recordingTimeline.sampleAlarm'))]
   const visibleEvents = timelineEvents
     .filter((event) => event.occurredAt.slice(0, 10) === dayKey)
     .filter((event) => {
@@ -291,7 +291,7 @@ function WorkAreaSelection({ range, viewRange, onPointerDown, onPointerUp, onPoi
 
 function AlarmMarker({ event, dayStart, range, onSelectEvent, onSeek }: { event: CameraEventDto; dayStart: string; range: TimelineRangeSeconds; onSelectEvent?: (eventId: number) => void; onSeek?: (timestamp: string) => void }) {
   const seconds = dateToDaySeconds(event.occurredAt, dayStart)
-  return <button type="button" aria-label={`알람 marker ${event.occurredAt} ${event.title}`} className="absolute top-0 z-20 h-5 w-2 -translate-x-1/2 cursor-pointer rounded-t bg-amber-400 ring-2 ring-amber-200/50" style={{ left: `${secondsToRangePercent(seconds, range)}%` }} title={`${event.title} ${event.occurredAt}`} onClick={(clickEvent) => { clickEvent.stopPropagation(); if (event.eventId > 0) onSelectEvent?.(event.eventId); onSeek?.(event.occurredAt) }} />
+  return <button type="button" aria-label={`알람 marker ${event.occurredAt} ${event.title}`} className="absolute inset-y-0 z-20 w-3 -translate-x-1/2 cursor-pointer" style={{ left: `${secondsToRangePercent(seconds, range)}%` }} title={`${event.title} ${event.occurredAt}`} onClick={(clickEvent) => { clickEvent.stopPropagation(); if (event.eventId > 0) onSelectEvent?.(event.eventId); onSeek?.(event.occurredAt) }}><span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-amber-300 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]" /></button>
 }
 
 function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmentDto; dayStart: string; range: TimelineRangeSeconds }) {
@@ -306,8 +306,8 @@ function isRangeOverlapping(from: number, to: number, range: TimelineRangeSecond
   return to >= range.from && from <= range.to
 }
 
-function createMvpAlarm(range: TimelineRangeSeconds, dayStart: string, title: string): CameraEventDto {
-  const occurredAt = daySecondsToDate((range.from + range.to) / 2, dayStart)
+function createMvpAlarm(dayStart: string, title: string): CameraEventDto {
+  const occurredAt = daySecondsToDate(12 * 60 * 60, dayStart)
   return {
     eventId: 0,
     cameraId: 0,
