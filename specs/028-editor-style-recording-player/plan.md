@@ -180,3 +180,5 @@ frontend/src/components/CameraFocus/
 - `RecordingControls`를 녹화 화면에서 제거하고 날짜 이동과 재생 버튼을 `RecordingTimeline` 헤더에 통합한다.
 - 동일한 타임라인의 `viewRange`만 변경해 24시간 보기와 상세 확대 보기를 처리한다.
 - 작업 구간 길이 입력은 프리셋과 직접 초 입력을 함께 제공하고, 적용 시 현재 구간 중심을 유지한다.
+- 네이티브 날짜 입력을 사용해 달력 선택과 키보드 직접 입력을 함께 지원한다.
+- 작업 구간 변경은 드래그 중 draft만 갱신하고, 포인터를 놓는 시점에 committed playback range를 갱신한다.

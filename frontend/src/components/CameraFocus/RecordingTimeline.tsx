@@ -33,6 +33,7 @@ interface RecordingTimelineProps {
   onDateChange?: (date: string) => void
   onPlay?: () => void
   onWorkAreaChange?: (range: TimelineRangeSeconds) => void
+  onWorkAreaCommit?: (range: TimelineRangeSeconds) => void
   onSeek?: (timestamp: string) => void
   onSelectEvent?: (eventId: number) => void
 }
@@ -50,18 +51,18 @@ const WORK_AREA_PRESETS = [
   { label: '10분', seconds: 10 * 60 },
 ]
 
-export function RecordingTimeline({ playbackSession, events, dayStart, workArea, playheadTimestamp, loading = false, onDateChange, onPlay, onWorkAreaChange, onSeek, onSelectEvent }: RecordingTimelineProps) {
+export function RecordingTimeline({ playbackSession, events, dayStart, workArea, playheadTimestamp, loading = false, onDateChange, onPlay, onWorkAreaChange, onWorkAreaCommit, onSeek, onSelectEvent }: RecordingTimelineProps) {
   const timelineRef = useRef<HTMLDivElement>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [zoom, setZoom] = useState<TimelineZoomLevel>(1)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [contextDraft, setContextDraft] = useState<TimelineRangeSeconds>(normalizeWorkArea(workArea))
   const [customDuration, setCustomDuration] = useState('')
+  const latestDragRange = useRef(normalizeWorkArea(workArea))
   const normalizedWorkArea = normalizeWorkArea(workArea)
   const playheadSeconds = playheadTimestamp ? dateToDaySeconds(playheadTimestamp, dayStart) : normalizedWorkArea.from
   const viewRange = getTimelineViewRange(zoom, (normalizedWorkArea.from + normalizedWorkArea.to) / 2)
   const dayKey = dayStart.slice(0, 10)
-  const dayLabel = new Date(dayStart).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
   const visibleEvents = events
     .filter((event) => event.occurredAt.slice(0, 10) === dayKey)
     .filter((event) => {
@@ -80,21 +81,27 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       const bounds = timelineRef.current?.getBoundingClientRect()
       if (!bounds || !onWorkAreaChange || bounds.width <= 0) return
       const deltaSeconds = ((event.clientX - activeDrag.startClientX) / bounds.width) * (viewRange.to - viewRange.from)
+      const nextRange = activeDrag.mode === 'move'
+        ? moveWorkArea(activeDrag.initialRange, deltaSeconds)
+        : resizeWorkArea(activeDrag.initialRange, activeDrag.mode, (activeDrag.mode === 'start' ? activeDrag.initialRange.from : activeDrag.initialRange.to) + deltaSeconds)
+      latestDragRange.current = nextRange
       if (activeDrag.mode === 'move') {
-        onWorkAreaChange(moveWorkArea(activeDrag.initialRange, deltaSeconds))
+        onWorkAreaChange(nextRange)
       } else {
-        const value = activeDrag.mode === 'start' ? activeDrag.initialRange.from : activeDrag.initialRange.to
-        onWorkAreaChange(resizeWorkArea(activeDrag.initialRange, activeDrag.mode, value + deltaSeconds))
+        onWorkAreaChange(nextRange)
       }
     }
-    function handlePointerUp() { setDragState(null) }
+    function handlePointerUp() {
+      onWorkAreaCommit?.(latestDragRange.current)
+      setDragState(null)
+    }
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
     return () => {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
     }
-  }, [dragState, onWorkAreaChange, viewRange.from, viewRange.to])
+  }, [dragState, onWorkAreaChange, onWorkAreaCommit, viewRange.from, viewRange.to])
 
   useEffect(() => {
     if (!contextMenu) return
@@ -135,6 +142,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   function beginDrag(mode: WorkAreaDragMode, event: React.PointerEvent) {
     event.preventDefault()
     event.stopPropagation()
+    latestDragRange.current = normalizedWorkArea
     setDragState({ mode, startClientX: event.clientX, initialRange: normalizedWorkArea })
   }
 
@@ -151,14 +159,20 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   }
 
   function applyContextDraft() {
-    onWorkAreaChange?.(normalizeWorkArea(contextDraft))
+    commitWorkArea(contextDraft)
     setContextMenu(null)
   }
 
   function applyCustomDuration() {
     const duration = Number(customDuration)
     if (!Number.isFinite(duration)) return
-    onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, duration))
+    commitWorkArea(resizeWorkAreaToDuration(normalizedWorkArea, duration))
+  }
+
+  function commitWorkArea(nextRange: TimelineRangeSeconds) {
+    const normalized = normalizeWorkArea(nextRange)
+    onWorkAreaChange?.(normalized)
+    onWorkAreaCommit?.(normalized)
   }
 
   return (
@@ -166,7 +180,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <button type="button" className="focus-recording-zoom-button" aria-label="이전 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, -1))}>‹</button>
-          <span className="font-semibold">{dayLabel}</span>
+          <input type="date" aria-label="탐색 날짜" value={dayKey} onChange={(event) => onDateChange?.(event.target.value)} className="border border-slate-500 bg-slate-900 px-2 py-1 text-xs font-semibold text-white" />
           <button type="button" className="focus-recording-zoom-button" aria-label="다음 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, 1))}>›</button>
         </div>
         <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="녹화 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '▶ 재생'}</button>
@@ -179,7 +193,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
 
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="focus-recording-muted">빠른 설정</span>
-        {WORK_AREA_PRESETS.map((preset) => <button key={preset.seconds} type="button" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={() => onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, preset.seconds))}>{preset.label}</button>)}
+        {WORK_AREA_PRESETS.map((preset) => <button key={preset.seconds} type="button" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={() => commitWorkArea(resizeWorkAreaToDuration(normalizedWorkArea, preset.seconds))}>{preset.label}</button>)}
         <label className="flex items-center gap-1 text-[11px] text-slate-300">
           직접 입력
           <input type="number" min={5} max={DAY_SECONDS} step={1} aria-label="직접 길이(초)" value={customDuration} placeholder="초" onChange={(event) => setCustomDuration(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') applyCustomDuration() }} className="h-6 w-20 border border-slate-500 bg-slate-900 px-2 text-[11px] text-white" />

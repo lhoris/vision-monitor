@@ -43,6 +43,7 @@ interface CameraFocusShellProps {
   timelineDate?: string
   recordingWorkArea?: TimelineRangeSeconds
   onRecordingWorkAreaChange?: (range: TimelineRangeSeconds) => void
+  onRecordingWorkAreaCommit?: (range: TimelineRangeSeconds) => void
   onTimelineSeek?: (timestamp: string) => void
 }
 
@@ -74,6 +75,7 @@ export function CameraFocusShell({
   timelineDate,
   recordingWorkArea,
   onRecordingWorkAreaChange,
+  onRecordingWorkAreaCommit,
   onTimelineSeek,
 }: CameraFocusShellProps) {
   const { t } = useTranslation()
@@ -217,6 +219,7 @@ export function CameraFocusShell({
           onRecordingSubmit={onRecordingSubmit}
           recordingWorkArea={recordingWorkArea}
           onRecordingWorkAreaChange={onRecordingWorkAreaChange}
+          onRecordingWorkAreaCommit={onRecordingWorkAreaCommit}
           onTimelineSeek={onTimelineSeek}
         />
         <FocusMetadataPanel camera={camera} metadataSourceId={metadataSourceId} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />

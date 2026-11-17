@@ -320,6 +320,18 @@ export default function CameraFocus() {
     setRecordingWorkArea({ from: 0, to: 30 })
   }
 
+  function handleRecordingWorkAreaCommit(range: TimelineRangeSeconds) {
+    const normalized = normalizeWorkArea(range)
+    const dayStart = `${recordingDate}T00:00:00`
+    const nextRange: CameraPlaybackRange = {
+      from: formatTimelineDateTime(daySecondsToDate(normalized.from, dayStart)),
+      to: formatTimelineDateTime(daySecondsToDate(normalized.to, dayStart)),
+    }
+    setRecordingWorkArea(normalized)
+    setRecordingDraftRange(nextRange)
+    setPlaybackRange(nextRange)
+  }
+
   function handleRecordingWorkAreaChange(range: TimelineRangeSeconds) {
     const normalized = normalizeWorkArea(range)
     const dayStart = `${recordingDate}T00:00:00`
@@ -430,6 +442,7 @@ export default function CameraFocus() {
       timelineDate={`${recordingDate}T00:00:00`}
       recordingWorkArea={recordingWorkArea}
       onRecordingWorkAreaChange={handleRecordingWorkAreaChange}
+      onRecordingWorkAreaCommit={handleRecordingWorkAreaCommit}
       onTimelineSeek={handleTimelineSeek}
     />
   )

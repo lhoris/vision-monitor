@@ -146,6 +146,18 @@ describe('RecordingTimeline', () => {
     expect(onPlay).toHaveBeenCalledTimes(1)
   })
 
+  it('supports calendar date input and commits a changed work area', () => {
+    const onDateChange = vi.fn()
+    const onWorkAreaCommit = vi.fn()
+    renderTimeline({ onDateChange, onWorkAreaCommit })
+
+    fireEvent.change(screen.getByLabelText('탐색 날짜'), { target: { value: '2026-08-20' } })
+    fireEvent.click(screen.getByRole('button', { name: '1분' }))
+
+    expect(onDateChange).toHaveBeenCalledWith('2026-08-20')
+    expect(onWorkAreaCommit).toHaveBeenCalledWith({ from: 30570, to: 30630 })
+  })
+
   it('sets a custom work area duration in seconds', () => {
     const onWorkAreaChange = vi.fn()
     renderTimeline({ onWorkAreaChange })

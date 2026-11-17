@@ -28,6 +28,7 @@ interface FocusVideoStageProps {
   onRecordingSubmit?: () => void
   recordingWorkArea?: TimelineRangeSeconds
   onRecordingWorkAreaChange?: (range: TimelineRangeSeconds) => void
+  onRecordingWorkAreaCommit?: (range: TimelineRangeSeconds) => void
   onTimelineSeek?: (timestamp: string) => void
 }
 
@@ -50,6 +51,7 @@ export function FocusVideoStage({
   onRecordingSubmit,
   recordingWorkArea,
   onRecordingWorkAreaChange,
+  onRecordingWorkAreaCommit,
   onTimelineSeek,
 }: FocusVideoStageProps) {
   const title = mode === 'recording' ? '녹화 영상 영역' : '실시간 영상 영역'
@@ -131,6 +133,7 @@ export function FocusVideoStage({
                 onDateChange={onDateChange}
                 onPlay={onRecordingSubmit}
                 onWorkAreaChange={onRecordingWorkAreaChange}
+                onWorkAreaCommit={onRecordingWorkAreaCommit}
                 onSeek={(timestamp) => {
                   const targetSeconds = (new Date(timestamp).getTime() - new Date(playbackSession.availableFrom).getTime()) / 1000
                   if (targetSeconds >= 0 && targetSeconds <= getPlaybackDurationSeconds(playbackSession)) {
