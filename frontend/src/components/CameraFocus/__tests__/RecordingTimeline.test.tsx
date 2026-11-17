@@ -158,6 +158,24 @@ describe('RecordingTimeline', () => {
     expect(onWorkAreaCommit).toHaveBeenCalledWith({ from: 30570, to: 30630 })
   })
 
+  it('commits the moved work area when the pointer is released on the selection', () => {
+    const onWorkAreaChange = vi.fn()
+    const onWorkAreaCommit = vi.fn()
+    renderTimeline({ onWorkAreaChange, onWorkAreaCommit })
+
+    const selection = document.querySelector('div[title]') as HTMLElement
+    const timeline = screen.getByRole('slider')
+    vi.spyOn(timeline, 'getBoundingClientRect').mockReturnValue({ left: 0, right: 100, top: 0, bottom: 56, width: 100, height: 56, x: 0, y: 0, toJSON: () => ({}) })
+
+    fireEvent.pointerDown(selection, { clientX: 50 })
+    fireEvent.pointerMove(window, { clientX: 55 })
+    fireEvent.pointerUp(selection, { clientX: 55 })
+
+    expect(onWorkAreaChange).toHaveBeenCalled()
+    expect(onWorkAreaCommit).toHaveBeenCalledTimes(1)
+    expect(onWorkAreaCommit).toHaveBeenCalledWith({ from: 33120, to: 36720 })
+  })
+
   it('sets a custom work area duration in seconds', () => {
     const onWorkAreaChange = vi.fn()
     renderTimeline({ onWorkAreaChange })
