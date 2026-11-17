@@ -30,6 +30,12 @@ export function resizeWorkAreaToDuration(range: TimelineRangeSeconds, duration: 
   return { from, to: from + width }
 }
 
+export function resizeWorkAreaFromStart(range: TimelineRangeSeconds, duration: number): TimelineRangeSeconds {
+  const from = clampDaySeconds(range.from)
+  const width = Math.min(Math.max(duration, MIN_WORK_AREA_SECONDS), DAY_SECONDS)
+  return { from, to: Math.min(DAY_SECONDS, from + width) }
+}
+
 export function moveWorkArea(range: TimelineRangeSeconds, delta: number): TimelineRangeSeconds {
   const width = range.to - range.from
   const nextFrom = clampDaySeconds(range.from + delta)

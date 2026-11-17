@@ -9,6 +9,7 @@ import {
   moveWorkArea,
   normalizeWorkArea,
   resizeWorkArea,
+  resizeWorkAreaFromStart,
   resizeWorkAreaToDuration,
   parseTimelineClockTime,
 } from '../recordingTimelineModel'
@@ -39,6 +40,11 @@ describe('recordingTimelineModel', () => {
   it('changes work area duration around the current center', () => {
     expect(resizeWorkAreaToDuration({ from: 100, to: 160 }, 30)).toEqual({ from: 115, to: 145 })
     expect(resizeWorkAreaToDuration({ from: 10, to: 20 }, DAY_SECONDS)).toEqual({ from: 0, to: DAY_SECONDS })
+  })
+
+  it('changes quick settings from the existing start time and supports the rest of the day', () => {
+    expect(resizeWorkAreaFromStart({ from: 100, to: 160 }, 30)).toEqual({ from: 100, to: 130 })
+    expect(resizeWorkAreaFromStart({ from: DAY_SECONDS - 10, to: DAY_SECONDS }, DAY_SECONDS)).toEqual({ from: DAY_SECONDS - 10, to: DAY_SECONDS })
   })
 
   it('formats and parses precise clock values for manual work area editing', () => {

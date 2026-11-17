@@ -117,7 +117,7 @@ describe('RecordingTimeline', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '1분' }))
 
-    expect(onWorkAreaChange).toHaveBeenCalledWith({ from: 30570, to: 30630 })
+    expect(onWorkAreaChange).toHaveBeenCalledWith({ from: 28800, to: 28860 })
   })
 
   it('opens precise time inputs from the work area context menu', () => {
@@ -126,6 +126,9 @@ describe('RecordingTimeline', () => {
 
     fireEvent.contextMenu(screen.getByTitle('선택 구간을 드래그하여 이동 · 우클릭하여 정밀 조정'))
     expect(screen.getByRole('dialog', { name: '작업 구간 정밀 조정' })).toBeInTheDocument()
+
+    fireEvent.pointerDown(screen.getByLabelText('시작 시각'))
+    expect(document.querySelector('[role="dialog"]')).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText('시작 시각'), { target: { value: '08:15:00' } })
     fireEvent.change(screen.getByLabelText('종료 시각'), { target: { value: '08:17:30' } })
@@ -155,7 +158,7 @@ describe('RecordingTimeline', () => {
     fireEvent.click(screen.getByRole('button', { name: '1분' }))
 
     expect(onDateChange).toHaveBeenCalledWith('2026-08-20')
-    expect(onWorkAreaCommit).toHaveBeenCalledWith({ from: 30570, to: 30630 })
+    expect(onWorkAreaCommit).toHaveBeenCalledWith({ from: 28800, to: 28860 })
   })
 
   it('commits the moved work area when the pointer is released on the selection', () => {
