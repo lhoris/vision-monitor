@@ -1,5 +1,12 @@
 # 구현 계획: 편집기형 녹화 재생 플레이어
 
+## 최신 구현 동기화
+
+- `RecordingPlaybackPlayer`는 녹화 재생 플레이어의 논리적 책임명으로 사용한다. 현재는 `FocusVideoStage`가 MP4 native video와 HLS/WebRTC 재생 어댑터를 분기하며, playback 범위가 바뀌면 플레이어를 새 범위 기준으로 재생한다.
+- `RecordingTimeline`은 단일 메인 타임라인으로 날짜, 녹화 availability, work area, playhead, alarm marker, 줌, 빠른 설정, 정밀 조정 메뉴를 제공한다.
+- work area 확정은 playback 범위 변경과 자동 재생으로 이어지며, 영상 영역은 flex 확장, 타임라인은 하단 고정 영역으로 배치한다.
+- 최신 줌 단계는 `1x~512x`이며 일반 마우스 휠을 사용한다. 빠른 설정은 FROM 고정·TO 변경 방식으로 동작한다.
+
 **브랜치**: `028-editor-style-recording-player` | **일자**: 2026-11-17 | **명세**: [spec.md](./spec.md)
 
 **입력**: `/specs/028-editor-style-recording-player/spec.md`의 기능 명세

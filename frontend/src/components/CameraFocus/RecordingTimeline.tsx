@@ -187,6 +187,8 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
     onWorkAreaCommit?.(normalized)
   }
 
+  const activePreset = WORK_AREA_PRESETS.find((preset) => normalizedWorkArea.to - normalizedWorkArea.from === preset.seconds || (preset.seconds === DAY_SECONDS && normalizedWorkArea.to === DAY_SECONDS))
+
   return (
     <section className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 타임라인">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -205,6 +207,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
 
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="focus-recording-muted">빠른 설정</span>
+        <span className="rounded border border-sky-300/70 bg-sky-900/60 px-2 py-1 text-[11px] font-semibold text-sky-100" aria-label={`현재 빠른 설정: ${activePreset?.label ?? '사용자 지정'}`}>현재: {activePreset?.label ?? '사용자 지정'}</span>
         {WORK_AREA_PRESETS.map((preset) => {
           const active = normalizedWorkArea.to - normalizedWorkArea.from === preset.seconds || (preset.seconds === DAY_SECONDS && normalizedWorkArea.to === DAY_SECONDS)
           return <button key={preset.seconds} type="button" aria-pressed={active} className={`focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px] ${active ? 'border-sky-300 bg-sky-600 text-white' : ''}`} onClick={() => commitWorkArea(resizeWorkAreaFromStart(normalizedWorkArea, preset.seconds))}>{preset.label}</button>

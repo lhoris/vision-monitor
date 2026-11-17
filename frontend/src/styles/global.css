@@ -544,6 +544,18 @@ html[data-theme='theme3'] .camera-rename-dialog {
   transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
+.focus-recording-zoom-button[aria-pressed="true"] {
+  background: #0369a1;
+  border-color: #7dd3fc;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgb(125 211 252 / 0.35), 0 0 10px rgb(14 165 233 / 0.25);
+}
+
+.focus-recording-zoom-button[aria-pressed="true"]:hover:not(:disabled) {
+  background: #0284c7;
+  border-color: #bae6fd;
+}
+
 .focus-recording-zoom-button:hover:not(:disabled) {
   background: var(--focus-control-bg-hover);
   border-color: var(--focus-selected-border);

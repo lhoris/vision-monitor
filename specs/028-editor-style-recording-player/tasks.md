@@ -1,5 +1,13 @@
 # 작업 목록: 편집기형 녹화 재생 플레이어
 
+## 최신 구현 동기화 작업
+
+- [X] T042 `RecordingPlaybackPlayer` 책임과 현재 `FocusVideoStage` 구현 경계를 문서화한다.
+- [X] T043 work area 확정 후 playback 범위 갱신·플레이어 재마운트·자동 재생을 연결한다.
+- [X] T044 빠른 설정을 30초부터 무한까지 확장하고 FROM 고정·TO 변경 및 선택 상태 강조를 구현한다.
+- [X] T045 일반 마우스 휠 줌과 `1x~512x` 줌 단계를 구현한다.
+- [X] T046 영상 영역 flex 확장, 하단 타임라인 고정, `HH:mm:ss` 선택 구간 표시를 반영한다.
+
 **입력**: `/specs/028-editor-style-recording-player/`의 설계 문서
 
 ## Phase 1: 준비(공통 기반)

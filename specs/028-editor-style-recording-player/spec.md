@@ -1,5 +1,13 @@
 # 기능 명세서: 편집기형 녹화 재생 플레이어
 
+## 최신 구현 동기화
+
+- 녹화 재생 화면은 논리적으로 `RecordingPlaybackPlayer`와 `RecordingTimeline` 두 책임으로 구분한다. 현재 구현에서는 `RecordingPlaybackPlayer` 역할이 `FocusVideoStage` 내부의 MP4/HLS 분기와 재생 어댑터로 구성되어 있으며, `RecordingTimeline`은 시간축·work area·playhead·marker·조작을 담당한다.
+- work area를 드래그하여 확정하면 시작 시각은 유지한 채 범위가 갱신되고, 해당 범위로 playback 요청을 다시 수행한 뒤 플레이어가 자동 재생되어야 한다.
+- 빠른 설정은 `30초, 1분, 3분, 5분, 10분, 30분, 1시간, 3시간, 무한`을 제공한다. 빠른 설정은 FROM을 유지하고 TO만 변경하며, 무한은 해당 날짜의 24:00:00까지를 의미한다. 현재 선택된 설정은 시각적으로 강조한다.
+- 타임라인은 일반 마우스 휠로 확대·축소하며, 줌 단계는 `1x, 2x, 4x, 8x, 16x, 32x, 64x, 128x, 256x, 512x`를 제공한다.
+- 영상 영역은 남는 공간을 채우고 타임라인은 영상 하단에 고정한다. 선택 구간의 FROM/TO 표시는 날짜 없이 `HH:mm:ss`로 강조한다.
+
 **기능 브랜치**: `028-editor-style-recording-player`
 
 **작성일**: 2026-11-17
