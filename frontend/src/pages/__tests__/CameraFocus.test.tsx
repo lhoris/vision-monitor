@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -90,6 +90,19 @@ describe('CameraFocus page shell', () => {
             timelineSegments: [],
           },
           timestamp: '2026-08-15T09:00:00+09:00',
+        })
+      }
+      if (url === '/events/50001') {
+        return Promise.resolve({
+          data: {
+            id: 50001,
+            cameraId: 1,
+            type: 'PERSON_DETECTED',
+            severity: 'warning',
+            description: 'Entry Zone 치입불 발생',
+            timestamp: '2026-11-17T07:29:31',
+            acknowledged: false,
+          },
         })
       }
       const match = url.match(/^\/cameras\/(\d+)$/)
@@ -224,9 +237,9 @@ describe('CameraFocus page shell', () => {
     renderRoute('/live/cameras/1?mode=recording&eventId=50001')
 
     expect(screen.getByRole('tab', { name: '녹화' })).toHaveAttribute('aria-selected', 'true')
-    expect(await screen.findByTestId('focus-playback-player')).toHaveTextContent(
-      'hls:https://media.test/playback/camera-1.m3u8'
-    )
+    expect(await screen.findByTestId('focus-recording-video')).toHaveAttribute('src', expect.stringContaining('/playback/video6.mp4'))
+    await waitFor(() => expect(screen.getByLabelText('시작 시각')).toHaveValue('2026-11-17T07:29:01.000'))
+    expect(screen.getByLabelText('종료 시각')).toHaveValue('2026-11-17T07:30:01.000')
   })
 
   it('updates the route query when recording tab is selected', async () => {

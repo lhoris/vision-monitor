@@ -1,34 +1,37 @@
 import { useEffect, useMemo, useState } from 'react'
 import { focusApiService } from '@/services'
-import type { PlaybackSessionDto } from '@/types/cameraFocus'
+import type { CameraPlaybackRange, PlaybackSessionDto } from '@/types/cameraFocus'
+import { MVP_RECORDING_RANGE } from '@/services/recordingService'
 
-export const DEFAULT_PLAYBACK_RANGE = {
-  from: '2026-08-15T08:00:00+09:00',
-  to: '2026-08-15T09:00:00+09:00',
-} as const
+export const DEFAULT_PLAYBACK_RANGE = MVP_RECORDING_RANGE
 
 interface UseCameraPlaybackOptions {
   cameraId: number | null
   enabled: boolean
   eventId?: number
+  range?: CameraPlaybackRange
 }
 
 export interface UseCameraPlaybackResult {
   playbackSession: PlaybackSessionDto | null
   playbackLoading: boolean
   playbackError: string | null
-  range: typeof DEFAULT_PLAYBACK_RANGE
+  range: CameraPlaybackRange
 }
 
 export function useCameraPlayback({
   cameraId,
   enabled,
   eventId,
+  range: requestedRange,
 }: UseCameraPlaybackOptions): UseCameraPlaybackResult {
   const [playbackSession, setPlaybackSession] = useState<PlaybackSessionDto | null>(null)
   const [playbackLoading, setPlaybackLoading] = useState(false)
   const [playbackError, setPlaybackError] = useState<string | null>(null)
-  const range = useMemo(() => DEFAULT_PLAYBACK_RANGE, [])
+  const range = useMemo<CameraPlaybackRange>(
+    () => requestedRange ?? DEFAULT_PLAYBACK_RANGE,
+    [requestedRange?.from, requestedRange?.to, requestedRange?.eventId]
+  )
 
   useEffect(() => {
     let cancelled = false

@@ -3,10 +3,10 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CameraFocusShell } from '@/components/CameraFocus'
 import { useActiveCameraAlerts } from '@/hooks/useActiveCameraAlerts'
 import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
-import { useCameraPlayback } from '@/hooks/useCameraPlayback'
+import { DEFAULT_PLAYBACK_RANGE, useCameraPlayback } from '@/hooks/useCameraPlayback'
 import { cameraService, focusApiService } from '@/services'
 import { useAppSelector } from '@/store'
-import type { ActiveAlertDto, CameraFocusDto, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
+import type { ActiveAlertDto, CameraFocusDto, CameraPlaybackRange, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
 import { parseCameraFocusRouteState, type CameraFocusMode } from './cameraFocusRoute'
 import type { TemporaryVideoSource } from '@/types/streamPlayer'
 import type { Camera } from '@/types/camera'
@@ -22,6 +22,8 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
+  const [recordingDraftRange, setRecordingDraftRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
+  const [playbackRange, setPlaybackRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
   const realtimeAlarm = useAppSelector((state) => state.event.realtimeEvent)
   const [catalogCameras, setCatalogCameras] = useState<Camera[] | null>(null)
   const temporarySources = useMemo(
@@ -112,6 +114,7 @@ export default function CameraFocus() {
     cameraId: apiCameraId,
     enabled: routeState.mode === 'recording',
     eventId: routeState.selectedEventId,
+    range: playbackRange,
   })
   const { alerts } = useActiveCameraAlerts(apiCameraId)
   const visibleAlerts = useMemo(() => [...manualAlerts, ...alerts], [alerts, manualAlerts])
@@ -165,10 +168,10 @@ export default function CameraFocus() {
   }, [activeModelProcessId, displayCamera?.location, realtimeAlarm])
   const eventRange = useMemo(
     () => ({
-      from: playbackSession?.availableFrom ?? '2026-08-15T08:00:00+09:00',
-      to: playbackSession?.availableTo ?? '2026-08-15T09:00:00+09:00',
+      from: playbackSession?.availableFrom ?? playbackRange.from,
+      to: playbackSession?.availableTo ?? playbackRange.to,
     }),
-    [playbackSession?.availableFrom, playbackSession?.availableTo]
+    [playbackRange.from, playbackRange.to, playbackSession?.availableFrom, playbackSession?.availableTo]
   )
   const { events, eventsError } = useCameraFocusEvents({
     cameraId: apiCameraId,
@@ -262,6 +265,10 @@ export default function CameraFocus() {
     if (mode === 'live') {
       nextParams.delete('eventId')
     }
+    if (mode === 'recording') {
+      setRecordingDraftRange(DEFAULT_PLAYBACK_RANGE)
+      setPlaybackRange(DEFAULT_PLAYBACK_RANGE)
+    }
     setSearchParams(nextParams)
   }
 
@@ -278,6 +285,26 @@ export default function CameraFocus() {
     nextParams.set('eventId', String(eventId))
     setSearchParams(nextParams)
   }
+
+  function handleRecordingSubmit() {
+    setPlaybackRange({ ...recordingDraftRange, eventId: undefined })
+  }
+
+  useEffect(() => {
+    const eventTime = selectedEventDetail?.playbackHint?.seekAt ?? selectedEventDetail?.occurredAt
+    if (!eventTime || routeState.mode !== 'recording') return
+
+    const center = new Date(eventTime).getTime()
+    if (!Number.isFinite(center)) return
+
+    const nextRange: CameraPlaybackRange = {
+      from: toLocalDateTimeInput(new Date(center - 30_000)),
+      to: toLocalDateTimeInput(new Date(center + 30_000)),
+      eventId: routeState.selectedEventId,
+    }
+    setRecordingDraftRange(nextRange)
+    setPlaybackRange(nextRange)
+  }, [routeState.mode, routeState.selectedEventId, selectedEventDetail])
 
   function handleTriggerTestAlert(message: string) {
     const currentCameraId = routeState.cameraId
@@ -342,8 +369,16 @@ export default function CameraFocus() {
       onSelectEvent={handleSelectEvent}
       onTriggerTestAlert={handleTriggerTestAlert}
       onBackToLive={handleBackToLive}
+      recordingRange={recordingDraftRange}
+      onRecordingRangeChange={setRecordingDraftRange}
+      onRecordingSubmit={handleRecordingSubmit}
     />
   )
+}
+
+function toLocalDateTimeInput(value: Date): string {
+  const pad = (part: number) => String(part).padStart(2, '0')
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`
 }
 
 function parseTemporarySources(value: string | null): Record<number, TemporaryVideoSource> {

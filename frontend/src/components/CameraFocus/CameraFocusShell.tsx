@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { FocusAlertBanner } from './FocusAlertBanner'
 import { FocusMetadataPanel } from './FocusMetadataPanel'
 import { FocusVideoStage } from './FocusVideoStage'
+import { RecordingControls } from './RecordingControls'
 import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import type { Camera } from '@/types/camera'
 import type {
@@ -37,6 +38,9 @@ interface CameraFocusShellProps {
   onSelectEvent?: (eventId: number) => void
   onTriggerTestAlert?: (message: string) => void
   onBackToLive?: () => void
+  recordingRange?: { from: string; to: string; eventId?: number }
+  onRecordingRangeChange?: (range: { from: string; to: string; eventId?: number }) => void
+  onRecordingSubmit?: () => void
 }
 
 export function CameraFocusShell({
@@ -62,6 +66,9 @@ export function CameraFocusShell({
   onSelectEvent,
   onTriggerTestAlert,
   onBackToLive,
+  recordingRange,
+  onRecordingRangeChange,
+  onRecordingSubmit,
 }: CameraFocusShellProps) {
   const { t } = useTranslation()
   const backToLiveLabel = t('cameraFocus.backToLive', '라이브로 돌아가기')
@@ -184,6 +191,15 @@ export function CameraFocusShell({
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
+      {mode === 'recording' && recordingRange ? (
+        <RecordingControls
+          range={recordingRange}
+          loading={playbackLoading ?? false}
+          error={playbackError}
+          onChange={onRecordingRangeChange ?? (() => undefined)}
+          onSubmit={onRecordingSubmit ?? (() => undefined)}
+        />
+      ) : null}
       <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row" data-onboarding="camera-focus-content">
         <FocusVideoStage
           mode={mode}

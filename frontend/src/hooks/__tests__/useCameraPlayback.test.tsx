@@ -27,7 +27,7 @@ describe('useCameraPlayback', () => {
     vi.restoreAllMocks()
   })
 
-  it('loads playback session with the default last-hour range when enabled', async () => {
+  it('loads playback session with the MVP range when enabled', async () => {
     const getCameraPlayback = vi.spyOn(focusApiService, 'getCameraPlayback').mockResolvedValue(playbackResponse)
 
     const { result } = renderHook(() =>

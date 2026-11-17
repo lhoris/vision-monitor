@@ -52,7 +52,7 @@ export interface LiveStreamDto {
   metadata: LiveStreamMetadataDto
 }
 
-export type PlaybackProtocol = 'hls' | 'stream_page' | 'webrtc' | 'unknown'
+export type PlaybackProtocol = 'mp4' | 'hls' | 'stream_page' | 'webrtc' | 'unknown'
 
 export type TimelineSegmentStatus = 'available' | 'gap'
 

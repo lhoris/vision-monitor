@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import { LiveStreamPlayer } from '@/components/StreamPlayer/LiveStreamPlayer'
 import { RecordingEventList } from './RecordingEventList'
@@ -82,17 +83,26 @@ export function FocusVideoStage({
       <section className="focus-video-stage min-h-[420px] flex-1">
         {playbackSession ? (
           <>
-            <StreamPlayerComponent
-              key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
-              source={{
-                url: playbackSession.playbackUrl,
-                protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
-                label: seekTarget ? `seek:${seekTarget}` : undefined,
-              }}
-              autoplay={false}
-              controls
-              className="h-[360px] w-full"
-            />
+            {playbackSession.playbackProtocol === 'mp4' ? (
+              <RecordingVideo
+                key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
+                url={playbackSession.playbackUrl}
+                seekTarget={seekTarget}
+                availableFrom={playbackSession.availableFrom}
+              />
+            ) : (
+              <StreamPlayerComponent
+                key={`${playbackSession.sessionId}:${seekTarget ?? 'start'}`}
+                source={{
+                  url: playbackSession.playbackUrl,
+                  protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
+                  label: seekTarget ? `seek:${seekTarget}` : undefined,
+                }}
+                autoplay={false}
+                controls
+                className="h-[360px] w-full"
+              />
+            )}
             <RecordingTimeline playbackSession={playbackSession} events={eventsError ? [] : events} />
           </>
         ) : (
@@ -129,6 +139,24 @@ export function FocusVideoStage({
       </div>
     </section>
   )
+}
+
+function RecordingVideo({ url, seekTarget, availableFrom }: { url: string; seekTarget: string | null; availableFrom: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    if (!seekTarget || !videoRef.current) return
+    const offset = Math.max(0, (new Date(seekTarget).getTime() - new Date(availableFrom).getTime()) / 1000)
+    const video = videoRef.current
+    const seek = () => {
+      if (Number.isFinite(offset)) video.currentTime = offset
+    }
+    if (video.readyState >= 1) seek()
+    else video.addEventListener('loadedmetadata', seek, { once: true })
+    return () => video.removeEventListener('loadedmetadata', seek)
+  }, [availableFrom, seekTarget])
+
+  return <video data-testid="focus-recording-video" ref={videoRef} src={url} controls autoPlay playsInline className="h-[360px] w-full bg-black object-contain" />
 }
 
 function getSeekTarget({

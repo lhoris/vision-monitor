@@ -108,8 +108,10 @@ describe('focusApiService', () => {
     const response = await focusApiService.getCameraPlayback(1, RANGE)
 
     expect(response.success).toBe(true)
+    expect(response.data?.playbackProtocol).toBe('mp4')
+    expect(response.data?.playbackUrl).toContain('/playback/video6.mp4')
     expect(response.data?.timelineSegments).toEqual(
-      expect.arrayContaining([expect.objectContaining({ status: 'gap' })])
+      expect.arrayContaining([expect.objectContaining({ status: 'available' })])
     )
   })
 
