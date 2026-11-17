@@ -97,31 +97,33 @@ export function FocusVideoStage({
     })
 
     return (
-    <section className="focus-video-stage flex min-h-[420px] flex-1 flex-col">
+    <section className="focus-video-stage flex min-h-0 flex-1 flex-col">
         {playbackSession ? (
           <>
-            {playbackSession.playbackProtocol === 'mp4' ? (
-            <RecordingVideo
-                key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
-                url={playbackSession.playbackUrl}
-                seekTarget={seekTarget}
-                availableFrom={playbackSession.availableFrom}
-                seekSeconds={recordingSeekSeconds}
-                onTimeUpdate={setRecordingTimeSeconds}
-              />
-            ) : (
-              <StreamPlayerComponent
-                key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
-                source={{
-                  url: playbackSession.playbackUrl,
-                  protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
-                  label: seekTarget ? `seek:${seekTarget}` : undefined,
-                }}
-                autoplay
-                controls
-                className="h-[60vh] min-h-[480px] max-h-[720px] w-full"
-              />
-            )}
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              {playbackSession.playbackProtocol === 'mp4' ? (
+              <RecordingVideo
+                  key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
+                  url={playbackSession.playbackUrl}
+                  seekTarget={seekTarget}
+                  availableFrom={playbackSession.availableFrom}
+                  seekSeconds={recordingSeekSeconds}
+                  onTimeUpdate={setRecordingTimeSeconds}
+                />
+              ) : (
+                <StreamPlayerComponent
+                  key={`${playbackSession.sessionId}:${playbackSession.availableFrom}:${playbackSession.availableTo}:${seekTarget ?? 'start'}`}
+                  source={{
+                    url: playbackSession.playbackUrl,
+                    protocol: toPlaybackProtocol(playbackSession.playbackProtocol),
+                    label: seekTarget ? `seek:${seekTarget}` : undefined,
+                  }}
+                  autoplay
+                  controls
+                  className="h-full min-h-0 w-full"
+                />
+              )}
+            </div>
             {timelineDate && recordingWorkArea ? (
               <RecordingTimeline
                 playbackSession={playbackSession}
@@ -235,7 +237,7 @@ function RecordingVideo({
       playsInline
       onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
-      className="h-[60vh] min-h-[480px] max-h-[720px] w-full bg-black object-contain"
+      className="h-full min-h-0 max-h-full w-full bg-black object-contain"
     />
   )
 }

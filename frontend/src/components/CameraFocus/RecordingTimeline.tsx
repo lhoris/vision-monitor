@@ -48,8 +48,12 @@ interface DragState {
 const WORK_AREA_PRESETS = [
   { label: '30초', seconds: 30 },
   { label: '1분', seconds: 60 },
+  { label: '3분', seconds: 3 * 60 },
   { label: '5분', seconds: 5 * 60 },
   { label: '10분', seconds: 10 * 60 },
+  { label: '30분', seconds: 30 * 60 },
+  { label: '1시간', seconds: 60 * 60 },
+  { label: '3시간', seconds: 3 * 60 * 60 },
   { label: '무한', seconds: DAY_SECONDS },
 ]
 
@@ -195,13 +199,16 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="focus-recording-muted">선택 구간 {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.from, dayStart)).replace('T', ' ')} ~ {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.to, dayStart)).replace('T', ' ')}</span>
+        <span className="focus-recording-muted">선택 구간 <strong className="text-sm font-semibold text-slate-100">{formatTimelineClockTime(normalizedWorkArea.from)}</strong> ~ <strong className="text-sm font-semibold text-slate-100">{formatTimelineClockTime(normalizedWorkArea.to)}</strong></span>
         <span className="focus-recording-muted">작업 구간 길이: <strong className="text-slate-200">{formatTimelineDuration(normalizedWorkArea.to - normalizedWorkArea.from)}</strong></span>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
         <span className="focus-recording-muted">빠른 설정</span>
-        {WORK_AREA_PRESETS.map((preset) => <button key={preset.seconds} type="button" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={() => commitWorkArea(resizeWorkAreaFromStart(normalizedWorkArea, preset.seconds))}>{preset.label}</button>)}
+        {WORK_AREA_PRESETS.map((preset) => {
+          const active = normalizedWorkArea.to - normalizedWorkArea.from === preset.seconds || (preset.seconds === DAY_SECONDS && normalizedWorkArea.to === DAY_SECONDS)
+          return <button key={preset.seconds} type="button" aria-pressed={active} className={`focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px] ${active ? 'border-sky-300 bg-sky-600 text-white' : ''}`} onClick={() => commitWorkArea(resizeWorkAreaFromStart(normalizedWorkArea, preset.seconds))}>{preset.label}</button>
+        })}
         <label className="flex items-center gap-1 text-[11px] text-slate-300">
           직접 입력
           <input type="number" min={5} max={DAY_SECONDS} step={1} aria-label="직접 길이(초)" value={customDuration} placeholder="초" onChange={(event) => setCustomDuration(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') applyCustomDuration() }} className="h-6 w-20 border border-slate-500 bg-slate-900 px-2 text-[11px] text-white" />

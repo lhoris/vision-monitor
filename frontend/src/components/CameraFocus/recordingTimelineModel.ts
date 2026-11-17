@@ -1,6 +1,6 @@
 export const DAY_SECONDS = 24 * 60 * 60
 export const MIN_WORK_AREA_SECONDS = 5
-export const TIMELINE_ZOOM_LEVELS = [1, 2, 4, 8, 16, 32, 64] as const
+export const TIMELINE_ZOOM_LEVELS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512] as const
 export type TimelineZoomLevel = (typeof TIMELINE_ZOOM_LEVELS)[number]
 
 export interface TimelineRangeSeconds {
