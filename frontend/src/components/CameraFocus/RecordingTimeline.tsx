@@ -297,7 +297,13 @@ function WorkAreaSelection({ range, viewRange, onPointerDown, onPointerUp, onPoi
 
 function AlarmMarker({ event, dayStart, range, onSelectEvent, onSeek }: { event: CameraEventDto; dayStart: string; range: TimelineRangeSeconds; onSelectEvent?: (eventId: number) => void; onSeek?: (timestamp: string) => void }) {
   const seconds = dateToDaySeconds(event.occurredAt, dayStart)
-  return <button type="button" aria-label={`알람 marker ${event.occurredAt} ${event.title}`} className="absolute inset-y-0 z-20 w-3 -translate-x-1/2 cursor-pointer" style={{ left: `${secondsToRangePercent(seconds, range)}%` }} title={`${event.title} ${event.occurredAt}`} onClick={(clickEvent) => { clickEvent.stopPropagation(); if (event.eventId > 0) onSelectEvent?.(event.eventId); onSeek?.(event.occurredAt) }}><span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-amber-300 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]" /></button>
+  const [tooltip, setTooltip] = useState<{ x: number; y: number } | null>(null)
+  const tooltipId = `recording-alarm-tooltip-${event.eventId}-${event.occurredAt}`
+  const updateTooltip = (mouseEvent: React.MouseEvent<HTMLButtonElement>) => setTooltip({ x: mouseEvent.clientX, y: mouseEvent.clientY })
+  return <>
+    <button type="button" aria-label={`알람 marker ${event.occurredAt} ${event.title}`} aria-describedby={tooltip ? tooltipId : undefined} className="absolute inset-y-0 z-20 w-3 -translate-x-1/2 cursor-pointer" style={{ left: `${secondsToRangePercent(seconds, range)}%` }} onMouseEnter={updateTooltip} onMouseMove={updateTooltip} onMouseLeave={() => setTooltip(null)} onFocus={(focusEvent) => setTooltip({ x: focusEvent.currentTarget.getBoundingClientRect().left, y: focusEvent.currentTarget.getBoundingClientRect().top })} onBlur={() => setTooltip(null)} onClick={(clickEvent) => { clickEvent.stopPropagation(); if (event.eventId > 0) onSelectEvent?.(event.eventId); onSeek?.(event.occurredAt) }}><span aria-hidden="true" className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-amber-300 shadow-[0_0_0_1px_rgba(251,191,36,0.35)]" /></button>
+    {tooltip ? <span id={tooltipId} role="tooltip" className="pointer-events-none fixed z-[200] w-max max-w-[260px] -translate-y-full rounded border border-amber-300/70 bg-slate-900 px-3 py-2 text-left text-xs text-slate-100 shadow-xl" style={{ left: Math.min(Math.max(tooltip.x + 12, 8), window.innerWidth - 268), top: Math.max(tooltip.y - 8, 8) }}><strong className="block font-semibold text-amber-200">{event.title}</strong><span className="mt-1 block text-slate-300">발생 시각: {event.occurredAt}</span></span> : null}
+  </>
 }
 
 function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmentDto; dayStart: string; range: TimelineRangeSeconds }) {

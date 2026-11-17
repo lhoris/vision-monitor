@@ -534,8 +534,8 @@ html[data-theme='theme3'] .camera-rename-dialog {
 }
 
 .focus-recording-date-input {
-  width: 130px;
-  min-width: 130px;
+  width: 160px;
+  min-width: 160px;
   box-sizing: border-box;
   padding-right: 2rem;
   color-scheme: dark;
