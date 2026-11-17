@@ -39,22 +39,21 @@ describe('RecordingTimeline', () => {
   it('renders available and gap timeline segments in overview and detail tracks', () => {
     renderTimeline()
 
-    expect(screen.getAllByLabelText('녹화 가능 구간 2026-08-15T08:00:00+09:00부터 2026-08-15T08:30:00+09:00까지')).toHaveLength(2)
-    expect(screen.getAllByLabelText('녹화 공백 구간 2026-08-15T08:30:00+09:00부터 2026-08-15T08:35:00+09:00까지, seek 불가')).toHaveLength(2)
+    expect(screen.getByLabelText('녹화 가능 구간 2026-08-15T08:00:00+09:00부터 2026-08-15T08:30:00+09:00까지')).toBeInTheDocument()
+    expect(screen.getByLabelText('녹화 공백 구간 2026-08-15T08:30:00+09:00부터 2026-08-15T08:35:00+09:00까지, seek 불가')).toBeInTheDocument()
   })
 
   it('positions event markers by occurredAt and exposes accessible labels', () => {
     renderTimeline()
 
-    const markers = screen.getAllByLabelText('알람 marker 2026-08-15T08:55:00+09:00 Entry Zone 치입불 발생')
-    expect(markers).toHaveLength(2)
-    expect(markers[0]).toHaveStyle({ left: '37.15277777777778%' })
+    const marker = screen.getByLabelText('알람 marker 2026-08-15T08:55:00+09:00 Entry Zone 치입불 발생')
+    expect(marker).toHaveStyle({ left: '37.15277777777778%' })
   })
 
   it('renders an empty state when there are no segments or events', () => {
     renderTimeline({ playbackSession: { ...playbackSession, timelineSegments: [] }, events: [] })
 
-    expect(screen.getByText('현재 확대 구간에 녹화가 없습니다.')).toBeInTheDocument()
+    expect(screen.getByText('표시할 녹화 구간이 없습니다.')).toBeInTheDocument()
     expect(screen.getByText('표시할 알람이 없습니다.')).toBeInTheDocument()
   })
 
@@ -77,7 +76,7 @@ describe('RecordingTimeline', () => {
     const onSeek = vi.fn()
     renderTimeline({ onSelectEvent, onSeek })
 
-    fireEvent.click(screen.getAllByRole('button', { name: /알람 marker 2026-08-15T08:55:00\+09:00/ })[0])
+    fireEvent.click(screen.getByRole('button', { name: /알람 marker 2026-08-15T08:55:00\+09:00/ }))
 
     expect(onSelectEvent).toHaveBeenCalledWith(50001)
     expect(onSeek).toHaveBeenCalledWith(events[0].occurredAt)
@@ -95,7 +94,6 @@ describe('RecordingTimeline', () => {
     expect(screen.getByRole('button', { name: '전체 보기' })).toHaveTextContent('2x')
     expect(timeline).toHaveAttribute('aria-valuemin', '9000')
     expect(timeline).toHaveAttribute('aria-valuemax', '52200')
-    expect(screen.getByRole('img', { name: '24시간 녹화 개요' })).toBeInTheDocument()
   })
 
   it('handles Ctrl+wheel inside the timeline without delegating zoom to the browser', () => {
@@ -134,5 +132,17 @@ describe('RecordingTimeline', () => {
     fireEvent.click(screen.getByRole('button', { name: '적용' }))
 
     expect(onWorkAreaChange).toHaveBeenCalledWith({ from: 29700, to: 29850 })
+  })
+
+  it('moves the date and starts playback from the timeline header', () => {
+    const onDateChange = vi.fn()
+    const onPlay = vi.fn()
+    renderTimeline({ onDateChange, onPlay })
+
+    fireEvent.click(screen.getByRole('button', { name: '이전 날짜' }))
+    fireEvent.click(screen.getByRole('button', { name: '녹화 재생' }))
+
+    expect(onDateChange).toHaveBeenCalledWith('2026-08-14')
+    expect(onPlay).toHaveBeenCalledTimes(1)
   })
 })

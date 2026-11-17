@@ -16,7 +16,6 @@ import {
   percentToRangeSeconds,
   resizeWorkArea,
   resizeWorkAreaToDuration,
-  secondsToPercent,
   secondsToRangePercent,
   TIMELINE_ZOOM_LEVELS,
   type TimelineRangeSeconds,
@@ -30,6 +29,9 @@ interface RecordingTimelineProps {
   dayStart: string
   workArea: TimelineRangeSeconds
   playheadTimestamp?: string | null
+  loading?: boolean
+  onDateChange?: (date: string) => void
+  onPlay?: () => void
   onWorkAreaChange?: (range: TimelineRangeSeconds) => void
   onSeek?: (timestamp: string) => void
   onSelectEvent?: (eventId: number) => void
@@ -41,7 +43,6 @@ interface DragState {
   initialRange: TimelineRangeSeconds
 }
 
-const DAY_RANGE: TimelineRangeSeconds = { from: 0, to: DAY_SECONDS }
 const WORK_AREA_PRESETS = [
   { label: '30초', seconds: 30 },
   { label: '1분', seconds: 60 },
@@ -49,34 +50,35 @@ const WORK_AREA_PRESETS = [
   { label: '10분', seconds: 10 * 60 },
 ]
 
-export function RecordingTimeline({ playbackSession, events, dayStart, workArea, playheadTimestamp, onWorkAreaChange, onSeek, onSelectEvent }: RecordingTimelineProps) {
-  const detailTimelineRef = useRef<HTMLDivElement>(null)
+export function RecordingTimeline({ playbackSession, events, dayStart, workArea, playheadTimestamp, loading = false, onDateChange, onPlay, onWorkAreaChange, onSeek, onSelectEvent }: RecordingTimelineProps) {
+  const timelineRef = useRef<HTMLDivElement>(null)
   const [dragState, setDragState] = useState<DragState | null>(null)
   const [zoom, setZoom] = useState<TimelineZoomLevel>(1)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
   const [contextDraft, setContextDraft] = useState<TimelineRangeSeconds>(normalizeWorkArea(workArea))
   const normalizedWorkArea = normalizeWorkArea(workArea)
   const playheadSeconds = playheadTimestamp ? dateToDaySeconds(playheadTimestamp, dayStart) : normalizedWorkArea.from
-  const detailRange = getTimelineViewRange(zoom, (normalizedWorkArea.from + normalizedWorkArea.to) / 2)
-  const dayLabel = new Date(dayStart).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+  const viewRange = getTimelineViewRange(zoom, (normalizedWorkArea.from + normalizedWorkArea.to) / 2)
   const dayKey = dayStart.slice(0, 10)
-  const dayEvents = events.filter((event) => event.occurredAt.slice(0, 10) === dayKey)
-  const daySegments = playbackSession.timelineSegments.filter((segment) => segment.from.slice(0, 10) === dayKey)
-  const detailEvents = dayEvents.filter((event) => {
-    const seconds = dateToDaySeconds(event.occurredAt, dayStart)
-    return isRangeOverlapping(seconds, seconds, detailRange)
-  })
-  const detailSegments = daySegments.filter((segment) => isRangeOverlapping(dateToDaySeconds(segment.from, dayStart), dateToDaySeconds(segment.to, dayStart), detailRange))
-  const detailTicks = useMemo(() => createTicks(detailRange), [detailRange.from, detailRange.to])
+  const dayLabel = new Date(dayStart).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+  const visibleEvents = events
+    .filter((event) => event.occurredAt.slice(0, 10) === dayKey)
+    .filter((event) => {
+      const seconds = dateToDaySeconds(event.occurredAt, dayStart)
+      return isRangeOverlapping(seconds, seconds, viewRange)
+    })
+  const visibleSegments = playbackSession.timelineSegments
+    .filter((segment) => segment.from.slice(0, 10) === dayKey)
+    .filter((segment) => isRangeOverlapping(dateToDaySeconds(segment.from, dayStart), dateToDaySeconds(segment.to, dayStart), viewRange))
+  const ticks = useMemo(() => createTicks(viewRange), [viewRange.from, viewRange.to])
 
   useEffect(() => {
     if (!dragState) return
     const activeDrag = dragState
     function handlePointerMove(event: PointerEvent) {
-      const bounds = detailTimelineRef.current?.getBoundingClientRect()
+      const bounds = timelineRef.current?.getBoundingClientRect()
       if (!bounds || !onWorkAreaChange || bounds.width <= 0) return
-      const visibleSeconds = detailRange.to - detailRange.from
-      const deltaSeconds = ((event.clientX - activeDrag.startClientX) / bounds.width) * visibleSeconds
+      const deltaSeconds = ((event.clientX - activeDrag.startClientX) / bounds.width) * (viewRange.to - viewRange.from)
       if (activeDrag.mode === 'move') {
         onWorkAreaChange(moveWorkArea(activeDrag.initialRange, deltaSeconds))
       } else {
@@ -84,39 +86,49 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
         onWorkAreaChange(resizeWorkArea(activeDrag.initialRange, activeDrag.mode, value + deltaSeconds))
       }
     }
-    function handlePointerUp() {
-      setDragState(null)
-    }
+    function handlePointerUp() { setDragState(null) }
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
     return () => {
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
     }
-  }, [detailRange.from, detailRange.to, dragState, onWorkAreaChange])
+  }, [dragState, onWorkAreaChange, viewRange.from, viewRange.to])
 
   useEffect(() => {
     if (!contextMenu) return
-    function closeContextMenu() {
-      setContextMenu(null)
-    }
-    document.addEventListener('pointerdown', closeContextMenu)
-    return () => document.removeEventListener('pointerdown', closeContextMenu)
+    const close = () => setContextMenu(null)
+    document.addEventListener('pointerdown', close)
+    return () => document.removeEventListener('pointerdown', close)
   }, [contextMenu])
 
-  function seekFromRange(event: React.MouseEvent<HTMLDivElement>, range: TimelineRangeSeconds) {
+  useEffect(() => {
+    const timeline = timelineRef.current
+    if (!timeline) return
+    function handleWheel(event: WheelEvent) {
+      if (!event.ctrlKey && !event.metaKey) return
+      event.preventDefault()
+      event.stopPropagation()
+      const index = TIMELINE_ZOOM_LEVELS.indexOf(zoom)
+      const nextIndex = event.deltaY < 0 ? Math.min(index + 1, TIMELINE_ZOOM_LEVELS.length - 1) : Math.max(index - 1, 0)
+      setZoom(TIMELINE_ZOOM_LEVELS[nextIndex])
+    }
+    timeline.addEventListener('wheel', handleWheel, { passive: false })
+    return () => timeline.removeEventListener('wheel', handleWheel)
+  }, [zoom])
+
+  function seekFromTrack(event: React.MouseEvent<HTMLDivElement>) {
     if (!onSeek || event.target !== event.currentTarget) return
     const bounds = event.currentTarget.getBoundingClientRect()
     if (bounds.width <= 0) return
-    const seconds = percentToRangeSeconds(((event.clientX - bounds.left) / bounds.width) * 100, range)
+    const seconds = percentToRangeSeconds(((event.clientX - bounds.left) / bounds.width) * 100, viewRange)
     onSeek(formatTimelineDateTime(daySecondsToDate(seconds, dayStart)))
   }
 
-  function handleDetailTrackKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+  function handleTrackKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (!onSeek || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return
     event.preventDefault()
-    const delta = event.key === 'ArrowLeft' ? -1 : 1
-    onSeek(formatTimelineDateTime(daySecondsToDate(playheadSeconds + delta, dayStart)))
+    onSeek(formatTimelineDateTime(daySecondsToDate(playheadSeconds + (event.key === 'ArrowLeft' ? -1 : 1), dayStart)))
   }
 
   function beginDrag(mode: WorkAreaDragMode, event: React.PointerEvent) {
@@ -130,82 +142,53 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
     onWorkAreaChange?.(resizeWorkArea(normalizedWorkArea, edge, value + delta))
   }
 
-  useEffect(() => {
-    const timeline = detailTimelineRef.current
-    if (!timeline) return
-
-    function handleDetailWheel(event: WheelEvent) {
-      if (!event.ctrlKey && !event.metaKey) return
-      event.preventDefault()
-      event.stopPropagation()
-      const index = TIMELINE_ZOOM_LEVELS.indexOf(zoom)
-      const nextIndex = event.deltaY < 0 ? Math.min(index + 1, TIMELINE_ZOOM_LEVELS.length - 1) : Math.max(index - 1, 0)
-      setZoom(TIMELINE_ZOOM_LEVELS[nextIndex])
-    }
-
-    timeline.addEventListener('wheel', handleDetailWheel, { passive: false })
-    return () => timeline.removeEventListener('wheel', handleDetailWheel)
-  }, [zoom])
-
-  function openWorkAreaContextMenu(event: React.MouseEvent) {
+  function openContextMenu(event: React.MouseEvent) {
     event.preventDefault()
     event.stopPropagation()
     setContextDraft(normalizedWorkArea)
-    setContextMenu({
-      x: Math.min(event.clientX, window.innerWidth - 300),
-      y: Math.min(event.clientY, window.innerHeight - 250),
-    })
+    setContextMenu({ x: Math.min(event.clientX, window.innerWidth - 300), y: Math.min(event.clientY, window.innerHeight - 250) })
   }
 
   function applyContextDraft() {
-    const next = normalizeWorkArea(contextDraft)
-    if (next.to > next.from) onWorkAreaChange?.(next)
+    onWorkAreaChange?.(normalizeWorkArea(contextDraft))
     setContextMenu(null)
   }
 
   return (
     <section className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 타임라인">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div><span className="font-semibold">{dayLabel}</span><span className="focus-recording-muted ml-2">24시간 녹화 타임라인</span></div>
-        <div className="font-semibold">선택 구간 {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.from, dayStart)).replace('T', ' ')} ~ {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.to, dayStart)).replace('T', ' ')}</div>
+        <div className="flex items-center gap-2">
+          <button type="button" className="focus-recording-zoom-button" aria-label="이전 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, -1))}>‹</button>
+          <span className="font-semibold">{dayLabel}</span>
+          <button type="button" className="focus-recording-zoom-button" aria-label="다음 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, 1))}>›</button>
+        </div>
+        <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="녹화 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '▶ 재생'}</button>
+      </div>
+
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span className="focus-recording-muted">선택 구간 {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.from, dayStart)).replace('T', ' ')} ~ {formatTimelineDateTime(daySecondsToDate(normalizedWorkArea.to, dayStart)).replace('T', ' ')}</span>
+        <span className="focus-recording-muted">작업 구간 길이: <strong className="text-slate-200">{formatTimelineDuration(normalizedWorkArea.to - normalizedWorkArea.from)}</strong></span>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <span className="focus-recording-muted">작업 구간 길이: <strong className="text-slate-200">{formatTimelineDuration(normalizedWorkArea.to - normalizedWorkArea.from)}</strong></span>
         <span className="focus-recording-muted">빠른 설정</span>
-        {WORK_AREA_PRESETS.map((preset) => (
-          <button
-            key={preset.seconds}
-            type="button"
-            className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]"
-            onClick={() => onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, preset.seconds))}
-          >
-            {preset.label}
-          </button>
-        ))}
-        <span className="focus-recording-muted">핸들을 드래그하면 임의 길이로 조절됩니다.</span>
-      </div>
-
-      <OverviewTimeline dayStart={dayStart} dayEvents={dayEvents} daySegments={daySegments} workArea={normalizedWorkArea} playheadSeconds={playheadSeconds} onSeek={(event) => seekFromRange(event, DAY_RANGE)} onSelectEvent={onSelectEvent} onSeekTimestamp={onSeek} />
-
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="font-semibold">상세 타임라인</span>
-        <div className="flex items-center gap-1" aria-label="타임라인 확대 축소">
+        {WORK_AREA_PRESETS.map((preset) => <button key={preset.seconds} type="button" className="focus-recording-zoom-button !h-6 !min-w-0 px-2 text-[11px]" onClick={() => onWorkAreaChange?.(resizeWorkAreaToDuration(normalizedWorkArea, preset.seconds))}>{preset.label}</button>)}
+        <span className="focus-recording-muted">핸들 드래그 또는 우클릭으로 정밀 조절</span>
+        <div className="ml-auto flex items-center gap-1" aria-label="타임라인 확대 축소">
           <button type="button" className="focus-recording-zoom-button" aria-label="타임라인 축소" onClick={() => setZoom(TIMELINE_ZOOM_LEVELS[Math.max(TIMELINE_ZOOM_LEVELS.indexOf(zoom) - 1, 0)])} disabled={zoom === 1}>−</button>
           <button type="button" className="focus-recording-zoom-button min-w-12" aria-label="전체 보기" onClick={() => setZoom(1)}>{zoom}x</button>
           <button type="button" className="focus-recording-zoom-button" aria-label="타임라인 확대" onClick={() => setZoom(TIMELINE_ZOOM_LEVELS[Math.min(TIMELINE_ZOOM_LEVELS.indexOf(zoom) + 1, TIMELINE_ZOOM_LEVELS.length - 1)])} disabled={zoom === TIMELINE_ZOOM_LEVELS[TIMELINE_ZOOM_LEVELS.length - 1]}>＋</button>
-          <span className="focus-recording-muted ml-2">Ctrl/⌘ + 휠로 확대·축소</span>
         </div>
       </div>
 
       <div className="relative px-1 pb-5 pt-1">
-        <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between text-[10px] text-slate-400">{detailTicks.map((tick) => <span key={tick}>{formatTimelineScaleTime(tick)}</span>)}</div>
-        <div ref={detailTimelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(detailRange.from)} aria-valuemax={Math.round(detailRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, detailRange.from), detailRange.to))} tabIndex={0} onClick={(event) => seekFromRange(event, detailRange)} onKeyDown={handleDetailTrackKeyDown}>
-          {detailTicks.map((tick) => <span key={`grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-700" style={{ left: `${secondsToRangePercent(tick, detailRange)}%` }} />)}
-          <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{detailSegments.length > 0 ? detailSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={detailRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">현재 확대 구간에 녹화가 없습니다.</p>}</div>
-          <WorkAreaSelection range={normalizedWorkArea} viewRange={detailRange} onPointerDown={beginDrag} onHandleKeyDown={moveHandleWithKeyboard} onContextMenu={openWorkAreaContextMenu} />
-          {detailEvents.map((event) => <AlarmMarker key={event.eventId} event={event} dayStart={dayStart} range={detailRange} onSelectEvent={onSelectEvent} onSeek={onSeek} />)}
-          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" style={{ left: `${secondsToRangePercent(playheadSeconds, detailRange)}%` }}><span className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-white shadow" /></span>
+        <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between text-[10px] text-slate-400">{ticks.map((tick) => <span key={tick}>{formatTimelineScaleTime(tick)}</span>)}</div>
+        <div ref={timelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(viewRange.from)} aria-valuemax={Math.round(viewRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, viewRange.from), viewRange.to))} tabIndex={0} onClick={seekFromTrack} onKeyDown={handleTrackKeyDown}>
+          {ticks.map((tick) => <span key={`grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-700" style={{ left: `${secondsToRangePercent(tick, viewRange)}%` }} />)}
+          <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{visibleSegments.length > 0 ? visibleSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={viewRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">표시할 녹화 구간이 없습니다.</p>}</div>
+          <WorkAreaSelection range={normalizedWorkArea} viewRange={viewRange} onPointerDown={beginDrag} onHandleKeyDown={moveHandleWithKeyboard} onContextMenu={openContextMenu} />
+          {visibleEvents.map((event) => <AlarmMarker key={event.eventId} event={event} dayStart={dayStart} range={viewRange} onSelectEvent={onSelectEvent} onSeek={onSeek} />)}
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white shadow-[0_0_0_1px_rgba(14,165,233,0.9)]" style={{ left: `${secondsToRangePercent(playheadSeconds, viewRange)}%` }}><span className="absolute -left-1.5 top-0 h-3 w-3 rounded-full bg-white shadow" /></span>
         </div>
       </div>
 
@@ -213,69 +196,38 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
         <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-2 w-4 rounded bg-emerald-500" />녹화 가능</span>
         <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-2 w-4 rounded bg-slate-700" />녹화 공백</span>
         <span className="focus-recording-muted inline-flex items-center gap-1"><i className="h-3 w-1 rounded bg-amber-400" />알람</span>
-        <span className="focus-recording-muted">상단: 24시간 개요 · 하단: 확대 상세 · 핸들: 범위 조절 · 선택 영역: 범위 이동</span>
-        {dayEvents.length === 0 ? <span className="focus-recording-muted">표시할 알람이 없습니다.</span> : null}
+        <span className="focus-recording-muted">빈 영역 클릭: 위치 이동 · 흰색 선: 현재 재생 위치</span>
+        {visibleEvents.length === 0 ? <span className="focus-recording-muted">표시할 알람이 없습니다.</span> : null}
       </div>
-      {contextMenu ? (
-        <div
-          role="dialog"
-          aria-label="작업 구간 정밀 조정"
-          className="fixed z-[140] w-72 rounded border border-slate-500 bg-slate-800 p-3 text-white shadow-2xl"
-          style={{ left: contextMenu.x, top: contextMenu.y }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="mb-2 text-xs font-semibold">작업 구간 정밀 조정</div>
-          <div className="grid grid-cols-2 gap-2">
-            <label className="flex flex-col gap-1 text-[11px] text-slate-300">
-              시작 시각
-              <input type="time" step="1" aria-label="시작 시각" value={formatTimelineClockTime(contextDraft.from)} onChange={(event) => { const value = parseTimelineClockTime(event.target.value); if (value !== null) setContextDraft((current) => ({ ...current, from: value })) }} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" />
-            </label>
-            <label className="flex flex-col gap-1 text-[11px] text-slate-300">
-              종료 시각
-              <input type="time" step="1" aria-label="종료 시각" value={formatTimelineClockTime(contextDraft.to)} onChange={(event) => { const value = parseTimelineClockTime(event.target.value); if (value !== null) setContextDraft((current) => ({ ...current, to: value })) }} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" />
-            </label>
-          </div>
-          <label className="mt-2 flex flex-col gap-1 text-[11px] text-slate-300">
-            길이(초)
-            <input type="number" min={5} max={DAY_SECONDS} aria-label="작업 구간 길이(초)" value={Math.max(0, contextDraft.to - contextDraft.from)} onChange={(event) => { const duration = Number(event.target.value); if (!Number.isFinite(duration)) return; setContextDraft((current) => ({ from: current.from, to: Math.min(DAY_SECONDS, current.from + duration) })) }} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" />
-          </label>
-          <p className="mt-2 text-[11px] text-slate-400">시작·종료 시각 또는 길이를 입력한 뒤 적용하세요.</p>
-          <div className="mt-3 flex justify-end gap-2">
-            <button type="button" className="border border-slate-500 px-2 py-1 text-xs" onClick={() => setContextMenu(null)}>취소</button>
-            <button type="button" className="border border-sky-400 bg-sky-600 px-2 py-1 text-xs font-semibold" onClick={applyContextDraft}>적용</button>
-          </div>
-        </div>
-      ) : null}
+
+      {contextMenu ? <ManualRangeMenu draft={contextDraft} position={contextMenu} onChange={setContextDraft} onCancel={() => setContextMenu(null)} onApply={applyContextDraft} /> : null}
     </section>
   )
 }
 
-function OverviewTimeline({ dayStart, dayEvents, daySegments, workArea, playheadSeconds, onSeek, onSelectEvent, onSeekTimestamp }: { dayStart: string; dayEvents: CameraEventDto[]; daySegments: TimelineSegmentDto[]; workArea: TimelineRangeSeconds; playheadSeconds: number; onSeek: (event: React.MouseEvent<HTMLDivElement>) => void; onSelectEvent?: (eventId: number) => void; onSeekTimestamp?: (timestamp: string) => void }) {
-  const ticks = Array.from({ length: 13 }, (_, index) => index * 2 * 60 * 60)
+function ManualRangeMenu({ draft, position, onChange, onCancel, onApply }: { draft: TimelineRangeSeconds; position: { x: number; y: number }; onChange: React.Dispatch<React.SetStateAction<TimelineRangeSeconds>>; onCancel: () => void; onApply: () => void }) {
   return (
-    <div className="relative px-1 pb-5" aria-label="24시간 전체 타임라인">
-      <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between text-[10px] text-slate-400">{ticks.map((tick) => <span key={tick}>{formatTimelineScaleTime(tick)}</span>)}</div>
-      <div className="focus-recording-timeline relative h-12 cursor-crosshair overflow-visible rounded border border-slate-700 bg-slate-950" role="img" aria-label="24시간 녹화 개요" onClick={onSeek}>
-        {ticks.map((tick) => <span key={`overview-grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-800" style={{ left: `${secondsToPercent(tick)}%` }} />)}
-        <div className="pointer-events-none absolute inset-x-0 top-3 h-5">{daySegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={DAY_RANGE} />)}</div>
-        <div className="pointer-events-none absolute top-1 h-10 rounded border border-sky-300/70 bg-sky-400/20" style={{ left: `${secondsToPercent(workArea.from)}%`, width: `${Math.max(secondsToPercent(workArea.to - workArea.from), 0.4)}%` }} />
-        {dayEvents.map((event) => <AlarmMarker key={event.eventId} event={event} dayStart={dayStart} range={DAY_RANGE} onSelectEvent={onSelectEvent} onSeek={onSeekTimestamp} />)}
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 z-30 w-0.5 bg-white" style={{ left: `${secondsToPercent(playheadSeconds)}%` }} />
+    <div role="dialog" aria-label="작업 구간 정밀 조정" className="fixed z-[140] w-72 rounded border border-slate-500 bg-slate-800 p-3 text-white shadow-2xl" style={{ left: position.x, top: position.y }} onClick={(event) => event.stopPropagation()}>
+      <div className="mb-2 text-xs font-semibold">작업 구간 정밀 조정</div>
+      <div className="grid grid-cols-2 gap-2">
+        <ClockField label="시작 시각" value={draft.from} onChange={(value) => { if (value !== null) onChange((current) => ({ ...current, from: value })) }} />
+        <ClockField label="종료 시각" value={draft.to} onChange={(value) => { if (value !== null) onChange((current) => ({ ...current, to: value })) }} />
       </div>
+      <label className="mt-2 flex flex-col gap-1 text-[11px] text-slate-300">길이(초)<input type="number" min={5} max={DAY_SECONDS} aria-label="작업 구간 길이(초)" value={Math.max(0, draft.to - draft.from)} onChange={(event) => { const duration = Number(event.target.value); if (Number.isFinite(duration)) onChange((current) => ({ from: current.from, to: Math.min(DAY_SECONDS, current.from + duration) })) }} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" /></label>
+      <p className="mt-2 text-[11px] text-slate-400">시작·종료 시각 또는 길이를 입력한 뒤 적용하세요.</p>
+      <div className="mt-3 flex justify-end gap-2"><button type="button" className="border border-slate-500 px-2 py-1 text-xs" onClick={onCancel}>취소</button><button type="button" className="border border-sky-400 bg-sky-600 px-2 py-1 text-xs font-semibold" onClick={onApply}>적용</button></div>
     </div>
   )
+}
+
+function ClockField({ label, value, onChange }: { label: string; value: number; onChange: (value: number | null) => void }) {
+  return <label className="flex flex-col gap-1 text-[11px] text-slate-300">{label}<input type="time" step="1" aria-label={label} value={formatTimelineClockTime(value)} onChange={(event) => onChange(parseTimelineClockTime(event.target.value))} className="border border-slate-500 bg-slate-900 px-2 py-1.5 text-xs text-white" /></label>
 }
 
 function WorkAreaSelection({ range, viewRange, onPointerDown, onHandleKeyDown, onContextMenu }: { range: TimelineRangeSeconds; viewRange: TimelineRangeSeconds; onPointerDown: (mode: WorkAreaDragMode, event: React.PointerEvent) => void; onHandleKeyDown: (edge: 'start' | 'end', delta: number) => void; onContextMenu: (event: React.MouseEvent) => void }) {
   const left = secondsToRangePercent(range.from, viewRange)
   const right = secondsToRangePercent(range.to, viewRange)
-  const width = Math.max(right - left, 0.8)
-  return (
-    <div className="absolute top-3 h-11 rounded border-2 border-sky-300 bg-sky-400/20 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]" style={{ left: `${left}%`, width: `${width}%` }} onPointerDown={(event) => onPointerDown('move', event)} onContextMenu={onContextMenu} title="선택 구간을 드래그하여 이동 · 우클릭하여 정밀 조정">
-      <button type="button" aria-label="녹화 선택 구간 시작 핸들" className="absolute -left-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('start', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('start', -1); if (event.key === 'ArrowRight') onHandleKeyDown('start', 1) }} />
-      <button type="button" aria-label="녹화 선택 구간 종료 핸들" className="absolute -right-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('end', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('end', -1); if (event.key === 'ArrowRight') onHandleKeyDown('end', 1) }} />
-    </div>
-  )
+  return <div className="absolute top-3 h-11 rounded border-2 border-sky-300 bg-sky-400/20 shadow-[0_0_0_1px_rgba(14,165,233,0.35)]" style={{ left: `${left}%`, width: `${Math.max(right - left, 0.8)}%` }} onPointerDown={(event) => onPointerDown('move', event)} onContextMenu={onContextMenu} title="선택 구간을 드래그하여 이동 · 우클릭하여 정밀 조정"><button type="button" aria-label="녹화 선택 구간 시작 핸들" className="absolute -left-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('start', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('start', -1); if (event.key === 'ArrowRight') onHandleKeyDown('start', 1) }} /><button type="button" aria-label="녹화 선택 구간 종료 핸들" className="absolute -right-2 top-1/2 h-8 w-4 -translate-y-1/2 cursor-ew-resize rounded-sm border border-sky-100 bg-sky-400 shadow" onPointerDown={(event) => onPointerDown('end', event)} onKeyDown={(event) => { if (event.key === 'ArrowLeft') onHandleKeyDown('end', -1); if (event.key === 'ArrowRight') onHandleKeyDown('end', 1) }} /></div>
 }
 
 function AlarmMarker({ event, dayStart, range, onSelectEvent, onSeek }: { event: CameraEventDto; dayStart: string; range: TimelineRangeSeconds; onSelectEvent?: (eventId: number) => void; onSeek?: (timestamp: string) => void }) {
@@ -301,4 +253,11 @@ function createTicks(range: TimelineRangeSeconds) {
   const ticks: number[] = []
   for (let tick = first; tick <= range.to; tick += step) ticks.push(tick)
   return ticks.length > 1 ? ticks : [range.from, range.to]
+}
+
+function shiftDate(date: string, days: number) {
+  const next = new Date(`${date}T00:00:00`)
+  next.setDate(next.getDate() + days)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}`
 }

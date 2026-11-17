@@ -24,6 +24,8 @@ interface FocusVideoStageProps {
   selectedEventId?: number
   onSelectEvent?: (eventId: number) => void
   timelineDate?: string
+  onDateChange?: (date: string) => void
+  onRecordingSubmit?: () => void
   recordingWorkArea?: TimelineRangeSeconds
   onRecordingWorkAreaChange?: (range: TimelineRangeSeconds) => void
   onTimelineSeek?: (timestamp: string) => void
@@ -44,6 +46,8 @@ export function FocusVideoStage({
   selectedEventId,
   onSelectEvent,
   timelineDate,
+  onDateChange,
+  onRecordingSubmit,
   recordingWorkArea,
   onRecordingWorkAreaChange,
   onTimelineSeek,
@@ -122,7 +126,10 @@ export function FocusVideoStage({
                 events={eventsError ? [] : events}
                 dayStart={timelineDate}
                 workArea={recordingWorkArea}
+                loading={playbackLoading}
                 playheadTimestamp={getPlayheadTimestamp(playbackSession, recordingTimeSeconds)}
+                onDateChange={onDateChange}
+                onPlay={onRecordingSubmit}
                 onWorkAreaChange={onRecordingWorkAreaChange}
                 onSeek={(timestamp) => {
                   const targetSeconds = (new Date(timestamp).getTime() - new Date(playbackSession.availableFrom).getTime()) / 1000

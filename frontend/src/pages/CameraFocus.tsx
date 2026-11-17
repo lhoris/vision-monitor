@@ -309,15 +309,6 @@ export default function CameraFocus() {
     setPlaybackRange({ ...recordingDraftRange, eventId: undefined })
   }
 
-  function handleRecordingDraftChange(range: CameraPlaybackRange) {
-    setRecordingDraftRange(range)
-    const dayStart = `${recordingDate}T00:00:00`
-    setRecordingWorkArea(normalizeWorkArea({
-      from: dateToDaySeconds(range.from, dayStart),
-      to: dateToDaySeconds(range.to, dayStart),
-    }))
-  }
-
   function handleRecordingDateChange(date: string) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
     setRecordingDate(date)
@@ -434,8 +425,6 @@ export default function CameraFocus() {
       onSelectEvent={handleSelectEvent}
       onTriggerTestAlert={handleTriggerTestAlert}
       onBackToLive={handleBackToLive}
-      recordingRange={recordingDraftRange}
-      onRecordingRangeChange={handleRecordingDraftChange}
       onDateChange={handleRecordingDateChange}
       onRecordingSubmit={handleRecordingSubmit}
       timelineDate={`${recordingDate}T00:00:00`}

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { FocusAlertBanner } from './FocusAlertBanner'
 import { FocusMetadataPanel } from './FocusMetadataPanel'
 import { FocusVideoStage } from './FocusVideoStage'
-import { RecordingControls } from './RecordingControls'
 import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import type { Camera } from '@/types/camera'
 import type {
@@ -39,8 +38,6 @@ interface CameraFocusShellProps {
   onSelectEvent?: (eventId: number) => void
   onTriggerTestAlert?: (message: string) => void
   onBackToLive?: () => void
-  recordingRange?: { from: string; to: string; eventId?: number }
-  onRecordingRangeChange?: (range: { from: string; to: string; eventId?: number }) => void
   onDateChange?: (date: string) => void
   onRecordingSubmit?: () => void
   timelineDate?: string
@@ -72,8 +69,6 @@ export function CameraFocusShell({
   onSelectEvent,
   onTriggerTestAlert,
   onBackToLive,
-  recordingRange,
-  onRecordingRangeChange,
   onDateChange,
   onRecordingSubmit,
   timelineDate,
@@ -202,17 +197,6 @@ export function CameraFocusShell({
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
-      {mode === 'recording' && recordingRange ? (
-        <RecordingControls
-          date={timelineDate?.slice(0, 10) ?? ''}
-          range={recordingRange}
-          loading={playbackLoading ?? false}
-          error={playbackError}
-          onChange={onRecordingRangeChange ?? (() => undefined)}
-          onDateChange={(date) => onDateChange?.(date)}
-          onSubmit={onRecordingSubmit ?? (() => undefined)}
-        />
-      ) : null}
       <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row" data-onboarding="camera-focus-content">
         <FocusVideoStage
           mode={mode}
@@ -229,6 +213,8 @@ export function CameraFocusShell({
           selectedEventDetail={selectedEventDetail}
           onSelectEvent={onSelectEvent}
           timelineDate={timelineDate}
+          onDateChange={onDateChange}
+          onRecordingSubmit={onRecordingSubmit}
           recordingWorkArea={recordingWorkArea}
           onRecordingWorkAreaChange={onRecordingWorkAreaChange}
           onTimelineSeek={onTimelineSeek}

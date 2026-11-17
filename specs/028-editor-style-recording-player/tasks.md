@@ -67,3 +67,6 @@
 - [X] T033 우클릭 입력·적용 회귀 테스트와 프론트엔드 빌드를 실행한다.
 - [X] T034 녹화 탭의 중복 알람 목록 렌더링을 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에서 제거한다.
 - [X] T035 녹화 플레이어의 고정 높이를 반응형 높이로 변경해 `frontend/src/components/CameraFocus/FocusVideoStage.tsx`에서 영상 영역을 확대한다.
+- [X] T036 별도 녹화 조회조건 영역을 제거하고 날짜 이동·재생 실행을 `frontend/src/components/CameraFocus/RecordingTimeline.tsx`에 통합한다.
+- [X] T037 24시간 개요와 상세 타임라인을 하나의 메인 타임라인으로 통합하고 페이지·컴포넌트 테스트를 갱신한다.
+- [X] T038 통합 타임라인 관련 테스트와 프론트엔드 빌드를 실행한다.
