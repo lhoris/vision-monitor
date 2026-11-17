@@ -142,7 +142,7 @@ export function FocusVideoStage({
             </p>
           </div>
         )}
-        {eventsError ? (
+        {false && eventsError ? (
           <p className="focus-recording-message focus-recording-message--error border-t px-4 py-3 text-xs">
             알람 목록을 불러오지 못했습니다.
           </p>

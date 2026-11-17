@@ -87,10 +87,10 @@ describe('FocusVideoStage', () => {
     expect(screen.queryByRole('button', { name: /Entry Zone/ })).not.toBeInTheDocument()
   })
 
-  it('keeps playback visible when alarm loading fails', () => {
+  it('keeps playback visible when alarm loading fails without rendering an alarm list message', () => {
     render(<FocusVideoStage mode="recording" camera={camera} playbackSession={playbackSession} events={[]} eventsError="EVENTS_UNAVAILABLE" />)
     expect(screen.getByTestId('focus-playback-player')).toBeInTheDocument()
-    expect(screen.getByText('알람 목록을 불러오지 못했습니다.')).toBeInTheDocument()
+    expect(screen.queryByText('알람 목록을 불러오지 못했습니다.')).not.toBeInTheDocument()
   })
 
   it('renders live stream error states', () => {
