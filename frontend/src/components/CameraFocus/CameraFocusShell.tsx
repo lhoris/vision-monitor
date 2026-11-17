@@ -199,7 +199,7 @@ export function CameraFocusShell({
         </div>
       </header>
       <FocusAlertBanner alerts={alerts} />
-      <div className="focus-shell__body flex flex-1 flex-col gap-4 p-5 lg:flex-row" data-onboarding="camera-focus-content">
+      <div className="focus-shell__body flex min-h-0 flex-1 flex-col gap-4 p-5 lg:flex-row" data-onboarding="camera-focus-content">
         <FocusVideoStage
           mode={mode}
           selectedEventId={selectedEventId}

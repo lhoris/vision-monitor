@@ -190,14 +190,14 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   const activePreset = WORK_AREA_PRESETS.find((preset) => normalizedWorkArea.to - normalizedWorkArea.from === preset.seconds || (preset.seconds === DAY_SECONDS && normalizedWorkArea.to === DAY_SECONDS))
 
   return (
-    <section className="focus-recording-panel border-t px-4 py-3" aria-label="녹화 타임라인">
+    <section className="focus-recording-panel min-h-[236px] shrink-0 border-t px-4 py-3" aria-label="녹화 타임라인">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <button type="button" className="focus-recording-zoom-button" aria-label="이전 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, -1))}>‹</button>
           <input type="date" aria-label="탐색 날짜" value={dayKey} onChange={(event) => onDateChange?.(event.target.value)} className="border border-slate-500 bg-slate-900 px-2 py-1 text-xs font-semibold text-white" />
           <button type="button" className="focus-recording-zoom-button" aria-label="다음 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, 1))}>›</button>
         </div>
-        <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="녹화 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '▶ 재생'}</button>
+        <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label="현재 구간 다시 재생" onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : '↻ 다시 재생'}</button>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -227,7 +227,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
 
       <div className="relative px-1 pb-5 pt-1">
         <div className="pointer-events-none absolute inset-x-1 bottom-0 flex justify-between text-[10px] text-slate-400">{ticks.map((tick) => <span key={tick}>{formatTimelineScaleTime(tick)}</span>)}</div>
-        <div ref={timelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(viewRange.from)} aria-valuemax={Math.round(viewRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, viewRange.from), viewRange.to))} tabIndex={0} onClick={seekFromTrack} onKeyDown={handleTrackKeyDown} onWheel={handleTimelineWheel}>
+        <div ref={timelineRef} className="focus-recording-timeline relative h-16 cursor-crosshair overflow-visible rounded border border-slate-600 bg-slate-950" role="slider" aria-label="녹화 재생 위치" aria-valuemin={Math.round(viewRange.from)} aria-valuemax={Math.round(viewRange.to)} aria-valuenow={Math.round(Math.min(Math.max(playheadSeconds, viewRange.from), viewRange.to))} tabIndex={0} onClick={seekFromTrack} onKeyDown={handleTrackKeyDown} onWheel={handleTimelineWheel} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
           {ticks.map((tick) => <span key={`grid-${tick}`} aria-hidden="true" className="pointer-events-none absolute inset-y-0 border-l border-slate-700" style={{ left: `${secondsToRangePercent(tick, viewRange)}%` }} />)}
           <div className="pointer-events-none absolute inset-x-0 top-5 h-7">{visibleSegments.length > 0 ? visibleSegments.map((segment) => <TimelineSegment key={`${segment.from}-${segment.to}-${segment.status}`} segment={segment} dayStart={dayStart} range={viewRange} />) : <p className="focus-recording-muted absolute inset-0 flex items-center justify-center text-xs">표시할 녹화 구간이 없습니다.</p>}</div>
           <WorkAreaSelection range={normalizedWorkArea} viewRange={viewRange} onPointerDown={beginDrag} onPointerUp={finishDrag} onPointerCancel={finishDrag} onHandleKeyDown={moveHandleWithKeyboard} onContextMenu={openContextMenu} />

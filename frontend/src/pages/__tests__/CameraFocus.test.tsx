@@ -40,7 +40,7 @@ describe('CameraFocus page shell', () => {
 
     expect(await screen.findByTestId('focus-recording-video')).toHaveAttribute('src', expect.stringContaining('/playback/video6.mp4'))
     await waitFor(() => expect(screen.getByRole('slider', { name: '녹화 재생 위치' })).toBeInTheDocument())
-    expect(screen.getByRole('button', { name: '녹화 재생' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '현재 구간 다시 재생' })).toBeInTheDocument()
     expect(screen.queryByRole('img', { name: '24시간 녹화 개요' })).not.toBeInTheDocument()
   })
 
