@@ -92,8 +92,9 @@ describe('RecordingTimeline', () => {
     fireEvent.click(screen.getByRole('button', { name: '타임라인 확대' }))
 
     expect(screen.getByRole('button', { name: '전체 보기' })).toHaveTextContent('2x')
-    expect(timeline).toHaveAttribute('aria-valuemin', '9000')
-    expect(timeline).toHaveAttribute('aria-valuemax', '52200')
+    expect(timeline).toHaveAttribute('aria-valuemin', '0')
+    expect(timeline).toHaveAttribute('aria-valuemax', '86400')
+    expect(timeline).toHaveStyle({ width: '200%' })
   })
 
   it('handles regular wheel inside the timeline without scrolling the page', () => {

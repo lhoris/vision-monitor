@@ -533,6 +533,16 @@ html[data-theme='theme3'] .camera-rename-dialog {
   background: var(--focus-control-bg);
 }
 
+.focus-recording-date-input {
+  color-scheme: dark;
+}
+
+.focus-recording-date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 0.9;
+}
+
 .focus-recording-zoom-button {
   min-width: 1.75rem;
   height: 1.75rem;
@@ -542,6 +552,14 @@ html[data-theme='theme3'] .camera-rename-dialog {
   font-weight: 600;
   line-height: 1;
   transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.focus-recording-zoom-level {
+  width: 3.5rem;
+  min-width: 3.5rem;
+  flex: 0 0 3.5rem;
+  padding-inline: 0.25rem;
+  text-align: center;
 }
 
 .focus-recording-zoom-button[aria-pressed="true"] {
