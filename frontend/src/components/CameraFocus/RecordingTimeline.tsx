@@ -204,12 +204,15 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
 
   return (
     <section className="focus-recording-panel min-h-[236px] shrink-0 border-t px-4 py-3" aria-label="녹화 타임라인">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div className="relative mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2">
           <button type="button" className="focus-recording-zoom-button" aria-label="이전 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, -1))}>‹</button>
           <input type="date" aria-label="탐색 날짜" value={dayKey} onChange={(event) => onDateChange?.(event.target.value)} className="focus-recording-date-input border border-slate-500 bg-slate-900 px-2 py-1 text-xs font-semibold text-white" />
           <button type="button" className="focus-recording-zoom-button" aria-label="다음 날짜" onClick={() => onDateChange?.(shiftDate(dayKey, 1))}>›</button>
         </div>
+        <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-sm font-semibold tracking-wide text-amber-200" aria-label={`현재 절대 시각 ${formatTimelineClockTime(playheadSeconds)}`}>
+          {formatTimelineClockTime(playheadSeconds)}
+        </span>
         <button type="button" className="focus-action-button border px-3 py-1.5 text-xs font-semibold" aria-label={isPlaying ? '녹화 일시정지' : '녹화 재생'} onClick={onPlay} disabled={loading}>{loading ? '조회 중...' : isPlaying ? '⏸ 일시정지' : '▶ 재생'}</button>
       </div>
 
@@ -313,7 +316,11 @@ function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmen
   const to = dateToDaySeconds(segment.to, dayStart)
   const left = secondsToRangePercent(from, range)
   const right = secondsToRangePercent(to, range)
-  return <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0)}%`, minWidth: '1px' }} />
+  const rangeLabel = `${formatTimelineClockTime(from)} ~ ${formatTimelineClockTime(to)}`
+  return <>
+    <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0)}%`, minWidth: '1px' }} />
+    <span aria-hidden="true" className={`pointer-events-none absolute top-0 z-10 whitespace-nowrap rounded px-1 text-[9px] leading-4 ${segment.status === 'gap' ? 'text-slate-400' : 'text-sky-200'}`} style={{ left: `${left}%` }}>{rangeLabel}</span>
+  </>
 }
 
 function isRangeOverlapping(from: number, to: number, range: TimelineRangeSeconds) {
