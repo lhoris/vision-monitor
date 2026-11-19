@@ -76,7 +76,7 @@ export function RecordingTimeline({ playbackSession, events, dayStart, workArea,
   const visibleSegments = playbackSession.timelineSegments
     .filter((segment) => segment.from.slice(0, 10) === dayKey)
     .filter((segment) => isRangeOverlapping(dateToDaySeconds(segment.from, dayStart), dateToDaySeconds(segment.to, dayStart), viewRange))
-  const timelineEvents = events.length > 0 ? events : visibleSegments.length > 0 ? [createMvpAlarm(dayStart, t('recordingTimeline.sampleAlarm'))] : []
+  const timelineEvents = events.length > 0 ? events : visibleSegments.length > 0 ? createMvpAlarms(dayStart, t('recordingTimeline.sampleAlarm')) : []
   const visibleEvents = timelineEvents
     .filter((event) => event.occurredAt.slice(0, 10) === dayKey)
     .filter((event) => {
@@ -318,19 +318,11 @@ function isRangeOverlapping(from: number, to: number, range: TimelineRangeSecond
   return to >= range.from && from <= range.to
 }
 
-function createMvpAlarm(dayStart: string, title: string): CameraEventDto {
-  const occurredAt = daySecondsToDate(12 * 60 * 60, dayStart)
-  return {
-    eventId: 0,
-    cameraId: 0,
-    eventType: 'mvp_sample_alarm',
-    severity: 'warning',
-    title,
-    occurredAt: formatTimelineDateTime(occurredAt),
-    endedAt: null,
-    status: 'active',
-    metadata: { sample: true },
-  }
+function createMvpAlarms(dayStart: string, title: string): CameraEventDto[] {
+  return [
+    { eventId: -8, cameraId: 0, eventType: 'mvp_sample_alarm', severity: 'warning', title, occurredAt: formatTimelineDateTime(daySecondsToDate(8 * 60 * 60, dayStart)), endedAt: null, status: 'active', metadata: { sample: true } },
+    { eventId: -18, cameraId: 0, eventType: 'mvp_sample_alarm', severity: 'warning', title, occurredAt: formatTimelineDateTime(daySecondsToDate(18 * 60 * 60, dayStart)), endedAt: null, status: 'active', metadata: { sample: true } },
+  ]
 }
 
 function createTicks(range: TimelineRangeSeconds) {
