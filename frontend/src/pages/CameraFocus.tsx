@@ -322,6 +322,7 @@ export default function CameraFocus() {
       to: `${date}T00:00:30`,
     }
     setRecordingDraftRange(nextRange)
+    setPlaybackRange(nextRange)
     setRecordingWorkArea({ from: 0, to: 30 })
   }
 
