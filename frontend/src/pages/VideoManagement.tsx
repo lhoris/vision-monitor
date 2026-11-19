@@ -673,15 +673,15 @@ export function VideoManagement() {
         ) : null}
 
         <div className="min-h-0 flex-1 overflow-auto" onContextMenu={openContextMenu} data-onboarding="video-management-grid">
-          <DataGridTable className="w-full min-w-[1120px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
+          <DataGridTable className="w-full min-w-[1500px] table-fixed border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
-                <th className={`w-44 ${headerCell}`}>영상 제목</th>
-                <th className={`w-28 ${headerCell}`}>프로토콜</th>
-                <th className={`w-[30rem] ${headerCell}`}>라이브 영상 주소</th>
+                <th className={`w-[276px] ${headerCell}`}>영상 제목</th>
+                <th className={`w-[92px] ${headerCell}`}>프로토콜</th>
+                <th className={`w-auto ${headerCell}`}>라이브 영상 주소</th>
                 <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
-                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 기본 URL</th>
+                <th className={`w-auto ${headerCell}`}>녹화 영상 기본 URL</th>
                 <th className={`w-[242px] ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
