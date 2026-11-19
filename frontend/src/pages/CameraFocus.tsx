@@ -318,12 +318,11 @@ export default function CameraFocus() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return
     setRecordingDate(date)
     const nextRange: CameraPlaybackRange = {
-      from: `${date}T00:00:00`,
-      to: `${date}T00:00:30`,
+      from: formatTimelineDateTime(daySecondsToDate(recordingWorkArea.from, `${date}T00:00:00`)),
+      to: formatTimelineDateTime(daySecondsToDate(recordingWorkArea.to, `${date}T00:00:00`)),
     }
     setRecordingDraftRange(nextRange)
     setPlaybackRange(nextRange)
-    setRecordingWorkArea({ from: 0, to: 30 })
   }
 
   function handleRecordingWorkAreaCommit(range: TimelineRangeSeconds) {
