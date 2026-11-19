@@ -313,7 +313,7 @@ function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmen
   const to = dateToDaySeconds(segment.to, dayStart)
   const left = secondsToRangePercent(from, range)
   const right = secondsToRangePercent(to, range)
-  return <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0.2)}%` }} />
+  return <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0)}%`, minWidth: '1px' }} />
 }
 
 function isRangeOverlapping(from: number, to: number, range: TimelineRangeSeconds) {
