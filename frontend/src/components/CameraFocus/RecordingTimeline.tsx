@@ -321,7 +321,7 @@ function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmen
   const rangeLabel = `${formatTimelineClockTime(from)} ~ ${formatTimelineClockTime(displayTo)}`
   return <>
     <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0)}%`, minWidth: '1px' }} />
-    <span aria-hidden="true" className={`pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded px-1 text-[9px] leading-4 ${segment.status === 'gap' ? 'text-slate-400' : 'text-sky-200'}`} style={{ left: `${center}%` }}>{rangeLabel}</span>
+    <span aria-hidden="true" className={`pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded border bg-slate-950/95 px-2 py-0.5 text-[10px] font-semibold leading-4 shadow-lg ${segment.status === 'gap' ? 'border-slate-500 text-slate-200' : 'border-sky-300 text-white'}`} style={{ left: `${center}%` }}>{rangeLabel}</span>
   </>
 }
 
