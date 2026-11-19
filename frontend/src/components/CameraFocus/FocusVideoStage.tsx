@@ -57,12 +57,25 @@ export function FocusVideoStage({
   const title = mode === 'recording' ? '녹화 영상 영역' : '실시간 영상 영역'
   const [recordingTimeSeconds, setRecordingTimeSeconds] = useState(0)
   const [recordingSeekSeconds, setRecordingSeekSeconds] = useState<number | null>(null)
+  const recordingVideoRef = useRef<HTMLVideoElement>(null)
+  const [recordingPlaying, setRecordingPlaying] = useState(false)
 
   const [recordingMediaError, setRecordingMediaError] = useState(false)
 
   useEffect(() => {
     setRecordingMediaError(false)
+    setRecordingPlaying(false)
   }, [playbackSession?.playbackUrl])
+
+  const toggleRecordingPlayback = () => {
+    const video = recordingVideoRef.current
+    if (!video) return
+    if (video.paused || video.ended) {
+      void video.play().catch(() => undefined)
+    } else {
+      video.pause()
+    }
+  }
 
   if (mode === 'live' && liveLoading) {
     return <VideoStateMessage tone="neutral" message="영상을 불러오는 중입니다." />
@@ -116,6 +129,8 @@ export function FocusVideoStage({
                   seekSeconds={recordingSeekSeconds}
                   onTimeUpdate={setRecordingTimeSeconds}
                   onError={() => setRecordingMediaError(true)}
+                  videoRef={recordingVideoRef}
+                  onPlaybackStateChange={setRecordingPlaying}
                 />
               ) : (
                 <StreamPlayerComponent
@@ -141,7 +156,8 @@ export function FocusVideoStage({
                 loading={playbackLoading}
                 playheadTimestamp={getPlayheadTimestamp(playbackSession, recordingTimeSeconds)}
                 onDateChange={onDateChange}
-                onPlay={onRecordingSubmit}
+                onPlay={playbackSession.playbackProtocol === 'mp4' ? toggleRecordingPlayback : onRecordingSubmit}
+                isPlaying={playbackSession.playbackProtocol === 'mp4' && recordingPlaying}
                 onWorkAreaChange={onRecordingWorkAreaChange}
                 onWorkAreaCommit={onRecordingWorkAreaCommit}
                 onSeek={(timestamp) => {
@@ -192,6 +208,8 @@ function RecordingVideo({
   seekSeconds,
   onTimeUpdate,
   onError,
+  videoRef,
+  onPlaybackStateChange,
 }: {
   url: string
   seekTarget: string | null
@@ -199,9 +217,9 @@ function RecordingVideo({
   seekSeconds: number | null
   onTimeUpdate: (seconds: number) => void
   onError: () => void
+  videoRef: React.RefObject<HTMLVideoElement | null>
+  onPlaybackStateChange: (playing: boolean) => void
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-
   useEffect(() => {
     if (seekSeconds === null || !videoRef.current) return
     videoRef.current.currentTime = seekSeconds
@@ -246,6 +264,9 @@ function RecordingVideo({
       autoPlay
       playsInline
       onError={onError}
+      onPlay={() => onPlaybackStateChange(true)}
+      onPause={() => onPlaybackStateChange(false)}
+      onEnded={() => onPlaybackStateChange(false)}
       onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       className="h-full min-h-0 max-h-full w-full bg-black object-contain"
