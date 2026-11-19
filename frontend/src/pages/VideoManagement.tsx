@@ -106,7 +106,7 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             <input required value={value.url} onChange={(event) => update('url', event.target.value)} placeholder="https://..." className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
-            재생 영상 Base URL
+            녹화 영상 Base URL
             <input value={value.playbackBaseUrl ?? ''} onChange={(event) => update('playbackBaseUrl', event.target.value)} placeholder="http://host/playback/video6.mp4" className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
@@ -680,8 +680,8 @@ export function VideoManagement() {
                 <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
                 <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
-                <th className={`w-[30rem] ${headerCell}`}>재생 영상 Base URL</th>
                 <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
+                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 Base URL</th>
                 <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
@@ -697,8 +697,8 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'url', 'truncate font-mono text-xs')}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'playbackBaseUrl', 'truncate font-mono text-xs')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'playbackProtocol', PLAYBACK_PROTOCOLS)}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'playbackBaseUrl', 'truncate font-mono text-xs')}</td>
                   <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
                   <td className={bodyCell}>{renderClassCell(item)}</td>
