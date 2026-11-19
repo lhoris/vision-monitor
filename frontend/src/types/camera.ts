@@ -9,6 +9,7 @@ export interface Camera {
   location: string
   zone: string
   streamUrl: string
+  recordingBaseUrl?: string
   status: 'online' | 'offline' | 'error'
   lastSeen?: Date
   resolution?: string

@@ -13,6 +13,7 @@ const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
 const emptyForm: VideoSourceInput = {
   name: '',
   url: '',
+  recordingBaseUrl: '',
   protocol: 'WEBRTC',
   location: '',
   zone: '',
@@ -24,7 +25,7 @@ const emptyForm: VideoSourceInput = {
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
-type SelectableVideoField = 'name' | 'protocol' | 'url' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
+type SelectableVideoField = 'name' | 'protocol' | 'url' | 'recordingBaseUrl' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
 type VideoGridRowState = 'clean' | 'dirty' | 'new'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
@@ -101,6 +102,10 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
           <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
             영상 주소
             <input required value={value.url} onChange={(event) => update('url', event.target.value)} placeholder="https://..." className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+          </label>
+          <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
+            녹화 영상 Base URL
+            <input value={value.recordingBaseUrl ?? ''} onChange={(event) => update('recordingBaseUrl', event.target.value)} placeholder="http://host/playback/video6.mp4" className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             위치
@@ -245,7 +250,7 @@ export function VideoManagement() {
   const changedRows = rows.filter((row) => row.rowState !== 'clean')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
 
-  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
+  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'recordingBaseUrl', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
   const getCellDisplayValue = (row: VideoGridRow, field: SelectableVideoField) => {
     if (field === 'modelProcessId') return row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`
     if (field === 'classCode') return classOptions.find((option) => option.value === row.classCode)?.label ?? (row.classCode ? row.classCode : '미지정')
@@ -370,6 +375,7 @@ export function VideoManagement() {
   const toInput = (row: VideoGridRow): VideoSourceInput => ({
     name: row.name,
     url: row.url,
+    recordingBaseUrl: row.recordingBaseUrl ?? '',
     protocol: normalizeManagedProtocol(row.protocol),
     location: row.location ?? '',
     zone: row.zone ?? '',
@@ -473,6 +479,7 @@ export function VideoManagement() {
     openAdd({
       name: `${item.name} 복사본`,
       url: item.url,
+      recordingBaseUrl: item.recordingBaseUrl ?? '',
       protocol: normalizeManagedProtocol(item.protocol),
       location: item.location ?? '',
       zone: item.zone ?? '',
@@ -502,7 +509,7 @@ export function VideoManagement() {
     setContextMenu({ x: event.clientX, y: event.clientY })
   }
 
-  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'location' | 'zone'>, className = '') => {
+  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'recordingBaseUrl' | 'location' | 'zone'>, className = '') => {
     const editing = editingCell?.id === row.id && editingCell.field === field
     const value = String(row[field] ?? '')
     if (editing) {
@@ -659,6 +666,7 @@ export function VideoManagement() {
           <DataGridTable className="w-full min-w-[1120px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
+                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 Base URL</th>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
                 <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
@@ -674,6 +682,7 @@ export function VideoManagement() {
             <tbody>
               {visibleRows.map((item) => (
                 <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 dark:text-slate-100`}>
+                  <td className={bodyCell}>{renderTextCell(item, 'recordingBaseUrl', 'truncate font-mono text-xs')}</td>
                   <td className={`${bodyCell} text-center`}><input aria-label={`${item.name} 선택`} type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleRow(item.id)} /></td>
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
@@ -685,7 +694,7 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
-              {!visibleRows.length ? <tr><td colSpan={9} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
+              {!visibleRows.length ? <tr><td colSpan={10} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
           </DataGridTable>
         </div>

@@ -14,7 +14,8 @@ export const MVP_RECORDING_RANGE = {
 class RecordingService {
   async getCameraPlayback(
     cameraId: number,
-    range: CameraPlaybackRange
+    range: CameraPlaybackRange,
+    recordingBaseUrl?: string | null
   ): Promise<ApiResponse<PlaybackSessionDto>> {
     if (!Number.isSafeInteger(cameraId) || cameraId <= 0) {
       return {
@@ -34,7 +35,7 @@ class RecordingService {
       }
     }
 
-    const playbackUrl = new URL(`${MVP_RECORDING_BASE_URL}${MVP_RECORDING_PATH}`)
+    const playbackUrl = new URL(recordingBaseUrl?.trim() || `${MVP_RECORDING_BASE_URL}${MVP_RECORDING_PATH}`)
     playbackUrl.searchParams.set('start', toRecordingTimestamp(range.from))
     playbackUrl.searchParams.set('end', toRecordingTimestamp(range.to))
     playbackUrl.searchParams.set('user', MVP_RECORDING_USER)

@@ -16,6 +16,7 @@ public class VideoSourceDto {
     private Long id;
     private String name;
     private String url;
+    private String recordingBaseUrl;
     private String protocol;
     private String location;
     private String zone;
@@ -28,7 +29,7 @@ public class VideoSourceDto {
 
     public VideoSource toEntity() {
         return VideoSource.builder()
-                .id(id).name(name).url(url).protocol(protocol)
+                .id(id).name(name).url(url).recordingBaseUrl(recordingBaseUrl).protocol(protocol)
                 .location(location).zone(zone).status(status).remarks(remarks)
                 .modelProcessId(modelProcessId)
                 .classCode(classCode)
@@ -37,7 +38,7 @@ public class VideoSourceDto {
 
     public static VideoSourceDto from(VideoSource source) {
         return VideoSourceDto.builder()
-                .id(source.getId()).name(source.getName()).url(source.getUrl())
+                .id(source.getId()).name(source.getName()).url(source.getUrl()).recordingBaseUrl(source.getRecordingBaseUrl())
                 .protocol(source.getProtocol()).location(source.getLocation())
                 .zone(source.getZone()).status(source.getStatus()).remarks(source.getRemarks())
                 .modelProcessId(source.getModelProcessId())

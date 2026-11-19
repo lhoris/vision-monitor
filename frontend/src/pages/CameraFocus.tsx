@@ -132,6 +132,7 @@ export default function CameraFocus() {
     ?? null
   const { playbackSession, playbackLoading, playbackError } = useCameraPlayback({
     cameraId: apiCameraId,
+    recordingBaseUrl: displayCamera?.recordingBaseUrl,
     enabled: routeState.mode === 'recording',
     eventId: routeState.selectedEventId,
     range: playbackRange,

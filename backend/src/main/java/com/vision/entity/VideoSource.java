@@ -33,6 +33,9 @@ public class VideoSource extends BaseAudit {
     @Column(name = "VIDEO_URL", length = 2000)
     private String url;
 
+    @Column(name = "RECORDING_BASE_URL", length = 2000)
+    private String recordingBaseUrl;
+
     @Column(name = "VIDEO_PROTOCOL", length = 10)
     private String protocol;
 

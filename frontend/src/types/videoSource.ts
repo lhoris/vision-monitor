@@ -5,6 +5,7 @@ export interface VideoSource {
   id: number
   name: string
   url: string
+  recordingBaseUrl?: string
   protocol: VideoProtocol
   location?: string
   zone?: string

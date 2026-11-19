@@ -61,6 +61,7 @@ public class VideoSourceService {
         source.setId(null);
         source.setName(request.getName().trim());
         source.setUrl(url);
+        source.setRecordingBaseUrl(trimOrNull(request.getRecordingBaseUrl()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
         source.setStatus(normalizeStatus(request.getStatus()));
         source.setLocation(trimOrNull(request.getLocation()));
@@ -79,6 +80,7 @@ public class VideoSourceService {
                 .ifPresent(found -> { throw new ApiException("DUPLICATE_VIDEO_URL", "이미 등록된 영상 주소입니다."); });
         source.setName(request.getName().trim());
         source.setUrl(url);
+        source.setRecordingBaseUrl(trimOrNull(request.getRecordingBaseUrl()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
         source.setLocation(trimOrNull(request.getLocation()));
         source.setZone(trimOrNull(request.getZone()));
