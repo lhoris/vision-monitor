@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CameraFocusShell } from '@/components/CameraFocus'
 import { useActiveCameraAlerts } from '@/hooks/useActiveCameraAlerts'
 import { useCameraFocusEvents } from '@/hooks/useCameraFocusEvents'
-import { DEFAULT_PLAYBACK_RANGE, useCameraPlayback } from '@/hooks/useCameraPlayback'
+import { useCameraPlayback } from '@/hooks/useCameraPlayback'
 import { cameraService, focusApiService } from '@/services'
 import { useAppSelector } from '@/store'
 import type { ActiveAlertDto, CameraFocusDto, CameraPlaybackRange, EventDetailDto, LiveStreamDto } from '@/types/cameraFocus'
@@ -19,11 +19,14 @@ import {
   type TimelineRangeSeconds,
 } from '@/components/CameraFocus/recordingTimelineModel'
 
-const DEFAULT_RECORDING_DATE = DEFAULT_PLAYBACK_RANGE.from.slice(0, 10)
-const DEFAULT_RECORDING_DAY_START = `${DEFAULT_RECORDING_DATE}T00:00:00`
+const DEFAULT_RECORDING_DATE = toDateInputValue(new Date())
+const DEFAULT_RECORDING_RANGE: CameraPlaybackRange = {
+  from: `${DEFAULT_RECORDING_DATE}T00:00:00`,
+  to: `${DEFAULT_RECORDING_DATE}T00:00:30`,
+}
 const DEFAULT_RECORDING_WORK_AREA: TimelineRangeSeconds = {
-  from: dateToDaySeconds(DEFAULT_PLAYBACK_RANGE.from, DEFAULT_RECORDING_DAY_START),
-  to: dateToDaySeconds(DEFAULT_PLAYBACK_RANGE.to, DEFAULT_RECORDING_DAY_START),
+  from: 0,
+  to: 30,
 }
 
 export default function CameraFocus() {
@@ -37,8 +40,8 @@ export default function CameraFocus() {
   const [liveError, setLiveError] = useState<string | null>(null)
   const [selectedEventDetail, setSelectedEventDetail] = useState<EventDetailDto | null>(null)
   const [manualAlerts, setManualAlerts] = useState<ActiveAlertDto[]>([])
-  const [recordingDraftRange, setRecordingDraftRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
-  const [playbackRange, setPlaybackRange] = useState<CameraPlaybackRange>(DEFAULT_PLAYBACK_RANGE)
+  const [recordingDraftRange, setRecordingDraftRange] = useState<CameraPlaybackRange>(DEFAULT_RECORDING_RANGE)
+  const [playbackRange, setPlaybackRange] = useState<CameraPlaybackRange>(DEFAULT_RECORDING_RANGE)
   const [recordingDate, setRecordingDate] = useState(DEFAULT_RECORDING_DATE)
   const [recordingWorkArea, setRecordingWorkArea] = useState<TimelineRangeSeconds>(DEFAULT_RECORDING_WORK_AREA)
   const realtimeAlarm = useAppSelector((state) => state.event.realtimeEvent)
@@ -283,8 +286,8 @@ export default function CameraFocus() {
       nextParams.delete('eventId')
     }
     if (mode === 'recording') {
-      setRecordingDraftRange(DEFAULT_PLAYBACK_RANGE)
-      setPlaybackRange(DEFAULT_PLAYBACK_RANGE)
+      setRecordingDraftRange(DEFAULT_RECORDING_RANGE)
+      setPlaybackRange(DEFAULT_RECORDING_RANGE)
       setRecordingDate(DEFAULT_RECORDING_DATE)
       setRecordingWorkArea(DEFAULT_RECORDING_WORK_AREA)
     }
@@ -451,6 +454,10 @@ export default function CameraFocus() {
 function toLocalDateTimeInput(value: Date): string {
   const pad = (part: number) => String(part).padStart(2, '0')
   return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}:${pad(value.getSeconds())}`
+}
+
+function toDateInputValue(value: Date): string {
+  return toLocalDateTimeInput(value).slice(0, 10)
 }
 
 function parseTemporarySources(value: string | null): Record<number, TemporaryVideoSource> {
