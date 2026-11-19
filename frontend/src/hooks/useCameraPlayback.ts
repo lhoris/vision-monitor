@@ -7,7 +7,8 @@ export const DEFAULT_PLAYBACK_RANGE = MVP_RECORDING_RANGE
 
 interface UseCameraPlaybackOptions {
   cameraId: number | null
-  recordingBaseUrl?: string | null
+  playbackBaseUrl?: string | null
+  playbackProtocol?: 'MP4' | 'HLS' | null
   enabled: boolean
   eventId?: number
   range?: CameraPlaybackRange
@@ -22,7 +23,8 @@ export interface UseCameraPlaybackResult {
 
 export function useCameraPlayback({
   cameraId,
-  recordingBaseUrl,
+  playbackBaseUrl,
+  playbackProtocol,
   enabled,
   eventId,
   range: requestedRange,
@@ -52,7 +54,7 @@ export function useCameraPlayback({
       const response = await focusApiService.getCameraPlayback(cameraId, {
         ...range,
         eventId,
-      }, recordingBaseUrl)
+      }, playbackBaseUrl, playbackProtocol)
 
       if (!cancelled) {
         setPlaybackSession(response.success ? response.data ?? null : null)
@@ -66,7 +68,7 @@ export function useCameraPlayback({
     return () => {
       cancelled = true
     }
-  }, [cameraId, enabled, eventId, range, recordingBaseUrl])
+  }, [cameraId, enabled, eventId, range, playbackBaseUrl, playbackProtocol])
 
   return {
     playbackSession,

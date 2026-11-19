@@ -158,7 +158,8 @@ function toCameraFocus(camera: CameraDetail): CameraFocusDto {
 
   return {
     cameraId: camera.id,
-    recordingBaseUrl: camera.recordingBaseUrl ?? null,
+    playbackBaseUrl: camera.playbackBaseUrl ?? null,
+    playbackProtocol: camera.playbackProtocol ?? null,
     modelProcessId: camera.modelProcessId ?? null,
     cameraName: camera.name,
     processType: 'unknown',

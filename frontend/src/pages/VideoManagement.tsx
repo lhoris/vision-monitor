@@ -4,16 +4,18 @@ import { videoSourceService } from '@/services/videoSourceService'
 import { listProcesses } from '@/services/modelManagementService'
 import type { ModelProcess } from '@/types/modelManagement'
 import { useAppSelector } from '@/store'
-import type { VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
+import type { PlaybackProtocol, VideoProtocol, VideoSource, VideoSourceInput, VideoSourceStatus } from '@/types/videoSource'
 import { useDataGridSelection } from '@/hooks/useDataGridSelection'
 import { useCommonCode } from '@/hooks/useCommonCode'
 
 const VIDEO_PROTOCOLS: VideoProtocol[] = ['WEBRTC', 'HLS']
+const PLAYBACK_PROTOCOLS: PlaybackProtocol[] = ['MP4', 'HLS']
 
 const emptyForm: VideoSourceInput = {
   name: '',
   url: '',
-  recordingBaseUrl: '',
+  playbackBaseUrl: '',
+  playbackProtocol: 'MP4',
   protocol: 'WEBRTC',
   location: '',
   zone: '',
@@ -25,7 +27,7 @@ const emptyForm: VideoSourceInput = {
 
 type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
-type SelectableVideoField = 'name' | 'protocol' | 'url' | 'recordingBaseUrl' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
+type SelectableVideoField = 'name' | 'protocol' | 'url' | 'playbackBaseUrl' | 'playbackProtocol' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
 type VideoGridRowState = 'clean' | 'dirty' | 'new'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
@@ -104,8 +106,14 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             <input required value={value.url} onChange={(event) => update('url', event.target.value)} placeholder="https://..." className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
-            녹화 영상 Base URL
-            <input value={value.recordingBaseUrl ?? ''} onChange={(event) => update('recordingBaseUrl', event.target.value)} placeholder="http://host/playback/video6.mp4" className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+            재생 영상 Base URL
+            <input value={value.playbackBaseUrl ?? ''} onChange={(event) => update('playbackBaseUrl', event.target.value)} placeholder="http://host/playback/video6.mp4" className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
+          </label>
+          <label className="text-sm text-slate-700 dark:text-slate-200">
+            녹화 영상 유형
+            <select value={value.playbackProtocol ?? 'MP4'} onChange={(event) => update('playbackProtocol', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
+              {PLAYBACK_PROTOCOLS.map((protocol) => <option key={protocol} value={protocol}>{protocol} Playback</option>)}
+            </select>
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
             위치
@@ -250,7 +258,7 @@ export function VideoManagement() {
   const changedRows = rows.filter((row) => row.rowState !== 'clean')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
 
-  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'recordingBaseUrl', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
+  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'playbackBaseUrl', 'playbackProtocol', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
   const getCellDisplayValue = (row: VideoGridRow, field: SelectableVideoField) => {
     if (field === 'modelProcessId') return row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`
     if (field === 'classCode') return classOptions.find((option) => option.value === row.classCode)?.label ?? (row.classCode ? row.classCode : '미지정')
@@ -375,7 +383,8 @@ export function VideoManagement() {
   const toInput = (row: VideoGridRow): VideoSourceInput => ({
     name: row.name,
     url: row.url,
-    recordingBaseUrl: row.recordingBaseUrl ?? '',
+    playbackBaseUrl: row.playbackBaseUrl ?? '',
+    playbackProtocol: row.playbackProtocol ?? 'MP4',
     protocol: normalizeManagedProtocol(row.protocol),
     location: row.location ?? '',
     zone: row.zone ?? '',
@@ -479,7 +488,8 @@ export function VideoManagement() {
     openAdd({
       name: `${item.name} 복사본`,
       url: item.url,
-      recordingBaseUrl: item.recordingBaseUrl ?? '',
+      playbackBaseUrl: item.playbackBaseUrl ?? '',
+      playbackProtocol: item.playbackProtocol ?? 'MP4',
       protocol: normalizeManagedProtocol(item.protocol),
       location: item.location ?? '',
       zone: item.zone ?? '',
@@ -509,7 +519,7 @@ export function VideoManagement() {
     setContextMenu({ x: event.clientX, y: event.clientY })
   }
 
-  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'recordingBaseUrl' | 'location' | 'zone'>, className = '') => {
+  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'playbackBaseUrl' | 'location' | 'zone'>, className = '') => {
     const editing = editingCell?.id === row.id && editingCell.field === field
     const value = String(row[field] ?? '')
     if (editing) {
@@ -532,7 +542,7 @@ export function VideoManagement() {
     )
   }
 
-  const renderSelectCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'protocol' | 'status'>, options: string[]) => {
+  const renderSelectCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'protocol' | 'playbackProtocol' | 'status'>, options: string[]) => {
     const editing = editingCell?.id === row.id && editingCell.field === field
     if (editing) {
       return (
@@ -554,7 +564,7 @@ export function VideoManagement() {
     }
     return (
       <button type="button" aria-label={`${field} 셀`} {...selectableCellProps(row.id, field)} onClick={() => setEditingCell({ id: row.id, field })} className={`${cellValue} ${selectedCellStateClass(row.id, field)}`}>
-        {field === 'status' ? <span className={row.status === 'ACTIVE' ? 'text-emerald-600' : 'text-slate-500'}>{row.status}</span> : row.protocol}
+        {field === 'status' ? <span className={row.status === 'ACTIVE' ? 'text-emerald-600' : 'text-slate-500'}>{row.status}</span> : field === 'playbackProtocol' ? `${row.playbackProtocol ?? 'MP4'} Playback` : row.protocol}
       </button>
     )
   }
@@ -667,6 +677,7 @@ export function VideoManagement() {
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
                 <th className={`w-[30rem] ${headerCell}`}>녹화 영상 Base URL</th>
+                <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
                 <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
@@ -682,7 +693,8 @@ export function VideoManagement() {
             <tbody>
               {visibleRows.map((item) => (
                 <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 dark:text-slate-100`}>
-                  <td className={bodyCell}>{renderTextCell(item, 'recordingBaseUrl', 'truncate font-mono text-xs')}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'playbackBaseUrl', 'truncate font-mono text-xs')}</td>
+                  <td className={bodyCell}>{renderSelectCell(item, 'playbackProtocol', PLAYBACK_PROTOCOLS)}</td>
                   <td className={`${bodyCell} text-center`}><input aria-label={`${item.name} 선택`} type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleRow(item.id)} /></td>
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
@@ -694,7 +706,7 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
-              {!visibleRows.length ? <tr><td colSpan={10} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
+              {!visibleRows.length ? <tr><td colSpan={11} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
           </DataGridTable>
         </div>

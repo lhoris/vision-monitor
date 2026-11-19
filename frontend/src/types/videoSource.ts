@@ -1,11 +1,13 @@
 export type VideoProtocol = 'WEBRTC' | 'HLS'
+export type PlaybackProtocol = 'MP4' | 'HLS'
 export type VideoSourceStatus = 'ACTIVE' | 'INACTIVE'
 
 export interface VideoSource {
   id: number
   name: string
   url: string
-  recordingBaseUrl?: string
+  playbackBaseUrl?: string
+  playbackProtocol?: PlaybackProtocol
   protocol: VideoProtocol
   location?: string
   zone?: string

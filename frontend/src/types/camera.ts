@@ -9,7 +9,8 @@ export interface Camera {
   location: string
   zone: string
   streamUrl: string
-  recordingBaseUrl?: string
+  playbackBaseUrl?: string
+  playbackProtocol?: 'MP4' | 'HLS'
   status: 'online' | 'offline' | 'error'
   lastSeen?: Date
   resolution?: string

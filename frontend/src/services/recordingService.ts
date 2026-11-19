@@ -15,7 +15,8 @@ class RecordingService {
   async getCameraPlayback(
     cameraId: number,
     range: CameraPlaybackRange,
-    recordingBaseUrl?: string | null
+    playbackBaseUrl?: string | null,
+    playbackProtocol: 'MP4' | 'HLS' | null = 'MP4'
   ): Promise<ApiResponse<PlaybackSessionDto>> {
     if (!Number.isSafeInteger(cameraId) || cameraId <= 0) {
       return {
@@ -35,7 +36,8 @@ class RecordingService {
       }
     }
 
-    const playbackUrl = new URL(recordingBaseUrl?.trim() || `${MVP_RECORDING_BASE_URL}${MVP_RECORDING_PATH}`)
+    const normalizedPlaybackProtocol = playbackProtocol === 'HLS' ? 'HLS' : 'MP4'
+    const playbackUrl = new URL(playbackBaseUrl?.trim() || `${MVP_RECORDING_BASE_URL}${MVP_RECORDING_PATH}`)
     playbackUrl.searchParams.set('start', toRecordingTimestamp(range.from))
     playbackUrl.searchParams.set('end', toRecordingTimestamp(range.to))
     playbackUrl.searchParams.set('user', MVP_RECORDING_USER)
@@ -44,7 +46,7 @@ class RecordingService {
     const data: PlaybackSessionDto = {
       cameraId,
       playbackUrl: playbackUrl.toString(),
-      playbackProtocol: 'mp4',
+      playbackProtocol: normalizedPlaybackProtocol.toLowerCase() as PlaybackSessionDto['playbackProtocol'],
       sessionId: `mvp-video6-${toRecordingTimestamp(range.from)}-${toRecordingTimestamp(range.to)}`,
       expiresAt: null,
       availableFrom: range.from,

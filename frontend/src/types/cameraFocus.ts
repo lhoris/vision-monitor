@@ -20,7 +20,8 @@ export interface CameraFocusDto {
   cameraId: number
   modelProcessId?: number | null
   cameraName: string
-  recordingBaseUrl?: string | null
+  playbackBaseUrl?: string | null
+  playbackProtocol?: 'MP4' | 'HLS' | null
   processType: string
   zoneName: string
   lineName: string

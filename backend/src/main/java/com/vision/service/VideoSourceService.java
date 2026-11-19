@@ -61,7 +61,8 @@ public class VideoSourceService {
         source.setId(null);
         source.setName(request.getName().trim());
         source.setUrl(url);
-        source.setRecordingBaseUrl(trimOrNull(request.getRecordingBaseUrl()));
+        source.setPlaybackBaseUrl(trimOrNull(request.getPlaybackBaseUrl()));
+        source.setPlaybackProtocol(normalizePlaybackProtocol(request.getPlaybackProtocol()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
         source.setStatus(normalizeStatus(request.getStatus()));
         source.setLocation(trimOrNull(request.getLocation()));
@@ -80,7 +81,8 @@ public class VideoSourceService {
                 .ifPresent(found -> { throw new ApiException("DUPLICATE_VIDEO_URL", "이미 등록된 영상 주소입니다."); });
         source.setName(request.getName().trim());
         source.setUrl(url);
-        source.setRecordingBaseUrl(trimOrNull(request.getRecordingBaseUrl()));
+        source.setPlaybackBaseUrl(trimOrNull(request.getPlaybackBaseUrl()));
+        source.setPlaybackProtocol(normalizePlaybackProtocol(request.getPlaybackProtocol()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
         source.setLocation(trimOrNull(request.getLocation()));
         source.setZone(trimOrNull(request.getZone()));
@@ -109,6 +111,12 @@ public class VideoSourceService {
     private String normalizeProtocol(String value) {
         String normalized = value == null ? "" : value.trim().toUpperCase(Locale.ROOT);
         if (!PROTOCOLS.contains(normalized)) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 영상 프로토콜입니다.");
+        return normalized;
+    }
+
+    private String normalizePlaybackProtocol(String value) {
+        String normalized = value == null || value.isBlank() ? "MP4" : value.trim().toUpperCase(Locale.ROOT);
+        if (!List.of("MP4", "HLS").contains(normalized)) throw new ApiException("VALIDATION_ERROR", "지원하지 않는 녹화 영상 유형입니다.");
         return normalized;
     }
 

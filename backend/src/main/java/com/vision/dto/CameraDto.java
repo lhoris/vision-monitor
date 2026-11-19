@@ -22,7 +22,8 @@ public class CameraDto {
     private String location;
     private String zone;
     private String streamUrl;
-    private String recordingBaseUrl;
+    private String playbackBaseUrl;
+    private String playbackProtocol;
     private String streamProtocol;
     private String status;
     private Long modelProcessId;

@@ -24,9 +24,10 @@ class FocusApiService {
   async getCameraPlayback(
     cameraId: number,
     range: CameraPlaybackRange,
-    recordingBaseUrl?: string | null
+    playbackBaseUrl?: string | null,
+    playbackProtocol?: 'MP4' | 'HLS' | null
   ): Promise<ApiResponse<PlaybackSessionDto>> {
-    return recordingService.getCameraPlayback(cameraId, range, recordingBaseUrl)
+    return recordingService.getCameraPlayback(cameraId, range, playbackBaseUrl, playbackProtocol)
   }
 
   async getCameraEvents(
