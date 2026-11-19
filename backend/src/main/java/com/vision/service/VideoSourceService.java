@@ -103,7 +103,11 @@ public class VideoSourceService {
         if (request == null || request.getName() == null || request.getName().isBlank()) throw new ApiException("VALIDATION_ERROR", "영상 이름은 필수입니다.");
         if (request.getUrl() == null || request.getUrl().isBlank()) throw new ApiException("VALIDATION_ERROR", "영상 주소는 필수입니다.");
         try { URI.create(request.getUrl().trim()); } catch (IllegalArgumentException error) { throw new ApiException("VALIDATION_ERROR", "올바른 영상 주소를 입력하세요."); }
+        if (request.getPlaybackBaseUrl() != null && !request.getPlaybackBaseUrl().isBlank()) {
+            try { URI.create(request.getPlaybackBaseUrl().trim()); } catch (IllegalArgumentException error) { throw new ApiException("VALIDATION_ERROR", "올바른 재생 영상 Base URL을 입력하세요."); }
+        }
         normalizeProtocol(request.getProtocol());
+        normalizePlaybackProtocol(request.getPlaybackProtocol());
         normalizeStatus(request.getStatus());
         normalizeClassCode(request.getClassCode());
     }

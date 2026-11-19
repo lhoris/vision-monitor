@@ -676,12 +676,12 @@ export function VideoManagement() {
           <DataGridTable className="w-full min-w-[1120px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm dark:border-slate-700">
             <thead className="sticky top-0 z-10 text-xs font-semibold uppercase">
               <tr>
-                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 Base URL</th>
-                <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
                 <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
                 <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
+                <th className={`w-[30rem] ${headerCell}`}>재생 영상 Base URL</th>
+                <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
                 <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
@@ -693,12 +693,12 @@ export function VideoManagement() {
             <tbody>
               {visibleRows.map((item) => (
                 <tr key={item.id} className={`${selectedIds.has(item.id) ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white dark:bg-slate-800'} h-9 text-slate-800 dark:text-slate-100`}>
-                  <td className={bodyCell}>{renderTextCell(item, 'playbackBaseUrl', 'truncate font-mono text-xs')}</td>
-                  <td className={bodyCell}>{renderSelectCell(item, 'playbackProtocol', PLAYBACK_PROTOCOLS)}</td>
                   <td className={`${bodyCell} text-center`}><input aria-label={`${item.name} 선택`} type="checkbox" checked={selectedIds.has(item.id)} onChange={() => toggleRow(item.id)} /></td>
                   <td className={bodyCell}>{renderTextCell(item, 'name', 'font-medium')}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'protocol', VIDEO_PROTOCOLS)}</td>
                   <td className={bodyCell}>{renderTextCell(item, 'url', 'truncate font-mono text-xs')}</td>
+                  <td className={bodyCell}>{renderTextCell(item, 'playbackBaseUrl', 'truncate font-mono text-xs')}</td>
+                  <td className={bodyCell}>{renderSelectCell(item, 'playbackProtocol', PLAYBACK_PROTOCOLS)}</td>
                   <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
                   <td className={bodyCell}>{renderClassCell(item)}</td>
