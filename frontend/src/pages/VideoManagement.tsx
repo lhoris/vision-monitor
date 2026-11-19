@@ -102,11 +102,11 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             </select>
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
-            영상 주소
+            라이브 영상 주소
             <input required value={value.url} onChange={(event) => update('url', event.target.value)} placeholder="https://..." className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
-            녹화 영상 Base URL
+            녹화 영상 기본 URL
             <input value={value.playbackBaseUrl ?? ''} onChange={(event) => update('playbackBaseUrl', event.target.value)} placeholder="http://host/playback/video6.mp4" className="mt-1 h-9 w-full rounded border border-slate-300 px-2 font-mono text-sm text-slate-900 outline-none focus:border-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
@@ -613,7 +613,7 @@ export function VideoManagement() {
     { id: 'select', ariaLabel: '', kind: 'empty', widthClassName: 'w-12', value: '' },
     { id: 'name', ariaLabel: '영상 제목 필터', value: filters.name, widthClassName: 'w-44', onChange: (value) => setFilter('name', value) },
     { id: 'protocol', ariaLabel: '프로토콜 필터', kind: 'select', value: filters.protocol, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, ...VIDEO_PROTOCOLS.map((value) => ({ value, label: value }))], onChange: (value) => setFilter('protocol', value) },
-    { id: 'url', ariaLabel: '영상 주소 필터', value: filters.url, widthClassName: 'w-[30rem]', onChange: (value) => setFilter('url', value) },
+    { id: 'url', ariaLabel: '라이브 영상 주소 필터', value: filters.url, widthClassName: 'w-[30rem]', onChange: (value) => setFilter('url', value) },
     { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
     { id: 'location', ariaLabel: '위치 필터', value: filters.location, widthClassName: 'w-36', onChange: (value) => setFilter('location', value) },
     { id: 'zone', ariaLabel: '구역 필터', value: filters.zone, widthClassName: 'w-28', onChange: (value) => setFilter('zone', value) },
@@ -626,7 +626,7 @@ export function VideoManagement() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">관리자 메뉴</p>
           <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">영상 관리</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">영상 주소 목록을 그리드에서 관리합니다.</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">라이브 영상 주소 목록을 그리드에서 관리합니다.</p>
         </div>
       </div>
 
@@ -679,9 +679,9 @@ export function VideoManagement() {
                 <th className={`w-12 ${headerCell}`}><input aria-label="전체 선택" type="checkbox" checked={allVisibleSelected} onChange={toggleVisible} /></th>
                 <th className={`w-44 ${headerCell}`}>영상 제목</th>
                 <th className={`w-28 ${headerCell}`}>프로토콜</th>
-                <th className={`w-[30rem] ${headerCell}`}>영상 주소</th>
+                <th className={`w-[30rem] ${headerCell}`}>라이브 영상 주소</th>
                 <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
-                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 Base URL</th>
+                <th className={`w-[30rem] ${headerCell}`}>녹화 영상 기본 URL</th>
                 <th className={`w-36 ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
@@ -706,7 +706,7 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
-              {!visibleRows.length ? <tr><td colSpan={11} className="p-10 text-center text-sm text-slate-500">조건에 맞는 영상 주소가 없습니다.</td></tr> : null}
+              {!visibleRows.length ? <tr><td colSpan={11} className="p-10 text-center text-sm text-slate-500">조건에 맞는 라이브 영상 주소가 없습니다.</td></tr> : null}
             </tbody>
           </DataGridTable>
         </div>
