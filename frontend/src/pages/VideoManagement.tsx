@@ -682,7 +682,7 @@ export function VideoManagement() {
                 <th className={`w-[30rem] ${headerCell}`}>라이브 영상 주소</th>
                 <th className={`w-32 ${headerCell}`}>녹화 영상 유형</th>
                 <th className={`w-[30rem] ${headerCell}`}>녹화 영상 기본 URL</th>
-                <th className={`w-48 ${headerCell}`}>모델 프로세스</th>
+                <th className={`w-[242px] ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
                 <th className={`w-36 ${headerCell}`}>위치</th>
