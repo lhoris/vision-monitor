@@ -224,31 +224,22 @@ function RecordingVideo({
   onPlaybackStateChange: (playing: boolean) => void
 }) {
   const timelineDurationSeconds = Math.max(0, (new Date(availableTo).getTime() - new Date(availableFrom).getTime()) / 1000)
-  const toMediaSeconds = (timelineSeconds: number, mediaDurationSeconds: number) => {
-    if (!Number.isFinite(mediaDurationSeconds) || mediaDurationSeconds <= 0 || timelineDurationSeconds <= 0) return timelineSeconds
-    return Math.min(Math.max((timelineSeconds / timelineDurationSeconds) * mediaDurationSeconds, 0), mediaDurationSeconds)
-  }
-  const toTimelineSeconds = (mediaSeconds: number, mediaDurationSeconds: number) => {
-    if (!Number.isFinite(mediaDurationSeconds) || mediaDurationSeconds <= 0 || timelineDurationSeconds <= 0) return mediaSeconds
-    return Math.min(Math.max((mediaSeconds / mediaDurationSeconds) * timelineDurationSeconds, 0), timelineDurationSeconds)
-  }
-
   useEffect(() => {
     if (seekSeconds === null || !videoRef.current) return
-    videoRef.current.currentTime = toMediaSeconds(seekSeconds, videoRef.current.duration)
-  }, [seekSeconds, timelineDurationSeconds])
+    videoRef.current.currentTime = seekSeconds
+  }, [seekSeconds])
 
   useEffect(() => {
     if (!seekTarget || !videoRef.current) return
     const offset = Math.max(0, (new Date(seekTarget).getTime() - new Date(availableFrom).getTime()) / 1000)
     const video = videoRef.current
     const seek = () => {
-      if (Number.isFinite(offset)) video.currentTime = toMediaSeconds(offset, video.duration)
+      if (Number.isFinite(offset)) video.currentTime = offset
     }
     if (video.readyState >= 1) seek()
     else video.addEventListener('loadedmetadata', seek, { once: true })
     return () => video.removeEventListener('loadedmetadata', seek)
-  }, [availableFrom, seekTarget, timelineDurationSeconds])
+  }, [availableFrom, seekTarget])
 
   useEffect(() => {
     const video = videoRef.current
@@ -283,8 +274,8 @@ function RecordingVideo({
         onPlaybackStateChange(false)
         onTimeUpdate(timelineDurationSeconds)
       }}
-      onTimeUpdate={(event) => onTimeUpdate(toTimelineSeconds(event.currentTarget.currentTime, event.currentTarget.duration))}
-      onLoadedMetadata={(event) => onTimeUpdate(toTimelineSeconds(event.currentTarget.currentTime, event.currentTarget.duration))}
+      onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
+      onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       className="h-full min-h-0 max-h-full w-full bg-black object-contain"
     />
   )
