@@ -320,7 +320,7 @@ function TimelineSegment({ segment, dayStart, range }: { segment: TimelineSegmen
   const center = (left + right) / 2
   return <>
     <span role="img" aria-label={segment.status === 'gap' ? `녹화 공백 구간 ${segment.from}부터 ${segment.to}까지, seek 불가` : `녹화 가능 구간 ${segment.from}부터 ${segment.to}까지`} className={`absolute inset-y-0 ${segment.status === 'gap' ? 'focus-recording-segment--gap' : 'focus-recording-segment--available'}`} style={{ left: `${left}%`, width: `${Math.max(right - left, 0)}%`, minWidth: '1px' }} />
-    <span aria-hidden="true" className={`pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded border bg-slate-950/65 px-1 text-[9px] font-semibold leading-4 shadow-[0_1px_2px_rgba(0,0,0,0.45)] ${segment.status === 'gap' ? 'border-slate-500/60 text-slate-200' : 'border-sky-300/70 text-white'}`} style={{ left: `${center}%` }}><span>{formatTimelineClockTime(from)}</span><span className="mx-2">~</span><span>{formatTimelineClockTime(displayTo)}</span></span>
+    <span aria-hidden="true" className={`pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap px-1 text-[9px] font-semibold leading-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] ${segment.status === 'gap' ? 'text-slate-300' : 'text-white'}`} style={{ left: `${center}%` }}><span>{formatTimelineClockTime(from)}</span><span className="mx-2">~</span><span>{formatTimelineClockTime(displayTo)}</span></span>
   </>
 }
 

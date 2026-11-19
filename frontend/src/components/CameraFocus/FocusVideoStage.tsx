@@ -126,6 +126,7 @@ export function FocusVideoStage({
                   url={playbackSession.playbackUrl}
                   seekTarget={seekTarget}
                   availableFrom={playbackSession.availableFrom}
+                  availableTo={playbackSession.availableTo}
                   seekSeconds={recordingSeekSeconds}
                   onTimeUpdate={setRecordingTimeSeconds}
                   onError={() => setRecordingMediaError(true)}
@@ -205,6 +206,7 @@ function RecordingVideo({
   url,
   seekTarget,
   availableFrom,
+  availableTo,
   seekSeconds,
   onTimeUpdate,
   onError,
@@ -214,28 +216,39 @@ function RecordingVideo({
   url: string
   seekTarget: string | null
   availableFrom: string
+  availableTo: string
   seekSeconds: number | null
   onTimeUpdate: (seconds: number) => void
   onError: () => void
   videoRef: React.RefObject<HTMLVideoElement | null>
   onPlaybackStateChange: (playing: boolean) => void
 }) {
+  const timelineDurationSeconds = Math.max(0, (new Date(availableTo).getTime() - new Date(availableFrom).getTime()) / 1000)
+  const toMediaSeconds = (timelineSeconds: number, mediaDurationSeconds: number) => {
+    if (!Number.isFinite(mediaDurationSeconds) || mediaDurationSeconds <= 0 || timelineDurationSeconds <= 0) return timelineSeconds
+    return Math.min(Math.max((timelineSeconds / timelineDurationSeconds) * mediaDurationSeconds, 0), mediaDurationSeconds)
+  }
+  const toTimelineSeconds = (mediaSeconds: number, mediaDurationSeconds: number) => {
+    if (!Number.isFinite(mediaDurationSeconds) || mediaDurationSeconds <= 0 || timelineDurationSeconds <= 0) return mediaSeconds
+    return Math.min(Math.max((mediaSeconds / mediaDurationSeconds) * timelineDurationSeconds, 0), timelineDurationSeconds)
+  }
+
   useEffect(() => {
     if (seekSeconds === null || !videoRef.current) return
-    videoRef.current.currentTime = seekSeconds
-  }, [seekSeconds])
+    videoRef.current.currentTime = toMediaSeconds(seekSeconds, videoRef.current.duration)
+  }, [seekSeconds, timelineDurationSeconds])
 
   useEffect(() => {
     if (!seekTarget || !videoRef.current) return
     const offset = Math.max(0, (new Date(seekTarget).getTime() - new Date(availableFrom).getTime()) / 1000)
     const video = videoRef.current
     const seek = () => {
-      if (Number.isFinite(offset)) video.currentTime = offset
+      if (Number.isFinite(offset)) video.currentTime = toMediaSeconds(offset, video.duration)
     }
     if (video.readyState >= 1) seek()
     else video.addEventListener('loadedmetadata', seek, { once: true })
     return () => video.removeEventListener('loadedmetadata', seek)
-  }, [availableFrom, seekTarget])
+  }, [availableFrom, seekTarget, timelineDurationSeconds])
 
   useEffect(() => {
     const video = videoRef.current
@@ -266,9 +279,12 @@ function RecordingVideo({
       onError={onError}
       onPlay={() => onPlaybackStateChange(true)}
       onPause={() => onPlaybackStateChange(false)}
-      onEnded={() => onPlaybackStateChange(false)}
-      onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
-      onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
+      onEnded={() => {
+        onPlaybackStateChange(false)
+        onTimeUpdate(timelineDurationSeconds)
+      }}
+      onTimeUpdate={(event) => onTimeUpdate(toTimelineSeconds(event.currentTarget.currentTime, event.currentTarget.duration))}
+      onLoadedMetadata={(event) => onTimeUpdate(toTimelineSeconds(event.currentTarget.currentTime, event.currentTarget.duration))}
       className="h-full min-h-0 max-h-full w-full bg-black object-contain"
     />
   )
