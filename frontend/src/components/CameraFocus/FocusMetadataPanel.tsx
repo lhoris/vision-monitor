@@ -131,6 +131,10 @@ export function FocusMetadataPanel({ mode = 'live', camera, metadataSourceId, er
 
   return (
     <aside className="w-full border-l border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 lg:w-[380px]" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
+      <div className="flex gap-1 rounded-md border border-slate-300 bg-slate-100 p-1 dark:border-slate-600 dark:bg-slate-900" role="tablist" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
+        <button type="button" role="tab" aria-selected={activeTab === 'metadata'} onClick={() => setActiveTab('metadata')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold transition-colors ${activeTab === 'metadata' ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>{t('cameraFocus.metadataPanel.tabs.metadata')}</button>
+        <button type="button" role="tab" aria-selected={activeTab === 'alarms'} onClick={() => setActiveTab('alarms')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold transition-colors ${activeTab === 'alarms' ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>{t('cameraFocus.metadataPanel.tabs.alarms')}</button>
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t(activeTab === 'metadata' ? 'cameraFocus.metadataPanel.tabs.metadata' : 'cameraFocus.metadataPanel.tabs.alarms')}</h2>
         {activeTab === 'metadata' ? <div className="flex items-center gap-2">
@@ -138,10 +142,6 @@ export function FocusMetadataPanel({ mode = 'live', camera, metadataSourceId, er
         </div> : null}
       </div>
       {activeTab === 'metadata' ? <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p> : null}
-      <div className="mt-4 flex border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
-        <button type="button" role="tab" aria-selected={activeTab === 'metadata'} onClick={() => setActiveTab('metadata')} className={`border-b-2 px-3 py-2 text-xs font-semibold ${activeTab === 'metadata' ? 'border-blue-600 text-blue-700 dark:border-blue-300 dark:text-blue-200' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>{t('cameraFocus.metadataPanel.tabs.metadata')}</button>
-        <button type="button" role="tab" aria-selected={activeTab === 'alarms'} onClick={() => setActiveTab('alarms')} className={`border-b-2 px-3 py-2 text-xs font-semibold ${activeTab === 'alarms' ? 'border-blue-600 text-blue-700 dark:border-blue-300 dark:text-blue-200' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>{t('cameraFocus.metadataPanel.tabs.alarms')}</button>
-      </div>
       {saveError ? <p role="alert" className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
       {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? t('cameraFocus.metadataPanel.forbiddenError') : t('cameraFocus.metadataPanel.loadError')}</p> : null}
       {activeTab === 'alarms' ? (
