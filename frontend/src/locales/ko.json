@@ -267,6 +267,10 @@
   },
   "cameraFocus": {
     "metadataPanel": {
+      "tabs": { "metadata": "모델기본정보", "alarms": "알람 이력" },
+      "alarmsAriaLabel": "알람 이력",
+      "alarmLoadError": "알람 이력을 불러오지 못했습니다.",
+      "alarmEmpty": "표시할 알람 이력이 없습니다.",
       "ariaLabel": "카메라 모델기본정보",
       "title": "모델기본정보",
       "addSection": "섹션 추가",

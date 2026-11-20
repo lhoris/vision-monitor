@@ -3,7 +3,7 @@ import { I18nextProvider } from 'react-i18next'
 import type { ComponentProps } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { FocusMetadataPanel } from '../FocusMetadataPanel'
-import type { CameraFocusDto } from '@/types/cameraFocus'
+import type { CameraEventDto, CameraFocusDto } from '@/types/cameraFocus'
 import i18n from '@/i18n'
 
 const { get, post, put } = vi.hoisted(() => ({ get: vi.fn(), post: vi.fn(), put: vi.fn() }))
@@ -70,6 +70,33 @@ describe('FocusMetadataPanel', () => {
     expect(screen.getByText('Entry Zone')).toBeInTheDocument()
     expect(await screen.findByText('online')).toBeInTheDocument()
     expect(screen.getByText('표시할 데이터가 없습니다.')).toBeInTheDocument()
+  })
+
+  it('selects the default tab by mode and allows switching tabs', async () => {
+    const onSelectEvent = vi.fn()
+    const event: CameraEventDto = {
+      eventId: 50001,
+      cameraId: 1,
+      eventType: 'entry_zone_jam',
+      severity: 'warning',
+      title: 'Entry Zone alarm',
+      occurredAt: '2026-08-15T08:55:00+09:00',
+      endedAt: null,
+      status: 'active',
+      metadata: {},
+    }
+
+    renderPanel({ mode: 'recording', camera, events: [event], onSelectEvent })
+
+    expect(screen.getByRole('tab', { name: '알람 이력' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('button', { name: /Entry Zone alarm/ })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: '모델기본정보' }))
+    expect(screen.getByTestId('metadata-section-camera')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: '알람 이력' }))
+    fireEvent.click(screen.getByRole('button', { name: /Entry Zone alarm/ }))
+    expect(onSelectEvent).toHaveBeenCalledWith(50001)
   })
 
   it('uses dash fallback for missing camera values', () => {

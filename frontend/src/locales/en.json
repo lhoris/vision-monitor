@@ -266,6 +266,10 @@
   },
   "cameraFocus": {
     "metadataPanel": {
+      "tabs": { "metadata": "Model basics", "alarms": "Alarm history" },
+      "alarmsAriaLabel": "Alarm history",
+      "alarmLoadError": "Unable to load alarm history.",
+      "alarmEmpty": "No alarm history to display.",
       "ariaLabel": "Camera model basics",
       "title": "Model basics",
       "addSection": "Add section",

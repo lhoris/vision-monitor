@@ -222,7 +222,7 @@ export function CameraFocusShell({
           onRecordingWorkAreaCommit={onRecordingWorkAreaCommit}
           onTimelineSeek={onTimelineSeek}
         />
-        <FocusMetadataPanel camera={camera} metadataSourceId={metadataSourceId} error={cameraError} selectedEventDetail={selectedEventDetail} onSelectEvent={onSelectEvent} />
+        <FocusMetadataPanel mode={mode} camera={camera} metadataSourceId={metadataSourceId} error={cameraError} selectedEventDetail={selectedEventDetail} selectedEventId={selectedEventId} events={events} eventsError={eventsError} onSelectEvent={onSelectEvent} />
       </div>
       {isTestAlertDialogOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="presentation">

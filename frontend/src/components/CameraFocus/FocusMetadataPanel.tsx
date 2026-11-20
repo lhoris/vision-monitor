@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
+import type { CameraEventDto, CameraFocusDto, EventDetailDto } from '@/types/cameraFocus'
+import type { CameraFocusMode } from '@/pages/cameraFocusRoute'
 import { listMetadataQueries } from '@/services/metadataQueryService'
 import { createDefaultMetadataProfile } from '@/config/metadataDefaults'
 import { getMetadataProfile, saveMetadataProfile } from '@/services/metadataConfigurationService'
@@ -8,12 +9,17 @@ import type { MetadataLayoutProfile, MetadataQueryDefinition, MetadataSectionCon
 import { ConfirmDialog } from '@/components/Common'
 import { MetadataSectionEditor } from './Metadata/MetadataSectionEditor'
 import { MetadataSectionRenderer } from './Metadata/MetadataSectionRenderer'
+import { RecordingEventList } from './RecordingEventList'
 
 interface FocusMetadataPanelProps {
+  mode?: CameraFocusMode
   camera: CameraFocusDto | null
   metadataSourceId?: number | null
   error?: string | null
   selectedEventDetail?: EventDetailDto | null
+  selectedEventId?: number
+  events?: CameraEventDto[]
+  eventsError?: string | null
   onSelectEvent?: (eventId: number) => void
 }
 
@@ -21,7 +27,7 @@ function currentUserId() {
   return localStorage.getItem('authUsername') || 'anonymous'
 }
 
-export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEventDetail, onSelectEvent }: FocusMetadataPanelProps) {
+export function FocusMetadataPanel({ mode = 'live', camera, metadataSourceId, error, selectedEventDetail, selectedEventId, events = [], eventsError, onSelectEvent }: FocusMetadataPanelProps) {
   const { t } = useTranslation()
   const sourceId = String(metadataSourceId ?? camera?.cameraId ?? '1')
   const persistableSourceId = metadataSourceId ?? camera?.cameraId ?? null
@@ -36,6 +42,11 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
   const [pendingConfirmation, setPendingConfirmation] = useState<{ type: 'remove'; section: MetadataSectionConfig } | null>(null)
   const [isConfirming, setIsConfirming] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'metadata' | 'alarms'>(mode === 'recording' ? 'alarms' : 'metadata')
+
+  useEffect(() => {
+    setActiveTab(mode === 'recording' ? 'alarms' : 'metadata')
+  }, [camera?.cameraId, mode])
 
   useEffect(() => {
     let disposed = false
@@ -121,15 +132,23 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
   return (
     <aside className="w-full border-l border-gray-200 bg-white p-4 text-sm dark:border-gray-700 dark:bg-gray-800 lg:w-[380px]" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('cameraFocus.metadataPanel.title')}</h2>
-        <div className="flex items-center gap-2">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t(activeTab === 'metadata' ? 'cameraFocus.metadataPanel.tabs.metadata' : 'cameraFocus.metadataPanel.tabs.alarms')}</h2>
+        {activeTab === 'metadata' ? <div className="flex items-center gap-2">
           <button type="button" onClick={() => { setEditingSection(undefined); setIsEditorOpen(true) }} className="border px-2 py-1 text-xs text-blue-700 dark:text-blue-300">{t('cameraFocus.metadataPanel.addSection')}</button>
-        </div>
+        </div> : null}
       </div>
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p>
+      {activeTab === 'metadata' ? <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p> : null}
+      <div className="mt-4 flex border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label={t('cameraFocus.metadataPanel.ariaLabel')}>
+        <button type="button" role="tab" aria-selected={activeTab === 'metadata'} onClick={() => setActiveTab('metadata')} className={`border-b-2 px-3 py-2 text-xs font-semibold ${activeTab === 'metadata' ? 'border-blue-600 text-blue-700 dark:border-blue-300 dark:text-blue-200' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>{t('cameraFocus.metadataPanel.tabs.metadata')}</button>
+        <button type="button" role="tab" aria-selected={activeTab === 'alarms'} onClick={() => setActiveTab('alarms')} className={`border-b-2 px-3 py-2 text-xs font-semibold ${activeTab === 'alarms' ? 'border-blue-600 text-blue-700 dark:border-blue-300 dark:text-blue-200' : 'border-transparent text-gray-500 dark:text-gray-400'}`}>{t('cameraFocus.metadataPanel.tabs.alarms')}</button>
+      </div>
       {saveError ? <p role="alert" className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
       {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? t('cameraFocus.metadataPanel.forbiddenError') : t('cameraFocus.metadataPanel.loadError')}</p> : null}
-      <div className="mt-4 space-y-3">
+      {activeTab === 'alarms' ? (
+        <div className="mt-4">
+          {eventsError ? <p role="alert" className="focus-recording-message px-3 py-3 text-xs">{t('cameraFocus.metadataPanel.alarmLoadError')}</p> : <RecordingEventList events={events} selectedEventId={selectedEventId ?? null} onSelectEvent={(eventId) => onSelectEvent?.(eventId)} emptyMessage={t('cameraFocus.metadataPanel.alarmEmpty')} ariaLabel={t('cameraFocus.metadataPanel.alarmsAriaLabel')} />}
+        </div>
+      ) : <div className="mt-4 space-y-3">
         {!error && sections.map((section) => (
           <section key={section.id} draggable onDragStart={() => { draggedSectionRef.current = section.id; setDraggedSection(section.id) }} onDragOver={(event) => event.preventDefault()} onDrop={() => void moveSection(section.id)} onDragEnd={() => { draggedSectionRef.current = null; setDraggedSection(null) }} data-testid={`metadata-section-${section.id}`} className={`border border-gray-200 dark:border-gray-700 ${draggedSection === section.id ? 'opacity-50' : ''}`}>
             <div className="flex items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-900">
@@ -140,7 +159,7 @@ export function FocusMetadataPanel({ camera, metadataSourceId, error, selectedEv
           </section>
         ))}
         {!error && !profile.sections.length ? <div className="border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">{t('cameraFocus.metadataPanel.empty')}</div> : null}
-      </div>
+      </div>}
       {camera?.lastSeenAt === null ? <span className="sr-only">-</span> : null}
       {selectedEventDetail ? <p className="mt-3 text-xs text-slate-500">{t('cameraFocus.metadataPanel.selectedAlarm')}: {selectedEventDetail.title}</p> : null}
       {isEditorOpen ? <MetadataSectionEditor section={editingSection} queries={queries} onSave={(section) => void saveSection(section)} onClose={() => { setIsEditorOpen(false); setEditingSection(undefined) }} /> : null}
