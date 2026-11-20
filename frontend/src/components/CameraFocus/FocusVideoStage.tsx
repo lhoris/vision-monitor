@@ -56,6 +56,8 @@ export function FocusVideoStage({
 }: FocusVideoStageProps) {
   const title = mode === 'recording' ? '녹화 영상 영역' : '실시간 영상 영역'
   const [recordingTimeSeconds, setRecordingTimeSeconds] = useState(0)
+  const recordingTimeRef = useRef(0)
+  const recordingSeekingRef = useRef(false)
   const [recordingSeekSeconds, setRecordingSeekSeconds] = useState<number | null>(null)
   const recordingVideoRef = useRef<HTMLVideoElement>(null)
   const [recordingPlaying, setRecordingPlaying] = useState(false)
@@ -65,7 +67,17 @@ export function FocusVideoStage({
   useEffect(() => {
     setRecordingMediaError(false)
     setRecordingPlaying(false)
+    recordingTimeRef.current = 0
+    recordingSeekingRef.current = true
   }, [playbackSession?.playbackUrl])
+
+  const handleRecordingTimeUpdate = (seconds: number) => {
+    if (!Number.isFinite(seconds)) return
+    if (!recordingSeekingRef.current && recordingPlaying && seconds < recordingTimeRef.current) return
+    recordingSeekingRef.current = false
+    recordingTimeRef.current = seconds
+    setRecordingTimeSeconds(seconds)
+  }
 
   const toggleRecordingPlayback = () => {
     const video = recordingVideoRef.current
@@ -128,7 +140,8 @@ export function FocusVideoStage({
                   availableFrom={playbackSession.availableFrom}
                   availableTo={playbackSession.availableTo}
                   seekSeconds={recordingSeekSeconds}
-                  onTimeUpdate={setRecordingTimeSeconds}
+                  onTimeUpdate={handleRecordingTimeUpdate}
+                  onSeeking={() => { recordingSeekingRef.current = true }}
                   onError={() => setRecordingMediaError(true)}
                   videoRef={recordingVideoRef}
                   onPlaybackStateChange={setRecordingPlaying}
@@ -209,6 +222,7 @@ function RecordingVideo({
   availableTo,
   seekSeconds,
   onTimeUpdate,
+  onSeeking,
   onError,
   videoRef,
   onPlaybackStateChange,
@@ -219,6 +233,7 @@ function RecordingVideo({
   availableTo: string
   seekSeconds: number | null
   onTimeUpdate: (seconds: number) => void
+  onSeeking: () => void
   onError: () => void
   videoRef: React.RefObject<HTMLVideoElement | null>
   onPlaybackStateChange: (playing: boolean) => void
@@ -274,6 +289,7 @@ function RecordingVideo({
         onPlaybackStateChange(false)
         onTimeUpdate(timelineDurationSeconds)
       }}
+      onSeeking={onSeeking}
       onTimeUpdate={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       onLoadedMetadata={(event) => onTimeUpdate(event.currentTarget.currentTime)}
       className="h-full min-h-0 max-h-full w-full bg-black object-contain"
