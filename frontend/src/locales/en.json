@@ -270,6 +270,7 @@
       "alarmsAriaLabel": "Alarm history",
       "alarmLoadError": "Unable to load alarm history.",
       "alarmEmpty": "No alarm history to display.",
+      "alarmDescription": "Select an alarm to review its details and jump to the related recording position.",
       "ariaLabel": "Camera model basics",
       "title": "Model basics",
       "addSection": "Add section",

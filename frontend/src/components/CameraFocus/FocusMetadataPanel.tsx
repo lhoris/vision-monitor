@@ -135,13 +135,12 @@ export function FocusMetadataPanel({ mode = 'live', camera, metadataSourceId, er
         <button type="button" role="tab" aria-selected={activeTab === 'metadata'} onClick={() => setActiveTab('metadata')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold transition-colors ${activeTab === 'metadata' ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>{t('cameraFocus.metadataPanel.tabs.metadata')}</button>
         <button type="button" role="tab" aria-selected={activeTab === 'alarms'} onClick={() => setActiveTab('alarms')} className={`flex-1 rounded px-3 py-2 text-xs font-semibold transition-colors ${activeTab === 'alarms' ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-200' : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'}`}>{t('cameraFocus.metadataPanel.tabs.alarms')}</button>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t(activeTab === 'metadata' ? 'cameraFocus.metadataPanel.tabs.metadata' : 'cameraFocus.metadataPanel.tabs.alarms')}</h2>
+      <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
         {activeTab === 'metadata' ? <div className="flex items-center gap-2">
           <button type="button" onClick={() => { setEditingSection(undefined); setIsEditorOpen(true) }} className="border px-2 py-1 text-xs text-blue-700 dark:text-blue-300">{t('cameraFocus.metadataPanel.addSection')}</button>
         </div> : null}
       </div>
-      {activeTab === 'metadata' ? <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t('cameraFocus.metadataPanel.description')}</p> : null}
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{t(activeTab === 'metadata' ? 'cameraFocus.metadataPanel.description' : 'cameraFocus.metadataPanel.alarmDescription')}</p>
       {saveError ? <p role="alert" className="mt-3 text-xs text-rose-600">{saveError}</p> : null}
       {error ? <p className="mt-3 text-xs text-rose-600">{error === 'FORBIDDEN' ? t('cameraFocus.metadataPanel.forbiddenError') : t('cameraFocus.metadataPanel.loadError')}</p> : null}
       {activeTab === 'alarms' ? (
