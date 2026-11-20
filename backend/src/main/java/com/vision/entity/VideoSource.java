@@ -42,12 +42,6 @@ public class VideoSource extends BaseAudit {
     @Column(name = "VIDEO_PROTOCOL", length = 10)
     private String protocol;
 
-    @Column(name = "LOCATION", length = 200)
-    private String location;
-
-    @Column(name = "ZONE_NAME", length = 100)
-    private String zone;
-
     @Column(name = "STATUS", length = 20)
     private String status;
 

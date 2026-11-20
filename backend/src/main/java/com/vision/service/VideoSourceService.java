@@ -65,8 +65,6 @@ public class VideoSourceService {
         source.setPlaybackProtocol(normalizePlaybackProtocol(request.getPlaybackProtocol()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
         source.setStatus(normalizeStatus(request.getStatus()));
-        source.setLocation(trimOrNull(request.getLocation()));
-        source.setZone(trimOrNull(request.getZone()));
         source.setRemarks(trimOrNull(request.getRemarks()));
         source.setClassCode(normalizeClassCode(request.getClassCode()));
         return VideoSourceDto.from(repository.save(source));
@@ -84,8 +82,6 @@ public class VideoSourceService {
         source.setPlaybackBaseUrl(trimOrNull(request.getPlaybackBaseUrl()));
         source.setPlaybackProtocol(normalizePlaybackProtocol(request.getPlaybackProtocol()));
         source.setProtocol(normalizeProtocol(request.getProtocol()));
-        source.setLocation(trimOrNull(request.getLocation()));
-        source.setZone(trimOrNull(request.getZone()));
         source.setStatus(normalizeStatus(request.getStatus()));
         source.setRemarks(trimOrNull(request.getRemarks()));
         source.setModelProcessId(request.getModelProcessId());

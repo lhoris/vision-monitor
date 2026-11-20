@@ -19,8 +19,6 @@ public class VideoSourceDto {
     private String playbackBaseUrl;
     private String playbackProtocol;
     private String protocol;
-    private String location;
-    private String zone;
     private String status;
     private String remarks;
     private Long modelProcessId;
@@ -31,7 +29,7 @@ public class VideoSourceDto {
     public VideoSource toEntity() {
         return VideoSource.builder()
                 .id(id).name(name).url(url).playbackBaseUrl(playbackBaseUrl).playbackProtocol(playbackProtocol).protocol(protocol)
-                .location(location).zone(zone).status(status).remarks(remarks)
+                .status(status).remarks(remarks)
                 .modelProcessId(modelProcessId)
                 .classCode(classCode)
                 .build();
@@ -40,8 +38,7 @@ public class VideoSourceDto {
     public static VideoSourceDto from(VideoSource source) {
         return VideoSourceDto.builder()
                 .id(source.getId()).name(source.getName()).url(source.getUrl()).playbackBaseUrl(source.getPlaybackBaseUrl()).playbackProtocol(source.getPlaybackProtocol())
-                .protocol(source.getProtocol()).location(source.getLocation())
-                .zone(source.getZone()).status(source.getStatus()).remarks(source.getRemarks())
+                .protocol(source.getProtocol()).status(source.getStatus()).remarks(source.getRemarks())
                 .modelProcessId(source.getModelProcessId())
                 .classCode(source.getClassCode())
                 .createdAt(source.getCreatedAt()).updatedAt(source.getUpdatedAt()).build();

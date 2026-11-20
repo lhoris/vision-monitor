@@ -31,8 +31,6 @@ const videoSources: VideoSource[] = [
     name: 'Managed Line Feed',
     url: 'https://managed.test/live.m3u8',
     protocol: 'HLS',
-    location: 'Line B',
-    zone: 'Packaging',
     status: 'ACTIVE',
   },
   {
@@ -40,8 +38,6 @@ const videoSources: VideoSource[] = [
     name: 'Inactive Feed',
     url: 'https://managed.test/inactive.m3u8',
     protocol: 'HLS',
-    location: 'Line C',
-    zone: 'Storage',
     status: 'INACTIVE',
   },
 ]
@@ -174,8 +170,6 @@ describe('AddCameraDialog', () => {
       name: 'Legacy RTSP Feed',
       url: 'rtsp://managed.test/live',
       protocol: 'RTSP' as unknown as VideoSource['protocol'],
-      location: 'Line D',
-      zone: 'Legacy',
       status: 'ACTIVE' as const,
     }
 

@@ -17,17 +17,15 @@ const emptyForm: VideoSourceInput = {
   playbackBaseUrl: '',
   playbackProtocol: 'MP4',
   protocol: 'WEBRTC',
-  location: '',
-  zone: '',
   status: 'ACTIVE',
   remarks: '',
   modelProcessId: null,
   classCode: '',
 }
 
-type FilterKey = 'name' | 'url' | 'protocol' | 'location' | 'zone' | 'status' | 'classCode'
+type FilterKey = 'name' | 'url' | 'protocol' | 'status' | 'classCode'
 type EditableVideoField = keyof VideoSourceInput
-type SelectableVideoField = 'name' | 'protocol' | 'url' | 'playbackBaseUrl' | 'playbackProtocol' | 'modelProcessId' | 'status' | 'classCode' | 'location' | 'zone'
+type SelectableVideoField = 'name' | 'protocol' | 'url' | 'playbackBaseUrl' | 'playbackProtocol' | 'modelProcessId' | 'status' | 'classCode'
 type VideoGridRowState = 'clean' | 'dirty' | 'new'
 type VideoGridRow = VideoSource & { rowState: VideoGridRowState }
 
@@ -116,14 +114,6 @@ function VideoSourceModal({ open, initialValue, modelProcesses, modelProcessesLo
             </select>
           </label>
           <label className="text-sm text-slate-700 dark:text-slate-200">
-            위치
-            <input value={value.location ?? ''} onChange={(event) => update('location', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-          </label>
-          <label className="text-sm text-slate-700 dark:text-slate-200">
-            구역
-            <input value={value.zone ?? ''} onChange={(event) => update('zone', event.target.value)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white" />
-          </label>
-          <label className="text-sm text-slate-700 dark:text-slate-200">
             상태
             <select value={value.status} onChange={(event) => update('status', event.target.value as VideoSourceStatus)} className="mt-1 h-9 w-full rounded border border-slate-300 px-2 text-slate-900 dark:border-slate-600 dark:bg-slate-900 dark:text-white">
               <option value="ACTIVE">ACTIVE</option>
@@ -171,7 +161,7 @@ export function VideoManagement() {
   const [editingCell, setEditingCell] = useState<{ id: number; field: EditableVideoField } | null>(null)
   const [selectedCellRange, setSelectedCellRange] = useState<{ start: SelectedVideoCell; end: SelectedVideoCell } | null>(null)
   const [draggingCellRange, setDraggingCellRange] = useState(false)
-  const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', location: '', zone: '', status: '', classCode: '' })
+  const [filters, setFilters] = useState<Record<FilterKey, string>>({ name: '', url: '', protocol: '', status: '', classCode: '' })
   const [query, setQuery] = useState('')
   const [appliedQuery, setAppliedQuery] = useState('')
   const [filtersVisible, setFiltersVisible] = useState(false)
@@ -243,7 +233,7 @@ export function VideoManagement() {
 
   const filteredRows = useMemo(() => rows.filter((item) => {
     const search = appliedQuery.trim().toLowerCase()
-    if (search && ![item.name, item.url, item.location, item.zone].some((field) => (field ?? '').toLowerCase().includes(search))) {
+    if (search && [item.name, item.url, item.protocol, item.classCode].every((field) => !(field ?? '').toLowerCase().includes(search))) {
       return false
     }
     return (Object.entries(filters) as [FilterKey, string][]).every(([key, filter]) =>
@@ -258,7 +248,7 @@ export function VideoManagement() {
   const changedRows = rows.filter((row) => row.rowState !== 'clean')
   const selectedChangedRows = changedRows.filter((row) => selectedIds.has(row.id))
 
-  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'playbackBaseUrl', 'playbackProtocol', 'modelProcessId', 'status', 'classCode', 'location', 'zone']
+  const selectableColumns: SelectableVideoField[] = ['name', 'protocol', 'url', 'playbackBaseUrl', 'playbackProtocol', 'modelProcessId', 'status', 'classCode']
   const getCellDisplayValue = (row: VideoGridRow, field: SelectableVideoField) => {
     if (field === 'modelProcessId') return row.modelProcessId == null ? '연결하지 않음' : modelProcesses.find((process) => Number(process.id) === row.modelProcessId)?.modelName ?? `프로세스 #${row.modelProcessId}`
     if (field === 'classCode') return classOptions.find((option) => option.value === row.classCode)?.label ?? (row.classCode ? row.classCode : '미지정')
@@ -386,8 +376,6 @@ export function VideoManagement() {
     playbackBaseUrl: row.playbackBaseUrl ?? '',
     playbackProtocol: row.playbackProtocol ?? 'MP4',
     protocol: normalizeManagedProtocol(row.protocol),
-    location: row.location ?? '',
-    zone: row.zone ?? '',
     status: row.status,
     remarks: row.remarks ?? '',
     modelProcessId: row.modelProcessId ?? null,
@@ -491,8 +479,6 @@ export function VideoManagement() {
       playbackBaseUrl: item.playbackBaseUrl ?? '',
       playbackProtocol: item.playbackProtocol ?? 'MP4',
       protocol: normalizeManagedProtocol(item.protocol),
-      location: item.location ?? '',
-      zone: item.zone ?? '',
       status: item.status,
       remarks: item.remarks ?? '',
       modelProcessId: item.modelProcessId ?? null,
@@ -519,7 +505,7 @@ export function VideoManagement() {
     setContextMenu({ x: event.clientX, y: event.clientY })
   }
 
-  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'playbackBaseUrl' | 'location' | 'zone'>, className = '') => {
+  const renderTextCell = (row: VideoGridRow, field: Extract<EditableVideoField, 'name' | 'url' | 'playbackBaseUrl'>, className = '') => {
     const editing = editingCell?.id === row.id && editingCell.field === field
     const value = String(row[field] ?? '')
     if (editing) {
@@ -615,8 +601,6 @@ export function VideoManagement() {
     { id: 'protocol', ariaLabel: '프로토콜 필터', kind: 'select', value: filters.protocol, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, ...VIDEO_PROTOCOLS.map((value) => ({ value, label: value }))], onChange: (value) => setFilter('protocol', value) },
     { id: 'url', ariaLabel: '라이브 영상 주소 필터', value: filters.url, widthClassName: 'w-[30rem]', onChange: (value) => setFilter('url', value) },
     { id: 'status', ariaLabel: '상태 필터', kind: 'select', value: filters.status, widthClassName: 'w-28', options: [{ value: '', label: '전체' }, { value: 'ACTIVE', label: 'ACTIVE' }, { value: 'INACTIVE', label: 'INACTIVE' }], onChange: (value) => setFilter('status', value) },
-    { id: 'location', ariaLabel: '위치 필터', value: filters.location, widthClassName: 'w-36', onChange: (value) => setFilter('location', value) },
-    { id: 'zone', ariaLabel: '구역 필터', value: filters.zone, widthClassName: 'w-28', onChange: (value) => setFilter('zone', value) },
     { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: filters.classCode, widthClassName: 'w-24', options: [{ value: '', label: '전체' }, ...classOptions.filter((option) => option.value !== 'COMMON')], onChange: (value) => setFilter('classCode', value) },
   ]
 
@@ -685,8 +669,6 @@ export function VideoManagement() {
                 <th className={`w-[242px] ${headerCell}`}>모델 프로세스</th>
                 <th className={`w-28 ${headerCell}`}>상태</th>
                 <th className={`w-24 ${headerCell}`}>반</th>
-                <th className={`w-36 ${headerCell}`}>위치</th>
-                <th className={`w-28 ${headerCell}`}>구역</th>
               </tr>
               {filtersVisible ? <GridColumnFilterRow filters={columnFilters} /> : null}
             </thead>
@@ -702,8 +684,6 @@ export function VideoManagement() {
                   <td className={bodyCell}>{renderModelProcessCell(item)}</td>
                   <td className={bodyCell}>{renderSelectCell(item, 'status', ['ACTIVE', 'INACTIVE'])}</td>
                   <td className={bodyCell}>{renderClassCell(item)}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'location')}</td>
-                  <td className={bodyCell}>{renderTextCell(item, 'zone')}</td>
                 </tr>
               ))}
               {!visibleRows.length ? <tr><td colSpan={11} className="p-10 text-center text-sm text-slate-500">조건에 맞는 라이브 영상 주소가 없습니다.</td></tr> : null}

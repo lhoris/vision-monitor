@@ -8,8 +8,6 @@ const activeSource: VideoSource = {
   name: 'Entry Camera',
   url: 'http://localhost:8889/sample001/whep',
   protocol: 'WEBRTC',
-  location: '4선재',
-  zone: '가열',
   status: 'ACTIVE',
 }
 
@@ -18,8 +16,8 @@ describe('video source camera adapter', () => {
     expect(videoSourceToCamera(activeSource)).toEqual({
       id: 101,
       name: 'Entry Camera',
-      location: '4선재',
-      zone: '가열',
+      location: '-',
+      zone: '-',
       streamUrl: 'http://localhost:8889/sample001/whep',
       streamProtocol: 'webrtc',
       status: 'online',

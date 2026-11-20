@@ -9,8 +9,8 @@ export function videoSourceToCamera(source: VideoSource): Camera {
   return {
     id: source.id,
     name: source.name,
-    location: source.location || '-',
-    zone: source.zone || '-',
+    location: '-',
+    zone: '-',
     streamUrl: source.url,
     playbackBaseUrl: source.playbackBaseUrl,
     playbackProtocol: source.playbackProtocol,

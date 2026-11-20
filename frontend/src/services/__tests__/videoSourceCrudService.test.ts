@@ -10,8 +10,6 @@ const input = {
   name: 'Entry Camera',
   url: 'http://localhost:8889/sample001/whep',
   protocol: 'WEBRTC' as const,
-  location: '4F',
-  zone: 'Heating',
   status: 'ACTIVE' as const,
   remarks: '',
 }

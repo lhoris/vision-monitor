@@ -94,7 +94,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
       .filter((source) => source.protocol === 'WEBRTC' || source.protocol === 'HLS')
       .filter((source) => !classFilter || source.classCode === classFilter)
       .filter((source) =>
-        !term || [source.name, source.location, source.zone, source.url].some((value) => (value ?? '').toLowerCase().includes(term))
+        !term || [source.name, source.url, source.protocol, source.classCode].some((value) => (value ?? '').toLowerCase().includes(term))
       )
   }, [videoSources, searchTerm, classFilter])
 
@@ -212,7 +212,7 @@ export const AddCameraDialog: React.FC<AddCameraDialogProps> = ({
                       >
                         <span className="min-w-0">
                           <strong className="block truncate text-sm text-gray-900 dark:text-white">{source.name}</strong>
-                          <span className="block text-xs text-gray-500 dark:text-gray-400">{source.protocol} - {source.location || '-'} - {source.zone || '-'}</span>
+                          <span className="block text-xs text-gray-500 dark:text-gray-400">{source.protocol}{source.classCode ? ` - ${source.classCode}` : ''}</span>
                         </span>
                         <span className={`ml-3 shrink-0 text-xs font-semibold ${alreadyAdded ? 'text-gray-500' : 'text-blue-600'}`}>
                           {alreadyAdded ? t('live.addCameraDialog.alreadyAdded') : t('live.addCameraDialog.managedSource')}

@@ -24,7 +24,7 @@ class CameraQueryServiceTest {
     void projectsActiveVideoSourcesAsOnlineCameras() {
         VideoSource source = VideoSource.builder()
                 .id(10L).name("Line A").url("http://example.test/whep")
-                .location("Line A").zone("Heating").protocol("WEBRTC")
+                .protocol("WEBRTC")
                 .status("ACTIVE").dataEndStatus("N").build();
         when(repository.findAll()).thenReturn(List.of(source));
 
@@ -35,6 +35,8 @@ class CameraQueryServiceTest {
             assertThat(camera.getStreamUrl()).isEqualTo("http://example.test/whep");
             assertThat(camera.getStreamProtocol()).isEqualTo("webrtc");
             assertThat(camera.getStatus()).isEqualTo("online");
+            assertThat(camera.getLocation()).isEqualTo("-");
+            assertThat(camera.getZone()).isEqualTo("-");
         });
     }
 

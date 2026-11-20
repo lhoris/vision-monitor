@@ -9,8 +9,6 @@ export interface VideoSource {
   playbackBaseUrl?: string
   playbackProtocol?: PlaybackProtocol
   protocol: VideoProtocol
-  location?: string
-  zone?: string
   status: VideoSourceStatus
   remarks?: string
   modelProcessId?: number | null
