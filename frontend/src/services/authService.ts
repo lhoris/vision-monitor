@@ -15,7 +15,6 @@ export interface SignupInput {
   email: string
   phone?: string
   department?: string
-  position?: string
   classCode?: string
 }
 

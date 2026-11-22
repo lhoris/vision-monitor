@@ -163,14 +163,16 @@ function DemoCredentials() {
 function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: (message: string) => void }) {
   const dispatch = useAppDispatch()
   const classCode = useCommonCode('USER_CLASS')
-  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', position: '', classCode: '' })
+  const departmentCode = useCommonCode('USER_DEPARTMENT')
+  const [input, setInput] = useState<SignupInput>({ username: '', password: '', passwordConfirm: '', name: '', email: '', phone: '', department: '', classCode: '' })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
   const [emailCheck, setEmailCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
   useEffect(() => {
-    if (!classCode) void dispatch(fetchCommonCodeNames(['USER_CLASS']))
-  }, [classCode, dispatch])
+    const missingCodes = [!classCode ? 'USER_CLASS' : null, !departmentCode ? 'USER_DEPARTMENT' : null].filter((code): code is string => Boolean(code))
+    if (missingCodes.length) void dispatch(fetchCommonCodeNames(missingCodes))
+  }, [classCode, departmentCode, dispatch])
 
   const update = (field: keyof SignupInput, value: string) => {
     setInput((current) => ({ ...current, [field]: value }))
@@ -241,17 +243,20 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 
   const fields: Array<[keyof SignupInput, string, boolean]> = [
     ['username', '사용자 ID', true], ['name', '이름', true], ['email', '이메일', true],
-    ['phone', '연락처', false], ['department', '부서', false], ['position', '직책', false],
+    ['phone', '연락처', false], ['department', '부서', true],
   ]
 
-  fields.splice(fields.findIndex(([field]) => field === 'position'), 0, ['classCode', '반', true])
+  fields.splice(fields.findIndex(([field]) => field === 'department') + 1, 0, ['classCode', '반', false])
 
   const renderField = ([field, label, required]: [keyof SignupInput, string, boolean]) => {
     const checkable = field === 'username' || field === 'email'
     const checkState = field === 'username' ? usernameCheck : field === 'email' ? emailCheck : 'idle'
-    const orgFieldClass = field === 'department' || field === 'classCode' || field === 'position' ? ' vm-signup-org-field' : ''
+    const orgFieldClass = field === 'department' || field === 'classCode' ? ' vm-signup-org-field' : ''
+    if (field === 'department') {
+      return <label key={field} className={`vm-signup-field${orgFieldClass}`} htmlFor="signup-department">{label}<span className="vm-signup-required"> *</span><select id="signup-department" value={input.department ?? ''} onChange={(event) => update('department', event.target.value)} required><option value="">부서를 선택하세요</option>{(departmentCode?.items ?? []).map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
+    }
     if (field === 'classCode') {
-      return <label key={field} className={`vm-signup-field${orgFieldClass}`} htmlFor="signup-class-code">{label}<select id="signup-class-code" value={input.classCode ?? ''} onChange={(event) => update('classCode', event.target.value)}><option value="">전체</option>{(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
+      return <label key={field} className={`vm-signup-field${orgFieldClass}`} htmlFor="signup-class-code">{label}<select id="signup-class-code" value={input.classCode ?? ''} onChange={(event) => update('classCode', event.target.value)}><option value="">미지정</option>{(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => <option key={item.value} value={item.value}>{item.nameKo || item.name}</option>)}</select></label>
     }
     return <div key={field} className={`vm-signup-field${orgFieldClass}`}><label htmlFor={`signup-${field}`}>{label}{required ? <span className="vm-signup-required"> *</span> : null}</label><div className={checkable ? 'vm-signup-field-control' : undefined}><input id={`signup-${field}`} type={field === 'email' ? 'email' : field === 'phone' ? 'tel' : 'text'} inputMode={field === 'phone' ? 'numeric' : undefined} placeholder={field === 'phone' ? '010-1234-5678' : undefined} maxLength={field === 'phone' ? 13 : undefined} value={input[field] ?? ''} required={required} onChange={(event) => update(field, field === 'phone' ? formatPhoneNumber(event.target.value) : event.target.value)} />{checkable ? <button type="button" onClick={() => void checkAvailability(field)} disabled={checkState === 'checking'}>{checkState === 'checking' ? '확인 중...' : '중복 확인'}</button> : null}</div>{checkState === 'available' ? <small className="vm-signup-check-success">사용할 수 있습니다.</small> : null}{checkState === 'unavailable' ? <small className="vm-signup-check-error">이미 사용 중입니다.</small> : null}</div>
   }
