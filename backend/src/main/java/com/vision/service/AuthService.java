@@ -256,12 +256,14 @@ public class AuthService {
         boolean groupAcknowledgement = policy != null && "GROUP".equalsIgnoreCase(policy.getAcknowledgementScope());
         String recipientScope = policy == null || policy.getRecipientScope() == null ? "ALL_ADMIN" : policy.getRecipientScope();
         String groupId = groupAcknowledgement ? UUID.randomUUID().toString() : null;
+        String applicantName = signup.getName() == null || signup.getName().isBlank() ? signup.getUsername() : signup.getName();
+        String message = "신규 사용자 가입신청이 접수되었습니다. 신청자: " + applicantName + " (사용자 ID: " + signup.getUsername() + ")";
         Map<String, Object> alarm = Map.of(
                 "id", signup.getId(),
                 "cameraId", 0,
                 "type", "USER_SIGNUP_REQUEST",
                 "severity", "info",
-                "description", "신규 사용자 가입신청이 접수되었습니다.",
+                "description", message,
                 "timestamp", OffsetDateTime.now().toString(),
                 "acknowledged", false,
                 "sourceType", "USER",
@@ -286,7 +288,7 @@ public class AuthService {
                         savedAlarm = alarmLogRepository.save(AlarmLog.builder()
                                 .alarmType("USER_SIGNUP_REQUEST")
                                 .severity("info")
-                                .message("신규 사용자 가입신청이 접수되었습니다.")
+                                .message(message)
                                 .sourceType("USER")
                                 .sourceId(String.valueOf(signup.getId()))
                                 .alarmGroupId(groupId)

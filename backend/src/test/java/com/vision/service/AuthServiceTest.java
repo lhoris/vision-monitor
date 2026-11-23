@@ -172,7 +172,10 @@ class AuthServiceTest {
         verify(alarmLogRepository).save(any(com.vision.entity.AlarmLog.class));
         verify(alarmEventPublisher).publishToUser(org.mockito.ArgumentMatchers.eq("admin"), alarmCaptor.capture());
         assertEquals("USER_SIGNUP_REQUEST", alarmCaptor.getValue().get("type"));
-        assertEquals("신규 사용자 가입신청이 접수되었습니다.", alarmCaptor.getValue().get("description"));
+        String description = (String) alarmCaptor.getValue().get("description");
+        assertTrue(description.contains("신규 사용자 가입신청이 접수되었습니다."));
+        assertTrue(description.contains("New User"));
+        assertTrue(description.contains("new-user"));
     }
 
     @Test
