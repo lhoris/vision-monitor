@@ -27,9 +27,16 @@ const DEMO_USERNAME = 'tester'
 const DEMO_PASSWORD = 'tester1@#'
 
 function getLoginErrorMessage(error: unknown): string {
-  const message = typeof error === 'string' ? error : error instanceof Error ? error.message : ''
+  const message = getErrorMessage(error, '')
   if (message === 'Invalid username or password') return '사용자 ID 또는 비밀번호가 올바르지 않습니다.'
   return message || '로그인에 실패했습니다.'
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'string') return error
+  if (error instanceof Error) return error.message || fallback
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') return error.message
+  return fallback
 }
 
 function formatPhoneNumber(value: string): string {
@@ -201,7 +208,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     } catch (reason) {
       if (field === 'username') setUsernameCheck('idle')
       else setEmailCheck('idle')
-      setError(reason instanceof Error ? reason.message : '중복 확인에 실패했습니다.')
+      setError(getErrorMessage(reason, '중복 확인에 실패했습니다.'))
     }
   }
 
@@ -235,7 +242,7 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         : ''
       onSuccess(`가입 신청이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.${adminContact}`)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : '회원가입 신청에 실패했습니다.')
+      setError(getErrorMessage(reason, '회원가입 신청에 실패했습니다.'))
     } finally {
       setSaving(false)
     }
