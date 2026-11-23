@@ -13,15 +13,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
 
     Optional<UserAccount> findByUsernameIgnoreCase(String username);
 
-    /**
-     * Checks the login ID after trimming both the request value and the stored value.
-     * Some legacy rows contain padding spaces, while signup always normalizes the
-     * incoming value before saving it.
-     */
-    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END "
-            + "FROM TB_M26_USER WHERE LOWER(TRIM(USER_EMP_NO)) = LOWER(TRIM(:username))",
-            nativeQuery = true)
-    boolean existsByUsernameIgnoreCase(@Param("username") String username);
+    boolean existsByUsernameIgnoreCase(String username);
 
     boolean existsByEmailIgnoreCase(String email);
 
