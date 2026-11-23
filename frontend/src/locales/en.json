@@ -31,7 +31,11 @@
       "currentPassword": "Current Password", "newPassword": "New Password", "confirmPassword": "Confirm New Password",
       "updatePassword": "Update Password", "passwordTooShort": "The new password must be at least 8 characters.",
       "passwordMismatch": "The new passwords do not match.", "passwordChanged": "Password changed successfully.",
-      "passwordError": "Unable to change password."
+      "passwordError": "Unable to change password.",
+      "showPassword": "Show password",
+      "passwordChangeWarningTitle": "Password change warning",
+      "passwordChangeWarningMessage": "Closing without changing your password may create a security risk. You are responsible for leaving the account in an unchanged state. You may be required to change it again at your next login. Do you want to close anyway?",
+      "passwordChangeWarningConfirm": "Close without changing"
     },
     "settings": {
       "title": "Personal Settings", "subtitle": "Choose the default screen for this account.",

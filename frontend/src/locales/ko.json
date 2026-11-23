@@ -31,7 +31,11 @@
       "currentPassword": "현재 비밀번호", "newPassword": "새 비밀번호", "confirmPassword": "새 비밀번호 확인",
       "updatePassword": "비밀번호 변경", "passwordTooShort": "새 비밀번호는 8자 이상이어야 합니다.",
       "passwordMismatch": "새 비밀번호가 일치하지 않습니다.", "passwordChanged": "비밀번호를 변경했습니다.",
-      "passwordError": "비밀번호 변경에 실패했습니다."
+      "passwordError": "비밀번호 변경에 실패했습니다.",
+      "showPassword": "비밀번호 표시",
+      "passwordChangeWarningTitle": "비밀번호 변경 안내",
+      "passwordChangeWarningMessage": "비밀번호를 변경하지 않고 종료하면 계정 보안 문제가 발생할 수 있으며, 미변경 상태에 대한 책임은 사용자에게 있습니다. 다음 로그인 시 다시 비밀번호 변경을 요구할 수 있습니다. 그래도 종료하시겠습니까?",
+      "passwordChangeWarningConfirm": "변경하지 않고 종료"
     },
     "settings": {
       "title": "개인 설정", "subtitle": "이 계정에서 사용할 기본 화면을 설정합니다.",

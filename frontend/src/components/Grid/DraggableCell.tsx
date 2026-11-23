@@ -65,6 +65,7 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
   const [resizeCols, setResizeCols] = useState(colSpan)
   const [resizePreview, setResizePreview] = useState<{ rows: number; cols: number } | null>(null)
   const [resizeError, setResizeError] = useState(false)
+  const [playerState, setPlayerState] = useState<PlayerState>('idle')
 
   useEffect(() => {
     setDisplayName(camera?.name ?? temporarySource?.displayName ?? '')
@@ -73,8 +74,12 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     setContextMenu(null)
   }, [camera?.id, camera?.name, temporarySource?.id, temporarySource?.displayName])
 
+  useEffect(() => {
+    setPlayerState('idle')
+  }, [camera?.id, temporarySource?.id])
+
   const isTemporary = Boolean(temporarySource)
-  const effectiveCamera = camera ?? (temporarySource ? {
+  const baseCamera = camera ?? (temporarySource ? {
     id: positionId ?? -1,
     name: temporarySource.displayName,
     location: '현재 세부공정 임시 영상',
@@ -83,6 +88,24 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
     streamProtocol: temporarySource.protocol,
     status: temporarySource.playbackStatus === 'error' ? 'error' : 'online',
   } satisfies Camera : undefined)
+  const effectiveCamera = baseCamera
+    ? {
+        ...baseCamera,
+        status: String(baseCamera.streamProtocol) === 'stream_page'
+          ? baseCamera.status
+          : playerState === 'playing' ? 'online' : 'error',
+      }
+    : undefined
+
+  const handlePlayerStateChange = (status: PlayerState) => {
+    setPlayerState(status)
+    if (isTemporary) onTemporaryStatusChange?.(status)
+  }
+
+  const handlePlayerError = () => {
+    setPlayerState('error')
+    if (isTemporary) onTemporaryStatusChange?.('error')
+  }
 
   const handleDragStart = (e: React.DragEvent) => {
     if (effectiveCamera && onDragStart) {
@@ -212,8 +235,8 @@ export const DraggableCell: React.FC<DraggableCellProps> = ({
           className="h-full w-full"
           autoplay
           muted
-          onStateChange={isTemporary ? onTemporaryStatusChange : undefined}
-          onError={isTemporary ? (() => onTemporaryStatusChange?.('error')) : undefined}
+          onStateChange={handlePlayerStateChange}
+          onError={handlePlayerError}
         />
       </div>
 

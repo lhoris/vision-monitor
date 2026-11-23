@@ -181,6 +181,10 @@ const authSlice = createSlice({
       state.passwordChangeRequired = false
       if (isStorageAvailable()) localStorage.removeItem(PASSWORD_CHANGE_REQUIRED_KEY)
     },
+    passwordChangeSkipped: (state) => {
+      // 다음 로그인 시 다시 비밀번호 변경을 요구할 수 있도록 저장 플래그는 유지한다.
+      state.passwordChangeRequired = false
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -232,5 +236,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { logout, setLoading, passwordChangeCompleted } = authSlice.actions
+export const { logout, setLoading, passwordChangeCompleted, passwordChangeSkipped } = authSlice.actions
 export default authSlice.reducer

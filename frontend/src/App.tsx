@@ -19,10 +19,10 @@ import { store } from '@/store'
 import { useEffect, useRef, useState } from 'react'
 import { fetchCommonCodes } from '@/store/slices/commonCodeSlice'
 import { addEvent, fetchPersistedAlarms } from '@/store/slices/eventSlice'
-import { hasAdminAccess, logout, passwordChangeCompleted, validateAuthSession } from '@/store/slices/authSlice'
+import { hasAdminAccess, logout, passwordChangeCompleted, passwordChangeSkipped, validateAuthSession } from '@/store/slices/authSlice'
 import { I18nextProvider } from 'react-i18next'
 import i18n, { getUserLanguage } from '@/i18n'
-import { Modal } from '@/components/Common'
+import { ConfirmDialog, Modal } from '@/components/Common'
 import { SESSION_EXPIRED_EVENT } from '@/services/api'
 import { subscribeToAlarmStream } from '@/services/alarmSseService'
 import { authService } from '@/services/authService'
@@ -234,7 +234,7 @@ export function AppRoutes() {
   )
 }
 
-function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean; onCompleted: () => void }) {
+export function LegacyPasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean; onCompleted: () => void }) {
   const dispatch = useAppDispatch()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -268,6 +268,72 @@ function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean;
   }
 
   return <Modal isOpen={isOpen} onClose={() => undefined} dismissible={false} title="비밀번호 변경" className="max-w-md"><p className="text-sm text-slate-600 dark:text-slate-300">관리자가 비밀번호를 초기화했습니다. 새 비밀번호를 설정해 주세요.</p><div className="mt-4 space-y-3"><div className="relative"><input aria-label="새 비밀번호" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="새 비밀번호" className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" /><button type="button" aria-label="새 비밀번호 표시" onPointerDown={(event) => { event.preventDefault(); setShowNewPassword(true) }} onPointerUp={() => setShowNewPassword(false)} onPointerLeave={() => setShowNewPassword(false)} onPointerCancel={() => setShowNewPassword(false)} onKeyDown={(event) => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setShowNewPassword(true) } }} onKeyUp={() => setShowNewPassword(false)} onBlur={() => setShowNewPassword(false)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />{!showNewPassword ? <path d="m3 3 18 18" /> : null}</svg></button></div><div className="relative"><input aria-label="새 비밀번호 확인" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="새 비밀번호 확인" className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" /><button type="button" aria-label="새 비밀번호 확인 표시" onPointerDown={(event) => { event.preventDefault(); setShowConfirmPassword(true) }} onPointerUp={() => setShowConfirmPassword(false)} onPointerLeave={() => setShowConfirmPassword(false)} onPointerCancel={() => setShowConfirmPassword(false)} onKeyDown={(event) => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setShowConfirmPassword(true) } }} onKeyUp={() => setShowConfirmPassword(false)} onBlur={() => setShowConfirmPassword(false)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />{!showConfirmPassword ? <path d="m3 3 18 18" /> : null}</svg></button></div>{error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}<button type="button" onClick={() => void submit()} disabled={saving} className="w-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? '저장 중...' : '비밀번호 저장'}</button></div></Modal>
+}
+
+function PasswordChangeRequiredModal({ isOpen, onCompleted }: { isOpen: boolean; onCompleted: () => void }) {
+  const dispatch = useAppDispatch()
+  const { t } = useTranslation()
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [closeWarningOpen, setCloseWarningOpen] = useState(false)
+
+  async function submit() {
+    setError('')
+    if (newPassword.length < 8) {
+      setError(t('account.profile.passwordTooShort'))
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setError(t('account.profile.passwordMismatch'))
+      return
+    }
+    setSaving(true)
+    try {
+      await authService.changePassword(newPassword)
+      dispatch(passwordChangeCompleted())
+      setNewPassword('')
+      setConfirmPassword('')
+      onCompleted()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t('account.profile.passwordError'))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const requestClose = () => {
+    if (!saving) setCloseWarningOpen(true)
+  }
+
+  const confirmClose = () => {
+    dispatch(passwordChangeSkipped())
+    setCloseWarningOpen(false)
+  }
+
+  return (
+    <>
+      <Modal isOpen={isOpen} onClose={requestClose} dismissible={!saving} title={t('account.profile.changePassword')} className="max-w-md">
+        <p className="text-sm text-slate-600 dark:text-slate-300">{t('account.profile.passwordHint')}</p>
+        <div className="mt-4 space-y-3">
+          <div className="relative">
+            <input aria-label={t('account.profile.newPassword')} type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder={t('account.profile.newPassword')} className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" />
+            <button type="button" aria-label={t('account.profile.showPassword')} onPointerDown={(event) => { event.preventDefault(); setShowNewPassword(true) }} onPointerUp={() => setShowNewPassword(false)} onPointerLeave={() => setShowNewPassword(false)} onPointerCancel={() => setShowNewPassword(false)} onKeyDown={(event) => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setShowNewPassword(true) } }} onKeyUp={() => setShowNewPassword(false)} onBlur={() => setShowNewPassword(false)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />{!showNewPassword ? <path d="m3 3 18 18" /> : null}</svg></button>
+          </div>
+          <div className="relative">
+            <input aria-label={t('account.profile.confirmPassword')} type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder={t('account.profile.confirmPassword')} className="w-full border px-3 py-2 pr-10 dark:bg-slate-900" />
+            <button type="button" aria-label={t('account.profile.showPassword')} onPointerDown={(event) => { event.preventDefault(); setShowConfirmPassword(true) }} onPointerUp={() => setShowConfirmPassword(false)} onPointerLeave={() => setShowConfirmPassword(false)} onPointerCancel={() => setShowConfirmPassword(false)} onKeyDown={(event) => { if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); setShowConfirmPassword(true) } }} onKeyUp={() => setShowConfirmPassword(false)} onBlur={() => setShowConfirmPassword(false)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500"><svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" /><circle cx="12" cy="12" r="2.5" />{!showConfirmPassword ? <path d="m3 3 18 18" /> : null}</svg></button>
+          </div>
+          {error ? <p role="alert" className="text-sm text-rose-600">{error}</p> : null}
+          <button type="button" onClick={() => void submit()} disabled={saving} className="w-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? t('common.loading') : t('account.profile.updatePassword')}</button>
+        </div>
+      </Modal>
+      <ConfirmDialog isOpen={closeWarningOpen} title={t('account.profile.passwordChangeWarningTitle')} message={t('account.profile.passwordChangeWarningMessage')} confirmLabel={t('account.profile.passwordChangeWarningConfirm')} cancelLabel={t('common.cancel')} variant="danger" onCancel={() => setCloseWarningOpen(false)} onConfirm={confirmClose} />
+    </>
+  )
 }
 
 export function App() {
