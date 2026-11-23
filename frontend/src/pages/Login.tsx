@@ -219,14 +219,6 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError('')
-    if (usernameCheck !== 'available') {
-      setError('사용자 ID 중복 확인을 완료하세요.')
-      return
-    }
-    if (emailCheck !== 'available') {
-      setError('이메일 중복 확인을 완료하세요.')
-      return
-    }
     setSaving(true)
     if (input.password.length < 8) {
       setError('비밀번호는 8자 이상이어야 합니다.')
@@ -239,6 +231,17 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
       return
     }
     try {
+      const availability = await authService.checkSignupAvailability(input.username.trim(), input.email.trim())
+      setUsernameCheck(availability.usernameAvailable ? 'available' : 'unavailable')
+      setEmailCheck(availability.emailAvailable ? 'available' : 'unavailable')
+      if (!availability.usernameAvailable) {
+        setError('이미 사용 중인 사용자 ID입니다.')
+        return
+      }
+      if (!availability.emailAvailable) {
+        setError('이미 사용 중인 이메일입니다.')
+        return
+      }
       await authService.signup(input)
       const admin = await authService.getSignupAdminContact(input.department).catch(() => null)
       const adminContact = admin
