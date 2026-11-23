@@ -76,6 +76,15 @@ public class AlarmController {
         return ResponseEntity.ok(ApiResponse.success(alarms));
     }
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<AlarmLogDto>>> history(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
+    ) {
+        List<AlarmLogDto> alarms = alarmLogRepository.findByTargetUserIdAndDataEndStatusOrderByOccurredTimestampDesc(
+                user.id(), "N").stream().map(AlarmLogDto::from).toList();
+        return ResponseEntity.ok(ApiResponse.success(alarms));
+    }
+
     @PutMapping("/{alarmId}/acknowledge")
     public ResponseEntity<ApiResponse<AlarmLogDto>> acknowledge(
             @PathVariable Long alarmId,
@@ -93,6 +102,25 @@ public class AlarmController {
             item.setAcknowledgedBy(user.id());
         });
         alarmLogRepository.saveAll(acknowledged);
+        return ResponseEntity.ok(ApiResponse.success(AlarmLogDto.from(alarm)));
+    }
+
+    @PutMapping("/{alarmId}/unacknowledge")
+    public ResponseEntity<ApiResponse<AlarmLogDto>> unacknowledge(
+            @PathVariable Long alarmId,
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user
+    ) {
+        AlarmLog alarm = alarmLogRepository.findByIdAndTargetUserIdAndDataEndStatus(alarmId, user.id(), "N")
+                .orElseThrow(() -> new ApiException("ALARM_NOT_FOUND", "알람을 찾을 수 없습니다."));
+        List<AlarmLog> restored = alarm.getAlarmGroupId() == null || !isGroupAcknowledgement(alarm.getAlarmType())
+                ? List.of(alarm)
+                : alarmLogRepository.findAllByAlarmGroupIdAndDataEndStatus(alarm.getAlarmGroupId(), "N");
+        restored.forEach(item -> {
+            item.setAcknowledgedStatus("N");
+            item.setAcknowledgedTimestamp(null);
+            item.setAcknowledgedBy(null);
+        });
+        alarmLogRepository.saveAll(restored);
         return ResponseEntity.ok(ApiResponse.success(AlarmLogDto.from(alarm)));
     }
 

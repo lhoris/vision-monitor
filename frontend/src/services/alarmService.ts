@@ -12,6 +12,11 @@ function normalizeAlarm(alarm: Event): Event {
 }
 
 export const alarmService = {
+  async getHistory(): Promise<Event[]> {
+    const response = await apiClient.get<Event[]>('/alarms')
+    return getResponseData(response, []).map(normalizeAlarm)
+  },
+
   async getUnacknowledged(): Promise<Event[]> {
     const response = await apiClient.get<Event[]>('/alarms/unacknowledged')
     return getResponseData(response, []).map(normalizeAlarm)
@@ -21,6 +26,13 @@ export const alarmService = {
     const response = await apiClient.put<Event>(`/alarms/${alarmId}/acknowledge`)
     const alarm = getResponseData(response, null)
     if (!alarm) throw new Error('Acknowledged alarm was not returned')
+    return normalizeAlarm(alarm)
+  },
+
+  async unacknowledge(alarmId: number): Promise<Event> {
+    const response = await apiClient.put<Event>(`/alarms/${alarmId}/unacknowledge`)
+    const alarm = getResponseData(response, null)
+    if (!alarm) throw new Error('Unacknowledged alarm was not returned')
     return normalizeAlarm(alarm)
   },
 }

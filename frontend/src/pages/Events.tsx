@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/store";
-import { DataGridActionButton, DataGridTable, DataGridText, Toast } from "@/components/Common";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { ConfirmDialog, DataGridActionButton, DataGridTable, DataGridText, Toast } from "@/components/Common";
+import { acknowledgePersistedAlarm, fetchAlarmHistory, unacknowledgePersistedAlarm } from "@/store/slices/eventSlice";
 import {
   getAlarmOffsetConfig,
   getAlarmRecordingClip,
@@ -27,6 +28,7 @@ function userKey(userId: number | undefined, username: string | undefined) {
 
 export function Events() {
   const { t, i18n } = useTranslation();
+  const dispatch = useAppDispatch();
   const { filter, events, loading, error } = useAppSelector((state) => state.event);
   const cameras = useAppSelector((state) => state.camera.cameras);
   const user = useAppSelector((state) => state.auth.user);
@@ -47,7 +49,13 @@ export function Events() {
   const [notice, setNotice] = useState("");
   const [acknowledgementVersion, setAcknowledgementVersion] = useState(0);
   const [gridCollapsed, setGridCollapsed] = useState(false);
+  const [unacknowledgeTarget, setUnacknowledgeTarget] = useState<Event | null>(null);
+  const [unacknowledgeBusy, setUnacknowledgeBusy] = useState(false);
   const offsetConfig: AlarmOffsetConfig = getAlarmOffsetConfig();
+
+  useEffect(() => {
+    void dispatch(fetchAlarmHistory());
+  }, [dispatch]);
 
   const acknowledgedForUser = (event: Event) =>
     event.acknowledgementByUser?.[currentUserKey]?.acknowledged ??
@@ -161,7 +169,13 @@ export function Events() {
     };
   }, [selected?.id]);
 
-  const acknowledge = (event: Event) => {
+  const acknowledge = async (event: Event) => {
+    try {
+      await dispatch(acknowledgePersistedAlarm(event.id)).unwrap();
+      await dispatch(fetchAlarmHistory()).unwrap();
+    } catch {
+      // Realtime/mock events may not have a persisted alarm log yet.
+    }
     const raw = localStorage.getItem("alarmAcknowledgements");
     const saved = raw
       ? (JSON.parse(raw) as Record<
@@ -186,6 +200,31 @@ export function Events() {
     setAcknowledgementVersion((version) => version + 1);
     if (statusFilter === "open") {
       setSelectedId(null);
+    }
+  };
+
+  const unacknowledge = async (event: Event) => {
+    setUnacknowledgeBusy(true);
+    try {
+      await dispatch(unacknowledgePersistedAlarm(event.id)).unwrap();
+      try {
+        const raw = localStorage.getItem("alarmAcknowledgements");
+        if (raw) {
+          const saved = JSON.parse(raw) as Record<string, Record<string, { acknowledged: boolean; acknowledgedAt?: string }>>;
+          delete saved[currentUserKey]?.[event.id];
+          localStorage.setItem("alarmAcknowledgements", JSON.stringify(saved));
+        }
+      } catch {
+        // A malformed local cache must not hide a successful server update.
+      }
+      await dispatch(fetchAlarmHistory()).unwrap();
+      setNotice(t("events.unacknowledgedNotice"));
+      setAcknowledgementVersion((version) => version + 1);
+      setUnacknowledgeTarget(null);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : t("events.unacknowledgedError"));
+    } finally {
+      setUnacknowledgeBusy(false);
     }
   };
 
@@ -450,16 +489,23 @@ export function Events() {
                           </td>
                           <td className="px-3 py-3">
                             {acknowledged ? (
-                              <span className="text-xs text-gray-500">
-                                {t("events.statuses.acknowledged")}
-                              </span>
+                              <DataGridActionButton
+                                className="px-2 py-1 text-xs"
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setUnacknowledgeTarget(event);
+                                }}
+                              >
+                                {t("events.unacknowledge")}
+                              </DataGridActionButton>
                             ) : (
                               <DataGridActionButton
                                 className="px-2 py-1 text-xs"
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  acknowledge(event);
+                                  void acknowledge(event);
                                 }}
                               >
                                 {t("events.acknowledge")}
@@ -547,10 +593,18 @@ export function Events() {
                 </div>
               </div>
               <div className="flex gap-2 border-t p-4 dark:border-gray-700">
-                {!isAcknowledged(selected) && (
+                {isAcknowledged(selected) ? (
                   <button
                     type="button"
-                    onClick={() => acknowledge(selected)}
+                    onClick={() => setUnacknowledgeTarget(selected)}
+                    className="flex-1 rounded border border-amber-500 px-3 py-2 text-sm font-semibold text-amber-700"
+                  >
+                    {t("events.unacknowledge")}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void acknowledge(selected)}
                     className="flex-1 rounded bg-blue-700 px-3 py-2 text-sm font-semibold text-white"
                   >
                     {t("events.acknowledgeAlarm")}
@@ -573,6 +627,16 @@ export function Events() {
           )}
         </aside>
       </section>
+      <ConfirmDialog
+        isOpen={Boolean(unacknowledgeTarget)}
+        title={t("events.unacknowledgeTitle")}
+        message={t("events.unacknowledgeMessage", { description: unacknowledgeTarget ? description(unacknowledgeTarget) : "" })}
+        confirmLabel={t("events.unacknowledge")}
+        cancelLabel={t("common.cancel")}
+        busy={unacknowledgeBusy}
+        onCancel={() => { if (!unacknowledgeBusy) setUnacknowledgeTarget(null) }}
+        onConfirm={() => unacknowledgeTarget ? unacknowledge(unacknowledgeTarget) : undefined}
+      />
     </main>
   );
 }

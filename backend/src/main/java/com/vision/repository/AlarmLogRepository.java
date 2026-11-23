@@ -10,6 +10,9 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
     List<AlarmLog> findByTargetUserIdAndAcknowledgedStatusAndDataEndStatusOrderByOccurredTimestampDesc(
             Long targetUserId, String acknowledgedStatus, String dataEndStatus);
 
+    List<AlarmLog> findByTargetUserIdAndDataEndStatusOrderByOccurredTimestampDesc(
+            Long targetUserId, String dataEndStatus);
+
     Optional<AlarmLog> findByIdAndTargetUserIdAndDataEndStatus(Long id, Long targetUserId, String dataEndStatus);
 
     List<AlarmLog> findAllByAlarmGroupIdAndDataEndStatus(String alarmGroupId, String dataEndStatus);

@@ -6,6 +6,7 @@ import i18n from '@/i18n'
 import { Events } from '@/pages/Events'
 import { store } from '@/store'
 import { fetchEvents, setFilter } from '@/store/slices/eventSlice'
+import { alarmService } from '@/services/alarmService'
 import type { Event } from '@/types'
 
 const alarmFixtures: Event[] = [
@@ -33,6 +34,8 @@ describe('Events', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('en')
     localStorage.removeItem('alarmAcknowledgements')
+    vi.spyOn(alarmService, 'getHistory').mockResolvedValue([])
+    vi.spyOn(alarmService, 'acknowledge').mockResolvedValue({ ...alarmFixtures[0], acknowledged: true })
     store.dispatch(setFilter({}))
     store.dispatch(fetchEvents.fulfilled({
       content: alarmFixtures,
@@ -91,5 +94,18 @@ describe('Events', () => {
     expect(screen.getAllByText('움직임 감지').length).toBeGreaterThan(0)
     fireEvent.click(screen.getByRole('button', { name: '움직임 감지' }))
     expect(screen.getByText(/설비 제어 명령을 실행하거나 원인을 해소하지는 않습니다/)).toBeInTheDocument()
+  })
+
+  it('restores an acknowledged alarm after confirmation', async () => {
+    vi.spyOn(alarmService, 'unacknowledge').mockResolvedValue({ ...alarmFixtures[1], acknowledged: false })
+    renderEvents()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Acknowledged' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Unacknowledge' }).at(-1)!)
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: 'Unacknowledge' }).at(-1)!)
+
+    await waitFor(() => expect(screen.getByText('The alarm was returned to unacknowledged status.')).toBeInTheDocument())
+    expect(alarmService.unacknowledge).toHaveBeenCalledWith(12)
   })
 })

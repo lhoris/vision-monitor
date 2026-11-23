@@ -62,9 +62,19 @@ export const fetchPersistedAlarms = createAsyncThunk(
   async () => alarmService.getUnacknowledged()
 )
 
+export const fetchAlarmHistory = createAsyncThunk(
+  'event/fetchAlarmHistory',
+  async () => alarmService.getHistory()
+)
+
 export const acknowledgePersistedAlarm = createAsyncThunk(
   'event/acknowledgePersistedAlarm',
   async (alarmId: number) => alarmService.acknowledge(alarmId)
+)
+
+export const unacknowledgePersistedAlarm = createAsyncThunk(
+  'event/unacknowledgePersistedAlarm',
+  async (alarmId: number) => alarmService.unacknowledge(alarmId)
 )
 
 export const fetchCameraEvents = createAsyncThunk(
@@ -219,8 +229,17 @@ const eventSlice = createSlice({
         state.events = [...action.payload, ...state.events.filter((event) => !action.payload.some((alarm) => alarm.id === event.id))]
         state.pagination.total = state.events.length
       })
+      .addCase(fetchAlarmHistory.fulfilled, (state, action) => {
+        state.events = [...action.payload, ...state.events.filter((event) => !action.payload.some((alarm) => alarm.id === event.id))]
+        state.pagination.total = state.events.length
+      })
       .addCase(acknowledgePersistedAlarm.fulfilled, (state, action) => {
         state.events = state.events.filter((event) => event.id !== action.payload.id)
+      })
+      .addCase(unacknowledgePersistedAlarm.fulfilled, (state, action) => {
+        const index = state.events.findIndex((event) => event.id === action.payload.id)
+        if (index !== -1) state.events[index] = action.payload
+        else state.events.unshift(action.payload)
       })
 
     // fetchCameraEvents
