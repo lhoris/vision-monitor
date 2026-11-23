@@ -3,9 +3,10 @@ import type { Event } from '@/types'
 type Translate = (key: string) => string
 
 export function getEventTypeLabel(type: string, t: Translate): string {
-  const key = `events.types.${type.toLowerCase()}`
+  const normalizedType = type.trim().toLowerCase().replace(/\s+/g, '_')
+  const key = `events.types.${normalizedType}`
   const translated = t(key)
-  return translated === key ? `${t('events.otherType')}: ${type.replace(/_/g, ' ')}` : translated
+  return translated === key ? `${t('events.otherType')}: ${type.replace(/[_\s]+/g, ' ')}` : translated
 }
 
 export function getEventSeverityLabel(severity: string | undefined, t: Translate): string {
