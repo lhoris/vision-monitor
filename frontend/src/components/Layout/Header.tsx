@@ -15,7 +15,7 @@ import { acknowledgePersistedAlarm, removeEvent } from '@/store/slices/eventSlic
 import { useAppBranding } from '@/hooks/useAppBranding'
 import { AccountCenterModal } from './AccountCenterModal'
 import type { AccountTab } from './AccountCenterModal'
-import { getEventDescription, getEventTypeLabel } from '@/utils/eventPresentation'
+import { getEventDescription, getEventSeverityLabel, getEventTypeLabel } from '@/utils/eventPresentation'
 import { HelpButton, resolveOnboardingRoute, startGuidedOnboarding, stopGuidedOnboarding } from '@/components/Onboarding'
 
 const themeOptions: Array<{
@@ -364,7 +364,7 @@ export function Header() {
                             <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">{getEventTypeLabel(event.type, t)}</span>
                             <span className="flex shrink-0 items-center gap-2">
                               <span className={`text-[10px] font-bold uppercase ${event.severity === 'critical' ? 'text-rose-600 dark:text-rose-400' : event.severity === 'high' ? 'text-orange-600 dark:text-orange-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                                {t(`events.severities.${event.severity}`)}
+                                {getEventSeverityLabel(event.severity, t)}
                               </span>
                               <span
                                 role="button"
@@ -385,7 +385,7 @@ export function Header() {
                               </span>
                             </span>
                           </span>
-                          <span className="mt-1 block line-clamp-2 text-xs leading-5 text-gray-600 dark:text-gray-300">
+                          <span className="mt-1 block line-clamp-3 whitespace-pre-line text-xs leading-5 text-gray-600 dark:text-gray-300">
                             {getEventDescription(event, i18n.resolvedLanguage ?? i18n.language, t)}
                           </span>
                         </button>

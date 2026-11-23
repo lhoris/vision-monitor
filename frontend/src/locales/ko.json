@@ -467,7 +467,7 @@
     "searchPlaceholder": "알람, 영상 소스, 설명 검색",
     "severity": "심각도",
     "allSeverities": "전체 심각도",
-    "severities": { "low": "낮음", "medium": "보통", "warning": "경고", "high": "높음", "critical": "긴급" },
+    "severities": { "low": "낮음", "medium": "보통", "info": "안내", "warning": "경고", "high": "높음", "critical": "긴급" },
     "camera": "영상 소스",
     "allCameras": "전체 영상 소스",
     "alarmType": "알람 유형",
@@ -544,7 +544,8 @@
       "rolling_speed_adjusted": "공정 조건에 따라 롤링 속도가 조정되었습니다. 변경 후 온도 추이를 확인하세요.",
       "material_size_deviation": "AI 측정 규격이 목표 범위를 벗어났습니다. 측정 영상과 압연 조건을 확인하세요.",
       "control_connection_failed": "제어 장비와의 통신에 실패했습니다.",
-      "control_command_failed": "제어 장비가 명령을 정상 처리하지 못했습니다."
+      "control_command_failed": "제어 장비가 명령을 정상 처리하지 못했습니다.",
+      "user_signup_request": "신규 회원가입 요청"
     }
   },
   "zones": {

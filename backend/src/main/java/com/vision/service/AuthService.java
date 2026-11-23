@@ -257,7 +257,7 @@ public class AuthService {
         String recipientScope = policy == null || policy.getRecipientScope() == null ? "ALL_ADMIN" : policy.getRecipientScope();
         String groupId = groupAcknowledgement ? UUID.randomUUID().toString() : null;
         String applicantName = signup.getName() == null || signup.getName().isBlank() ? signup.getUsername() : signup.getName();
-        String message = "신규 사용자 가입신청이 접수되었습니다. 신청자: " + applicantName + " (사용자 ID: " + signup.getUsername() + ")";
+        String message = "신규 사용자 가입신청이 접수되었습니다.\n신청자: " + applicantName + "\n사용자 ID: " + signup.getUsername();
         Map<String, Object> alarm = Map.of(
                 "id", signup.getId(),
                 "cameraId", 0,

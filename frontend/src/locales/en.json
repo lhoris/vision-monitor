@@ -466,7 +466,7 @@
     "searchPlaceholder": "Search alarms, video sources, or descriptions",
     "severity": "Severity",
     "allSeverities": "All severities",
-    "severities": { "low": "Low", "medium": "Medium", "warning": "Warning", "high": "High", "critical": "Critical" },
+    "severities": { "low": "Low", "medium": "Medium", "info": "Info", "warning": "Warning", "high": "High", "critical": "Critical" },
     "camera": "Video Source",
     "allCameras": "All video sources",
     "alarmType": "Alarm Type",
@@ -543,7 +543,8 @@
       "rolling_speed_adjusted": "Rolling speed was adjusted for process conditions. Verify the temperature trend after the change.",
       "material_size_deviation": "AI-measured dimensions are outside the target range. Review the inspection video and rolling conditions.",
       "control_connection_failed": "Communication with the control equipment failed.",
-      "control_command_failed": "The control equipment did not process the command successfully."
+      "control_command_failed": "The control equipment did not process the command successfully.",
+      "user_signup_request": "New user signup request"
     }
   },
   "zones": {
