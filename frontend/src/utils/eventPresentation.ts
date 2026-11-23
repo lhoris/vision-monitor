@@ -6,6 +6,7 @@ export function getEventTypeLabel(type: string, t: Translate): string {
   const normalizedType = type.trim().toLowerCase().replace(/\s+/g, '_')
   const key = `events.types.${normalizedType}`
   const translated = t(key)
+  if (normalizedType === 'user_signup_request' && translated === key) return '신규 회원가입 요청'
   return translated === key ? `${t('events.otherType')}: ${type.replace(/[_\s]+/g, ' ')}` : translated
 }
 
