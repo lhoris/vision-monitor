@@ -8,7 +8,7 @@ class CommonCodeService {
     return getResponseData(await apiClient.get<RuntimeCommonCodes>('/common-codes/bootstrap'), { version: '', codes: {} })
   }
   async find(names: string[]): Promise<RuntimeCommonCodes> {
-    return getResponseData(await apiClient.get<RuntimeCommonCodes>('/common-codes', { params: { names: names.join(',') } }), { version: '', codes: {} })
+    return getResponseData(await apiClient.get<RuntimeCommonCodes>('/common-codes', { names: names.join(',') }), { version: '', codes: {} })
   }
   async listAdmin(): Promise<CommonCode[]> {
     return getResponseData(await apiClient.get<CommonCode[]>('/admin/common-codes'), [])

@@ -53,7 +53,7 @@ interface LoginApiResponse {
 
 class AuthService {
   async checkSignupAvailability(username?: string, email?: string): Promise<SignupAvailability> {
-    const response = await apiClient.get<SignupAvailability>('/auth/signup/check', { params: { username, email } })
+    const response = await apiClient.get<SignupAvailability>('/auth/signup/check', { username, email })
     const result = getResponseData<SignupAvailability | null>(response, null)
     if (!result) throw new Error('중복 확인에 실패했습니다.')
     return result
