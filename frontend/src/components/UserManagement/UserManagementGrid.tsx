@@ -26,6 +26,7 @@ interface UserManagementGridProps {
   users: UserAccount[]
   roles: RoleSummary[]
   classOptions?: { value: string; label: string }[]
+  departmentOptions?: { value: string; label: string }[]
   currentUsername: string
   onBatchAction: (action: UserDangerAction, userIds: number[]) => Promise<void>
   onSaveChanges: (changes: UserGridSaveRequest[]) => Promise<void>
@@ -240,6 +241,7 @@ export function UserManagementGrid({
   users,
   roles,
   classOptions = [],
+  departmentOptions = [],
   currentUsername,
   onBatchAction,
   onSaveChanges,
@@ -404,13 +406,6 @@ export function UserManagementGrid({
       onChange: (value) => updateColumnFilter('department', value),
     },
     {
-      id: 'position',
-      ariaLabel: '직책 필터',
-      value: columnFilters.position,
-      widthClassName: 'w-32',
-      onChange: (value) => updateColumnFilter('position', value),
-    },
-    {
       id: 'email',
       ariaLabel: '이메일 필터',
       value: columnFilters.email,
@@ -479,9 +474,8 @@ export function UserManagementGrid({
     { id: 'name', ariaLabel: `${t('userManagement.name')} 필터`, value: columnFilters.name, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('name', value) },
     { id: 'email', ariaLabel: `${t('userManagement.email')} 필터`, value: columnFilters.email, widthClassName: 'w-[190px]', onChange: (value) => updateColumnFilter('email', value) },
     { id: 'phone', ariaLabel: `${t('userManagement.phone')} 필터`, value: columnFilters.phone, widthClassName: 'w-[140px]', onChange: (value) => updateColumnFilter('phone', value) },
-    { id: 'department', ariaLabel: `${t('userManagement.department')} 필터`, value: columnFilters.department, widthClassName: 'w-[150px]', onChange: (value) => updateColumnFilter('department', value) },
+    { id: 'department', ariaLabel: `${t('userManagement.department')} 필터`, kind: 'select', value: columnFilters.department, widthClassName: 'w-[150px]', onChange: (value) => updateColumnFilter('department', value), options: [{ value: '', label: '전체' }, ...departmentOptions.map((option) => ({ value: option.value, label: option.label }))] },
     { id: 'classCode', ariaLabel: '반 필터', kind: 'select', value: columnFilters.classCode, widthClassName: 'w-[80px]', onChange: (value) => updateColumnFilter('classCode', value), options: classOptions.map((option) => ({ value: option.value, label: option.value ? option.label : '전체' })) },
-    { id: 'position', ariaLabel: `${t('userManagement.position')} 필터`, value: columnFilters.position, widthClassName: 'w-[100px]', onChange: (value) => updateColumnFilter('position', value) },
     { id: 'resetPassword', ariaLabel: `${t('userManagement.password')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[90px]' },
     { id: 'accountStatus', ariaLabel: `${t('userManagement.accountStatus')} 필터`, kind: 'empty', value: '', widthClassName: 'w-[110px]' },
     { id: 'role', ariaLabel: `${t('userManagement.role')} 필터`, kind: 'select', value: columnFilters.role, widthClassName: 'w-[210px]', onChange: (value) => updateColumnFilter('role', value), options: [{ value: '', label: '전체' }, ...roles.map((role) => ({ value: role.name, label: role.name }))] },
@@ -917,6 +911,17 @@ export function UserManagementGrid({
     return <button type="button" aria-label="반 셀" {...selectableCellProps(row.rowId, 'classCode')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'classCode' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'classCode')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'classCode')}`}>{value ? classOptions.find((option) => option.value === value)?.label ?? value : t('userManagement.unassignedClass')}</button>
   }
 
+  const renderDepartmentSelectCell = (row: UserGridRow) => {
+    const value = row.department ?? ''
+    if (isEditing(row.rowId, 'department')) {
+      return <select aria-label="부서" autoFocus value={value} onBlur={() => setEditingCell(null)} onChange={(event) => { updateRow(row.rowId, 'department', event.target.value); setEditingCell(null) }} className={selectCellClass}>
+        <option value="">미지정</option>
+        {departmentOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    }
+    return <button type="button" aria-label="부서 셀" {...selectableCellProps(row.rowId, 'department')} onClick={() => setEditingCell({ rowId: row.rowId, field: 'department' })} onDoubleClick={() => setEditingCell({ rowId: row.rowId, field: 'department' })} onKeyDown={(event) => handleEditableCellKeyDown(event, row.rowId, 'department')} className={`${cellValueClass} ${selectedCellStateClass(row.rowId, 'department')}`}>{departmentOptions.find((option) => option.value === value)?.label ?? (value || '미지정')}</button>
+  }
+
   const renderRoleSelectCell = (row: UserGridRow) => {
     const roleText = roleDisplayValue(row.roleIds, roles)
 
@@ -1077,7 +1082,6 @@ export function UserManagementGrid({
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.phone')}</th>
               <th className={`w-[150px] ${headerCellClass}`}>{t('userManagement.department')}</th>
               <th className={`w-[80px] ${headerCellClass}`}>반</th>
-              <th className={`w-[100px] ${headerCellClass}`}>{t('userManagement.position')}</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
               <th className={`w-[110px] ${headerCellClass}`}>{t('userManagement.accountStatus')}</th>
               <th className={`w-[210px] ${headerCellClass}`}>{t('userManagement.role')}</th>
@@ -1093,9 +1097,8 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'name', t('userManagement.name'))}{renderError(row, 'name')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'email', t('userManagement.email'))}{renderError(row, 'email')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'phone', t('userManagement.phone'))}{renderError(row, 'phone')}</td>
-                <td className={bodyCellClass}>{renderTextCell(row, 'department', t('userManagement.department'))}{renderError(row, 'department')}</td>
+                <td className={bodyCellClass}>{renderDepartmentSelectCell(row)}{renderError(row, 'department')}</td>
                 <td className={bodyCellClass}>{renderClassSelectCell(row)}</td>
-                <td className={bodyCellClass}>{renderTextCell(row, 'position', t('userManagement.position'))}{renderError(row, 'position')}</td>
                 <td className={`${bodyCellClass} text-center`}>
                   <button type="button" title={row.username?.toLowerCase() === currentUsername.toLowerCase() ? t('userManagement.resetPasswordSelfDisabled') : undefined} className="rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:hover:bg-slate-700" disabled={saving || !row.id || Boolean(row.passwordResetRequired) || row.username?.toLowerCase() === currentUsername.toLowerCase()} onClick={() => {
                     if (!row.id || !onResetPassword) return
@@ -1132,7 +1135,7 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'displayName', t('userManagement.remarks'))}{renderError(row, 'displayName')}</td>
               </tr>
             ))}
-            {!visibleRows.length && <tr><td colSpan={12} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
+            {!visibleRows.length && <tr><td colSpan={11} className="p-8 text-center text-sm text-slate-500">조회된 사용자가 없습니다.</td></tr>}
           </tbody>
         </DataGridTable>
 

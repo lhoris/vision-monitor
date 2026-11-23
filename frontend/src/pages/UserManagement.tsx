@@ -14,6 +14,7 @@ import { useCommonCode } from '@/hooks/useCommonCode'
 export function UserManagement() {
   const { t } = useTranslation()
   const classCode = useCommonCode('USER_CLASS')
+  const departmentCode = useCommonCode('USER_DEPARTMENT')
   const [users, setUsers] = useState<UserAccount[]>([])
   const [roles, setRoles] = useState<RoleSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -157,6 +158,7 @@ export function UserManagement() {
         users={users}
         roles={roles}
         classOptions={[{ value: '', label: '전체' }, ...(classCode?.items ?? []).filter((item) => item.value !== 'COMMON').map((item) => ({ value: item.value, label: item.nameKo || item.name }))]}
+        departmentOptions={(departmentCode?.items ?? []).map((item) => ({ value: item.value, label: item.nameKo || item.name }))}
         currentUsername={currentUsername}
         onBatchAction={runBatchAction}
         onSaveChanges={saveChanges}
