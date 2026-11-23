@@ -176,9 +176,13 @@ function SignupDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const [saving, setSaving] = useState(false)
   const [usernameCheck, setUsernameCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
   const [emailCheck, setEmailCheck] = useState<'idle' | 'checking' | 'available' | 'unavailable'>('idle')
+  const requestedCommonCodes = useRef(new Set<string>())
   useEffect(() => {
     const missingCodes = [!classCode ? 'USER_CLASS' : null, !departmentCode ? 'USER_DEPARTMENT' : null].filter((code): code is string => Boolean(code))
-    if (missingCodes.length) void dispatch(fetchCommonCodeNames(missingCodes))
+    const codesToRequest = missingCodes.filter((code) => !requestedCommonCodes.current.has(code))
+    if (!codesToRequest.length) return
+    codesToRequest.forEach((code) => requestedCommonCodes.current.add(code))
+    void dispatch(fetchCommonCodeNames(codesToRequest))
   }, [classCode, departmentCode, dispatch])
 
   const update = (field: keyof SignupInput, value: string) => {

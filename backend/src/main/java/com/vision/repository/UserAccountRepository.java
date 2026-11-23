@@ -18,8 +18,9 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long>,
      * Some legacy rows contain padding spaces, while signup always normalizes the
      * incoming value before saving it.
      */
-    @Query("select case when count(u) > 0 then true else false end from UserAccount u "
-            + "where lower(trim(u.username)) = lower(trim(:username))")
+    @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END "
+            + "FROM TB_M26_USER WHERE LOWER(TRIM(USER_EMP_NO)) = LOWER(TRIM(:username))",
+            nativeQuery = true)
     boolean existsByUsernameIgnoreCase(@Param("username") String username);
 
     boolean existsByEmailIgnoreCase(String email);
