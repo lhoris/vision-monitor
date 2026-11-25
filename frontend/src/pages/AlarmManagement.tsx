@@ -111,7 +111,12 @@ export default function AlarmManagement() {
     if (ids.has(Object.values(draftTypes).find((type) => type.code === selectedCode)?.id ?? 0)) setSelectedCode('')
   }
 
-  const addRecipient = () => setRecipientDrafts((current) => [...current, { rowId: -Date.now(), userId: '' }])
+  const addRecipient = () => {
+    const rowId = -Date.now()
+    setRecipientDrafts((current) => [...current, { rowId, userId: '' }])
+    userSelection.select(rowId)
+    setSelectedRecipientRowId(rowId)
+  }
 
   const deleteDraftRecipients = () => {
     const ids = new Set(recipientDrafts.filter((draft) => userSelection.selectedIds.has(draft.rowId)).map((draft) => draft.rowId))
