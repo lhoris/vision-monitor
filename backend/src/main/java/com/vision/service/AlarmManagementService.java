@@ -23,6 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AlarmManagementService {
     private static final String ACTIVE = "N";
+    private static final String SIGNUP_REQUEST_ALARM_CODE = "USER_SIGNUP_REQUEST";
     private final AlarmRuleRepository alarmRuleRepository;
     private final UserAccountRepository userRepository;
     private final UserAlertPreferenceRepository preferenceRepository;
@@ -74,8 +75,9 @@ public class AlarmManagementService {
             Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings,
             java.util.Set<Long> defaultAdministratorIds) {
         Map<String, AlarmManagementDto.ChannelPolicy> effective = new HashMap<>(settings.getOrDefault(user.getId(), Map.of()));
-        if (defaultAdministratorIds.contains(user.getId())) {
-            codes.forEach(code -> effective.putIfAbsent(code, new AlarmManagementDto.ChannelPolicy(true, true, false, false)));
+        if (defaultAdministratorIds.contains(user.getId()) && codes.contains(SIGNUP_REQUEST_ALARM_CODE)) {
+            effective.putIfAbsent(SIGNUP_REQUEST_ALARM_CODE,
+                    new AlarmManagementDto.ChannelPolicy(true, true, false, false));
         }
         return effective;
     }
