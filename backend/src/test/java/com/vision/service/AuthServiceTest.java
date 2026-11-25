@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
@@ -156,7 +157,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void publishesSignupAlarmToEveryActiveAdministrator() {
+    void storesSignupAlarmForEveryActiveAdministrator() {
         UserAccount admin = user("admin", "ADMIN");
         UserAccount savedSignup = user("new-user", "USER");
         savedSignup.setName("New User");
@@ -168,14 +169,8 @@ class AuthServiceTest {
         service.signup(new com.vision.dto.SignupRequest(
                 "new-user", "password1", "password1", "New User", "new@example.com", "010-1234-5678", "QA", "Engineer"));
 
-        org.mockito.ArgumentCaptor<java.util.Map<String, Object>> alarmCaptor = org.mockito.ArgumentCaptor.forClass(java.util.Map.class);
         verify(alarmLogRepository).save(any(com.vision.entity.AlarmLog.class));
-        verify(alarmEventPublisher).publishToUser(org.mockito.ArgumentMatchers.eq("admin"), alarmCaptor.capture());
-        assertEquals("USER_SIGNUP_REQUEST", alarmCaptor.getValue().get("type"));
-        String description = (String) alarmCaptor.getValue().get("description");
-        assertTrue(description.contains("신규 사용자 가입신청이 접수되었습니다."));
-        assertTrue(description.contains("New User"));
-        assertTrue(description.contains("new-user"));
+        verifyNoInteractions(alarmEventPublisher);
     }
 
     @Test

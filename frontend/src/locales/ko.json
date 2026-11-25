@@ -254,9 +254,11 @@
   },
   "alarmManagement": {
     "title": "알람 관리",
-    "description": "알람 유형별 수신자, 확인 방식, 저장 및 알림 채널을 관리합니다.",
+    "description": "알람 유형별 수신자, 확인 방식 및 알림 채널을 관리합니다.",
     "typePolicy": "알람 유형 정책",
     "userOverrides": "사용자별 수신 및 채널 설정",
+    "recipientList": "알람 수신자 목록",
+    "recipientListHint": "선택한 알람 유형의 수신자와 채널을 설정합니다.",
     "general": "일반 알람",
     "model": "모델 알람",
     "allAdmins": "활성 최고관리자 전체",

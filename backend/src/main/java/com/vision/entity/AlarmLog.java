@@ -64,4 +64,19 @@ public class AlarmLog extends BaseAudit {
 
     @Column(name = "ALARM_CONTEXT", columnDefinition = "TEXT")
     private String context;
+
+    @Column(name = "SOURCE_EVENT_ID", length = 100)
+    private String sourceEventId;
+
+    @Builder.Default
+    @Column(name = "APP_STATUS", nullable = false, length = 20)
+    private String appStatus = "PENDING";
+
+    @Builder.Default
+    @Column(name = "EMAIL_STATUS", nullable = false, length = 20)
+    private String emailStatus = "SKIPPED";
+
+    @Builder.Default
+    @Column(name = "TEAMS_STATUS", nullable = false, length = 20)
+    private String teamsStatus = "SKIPPED";
 }

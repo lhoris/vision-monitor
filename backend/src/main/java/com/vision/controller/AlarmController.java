@@ -10,6 +10,7 @@ import com.vision.repository.AlarmRuleRepository;
 import com.vision.repository.AlarmLogRepository;
 import com.vision.sse.AlarmEventPublisher;
 import com.vision.sse.AlarmSseBroker;
+import com.vision.service.AlarmIngressService;
 import com.vision.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,7 @@ public class AlarmController {
     private final AlarmLogRepository alarmLogRepository;
     private final String modelServerKey;
     private final AlarmRuleRepository alarmRuleRepository;
+    private final AlarmIngressService alarmIngressService;
 
     @Autowired
     public AlarmController(
@@ -47,17 +49,29 @@ public class AlarmController {
             AlarmEventPublisher publisher,
             AlarmLogRepository alarmLogRepository,
             @Value("${vision.sse.model-server-key:}") String modelServerKey,
-            AlarmRuleRepository alarmRuleRepository
+            AlarmRuleRepository alarmRuleRepository,
+            AlarmIngressService alarmIngressService
     ) {
         this.broker = broker;
         this.publisher = publisher;
         this.alarmLogRepository = alarmLogRepository;
         this.modelServerKey = modelServerKey;
         this.alarmRuleRepository = alarmRuleRepository;
+        this.alarmIngressService = alarmIngressService;
     }
 
     public AlarmController(AlarmSseBroker broker, AlarmEventPublisher publisher, String modelServerKey) {
-        this(broker, publisher, null, modelServerKey, null);
+        this(broker, publisher, null, modelServerKey, null, null);
+    }
+
+    public AlarmController(
+            AlarmSseBroker broker,
+            AlarmEventPublisher publisher,
+            AlarmLogRepository alarmLogRepository,
+            String modelServerKey,
+            AlarmRuleRepository alarmRuleRepository
+    ) {
+        this(broker, publisher, alarmLogRepository, modelServerKey, alarmRuleRepository, null);
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -130,7 +144,11 @@ public class AlarmController {
             @RequestBody AlarmIngressRequest request
     ) {
         requireModelServerKey(providedKey);
-        publisher.publishToAll(request.toSsePayload());
+        if (alarmIngressService != null) {
+            alarmIngressService.register(request);
+        } else {
+            publisher.publishToAll(request.toSsePayload());
+        }
         return ResponseEntity.accepted().body(ApiResponse.success(Map.of("accepted", true)));
     }
 

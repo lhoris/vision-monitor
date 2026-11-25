@@ -34,6 +34,8 @@ public class AlarmManagementService {
         requireAdmin(actorUsername);
         List<AlarmRule> rules = alarmRules();
         List<String> codes = rules.stream().map(AlarmRule::getCode).toList();
+        java.util.Set<Long> defaultAdministratorIds = userRepository.findAllActiveAdministrators().stream()
+                .map(UserAccount::getId).collect(java.util.stream.Collectors.toSet());
         Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings = new HashMap<>();
         preferenceRepository.findAllByAlarmTypeCodeIn(codes).forEach(preference -> settings
                 .computeIfAbsent(preference.getUserId(), ignored -> new HashMap<>())
@@ -42,29 +44,34 @@ public class AlarmManagementService {
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
                 .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
-                        settings.getOrDefault(user.getId(), Map.of())))
+                        effectiveSettings(user, codes, settings, defaultAdministratorIds)))
                 .toList();
         return new AlarmManagementDto.Overview(types, users);
+    }
+
+    private Map<String, AlarmManagementDto.ChannelPolicy> effectiveSettings(
+            UserAccount user,
+            List<String> codes,
+            Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings,
+            java.util.Set<Long> defaultAdministratorIds) {
+        Map<String, AlarmManagementDto.ChannelPolicy> effective = new HashMap<>(settings.getOrDefault(user.getId(), Map.of()));
+        if (defaultAdministratorIds.contains(user.getId())) {
+            codes.forEach(code -> effective.putIfAbsent(code, new AlarmManagementDto.ChannelPolicy(true, true, false, false)));
+        }
+        return effective;
     }
 
     @Transactional
     public AlarmManagementDto.TypePolicy updateType(String actorUsername, Long detailId,
                                                      AlarmManagementDto.TypePolicyUpdate request) {
         requireAdmin(actorUsername);
-        if (request == null || !isCategory(request.category()) || !isRecipientScope(request.recipientScope())
-                || !isAckScope(request.acknowledgementScope())) {
+        if (request == null || !isCategory(request.category()) || !isAckScope(request.acknowledgementScope())) {
             throw new ApiException("VALIDATION_ERROR", "알람 정책 값이 올바르지 않습니다.");
         }
         AlarmRule detail = alarmRuleRepository.findById(detailId)
                 .orElseThrow(() -> new ApiException("CODE_DETAIL_NOT_FOUND", "알람 유형을 찾을 수 없습니다."));
         detail.setCategory(request.category());
-        detail.setRecipientScope(request.recipientScope());
         detail.setAcknowledgementScope(request.acknowledgementScope());
-        detail.setSaveStatus(status(request.defaultSave()));
-        detail.setReceiveStatus(status(request.defaultReceive()));
-        detail.setPushStatus(status(request.defaultPush()));
-        detail.setEmailStatus(status(request.defaultEmail()));
-        detail.setTeamsStatus(status(request.defaultTeams()));
         return toTypePolicy(alarmRuleRepository.save(detail));
     }
 
@@ -117,10 +124,7 @@ public class AlarmManagementService {
     private AlarmManagementDto.TypePolicy toTypePolicy(AlarmRule detail) {
         return new AlarmManagementDto.TypePolicy(detail.getId(), detail.getCode(), detail.getName(), detail.getNameKo(),
                 detail.getNameEn(), detail.getDescription(), value(detail.getCategory(), "GENERAL"),
-                value(detail.getRecipientScope(), "ALL_ADMIN"), value(detail.getAcknowledgementScope(), "INDIVIDUAL"),
-                enabled(detail.getSaveStatus(), true), enabled(detail.getReceiveStatus(), true),
-                enabled(detail.getPushStatus(), true), enabled(detail.getEmailStatus(), false),
-                enabled(detail.getTeamsStatus(), false));
+                value(detail.getAcknowledgementScope(), "INDIVIDUAL"));
     }
 
     private AlarmManagementDto.ChannelPolicy toChannelPolicy(UserAlertPreference preference) {
@@ -140,7 +144,6 @@ public class AlarmManagementService {
     }
 
     private boolean isCategory(String value) { return "GENERAL".equals(value) || "MODEL".equals(value); }
-    private boolean isRecipientScope(String value) { return "ALL_ADMIN".equals(value) || "SELECTED_USER".equals(value); }
     private boolean isAckScope(String value) { return "INDIVIDUAL".equals(value) || "GROUP".equals(value); }
     private boolean enabled(String value, boolean fallback) { return value == null ? fallback : "Y".equalsIgnoreCase(value); }
     private String value(String value, String fallback) { return value == null || value.isBlank() ? fallback : value; }

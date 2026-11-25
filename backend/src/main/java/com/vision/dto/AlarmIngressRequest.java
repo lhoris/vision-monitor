@@ -13,7 +13,8 @@ public record AlarmIngressRequest(
         Long modelProcessId,
         String description,
         Instant occurredAt,
-        Map<String, Object> metadata
+        Map<String, Object> metadata,
+        String sourceEventId
 ) {
     public Map<String, Object> toSsePayload() {
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -26,6 +27,7 @@ public record AlarmIngressRequest(
         payload.put("acknowledged", false);
         payload.put("metadata", metadata == null ? Map.of() : metadata);
         payload.put("source", source);
+        payload.put("sourceEventId", sourceEventId);
         return payload;
     }
 }

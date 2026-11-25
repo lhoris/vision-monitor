@@ -40,24 +40,6 @@ public class AlarmRule extends BaseAudit {
     @Column(name = "ALARM_CATEGORY", nullable = false, length = 20)
     private String category = "GENERAL";
 
-    @Column(name = "RECIPIENT_SCOPE", nullable = false, length = 20)
-    private String recipientScope = "ALL_ADMIN";
-
     @Column(name = "ACKNOWLEDGEMENT_SCOPE", nullable = false, length = 20)
     private String acknowledgementScope = "INDIVIDUAL";
-
-    @Column(name = "SAVE_STATUS", nullable = false, length = 1)
-    private String saveStatus = "Y";
-
-    @Column(name = "RECEIVE_STATUS", nullable = false, length = 1)
-    private String receiveStatus = "Y";
-
-    @Column(name = "PUSH_STATUS", nullable = false, length = 1)
-    private String pushStatus = "Y";
-
-    @Column(name = "EMAIL_STATUS", nullable = false, length = 1)
-    private String emailStatus = "N";
-
-    @Column(name = "TEAMS_STATUS", nullable = false, length = 1)
-    private String teamsStatus = "N";
 }

@@ -10,18 +10,14 @@ public final class AlarmManagementDto {
 
     public record TypePolicy(
             Long id, String code, String name, String nameKo, String nameEn, String description,
-            String category, String recipientScope, String acknowledgementScope,
-            boolean defaultSave, boolean defaultReceive, boolean defaultPush,
-            boolean defaultEmail, boolean defaultTeams) { }
+            String category, String acknowledgementScope) { }
 
     public record UserSetting(Long userId, String username, String name,
                               Map<String, ChannelPolicy> overrides) { }
 
     public record Overview(List<TypePolicy> types, List<UserSetting> users) { }
 
-    public record TypePolicyUpdate(String category, String recipientScope, String acknowledgementScope,
-                                   boolean defaultSave, boolean defaultReceive, boolean defaultPush,
-                                   boolean defaultEmail, boolean defaultTeams) { }
+    public record TypePolicyUpdate(String category, String acknowledgementScope) { }
 
     public record UserSettingUpdate(Map<String, ChannelPolicy> overrides) { }
 }

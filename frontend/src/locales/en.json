@@ -253,9 +253,11 @@
   },
   "alarmManagement": {
     "title": "Alarm Management",
-    "description": "Manage recipients, acknowledgement scope, persistence, and notification channels by alarm type.",
+    "description": "Manage recipients, acknowledgement scope, and notification channels by alarm type.",
     "typePolicy": "Alarm type policy",
     "userOverrides": "User notification and channel settings",
+    "recipientList": "Alarm recipient list",
+    "recipientListHint": "Configure recipients and channels for the selected alarm type.",
     "general": "General alarm",
     "model": "Model alarm",
     "allAdmins": "All active super administrators",
