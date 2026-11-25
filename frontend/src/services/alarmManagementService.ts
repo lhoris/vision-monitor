@@ -19,7 +19,7 @@ export const alarmManagementService = {
   async getUsers(): Promise<AlarmUserSetting[]> {
     return getResponseData(await apiClient.get<AlarmUserSetting[]>('/admin/alarm-management/users'), [])
   },
-  async updateType(id: number, policy: Pick<AlarmTypePolicy, 'category' | 'acknowledgementScope'>): Promise<AlarmTypePolicy> {
+  async updateType(id: number, policy: Omit<AlarmTypePolicy, 'id' | 'code'>): Promise<AlarmTypePolicy> {
     return getResponseData(await apiClient.put<AlarmTypePolicy>(`/admin/alarm-management/types/${id}`, policy), policy as AlarmTypePolicy)
   },
   async createType(input: Omit<AlarmTypePolicy, 'id'>): Promise<AlarmTypePolicy> {

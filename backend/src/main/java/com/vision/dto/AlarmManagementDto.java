@@ -17,7 +17,8 @@ public final class AlarmManagementDto {
 
     public record Overview(List<TypePolicy> types, List<UserSetting> users) { }
 
-    public record TypePolicyUpdate(String category, String acknowledgementScope) { }
+    public record TypePolicyUpdate(String name, String nameKo, String nameEn, String description,
+                                   String category, String acknowledgementScope) { }
 
     public record TypePolicyCreate(String code, String name, String nameKo, String nameEn,
                                    String description, String category, String acknowledgementScope) { }

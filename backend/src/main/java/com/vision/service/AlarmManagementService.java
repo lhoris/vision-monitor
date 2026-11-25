@@ -84,13 +84,18 @@ public class AlarmManagementService {
     public AlarmManagementDto.TypePolicy updateType(String actorUsername, Long detailId,
                                                      AlarmManagementDto.TypePolicyUpdate request) {
         requireAdmin(actorUsername);
-        if (request == null || !isCategory(request.category()) || !isAckScope(request.acknowledgementScope())) {
+        if (request == null || (request.category() != null && !isCategory(request.category()))
+                || (request.acknowledgementScope() != null && !isAckScope(request.acknowledgementScope()))) {
             throw new ApiException("VALIDATION_ERROR", "알람 정책 값이 올바르지 않습니다.");
         }
         AlarmRule detail = alarmRuleRepository.findById(detailId)
                 .orElseThrow(() -> new ApiException("CODE_DETAIL_NOT_FOUND", "알람 유형을 찾을 수 없습니다."));
-        detail.setCategory(request.category());
-        detail.setAcknowledgementScope(request.acknowledgementScope());
+        if (request.name() != null) detail.setName(request.name().trim());
+        if (request.nameKo() != null) detail.setNameKo(request.nameKo().trim());
+        if (request.nameEn() != null) detail.setNameEn(request.nameEn().trim());
+        if (request.description() != null) detail.setDescription(request.description().trim());
+        if (request.category() != null) detail.setCategory(request.category());
+        if (request.acknowledgementScope() != null) detail.setAcknowledgementScope(request.acknowledgementScope());
         return toTypePolicy(alarmRuleRepository.save(detail));
     }
 
