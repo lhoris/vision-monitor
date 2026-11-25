@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AlarmRequestFanoutWorker {
     private static final String ACTIVE = "N";
-    private static final String SIGNUP_REQUEST_ALARM_CODE = "USER_SIGNUP_REQUEST";
     private final AlarmRequestRepository alarmRequestRepository;
     private final AlarmLogRepository alarmLogRepository;
     private final AlarmRuleRepository alarmRuleRepository;
@@ -81,9 +80,7 @@ public class AlarmRequestFanoutWorker {
                     .filter(user -> enabled(preferences.get(user.getId()).getReceiverStatus(), false))
                     .toList();
         }
-        return SIGNUP_REQUEST_ALARM_CODE.equalsIgnoreCase(alarmCode)
-                ? userRepository.findAllActiveAdministrators()
-                : List.of();
+        return List.of();
     }
 
     private boolean active(UserAccount user) {

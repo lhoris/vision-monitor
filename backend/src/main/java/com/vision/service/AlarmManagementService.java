@@ -23,7 +23,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AlarmManagementService {
     private static final String ACTIVE = "N";
-    private static final String SIGNUP_REQUEST_ALARM_CODE = "USER_SIGNUP_REQUEST";
     private final AlarmRuleRepository alarmRuleRepository;
     private final AlarmRuleUserRepository alarmRuleUserRepository;
     private final UserAccountRepository userRepository;
@@ -67,8 +66,6 @@ public class AlarmManagementService {
 
     private List<AlarmManagementDto.UserSetting> userSettings(List<AlarmRule> rules) {
         List<Long> ruleIds = rules.stream().map(AlarmRule::getId).toList();
-        java.util.Set<Long> defaultAdministratorIds = userRepository.findAllActiveAdministrators().stream()
-                .map(UserAccount::getId).collect(java.util.stream.Collectors.toSet());
         Map<Long, Map<Long, AlarmManagementDto.ChannelPolicy>> settings = new HashMap<>();
         alarmRuleUserRepository.findAllByAlarmRuleIdIn(ruleIds).forEach(detail -> settings
                 .computeIfAbsent(detail.getUserId(), ignored -> new HashMap<>())
@@ -76,7 +73,7 @@ public class AlarmManagementService {
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
                 .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
-                        effectiveSettings(user, rules, settings, defaultAdministratorIds)))
+                        effectiveSettings(user, rules, settings)))
                 .toList();
         return users;
     }
@@ -84,19 +81,13 @@ public class AlarmManagementService {
     private Map<String, AlarmManagementDto.ChannelPolicy> effectiveSettings(
             UserAccount user,
             List<AlarmRule> rules,
-            Map<Long, Map<Long, AlarmManagementDto.ChannelPolicy>> settings,
-            java.util.Set<Long> defaultAdministratorIds) {
+            Map<Long, Map<Long, AlarmManagementDto.ChannelPolicy>> settings) {
         Map<String, AlarmManagementDto.ChannelPolicy> effective = new HashMap<>();
         Map<Long, AlarmManagementDto.ChannelPolicy> configured = settings.getOrDefault(user.getId(), Map.of());
         rules.forEach(rule -> {
             AlarmManagementDto.ChannelPolicy policy = configured.get(rule.getId());
             if (policy != null) effective.put(rule.getCode(), policy);
         });
-        if (defaultAdministratorIds.contains(user.getId())) {
-            rules.stream().filter(rule -> SIGNUP_REQUEST_ALARM_CODE.equalsIgnoreCase(rule.getCode())).findFirst()
-                    .ifPresent(rule -> effective.putIfAbsent(rule.getCode(),
-                            new AlarmManagementDto.ChannelPolicy(true, true, false, false)));
-        }
         return effective;
     }
 
