@@ -8,6 +8,8 @@ import com.vision.util.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/admin/alarm-management")
 @RequiredArgsConstructor
@@ -18,6 +20,25 @@ public class AlarmManagementController {
     public ApiResponse<AlarmManagementDto.Overview> overview(
             @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user) {
         return ApiResponse.success(service.overview(user.username()));
+    }
+
+    @GetMapping("/types")
+    public ApiResponse<List<AlarmManagementDto.TypePolicy>> types(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user) {
+        return ApiResponse.success(service.typePolicies(user.username()));
+    }
+
+    @PostMapping("/types")
+    public ApiResponse<AlarmManagementDto.TypePolicy> createType(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
+            @RequestBody AlarmManagementDto.TypePolicyCreate request) {
+        return ApiResponse.success(service.createType(user.username(), request));
+    }
+
+    @GetMapping("/users")
+    public ApiResponse<List<AlarmManagementDto.UserSetting>> users(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user) {
+        return ApiResponse.success(service.userSettings(user.username()));
     }
 
     @PutMapping("/types/{detailId}")

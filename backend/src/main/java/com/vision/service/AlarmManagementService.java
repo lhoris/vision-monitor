@@ -32,6 +32,26 @@ public class AlarmManagementService {
     @Transactional(readOnly = true)
     public AlarmManagementDto.Overview overview(String actorUsername) {
         requireAdmin(actorUsername);
+        return new AlarmManagementDto.Overview(typePolicies(), userSettings());
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlarmManagementDto.TypePolicy> typePolicies(String actorUsername) {
+        requireAdmin(actorUsername);
+        return typePolicies();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AlarmManagementDto.UserSetting> userSettings(String actorUsername) {
+        requireAdmin(actorUsername);
+        return userSettings();
+    }
+
+    private List<AlarmManagementDto.TypePolicy> typePolicies() {
+        return alarmRules().stream().map(this::toTypePolicy).toList();
+    }
+
+    private List<AlarmManagementDto.UserSetting> userSettings() {
         List<AlarmRule> rules = alarmRules();
         List<String> codes = rules.stream().map(AlarmRule::getCode).toList();
         java.util.Set<Long> defaultAdministratorIds = userRepository.findAllActiveAdministrators().stream()
@@ -40,13 +60,12 @@ public class AlarmManagementService {
         preferenceRepository.findAllByAlarmTypeCodeIn(codes).forEach(preference -> settings
                 .computeIfAbsent(preference.getUserId(), ignored -> new HashMap<>())
                 .put(preference.getAlarmTypeCode(), toChannelPolicy(preference)));
-        List<AlarmManagementDto.TypePolicy> types = rules.stream().map(this::toTypePolicy).toList();
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
                 .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
                         effectiveSettings(user, codes, settings, defaultAdministratorIds)))
                 .toList();
-        return new AlarmManagementDto.Overview(types, users);
+        return users;
     }
 
     private Map<String, AlarmManagementDto.ChannelPolicy> effectiveSettings(
@@ -73,6 +92,30 @@ public class AlarmManagementService {
         detail.setCategory(request.category());
         detail.setAcknowledgementScope(request.acknowledgementScope());
         return toTypePolicy(alarmRuleRepository.save(detail));
+    }
+
+    @Transactional
+    public AlarmManagementDto.TypePolicy createType(String actorUsername, AlarmManagementDto.TypePolicyCreate request) {
+        requireAdmin(actorUsername);
+        if (request == null || request.code() == null || request.code().isBlank() || request.name() == null || request.name().isBlank()
+                || !isCategory(request.category()) || !isAckScope(request.acknowledgementScope())) {
+            throw new ApiException("VALIDATION_ERROR", "알람 기준 입력값이 올바르지 않습니다.");
+        }
+        String code = request.code().trim();
+        if (alarmRuleRepository.existsByCodeIgnoreCaseAndDataEndStatus(code, ACTIVE)) {
+            throw new ApiException("DUPLICATE_ALARM_CODE", "이미 등록된 알람 코드입니다.");
+        }
+        AlarmRule rule = new AlarmRule();
+        rule.setCode(code);
+        rule.setName(request.name().trim());
+        rule.setNameKo(request.nameKo());
+        rule.setNameEn(request.nameEn());
+        rule.setDescription(request.description());
+        rule.setCategory(request.category());
+        rule.setAcknowledgementScope(request.acknowledgementScope());
+        rule.setCreatedObjectId(actorUsername);
+        rule.setCreatedTimestamp(LocalDateTime.now());
+        return toTypePolicy(alarmRuleRepository.save(rule));
     }
 
     @Transactional

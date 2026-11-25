@@ -262,6 +262,8 @@
     "detail": "Recipients and channels",
     "selectedType": "Selected alarm rule",
     "selectPrompt": "Select an alarm rule on the left.",
+    "selectRecipient": "Select recipient",
+    "newTypeName": "Alarm rule name",
     "selectAllTypes": "Select all alarm rules",
     "selectAllUsers": "Select all recipients",
     "confirmDeleteTitle": "Confirm delete",
@@ -278,7 +280,7 @@
     "allAdminsHint": "All active super administrators are the default recipients. User-specific channel overrides can be set here.",
     "selectedUsersHint": "Only selected users and channels receive this alarm type.",
     "channels": { "email": "Email" },
-    "columns": { "category": "Category", "name": "Alarm type", "recipient": "Recipients", "acknowledgement": "Acknowledgement", "database": "DB storage", "appPush": "In-app alert", "email": "Email", "teamsBot": "Teams bot", "user": "User", "receiver": "Receive", "action": "Action" },
+    "columns": { "code": "Alarm code", "category": "Category", "name": "Alarm type", "recipient": "Recipients", "acknowledgement": "Acknowledgement", "database": "DB storage", "appPush": "In-app alert", "email": "Email", "teamsBot": "Teams bot", "user": "User", "receiver": "Receive", "action": "Action" },
     "messages": { "loaded": "Alarm management data loaded.", "typeSaved": "Alarm type policy saved.", "userSaved": "User alarm settings saved.", "typeDeleted": "Alarm rule deactivated.", "userDeleted": "Selected users were removed from the recipients.", "loadError": "Unable to load alarm management data.", "saveError": "Unable to save alarm settings.", "deleteError": "Unable to delete alarm settings." }
   },
   "cameraFocus": {

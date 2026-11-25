@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface AlarmRuleRepository extends JpaRepository<AlarmRule, Long> {
     List<AlarmRule> findAllByDataEndStatusOrderByIdAsc(String dataEndStatus);
     Optional<AlarmRule> findByCodeIgnoreCaseAndDataEndStatus(String code, String dataEndStatus);
+    boolean existsByCodeIgnoreCaseAndDataEndStatus(String code, String dataEndStatus);
 }

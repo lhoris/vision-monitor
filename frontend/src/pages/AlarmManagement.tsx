@@ -25,21 +25,35 @@ export default function AlarmManagement() {
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [recipientToAdd, setRecipientToAdd] = useState<number | ''>('')
 
-  const typeSelection = useDataGridSelection(data.types.map((type) => type.id))
+  const typeSelection = useDataGridSelection(Object.values(draftTypes).map((type) => type.id))
   const userSelection = useDataGridSelection(data.users.map((user) => user.userId))
 
-  const load = async (showNotice = false) => {
+  const loadTypes = async (showNotice = false) => {
     setBusy(true)
     try {
-      const next = await alarmManagementService.get()
-      setData(next)
-      setSelectedCode((current) => next.types.some((type) => type.code === current) ? current : next.types[0]?.code || '')
-      setDraftTypes(Object.fromEntries(next.types.map((type) => [type.id, type])))
-      setDraftUsers(Object.fromEntries(next.users.map((user) => [user.userId, user.overrides])))
+      const types = await alarmManagementService.getTypes()
+      setData((current) => ({ ...current, types }))
+      setSelectedCode((current) => types.some((type) => type.code === current) ? current : types[0]?.code || '')
+      setDraftTypes(Object.fromEntries(types.map((type) => [type.id, type])))
       setDirtyTypes(new Set())
-      setDirtyUsers(new Set())
       typeSelection.clear()
+      if (showNotice) setNotice(t('alarmManagement.messages.loaded'))
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : t('alarmManagement.messages.loadError'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const loadUsers = async (showNotice = false) => {
+    setBusy(true)
+    try {
+      const users = await alarmManagementService.getUsers()
+      setData((current) => ({ ...current, users }))
+      setDraftUsers(Object.fromEntries(users.map((user) => [user.userId, user.overrides])))
+      setDirtyUsers(new Set())
       userSelection.clear()
       if (showNotice) setNotice(t('alarmManagement.messages.loaded'))
     } catch (exception) {
@@ -49,7 +63,7 @@ export default function AlarmManagement() {
     }
   }
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => { void Promise.all([loadTypes(), loadUsers()]) }, [])
   useEffect(() => { if (!notice) return undefined; const timer = window.setTimeout(() => setNotice(''), 3000); return () => window.clearTimeout(timer) }, [notice])
 
   const selectedType = data.types.find((type) => type.code === selectedCode)
@@ -64,14 +78,40 @@ export default function AlarmManagement() {
     userSelection.select(userId)
   }
 
+  const addType = () => {
+    const id = -Date.now()
+    const row: AlarmTypePolicy = { id, code: `NEW_ALARM_${Math.abs(id)}`, name: '', nameKo: '', nameEn: '', description: '', category: 'GENERAL', acknowledgementScope: 'INDIVIDUAL' }
+    setDraftTypes((current) => ({ [id]: row, ...current }))
+    setDirtyTypes((current) => new Set(current).add(id))
+    typeSelection.select(id)
+    setSelectedCode(row.code)
+  }
+
+  const deleteDraftTypes = () => {
+    const ids = new Set([...typeSelection.selectedIds].filter((id) => id < 0))
+    if (!ids.size) return
+    setDraftTypes((current) => Object.fromEntries(Object.entries(current).filter(([id]) => !ids.has(Number(id)))))
+    setDirtyTypes((current) => new Set([...current].filter((id) => !ids.has(id))))
+    typeSelection.clear()
+    if (ids.has(Object.values(draftTypes).find((type) => type.code === selectedCode)?.id ?? 0)) setSelectedCode('')
+  }
+
+  const addRecipient = () => {
+    if (recipientToAdd === '') return
+    updateUser(recipientToAdd, { receiver: true })
+    setRecipientToAdd('')
+  }
+
   const saveTypes = async () => {
     const rows = [...dirtyTypes].map((id) => draftTypes[id]).filter(Boolean)
     if (!rows.length) return
     setBusy(true)
     try {
-      await Promise.all(rows.map((type) => alarmManagementService.updateType(type.id, { category: type.category, acknowledgementScope: type.acknowledgementScope })))
+      await Promise.all(rows.map((type) => type.id < 0
+        ? alarmManagementService.createType({ code: type.code, name: type.name, nameKo: type.nameKo, nameEn: type.nameEn, description: type.description, category: type.category, acknowledgementScope: type.acknowledgementScope })
+        : alarmManagementService.updateType(type.id, { category: type.category, acknowledgementScope: type.acknowledgementScope })))
       setNotice(t('alarmManagement.messages.typeSaved'))
-      await load()
+      await loadTypes()
     } catch (exception) { setError(exception instanceof Error ? exception.message : t('alarmManagement.messages.saveError')) } finally { setBusy(false) }
   }
 
@@ -82,7 +122,7 @@ export default function AlarmManagement() {
     try {
       await Promise.all(rows.map((id) => alarmManagementService.updateUser(id, draftUsers[id] ?? {})))
       setNotice(t('alarmManagement.messages.userSaved'))
-      await load()
+      await loadUsers()
     } catch (exception) { setError(exception instanceof Error ? exception.message : t('alarmManagement.messages.saveError')) } finally { setBusy(false) }
   }
 
@@ -99,13 +139,18 @@ export default function AlarmManagement() {
         await Promise.all(action.ids.map((id) => alarmManagementService.updateUser(id, { ...draftUsers[id], [selectedCode]: emptyChannel })))
         setNotice(t('alarmManagement.messages.userDeleted'))
       }
-      await load()
+      if (action.scope === 'type') await loadTypes()
+      else await loadUsers()
     } catch (exception) { setError(exception instanceof Error ? exception.message : t('alarmManagement.messages.deleteError')) } finally { setBusy(false) }
   }
 
-  const selectedTypeRows = data.types.filter((type) => typeSelection.selectedIds.has(type.id))
+  const selectedTypeRows = Object.values(draftTypes).filter((type) => typeSelection.selectedIds.has(type.id))
   const selectedUserRows = data.users.filter((user) => userSelection.selectedIds.has(user.userId))
-  const requestTypeDelete = () => { if (selectedTypeRows.length) setPendingAction({ scope: 'type', ids: selectedTypeRows.map((type) => type.id) }) }
+  const requestTypeDelete = () => {
+    deleteDraftTypes()
+    const ids = selectedTypeRows.filter((type) => type.id > 0).map((type) => type.id)
+    if (ids.length) setPendingAction({ scope: 'type', ids })
+  }
   const requestUserDelete = () => { if (selectedUserRows.length) setPendingAction({ scope: 'user', ids: selectedUserRows.map((user) => user.userId) }) }
 
   return <section className="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-slate-50 p-4 dark:bg-slate-950 md:p-6">
@@ -113,14 +158,14 @@ export default function AlarmManagement() {
     <Toast message={notice} variant="success" onClose={() => setNotice('')} /><Toast message={error} variant="error" onClose={() => setError('')} />
     <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(360px,0.9fr)_minmax(560px,1.5fr)]">
       <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white dark:border-slate-700 dark:bg-slate-800">
-        <DataGridToolbar><span className="min-w-0 flex-1 truncate font-semibold">{t('alarmManagement.master')}</span><DataGridActionButton onClick={() => void load(true)} disabled={busy}>조회</DataGridActionButton><DataGridActionButton variant="primary" onClick={() => void saveTypes()} disabled={!dirtyTypes.size || busy}>저장</DataGridActionButton><DataGridActionButton variant="danger" onClick={requestTypeDelete} disabled={!selectedTypeRows.length || busy}>삭제</DataGridActionButton></DataGridToolbar>
-        <div className="min-h-0 flex-1 overflow-auto"><DataGridTable className="w-full min-w-[600px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm"><thead className="sticky top-0 z-10"><tr><th className={`w-10 ${headerCell}`}><input aria-label={t('alarmManagement.selectAllTypes')} type="checkbox" checked={typeSelection.allVisibleSelected} onChange={typeSelection.toggleVisible} /></th><th className={`w-28 ${headerCell}`}>{t('alarmManagement.columns.category')}</th><th className={`w-48 ${headerCell}`}>{t('alarmManagement.columns.name')}</th><th className={`w-36 ${headerCell}`}>{t('alarmManagement.columns.acknowledgement')}</th></tr></thead><tbody>{Object.values(draftTypes).map((type) => <tr key={type.id} aria-selected={selectedCode === type.code} onClick={() => setSelectedCode(type.code)} className={`h-9 cursor-pointer text-slate-800 dark:text-slate-100 ${selectedCode === type.code ? 'bg-[#d6edff] dark:bg-sky-950/40' : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'}`}><td className={`${bodyCell} text-center`}><input aria-label={`${type.nameKo || type.name} 선택`} type="checkbox" checked={typeSelection.selectedIds.has(type.id)} onClick={(event) => event.stopPropagation()} onChange={() => typeSelection.toggle(type.id)} /></td><td className={bodyCell} onClick={(event) => event.stopPropagation()}><select value={type.category} onChange={(event) => updateType(type.id, { category: event.target.value as AlarmTypePolicy['category'] })} className="h-9 w-full border-0 bg-transparent px-2 text-sm outline-none"><option value="GENERAL">{t('alarmManagement.general')}</option><option value="MODEL">{t('alarmManagement.model')}</option></select></td><td className="px-2 py-1"><div className="font-medium">{type.nameKo || type.name}</div>{type.description ? <div className="text-xs text-slate-500">{type.description}</div> : null}</td><td className={bodyCell} onClick={(event) => event.stopPropagation()}><select value={type.acknowledgementScope} onChange={(event) => updateType(type.id, { acknowledgementScope: event.target.value as AlarmTypePolicy['acknowledgementScope'] })} className="h-9 w-full border-0 bg-transparent px-2 text-sm outline-none"><option value="GROUP">{t('alarmManagement.groupAck')}</option><option value="INDIVIDUAL">{t('alarmManagement.individualAck')}</option></select></td></tr>)}</tbody></DataGridTable></div>
-        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300"><button type="button" onClick={() => void load(true)} disabled={busy} className="rounded border border-slate-300 px-2 py-1">새로고침</button><span className="ml-auto">선택 {typeSelection.selectedIds.size}건 | 전체 {data.types.length}건 | 변경 {dirtyTypes.size}건</span></div>
+        <DataGridToolbar><span className="min-w-0 flex-1 truncate font-semibold">{t('alarmManagement.master')}</span><DataGridActionButton onClick={() => void loadTypes(true)} disabled={busy}>조회</DataGridActionButton><DataGridActionButton variant="primary" onClick={() => void saveTypes()} disabled={!dirtyTypes.size || busy}>저장</DataGridActionButton><DataGridActionButton variant="danger" onClick={requestTypeDelete} disabled={!selectedTypeRows.length || busy}>삭제</DataGridActionButton></DataGridToolbar>
+        <div className="min-h-0 flex-1 overflow-auto"><DataGridTable className="w-full min-w-[680px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm"><thead className="sticky top-0 z-10"><tr><th className={`w-10 ${headerCell}`}><input aria-label={t('alarmManagement.selectAllTypes')} type="checkbox" checked={typeSelection.allVisibleSelected} onChange={typeSelection.toggleVisible} /></th><th className={`w-40 ${headerCell}`}>{t('alarmManagement.columns.code')}</th><th className={`w-28 ${headerCell}`}>{t('alarmManagement.columns.category')}</th><th className={`w-48 ${headerCell}`}>{t('alarmManagement.columns.name')}</th><th className={`w-36 ${headerCell}`}>{t('alarmManagement.columns.acknowledgement')}</th></tr></thead><tbody>{Object.values(draftTypes).map((type) => <tr key={type.id} aria-selected={selectedCode === type.code} onClick={() => setSelectedCode(type.code)} className={`h-9 cursor-pointer text-slate-800 dark:text-slate-100 ${selectedCode === type.code ? 'bg-[#d6edff] shadow-[inset_4px_0_0_#2563eb] dark:bg-sky-950/40' : 'bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/50'}`}><td className={`${bodyCell} text-center`}><input aria-label={`${type.nameKo || type.name} 선택`} type="checkbox" checked={typeSelection.selectedIds.has(type.id)} onClick={(event) => event.stopPropagation()} onChange={() => typeSelection.toggle(type.id)} /></td><td className="border-b border-r border-[#b7d8ee] px-2 font-mono text-xs dark:border-slate-700">{type.code}</td><td className={bodyCell} onClick={(event) => event.stopPropagation()}><select value={type.category} onChange={(event) => updateType(type.id, { category: event.target.value as AlarmTypePolicy['category'] })} className="h-9 w-full border-0 bg-transparent px-2 text-sm outline-none"><option value="GENERAL">{t('alarmManagement.general')}</option><option value="MODEL">{t('alarmManagement.model')}</option></select></td><td className="px-2 py-1" onClick={(event) => event.stopPropagation()}>{type.id < 0 ? <input value={type.name} onChange={(event) => updateType(type.id, { name: event.target.value })} placeholder={t('alarmManagement.newTypeName')} className="h-8 w-full border border-slate-300 px-2 text-sm dark:border-slate-600 dark:bg-slate-900" /> : <div className="font-medium">{type.nameKo || type.name}</div>}{type.description ? <div className="text-xs text-slate-500">{type.description}</div> : null}</td><td className={bodyCell} onClick={(event) => event.stopPropagation()}><select value={type.acknowledgementScope} onChange={(event) => updateType(type.id, { acknowledgementScope: event.target.value as AlarmTypePolicy['acknowledgementScope'] })} className="h-9 w-full border-0 bg-transparent px-2 text-sm outline-none"><option value="GROUP">{t('alarmManagement.groupAck')}</option><option value="INDIVIDUAL">{t('alarmManagement.individualAck')}</option></select></td></tr>)}</tbody></DataGridTable></div>
+        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300"><button type="button" onClick={addType} disabled={busy} className="rounded border border-slate-300 px-2 py-1">행 추가</button><button type="button" onClick={requestTypeDelete} disabled={busy || !selectedTypeRows.length} className="rounded border border-rose-300 px-2 py-1 text-rose-700">행 삭제</button><button type="button" onClick={() => void loadTypes(true)} disabled={busy} className="rounded border border-slate-300 px-2 py-1">새로고침</button><span className="ml-auto">선택 {typeSelection.selectedIds.size}건 | 전체 {Object.keys(draftTypes).length}건 | 변경 {dirtyTypes.size}건</span></div>
       </section>
       <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white dark:border-slate-700 dark:bg-slate-800">
-        <DataGridToolbar><span className="min-w-0 flex-1 truncate font-semibold">{t('alarmManagement.detail')}{selectedType ? ` - ${selectedType.nameKo || selectedType.name}` : ''}</span><DataGridActionButton onClick={() => void load(true)} disabled={busy}>조회</DataGridActionButton><DataGridActionButton variant="primary" onClick={() => void saveUsers()} disabled={!dirtyUsers.size || busy}>저장</DataGridActionButton><DataGridActionButton variant="danger" onClick={requestUserDelete} disabled={!selectedUserRows.length || busy}>삭제</DataGridActionButton></DataGridToolbar>
+        <DataGridToolbar><span className="min-w-0 flex-1 truncate font-semibold">{t('alarmManagement.detail')}{selectedType ? ` - ${selectedType.nameKo || selectedType.name}` : ''}</span><DataGridActionButton onClick={() => void loadUsers(true)} disabled={busy}>조회</DataGridActionButton><DataGridActionButton variant="primary" onClick={() => void saveUsers()} disabled={!dirtyUsers.size || busy}>저장</DataGridActionButton><DataGridActionButton variant="danger" onClick={requestUserDelete} disabled={!selectedUserRows.length || busy}>삭제</DataGridActionButton></DataGridToolbar>
         <div className="min-h-0 flex-1 overflow-auto"><DataGridTable className="w-full min-w-[820px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm"><thead className="sticky top-0 z-10"><tr><th className={`w-10 ${headerCell}`}><input aria-label={t('alarmManagement.selectAllUsers')} type="checkbox" checked={userSelection.allVisibleSelected} onChange={userSelection.toggleVisible} /></th><th className={`w-48 ${headerCell}`}>{t('alarmManagement.columns.user')}</th><th className={`w-20 ${headerCell}`}>{t('alarmManagement.columns.receiver')}</th><th className={`w-24 ${headerCell}`}>{t('alarmManagement.columns.appPush')}</th><th className={`w-20 ${headerCell}`}>{t('alarmManagement.columns.email')}</th><th className={`w-28 ${headerCell}`}>{t('alarmManagement.columns.teamsBot')}</th></tr></thead><tbody>{data.users.map((user) => { const value = { ...emptyChannel, ...draftUsers[user.userId]?.[selectedCode] }; return <tr key={user.userId} className="h-9 bg-white text-slate-800 dark:bg-slate-800 dark:text-slate-100"><td className={`${bodyCell} text-center`}><input aria-label={`${user.name} 선택`} type="checkbox" checked={userSelection.selectedIds.has(user.userId)} onChange={() => userSelection.toggle(user.userId)} /></td><td className="border-b border-r border-[#b7d8ee] px-2 dark:border-slate-700">{user.name} <span className="text-xs text-slate-500">({user.username})</span></td><td className={`${bodyCell} text-center`}><Toggle checked={value.receiver} onChange={(checked) => updateUser(user.userId, { receiver: checked })} /></td><td className={`${bodyCell} text-center`}><Toggle checked={value.push} onChange={(checked) => updateUser(user.userId, { push: checked })} /></td><td className={`${bodyCell} text-center`}><Toggle checked={value.email} onChange={(checked) => updateUser(user.userId, { email: checked })} /></td><td className={`${bodyCell} text-center`}><Toggle checked={value.teams} onChange={(checked) => updateUser(user.userId, { teams: checked })} /></td></tr> })}</tbody></DataGridTable></div>
-        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300"><button type="button" onClick={() => void load(true)} disabled={busy} className="rounded border border-slate-300 px-2 py-1">새로고침</button><span className="ml-auto">선택 {userSelection.selectedIds.size}건 | 전체 {data.users.length}건 | 변경 {dirtyUsers.size}건</span></div>
+        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:text-slate-300"><select value={recipientToAdd} onChange={(event) => setRecipientToAdd(event.target.value ? Number(event.target.value) : '')} disabled={!selectedType || busy} className="h-7 max-w-48 rounded border border-slate-300 px-1 text-xs dark:border-slate-600 dark:bg-slate-900"><option value="">{t('alarmManagement.selectRecipient')}</option>{data.users.filter((user) => !draftUsers[user.userId]?.[selectedCode]?.receiver).map((user) => <option key={user.userId} value={user.userId}>{user.name} ({user.username})</option>)}</select><button type="button" onClick={addRecipient} disabled={busy || recipientToAdd === ''} className="rounded border border-slate-300 px-2 py-1">행 추가</button><button type="button" onClick={requestUserDelete} disabled={busy || !selectedUserRows.length} className="rounded border border-rose-300 px-2 py-1 text-rose-700">행 삭제</button><button type="button" onClick={() => void loadUsers(true)} disabled={busy} className="rounded border border-slate-300 px-2 py-1">새로고침</button><span className="ml-auto">선택 {userSelection.selectedIds.size}건 | 전체 {data.users.length}건 | 변경 {dirtyUsers.size}건</span></div>
       </section>
     </div>
     <ConfirmDialog isOpen={Boolean(pendingAction)} title={t('alarmManagement.confirmDeleteTitle')} message={pendingAction?.scope === 'type' ? t('alarmManagement.confirmDeleteType') : t('alarmManagement.confirmDeleteUser')} confirmLabel={t('common.delete')} cancelLabel={t('common.cancel')} variant="danger" busy={busy} onCancel={() => { if (!busy) setPendingAction(null) }} onConfirm={() => void confirmDelete()} />

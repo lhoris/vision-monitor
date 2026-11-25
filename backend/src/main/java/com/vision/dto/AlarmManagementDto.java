@@ -19,5 +19,8 @@ public final class AlarmManagementDto {
 
     public record TypePolicyUpdate(String category, String acknowledgementScope) { }
 
+    public record TypePolicyCreate(String code, String name, String nameKo, String nameEn,
+                                   String description, String category, String acknowledgementScope) { }
+
     public record UserSettingUpdate(Map<String, ChannelPolicy> overrides) { }
 }
