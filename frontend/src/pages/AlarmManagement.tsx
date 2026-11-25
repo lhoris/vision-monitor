@@ -174,7 +174,6 @@ export default function AlarmManagement() {
       },
     }));
     setDirtyUsers((current) => new Set(current).add(userId));
-    userSelection.select(userId);
   };
 
   const addType = () => {
@@ -711,7 +710,7 @@ export default function AlarmManagement() {
                       key={rowId}
                       aria-selected={selectedRecipientRowId === rowId}
                       onClick={(event) => {
-                        if ((event.target as HTMLElement).closest('[data-selection-cell]')) return;
+                        if ((event.target as HTMLElement).closest('[data-selection-cell], [data-no-row-selection]')) return;
                         selectRecipientRow(rowId);
                       }}
                       className={`h-9 cursor-pointer text-slate-800 dark:text-slate-100 ${selectedRecipientRowId === rowId ? "bg-[#d6edff] shadow-[inset_4px_0_0_#2563eb] dark:bg-sky-950/40" : "bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
@@ -781,7 +780,7 @@ export default function AlarmManagement() {
                           </>
                         )}
                       </td>
-                      <td className={`${bodyCell} text-center`}>
+                      <td data-no-row-selection className={`${bodyCell} text-center`}>
                         <Toggle
                           checked={value.push}
                           onChange={(checked) =>
@@ -789,7 +788,7 @@ export default function AlarmManagement() {
                           }
                         />
                       </td>
-                      <td className={`${bodyCell} text-center`}>
+                      <td data-no-row-selection className={`${bodyCell} text-center`}>
                         <Toggle
                           checked={value.email}
                           onChange={(checked) =>
@@ -797,7 +796,7 @@ export default function AlarmManagement() {
                           }
                         />
                       </td>
-                      <td className={`${bodyCell} text-center`}>
+                      <td data-no-row-selection className={`${bodyCell} text-center`}>
                         <Toggle
                           checked={value.teams}
                           onChange={(checked) =>
