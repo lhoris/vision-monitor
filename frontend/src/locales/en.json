@@ -16,7 +16,8 @@
     "online": "Online",
     "offline": "Offline",
     "error": "Error",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "noData": "No data."
   },
   "account": {
     "dialogTitle": "Account Center", "dialogTabs": "Account sections", "open": "Open account center", "logout": "Sign out",
@@ -256,6 +257,11 @@
     "description": "Manage recipients, acknowledgement scope, and notification channels by alarm type.",
     "typePolicy": "Alarm type policy",
     "userOverrides": "User notification and channel settings",
+    "master": "Alarm rules",
+    "masterHint": "Select an alarm rule to configure its recipients and channels on the right.",
+    "detail": "Recipients and channels",
+    "selectedType": "Selected alarm rule",
+    "selectPrompt": "Select an alarm rule on the left.",
     "recipientList": "Alarm recipient list",
     "recipientListHint": "Configure recipients and channels for the selected alarm type.",
     "general": "General alarm",
