@@ -57,7 +57,8 @@ export default function AlarmManagement() {
   const loadUsers = async (showNotice = false) => {
     setBusy(true)
     try {
-      const users = await alarmManagementService.getUsers()
+      const selectedRuleId = data.types.find((type) => type.code === selectedCode)?.id
+      const users = await alarmManagementService.getUsers(selectedRuleId && selectedRuleId > 0 ? selectedRuleId : undefined)
       setData((current) => ({ ...current, users }))
       setDraftUsers(Object.fromEntries(users.map((user) => [user.userId, user.overrides])))
       setDirtyUsers(new Set())

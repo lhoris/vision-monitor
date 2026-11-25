@@ -48,12 +48,24 @@ public class AlarmManagementService {
         return userSettings();
     }
 
+    @Transactional(readOnly = true)
+    public List<AlarmManagementDto.UserSetting> userSettings(String actorUsername, Long alarmRuleId) {
+        requireAdmin(actorUsername);
+        AlarmRule rule = alarmRuleRepository.findById(alarmRuleId)
+                .filter(item -> ACTIVE.equals(item.getDataEndStatus()))
+                .orElseThrow(() -> new ApiException("ALARM_RULE_NOT_FOUND", "알람 기준을 찾을 수 없습니다."));
+        return userSettings(List.of(rule));
+    }
+
     private List<AlarmManagementDto.TypePolicy> typePolicies() {
         return alarmRules().stream().map(this::toTypePolicy).toList();
     }
 
     private List<AlarmManagementDto.UserSetting> userSettings() {
-        List<AlarmRule> rules = alarmRules();
+        return userSettings(alarmRules());
+    }
+
+    private List<AlarmManagementDto.UserSetting> userSettings(List<AlarmRule> rules) {
         List<Long> ruleIds = rules.stream().map(AlarmRule::getId).toList();
         java.util.Set<Long> defaultAdministratorIds = userRepository.findAllActiveAdministrators().stream()
                 .map(UserAccount::getId).collect(java.util.stream.Collectors.toSet());

@@ -41,6 +41,13 @@ public class AlarmManagementController {
         return ApiResponse.success(service.userSettings(user.username()));
     }
 
+    @GetMapping("/types/{detailId}/users")
+    public ApiResponse<List<AlarmManagementDto.UserSetting>> usersByType(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
+            @PathVariable Long detailId) {
+        return ApiResponse.success(service.userSettings(user.username(), detailId));
+    }
+
     @PutMapping("/types/{detailId}")
     public ApiResponse<AlarmManagementDto.TypePolicy> updateType(
             @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
