@@ -44,13 +44,16 @@ class AuthServiceTest {
     @Mock
     private AlarmLogRepository alarmLogRepository;
 
+    @Mock
+    private AlarmIngressService alarmIngressService;
+
     private AuthService service;
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @BeforeEach
     void setUp() {
-        service = new AuthService(userRepository, null, null, sessionService, alarmEventPublisher, alarmLogRepository);
+        service = new AuthService(userRepository, null, null, sessionService, alarmEventPublisher, alarmLogRepository, null, null, alarmIngressService);
         lenient().when(sessionService.createSession(org.mockito.ArgumentMatchers.any(UserAccount.class)))
                 .thenReturn("session-test-token");
     }
@@ -164,12 +167,10 @@ class AuthServiceTest {
         when(userRepository.existsByUsernameIgnoreCase("new-user")).thenReturn(false);
         when(userRepository.existsByEmailIgnoreCase("new@example.com")).thenReturn(false);
         when(userRepository.save(any(UserAccount.class))).thenReturn(savedSignup);
-        when(userRepository.findAllActiveAdministrators()).thenReturn(java.util.List.of(admin));
-
         service.signup(new com.vision.dto.SignupRequest(
                 "new-user", "password1", "password1", "New User", "new@example.com", "010-1234-5678", "QA", "Engineer"));
 
-        verify(alarmLogRepository).save(any(com.vision.entity.AlarmLog.class));
+        verify(alarmIngressService).register(any(com.vision.dto.AlarmIngressRequest.class));
         verifyNoInteractions(alarmEventPublisher);
     }
 

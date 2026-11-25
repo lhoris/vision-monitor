@@ -24,6 +24,10 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
 
     boolean existsBySourceEventIdAndTargetUserId(String sourceEventId, Long targetUserId);
 
+    boolean existsByAlarmRequestId(Long alarmRequestId);
+
+    boolean existsByAlarmRequestIdAndTargetUserId(Long alarmRequestId, Long targetUserId);
+
     List<AlarmLog> findTop100ByAppStatusOrderByIdAsc(String status);
 
     List<AlarmLog> findTop100ByEmailStatusOrderByIdAsc(String status);

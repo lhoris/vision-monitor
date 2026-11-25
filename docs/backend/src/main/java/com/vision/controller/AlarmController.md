@@ -1,6 +1,6 @@
 # AlarmController Python 알람 전송 가이드
 
-모델 서버에서 warning이 발생하면 아래 endpoint로 HTTP `POST` 요청을 보낸다. 백엔드는 요청을 현재 연결된 브라우저에 SSE `alarm` 이벤트로 전달한다.
+모델 서버에서 warning이 발생하면 아래 endpoint로 HTTP `POST` 요청을 보낸다. 백엔드는 먼저 활성 알람 기준을 확인해 `TB_M26_ALARM_REQ` 원장을 저장하고, 내부 워커가 수신자별 `TB_M26_ALARM_LOG`를 만든 뒤 SSE로 전달한다.
 
 ## 접속 정보
 
@@ -55,6 +55,8 @@ X-Model-Server-Key: yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=
 | `description` | string | 화면에 표시할 설명 |
 | `occurredAt` | ISO-8601 string | 이벤트 발생 시각. 예: `2026-10-16T12:00:00Z` |
 | `metadata` | object | confidence, zone 등 추가 정보 |
+
+`type` 값은 `TB_M26_ALARM_RULE.ALARM_CODE`에 활성 상태로 등록되어 있어야 한다. 등록되지 않았거나 비활성인 알람 기준이면 요청 원장을 만들지 않고 `ALARM_RULE_NOT_FOUND` 오류를 반환한다.
 
 ## Python 구현
 
@@ -122,7 +124,9 @@ curl -i -X POST "http://172.18.86.79:8080/api/alarms/events" \
   }'
 ```
 
-정상 응답은 HTTP `202`이며 응답 본문은 다음과 같다.
+정상 응답은 HTTP `202`이며, 이는 알람 요청 원장이 저장되었다는 뜻이다. 수신자별 로그 생성과 채널 전송은 Spring Boot 내부 워커가 이어서 처리한다.
+
+응답 본문은 다음과 같다.
 
 ```json
 {
@@ -136,6 +140,7 @@ curl -i -X POST "http://172.18.86.79:8080/api/alarms/events" \
 ## 오류 확인
 
 - `403`: 인증 헤더의 키가 백엔드 설정과 다르다.
+- `404` 또는 `400`의 `ALARM_RULE_NOT_FOUND`: `type`에 해당하는 활성 알람 기준을 먼저 알람 기준 관리에 등록해야 한다.
 - `400`: JSON 형식 또는 `occurredAt` 날짜 형식이 올바르지 않다.
 - `5xx` 또는 timeout: 백엔드 연결 문제다. 짧은 간격의 제한된 재시도를 적용한다.
 

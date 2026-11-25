@@ -1,53 +1,61 @@
 package com.vision.service;
 
 import com.vision.dto.AlarmIngressRequest;
-import com.vision.entity.AlarmLog;
-import com.vision.entity.UserAccount;
-import com.vision.repository.AlarmLogRepository;
+import com.vision.entity.AlarmRequest;
+import com.vision.entity.AlarmRule;
+import com.vision.exception.ApiException;
+import com.vision.repository.AlarmRequestRepository;
 import com.vision.repository.AlarmRuleRepository;
-import com.vision.repository.UserAccountRepository;
-import com.vision.repository.UserAlertPreferenceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AlarmIngressServiceTest {
-    @Mock AlarmLogRepository alarmLogRepository;
-    @Mock AlarmRuleRepository alarmRuleRepository;
-    @Mock UserAccountRepository userRepository;
-    @Mock UserAlertPreferenceRepository preferenceRepository;
+    @Mock AlarmRequestRepository requestRepository;
+    @Mock AlarmRuleRepository ruleRepository;
 
     @Test
-    void storesOnePendingAppLogPerDefaultAdministrator() {
-        UserAccount admin = UserAccount.builder().id(7L).username("admin").accountStatus("active").build();
-        admin.setDataEndStatus("N");
-        when(alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus("MODEL_WARNING", "N")).thenReturn(java.util.Optional.empty());
-        when(preferenceRepository.findAllByAlarmTypeCodeIn(List.of("MODEL_WARNING"))).thenReturn(List.of());
-        when(userRepository.findAllActiveAdministrators()).thenReturn(List.of(admin));
-        when(alarmLogRepository.existsBySourceEventIdAndTargetUserId("model-event-1", 7L)).thenReturn(false);
-        when(alarmLogRepository.save(any(AlarmLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    void createsRequestOnlyWhenActiveRuleExists() {
+        AlarmRule rule = new AlarmRule();
+        rule.setId(11L);
+        rule.setCode("MODEL_WARNING");
+        rule.setAcknowledgementScope("GROUP");
+        when(ruleRepository.findByCodeIgnoreCaseAndDataEndStatus("MODEL_WARNING", "N")).thenReturn(Optional.of(rule));
+        when(requestRepository.findBySourceEventId("model-event-1")).thenReturn(Optional.empty());
+        when(requestRepository.save(any(AlarmRequest.class))).thenAnswer(invocation -> {
+            AlarmRequest request = invocation.getArgument(0);
+            request.setId(21L);
+            return request;
+        });
 
-        AlarmIngressService service = new AlarmIngressService(alarmLogRepository, alarmRuleRepository, userRepository, preferenceRepository);
-        service.register(new AlarmIngressRequest(1L, "MODEL", "MODEL_WARNING", "warning", 12L,
-                "모델 경고", Instant.parse("2026-11-25T00:00:00Z"), Map.of("cameraId", "1"), "model-event-1"));
+        AlarmRequest result = new AlarmIngressService(requestRepository, ruleRepository).register(
+                new AlarmIngressRequest(1L, "MODEL", "MODEL_WARNING", "warning", 12L,
+                        "모델 경고", Instant.parse("2026-11-25T00:00:00Z"), Map.of("cameraId", "1"), "model-event-1"));
 
-        ArgumentCaptor<AlarmLog> captor = ArgumentCaptor.forClass(AlarmLog.class);
-        verify(alarmLogRepository).save(captor.capture());
-        assertEquals(7L, captor.getValue().getTargetUserId());
-        assertEquals("PENDING", captor.getValue().getAppStatus());
-        assertEquals("SKIPPED", captor.getValue().getEmailStatus());
-        assertEquals("model-event-1", captor.getValue().getSourceEventId());
+        assertEquals(11L, result.getAlarmRuleId());
+        assertEquals("model-event-1", result.getSourceEventId());
+        assertEquals("MODEL_WARNING", result.getAlarmCode());
+        verify(requestRepository).save(any(AlarmRequest.class));
+    }
+
+    @Test
+    void rejectsRequestWhenActiveRuleDoesNotExist() {
+        when(ruleRepository.findByCodeIgnoreCaseAndDataEndStatus("UNKNOWN", "N")).thenReturn(Optional.empty());
+
+        assertThrows(ApiException.class, () -> new AlarmIngressService(requestRepository, ruleRepository).register(
+                new AlarmIngressRequest(1L, "MODEL", "UNKNOWN", "warning", null,
+                        "미등록 알람", Instant.now(), Map.of(), "unknown-event")));
     }
 }

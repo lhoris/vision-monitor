@@ -10,6 +10,7 @@ import com.vision.dto.SignupRequest;
 import com.vision.dto.UserAccountDto;
 import com.vision.dto.SignupAvailabilityDto;
 import com.vision.dto.SignupAdminContactDto;
+import com.vision.dto.AlarmIngressRequest;
 import com.vision.entity.UserAccount;
 import com.vision.entity.AlarmRule;
 import com.vision.entity.AlarmLog;
@@ -59,6 +60,7 @@ public class AuthService {
     private final AlarmLogRepository alarmLogRepository;
     private final AlarmRuleRepository alarmRuleRepository;
     private final UserAlertPreferenceRepository userAlertPreferenceRepository;
+    private final AlarmIngressService alarmIngressService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
@@ -70,7 +72,8 @@ public class AuthService {
             AlarmEventPublisher alarmEventPublisher,
             AlarmLogRepository alarmLogRepository,
             AlarmRuleRepository alarmRuleRepository,
-            UserAlertPreferenceRepository userAlertPreferenceRepository
+            UserAlertPreferenceRepository userAlertPreferenceRepository,
+            AlarmIngressService alarmIngressService
     ) {
         this.userRepository = userRepository;
         this.authorizationRepository = authorizationRepository;
@@ -80,6 +83,7 @@ public class AuthService {
         this.alarmLogRepository = alarmLogRepository;
         this.alarmRuleRepository = alarmRuleRepository;
         this.userAlertPreferenceRepository = userAlertPreferenceRepository;
+        this.alarmIngressService = alarmIngressService;
     }
 
     public AuthService(
@@ -90,7 +94,7 @@ public class AuthService {
             AlarmEventPublisher alarmEventPublisher
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
-                alarmEventPublisher, null, null, null);
+                alarmEventPublisher, null, null, null, null);
     }
 
     public AuthService(
@@ -102,7 +106,7 @@ public class AuthService {
             AlarmLogRepository alarmLogRepository
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository, sessionService,
-                alarmEventPublisher, alarmLogRepository, null, null);
+                alarmEventPublisher, alarmLogRepository, null, null, null);
     }
 
     public AuthService(
@@ -113,7 +117,7 @@ public class AuthService {
     ) {
         this(userRepository, authorizationRepository, userAuthorizationRepository,
                 new AuthSessionService(userRepository, authorizationRepository, userAuthorizationRepository, authSessionRepository),
-                null, null, null, null);
+                null, null, null, null, null);
     }
 
     // 로그인 시 영속 세션을 생성하고 레거시 비밀번호 해시를 갱신할 수 있으므로
@@ -249,66 +253,17 @@ public class AuthService {
     }
 
     private void publishSignupAlarm(UserAccount signup) {
-        AlarmRule policy = resolveAlarmPolicy("USER_SIGNUP_REQUEST");
-        boolean groupAcknowledgement = policy != null && "GROUP".equalsIgnoreCase(policy.getAcknowledgementScope());
-        String groupId = groupAcknowledgement ? UUID.randomUUID().toString() : null;
         String applicantName = signup.getName() == null || signup.getName().isBlank() ? signup.getUsername() : signup.getName();
         String message = "신규 사용자 가입신청이 접수되었습니다.\n신청자: " + applicantName + "\n사용자 ID: " + signup.getUsername();
-        Map<String, Object> alarm = Map.of(
-                "id", signup.getId(),
-                "cameraId", 0,
-                "type", "USER_SIGNUP_REQUEST",
-                "severity", "info",
-                "description", message,
-                "timestamp", OffsetDateTime.now().toString(),
-                "acknowledged", false,
-                "sourceType", "USER",
-                "sourceId", String.valueOf(signup.getId()),
-                "metadata", Map.of(
-                        "username", signup.getUsername(),
-                        "name", signup.getName(),
-                        "department", signup.getDepartment() == null ? "" : signup.getDepartment()
-                )
-        );
-        List<UserAccount> administrators = userRepository.findAllActiveAdministrators();
-        administrators.stream()
-                .filter(administrator -> administrator.getUsername() != null && !administrator.getUsername().isBlank())
-                .forEach(administrator -> {
-                    UserAlertPreference preference = findPreference(administrator.getId(), "USER_SIGNUP_REQUEST");
-                    boolean selected = preference == null || enabled(preference.getReceiverStatus(), true);
-                    if (!selected) return;
-                    boolean pushEnabled = preference == null || enabled(preference.getPushEnabled(), true);
-                    boolean emailEnabled = preference != null && enabled(preference.getEmailEnabled(), false);
-                    boolean teamsEnabled = preference != null && enabled(preference.getTeamsEnabled(), false);
-                    AlarmLog savedAlarm = null;
-                    if (alarmLogRepository != null) {
-                        savedAlarm = alarmLogRepository.save(AlarmLog.builder()
-                                .alarmType("USER_SIGNUP_REQUEST")
-                                .severity("info")
-                                .message(message)
-                                .sourceType("USER")
-                                .sourceId(String.valueOf(signup.getId()))
-                                .alarmGroupId(groupId)
-                                .sourceEventId("USER_SIGNUP_REQUEST:" + signup.getId() + ":" + administrator.getId())
-                                .occurredTimestamp(java.time.LocalDateTime.now())
-                                .targetUserId(administrator.getId())
-                                .context("username=" + signup.getUsername() + ";name=" + signup.getName())
-                                .appStatus(pushEnabled ? "PENDING" : "SKIPPED")
-                                .emailStatus(emailEnabled ? "PENDING" : "SKIPPED")
-                                .teamsStatus(teamsEnabled ? "PENDING" : "SKIPPED")
-                                .build());
-                    }
-                });
-    }
-
-    private AlarmRule resolveAlarmPolicy(String alarmType) {
-        if (alarmRuleRepository == null) return null;
-        return alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus(alarmType, "N").orElse(null);
-    }
-
-    private UserAlertPreference findPreference(Long userId, String alarmType) {
-        if (userAlertPreferenceRepository == null) return null;
-        return userAlertPreferenceRepository.findByUserIdAndAlarmTypeCode(userId, alarmType).orElse(null);
+        if (alarmIngressService != null) {
+            alarmIngressService.register(new AlarmIngressRequest(
+                    signup.getId(), "USER", "USER_SIGNUP_REQUEST", "info", null, message,
+                    java.time.Instant.now(), Map.of(
+                            "username", signup.getUsername(),
+                            "name", signup.getName(),
+                            "department", signup.getDepartment() == null ? "" : signup.getDepartment()),
+                    "USER_SIGNUP_REQUEST:" + signup.getId()));
+        }
     }
 
     private boolean enabled(String value, boolean fallback) { return value == null ? fallback : "Y".equalsIgnoreCase(value); }

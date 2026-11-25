@@ -28,6 +28,9 @@ public class AlarmLog extends BaseAudit {
     @Column(name = "ALARM_LOG_ID")
     private Long id;
 
+    @Column(name = "ALARM_REQ_ID")
+    private Long alarmRequestId;
+
     @Column(name = "ALARM_TYPE", nullable = false, length = 50)
     private String alarmType;
 
