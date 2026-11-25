@@ -163,6 +163,7 @@ export default function AlarmManagement() {
       [id]: { ...current[id], ...patch },
     }));
     setDirtyTypes((current) => new Set(current).add(id));
+    typeSelection.select(id);
   };
   const updateUser = (userId: number, patch: Partial<AlarmChannelPolicy>) => {
     setDraftUsers((current) => ({
@@ -177,6 +178,7 @@ export default function AlarmManagement() {
       },
     }));
     setDirtyUsers((current) => new Set(current).add(userId));
+    userSelection.select(userId);
   };
 
   const addType = () => {
