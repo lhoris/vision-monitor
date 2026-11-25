@@ -17,6 +17,7 @@ import com.vision.repository.UserPersonalRepository;
 import com.vision.repository.AuthSessionRepository;
 import com.vision.repository.UserAlertPreferenceRepository;
 import com.vision.repository.AlarmLogRepository;
+import com.vision.repository.AlarmRuleUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -61,6 +62,7 @@ public class UserManagementService {
     private final UserPersonalRepository userPersonalRepository;
     private final AuthSessionRepository authSessionRepository;
     private final UserAlertPreferenceRepository userAlertPreferenceRepository;
+    private final AlarmRuleUserRepository alarmRuleUserRepository;
     private final AlarmLogRepository alarmLogRepository;
 
     @Autowired
@@ -73,6 +75,7 @@ public class UserManagementService {
             UserPersonalRepository userPersonalRepository,
             AuthSessionRepository authSessionRepository,
             UserAlertPreferenceRepository userAlertPreferenceRepository,
+            AlarmRuleUserRepository alarmRuleUserRepository,
             AlarmLogRepository alarmLogRepository
     ) {
         this.userRepository = userRepository;
@@ -83,6 +86,7 @@ public class UserManagementService {
         this.userPersonalRepository = userPersonalRepository;
         this.authSessionRepository = authSessionRepository;
         this.userAlertPreferenceRepository = userAlertPreferenceRepository;
+        this.alarmRuleUserRepository = alarmRuleUserRepository;
         this.alarmLogRepository = alarmLogRepository;
     }
 
@@ -91,11 +95,11 @@ public class UserManagementService {
             AuthorizationRepository authorizationRepository,
             UserAuthorizationRepository userAuthorizationRepository
     ) {
-        this(userRepository, authorizationRepository, userAuthorizationRepository, null, null, null, null, null, null);
+        this(userRepository, authorizationRepository, userAuthorizationRepository, null, null, null, null, null, null, null);
     }
 
     public UserManagementService(UserAccountRepository userRepository) {
-        this(userRepository, null, null, null, null, null, null, null, null);
+        this(userRepository, null, null, null, null, null, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
@@ -292,6 +296,7 @@ public class UserManagementService {
         if (userPersonalRepository != null) userPersonalRepository.deleteAllByUserId(userId);
         if (authSessionRepository != null) authSessionRepository.deleteAllByUserId(userId);
         if (userAlertPreferenceRepository != null) userAlertPreferenceRepository.deleteAllByUserId(userId);
+        if (alarmRuleUserRepository != null) alarmRuleUserRepository.deleteAllByUserId(userId);
         if (alarmLogRepository != null) alarmLogRepository.deleteAllByTargetUserId(userId);
         userRepository.deleteById(userId);
         userRepository.flush();

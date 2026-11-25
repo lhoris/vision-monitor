@@ -2,11 +2,13 @@ package com.vision.service;
 
 import com.vision.entity.AlarmRequest;
 import com.vision.entity.AlarmRule;
+import com.vision.entity.AlarmRuleUser;
 import com.vision.entity.UserAccount;
 import com.vision.repository.AlarmLogRepository;
 import com.vision.repository.AlarmRequestRepository;
+import com.vision.repository.AlarmRuleRepository;
+import com.vision.repository.AlarmRuleUserRepository;
 import com.vision.repository.UserAccountRepository;
-import com.vision.repository.UserAlertPreferenceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,8 +27,9 @@ import static org.mockito.Mockito.when;
 class AlarmRequestFanoutWorkerTest {
     @Mock AlarmRequestRepository requestRepository;
     @Mock AlarmLogRepository logRepository;
+    @Mock AlarmRuleRepository ruleRepository;
     @Mock UserAccountRepository userRepository;
-    @Mock UserAlertPreferenceRepository preferenceRepository;
+    @Mock AlarmRuleUserRepository ruleUserRepository;
 
     @Test
     void createsOneLogPerDefaultAdministrator() {
@@ -42,11 +45,18 @@ class AlarmRequestFanoutWorkerTest {
         admin.setDataEndStatus("N");
         when(requestRepository.findTop100ByOrderByIdAsc()).thenReturn(List.of(request));
         when(logRepository.existsByAlarmRequestId(10L)).thenReturn(false);
-        when(preferenceRepository.findAllByAlarmTypeCodeIn(List.of("MODEL_WARNING"))).thenReturn(List.of());
-        when(userRepository.findAllActiveAdministrators()).thenReturn(List.of(admin));
+        AlarmRule rule = new AlarmRule();
+        rule.setId(20L);
+        rule.setCode("MODEL_WARNING");
+        when(ruleRepository.findByCodeIgnoreCaseAndDataEndStatus("MODEL_WARNING", "N")).thenReturn(java.util.Optional.of(rule));
+        AlarmRuleUser ruleUser = new AlarmRuleUser();
+        ruleUser.setAlarmRuleId(20L);
+        ruleUser.setUserId(7L);
+        when(ruleUserRepository.findAllByAlarmRuleIdIn(List.of(20L))).thenReturn(List.of(ruleUser));
+        when(userRepository.findAllById(any())).thenReturn(List.of(admin));
         when(logRepository.existsByAlarmRequestIdAndTargetUserId(10L, 7L)).thenReturn(false);
 
-        new AlarmRequestFanoutWorker(requestRepository, logRepository, userRepository, preferenceRepository).processPendingRequests();
+        new AlarmRequestFanoutWorker(requestRepository, logRepository, ruleRepository, userRepository, ruleUserRepository).processPendingRequests();
 
         ArgumentCaptor<com.vision.entity.AlarmLog> captor = ArgumentCaptor.forClass(com.vision.entity.AlarmLog.class);
         verify(logRepository).save(captor.capture());

@@ -2,12 +2,14 @@ package com.vision.service;
 
 import com.vision.entity.AlarmLog;
 import com.vision.entity.AlarmRequest;
+import com.vision.entity.AlarmRule;
+import com.vision.entity.AlarmRuleUser;
 import com.vision.entity.UserAccount;
-import com.vision.entity.UserAlertPreference;
 import com.vision.repository.AlarmLogRepository;
 import com.vision.repository.AlarmRequestRepository;
+import com.vision.repository.AlarmRuleRepository;
+import com.vision.repository.AlarmRuleUserRepository;
 import com.vision.repository.UserAccountRepository;
-import com.vision.repository.UserAlertPreferenceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,10 +26,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AlarmRequestFanoutWorker {
     private static final String ACTIVE = "N";
+    private static final String SIGNUP_REQUEST_ALARM_CODE = "USER_SIGNUP_REQUEST";
     private final AlarmRequestRepository alarmRequestRepository;
     private final AlarmLogRepository alarmLogRepository;
+    private final AlarmRuleRepository alarmRuleRepository;
     private final UserAccountRepository userRepository;
-    private final UserAlertPreferenceRepository preferenceRepository;
+    private final AlarmRuleUserRepository alarmRuleUserRepository;
 
     @Scheduled(fixedDelayString = "${vision.alarm.fanout.fixed-delay-ms:3000}")
     public void processPendingRequests() {
@@ -39,13 +43,15 @@ public class AlarmRequestFanoutWorker {
     @Transactional
     void fanout(AlarmRequest request) {
         if (alarmLogRepository.existsByAlarmRequestId(request.getId())) return;
-        List<UserAlertPreference> configured = preferenceRepository.findAllByAlarmTypeCodeIn(List.of(request.getAlarmCode()));
-        Map<Long, UserAlertPreference> preferences = configured.stream()
-                .collect(Collectors.toMap(UserAlertPreference::getUserId, Function.identity(), (first, ignored) -> first));
-        List<UserAccount> recipients = recipients(preferences);
+        AlarmRule rule = alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus(request.getAlarmCode(), ACTIVE).orElse(null);
+        if (rule == null) return;
+        List<AlarmRuleUser> configured = alarmRuleUserRepository.findAllByAlarmRuleIdIn(List.of(rule.getId()));
+        Map<Long, AlarmRuleUser> preferences = configured.stream()
+                .collect(Collectors.toMap(AlarmRuleUser::getUserId, Function.identity(), (first, ignored) -> first));
+        List<UserAccount> recipients = recipients(request.getAlarmCode(), preferences);
         for (UserAccount recipient : recipients) {
             if (alarmLogRepository.existsByAlarmRequestIdAndTargetUserId(request.getId(), recipient.getId())) continue;
-            UserAlertPreference preference = preferences.get(recipient.getId());
+            AlarmRuleUser preference = preferences.get(recipient.getId());
             boolean app = preference == null || enabled(preference.getPushEnabled(), true);
             boolean email = preference != null && enabled(preference.getEmailEnabled(), false);
             boolean teams = preference != null && enabled(preference.getTeamsEnabled(), false);
@@ -68,14 +74,16 @@ public class AlarmRequestFanoutWorker {
         }
     }
 
-    private List<UserAccount> recipients(Map<Long, UserAlertPreference> preferences) {
+    private List<UserAccount> recipients(String alarmCode, Map<Long, AlarmRuleUser> preferences) {
         if (!preferences.isEmpty()) {
             return userRepository.findAllById(preferences.keySet()).stream()
                     .filter(this::active)
                     .filter(user -> enabled(preferences.get(user.getId()).getReceiverStatus(), false))
                     .toList();
         }
-        return userRepository.findAllActiveAdministrators();
+        return SIGNUP_REQUEST_ALARM_CODE.equalsIgnoreCase(alarmCode)
+                ? userRepository.findAllActiveAdministrators()
+                : List.of();
     }
 
     private boolean active(UserAccount user) {

@@ -2,13 +2,13 @@ package com.vision.service;
 
 import com.vision.dto.AlarmManagementDto;
 import com.vision.entity.AlarmRule;
+import com.vision.entity.AlarmRuleUser;
 import com.vision.entity.UserAccount;
-import com.vision.entity.UserAlertPreference;
 import com.vision.exception.ApiException;
 import com.vision.repository.AuthorizationRepository;
 import com.vision.repository.AlarmRuleRepository;
+import com.vision.repository.AlarmRuleUserRepository;
 import com.vision.repository.UserAccountRepository;
-import com.vision.repository.UserAlertPreferenceRepository;
 import com.vision.repository.UserAuthorizationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,8 @@ public class AlarmManagementService {
     private static final String ACTIVE = "N";
     private static final String SIGNUP_REQUEST_ALARM_CODE = "USER_SIGNUP_REQUEST";
     private final AlarmRuleRepository alarmRuleRepository;
+    private final AlarmRuleUserRepository alarmRuleUserRepository;
     private final UserAccountRepository userRepository;
-    private final UserAlertPreferenceRepository preferenceRepository;
     private final AuthorizationRepository authorizationRepository;
     private final UserAuthorizationRepository userAuthorizationRepository;
 
@@ -54,30 +54,36 @@ public class AlarmManagementService {
 
     private List<AlarmManagementDto.UserSetting> userSettings() {
         List<AlarmRule> rules = alarmRules();
-        List<String> codes = rules.stream().map(AlarmRule::getCode).toList();
+        List<Long> ruleIds = rules.stream().map(AlarmRule::getId).toList();
         java.util.Set<Long> defaultAdministratorIds = userRepository.findAllActiveAdministrators().stream()
                 .map(UserAccount::getId).collect(java.util.stream.Collectors.toSet());
-        Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings = new HashMap<>();
-        preferenceRepository.findAllByAlarmTypeCodeIn(codes).forEach(preference -> settings
-                .computeIfAbsent(preference.getUserId(), ignored -> new HashMap<>())
-                .put(preference.getAlarmTypeCode(), toChannelPolicy(preference)));
+        Map<Long, Map<Long, AlarmManagementDto.ChannelPolicy>> settings = new HashMap<>();
+        alarmRuleUserRepository.findAllByAlarmRuleIdIn(ruleIds).forEach(detail -> settings
+                .computeIfAbsent(detail.getUserId(), ignored -> new HashMap<>())
+                .put(detail.getAlarmRuleId(), toChannelPolicy(detail)));
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
                 .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
-                        effectiveSettings(user, codes, settings, defaultAdministratorIds)))
+                        effectiveSettings(user, rules, settings, defaultAdministratorIds)))
                 .toList();
         return users;
     }
 
     private Map<String, AlarmManagementDto.ChannelPolicy> effectiveSettings(
             UserAccount user,
-            List<String> codes,
-            Map<Long, Map<String, AlarmManagementDto.ChannelPolicy>> settings,
+            List<AlarmRule> rules,
+            Map<Long, Map<Long, AlarmManagementDto.ChannelPolicy>> settings,
             java.util.Set<Long> defaultAdministratorIds) {
-        Map<String, AlarmManagementDto.ChannelPolicy> effective = new HashMap<>(settings.getOrDefault(user.getId(), Map.of()));
-        if (defaultAdministratorIds.contains(user.getId()) && codes.contains(SIGNUP_REQUEST_ALARM_CODE)) {
-            effective.putIfAbsent(SIGNUP_REQUEST_ALARM_CODE,
-                    new AlarmManagementDto.ChannelPolicy(true, true, false, false));
+        Map<String, AlarmManagementDto.ChannelPolicy> effective = new HashMap<>();
+        Map<Long, AlarmManagementDto.ChannelPolicy> configured = settings.getOrDefault(user.getId(), Map.of());
+        rules.forEach(rule -> {
+            AlarmManagementDto.ChannelPolicy policy = configured.get(rule.getId());
+            if (policy != null) effective.put(rule.getCode(), policy);
+        });
+        if (defaultAdministratorIds.contains(user.getId())) {
+            rules.stream().filter(rule -> SIGNUP_REQUEST_ALARM_CODE.equalsIgnoreCase(rule.getCode())).findFirst()
+                    .ifPresent(rule -> effective.putIfAbsent(rule.getCode(),
+                            new AlarmManagementDto.ChannelPolicy(true, true, false, false)));
         }
         return effective;
     }
@@ -134,18 +140,20 @@ public class AlarmManagementService {
         if (request == null || request.overrides() == null) {
             throw new ApiException("VALIDATION_ERROR", "알람 수신 설정이 없습니다.");
         }
-        List<String> codes = alarmRules().stream().map(AlarmRule::getCode).toList();
+        Map<String, AlarmRule> rulesByCode = alarmRules().stream()
+                .collect(java.util.stream.Collectors.toMap(rule -> rule.getCode().toUpperCase(), rule -> rule));
         request.overrides().forEach((code, value) -> {
-            if (!codes.contains(code) || value == null) return;
-            UserAlertPreference preference = preferenceRepository.findByUserIdAndAlarmTypeCode(userId, code)
-                    .orElseGet(() -> newPreference(actorUsername, userId, code));
-            preference.setReceiverStatus(status(value.receiver()));
-            preference.setPushEnabled(status(value.push()));
-            preference.setEmailEnabled(status(value.email()));
-            preference.setTeamsEnabled(status(value.teams()));
-            preference.setUpdatedObjectId(actorUsername);
-            preference.setUpdatedTimestamp(LocalDateTime.now());
-            preferenceRepository.save(preference);
+            AlarmRule rule = code == null ? null : rulesByCode.get(code.toUpperCase());
+            if (rule == null || value == null) return;
+            AlarmRuleUser detail = alarmRuleUserRepository.findByAlarmRuleIdAndUserId(rule.getId(), userId)
+                    .orElseGet(() -> newRuleUser(actorUsername, rule.getId(), userId));
+            detail.setReceiverStatus(status(value.receiver()));
+            detail.setPushEnabled(status(value.push()));
+            detail.setEmailEnabled(status(value.email()));
+            detail.setTeamsEnabled(status(value.teams()));
+            detail.setUpdatedObjectId(actorUsername);
+            detail.setUpdatedTimestamp(LocalDateTime.now());
+            alarmRuleUserRepository.save(detail);
         });
         return overviewForUser(user);
     }
@@ -163,20 +171,24 @@ public class AlarmManagementService {
         alarmRuleRepository.save(detail);
     }
 
-    private UserAlertPreference newPreference(String actor, Long userId, String code) {
-        UserAlertPreference preference = new UserAlertPreference();
-        preference.setUserId(userId);
-        preference.setAlarmTypeCode(code);
-        preference.setCreatedObjectId(actor);
-        preference.setCreatedTimestamp(LocalDateTime.now());
-        return preference;
+    private AlarmRuleUser newRuleUser(String actor, Long alarmRuleId, Long userId) {
+        AlarmRuleUser detail = new AlarmRuleUser();
+        detail.setAlarmRuleId(alarmRuleId);
+        detail.setUserId(userId);
+        detail.setCreatedObjectId(actor);
+        detail.setCreatedTimestamp(LocalDateTime.now());
+        return detail;
     }
 
     private AlarmManagementDto.UserSetting overviewForUser(UserAccount user) {
         Map<String, AlarmManagementDto.ChannelPolicy> settings = new HashMap<>();
-        preferenceRepository.findAllByAlarmTypeCodeIn(alarmRules().stream().map(AlarmRule::getCode).toList()).stream()
-                .filter(preference -> user.getId().equals(preference.getUserId()))
-                .forEach(preference -> settings.put(preference.getAlarmTypeCode(), toChannelPolicy(preference)));
+        Map<Long, AlarmRule> rules = alarmRules().stream().collect(java.util.stream.Collectors.toMap(AlarmRule::getId, rule -> rule));
+        alarmRuleUserRepository.findAllByAlarmRuleIdIn(rules.keySet().stream().toList()).stream()
+                .filter(detail -> user.getId().equals(detail.getUserId()))
+                .forEach(detail -> {
+                    AlarmRule rule = rules.get(detail.getAlarmRuleId());
+                    if (rule != null) settings.put(rule.getCode(), toChannelPolicy(detail));
+                });
         return new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(), settings);
     }
 
@@ -190,10 +202,10 @@ public class AlarmManagementService {
                 value(detail.getAcknowledgementScope(), "INDIVIDUAL"));
     }
 
-    private AlarmManagementDto.ChannelPolicy toChannelPolicy(UserAlertPreference preference) {
-        return new AlarmManagementDto.ChannelPolicy(enabled(preference.getReceiverStatus(), true),
-                enabled(preference.getPushEnabled(), true), enabled(preference.getEmailEnabled(), false),
-                enabled(preference.getTeamsEnabled(), false));
+    private AlarmManagementDto.ChannelPolicy toChannelPolicy(AlarmRuleUser detail) {
+        return new AlarmManagementDto.ChannelPolicy(enabled(detail.getReceiverStatus(), true),
+                enabled(detail.getPushEnabled(), true), enabled(detail.getEmailEnabled(), false),
+                enabled(detail.getTeamsEnabled(), false));
     }
 
     private UserAccount requireAdmin(String username) {
