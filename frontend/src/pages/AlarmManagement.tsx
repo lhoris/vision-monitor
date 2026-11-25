@@ -66,7 +66,7 @@ export default function AlarmManagement() {
       setDirtyUsers(new Set())
       setRecipientDrafts([])
       userSelection.clear()
-      if (showNotice) setNotice(t('alarmManagement.messages.loaded'))
+      if (showNotice) setNotice(t('alarmManagement.messages.recipientsLoaded'))
     } catch (exception) {
       setError(exception instanceof Error ? exception.message : t('alarmManagement.messages.loadError'))
     } finally {
@@ -76,7 +76,7 @@ export default function AlarmManagement() {
 
   useEffect(() => { void Promise.all([loadTypes(), loadUsers()]) }, [])
   useEffect(() => {
-    if (selectedCode) void loadUsers()
+    if (selectedCode) void loadUsers(true)
   }, [selectedCode])
   useEffect(() => { if (!notice) return undefined; const timer = window.setTimeout(() => setNotice(''), 3000); return () => window.clearTimeout(timer) }, [notice])
 
@@ -196,7 +196,7 @@ export default function AlarmManagement() {
   }
 
   return <section data-alarm-management className="flex h-full min-h-0 flex-col gap-4 overflow-hidden bg-slate-50 p-4 dark:bg-slate-950 md:p-6">
-    <style>{`[data-alarm-management] select { color: #0f172a; } [data-alarm-management] select option { color: #0f172a; background: #ffffff; } .dark [data-alarm-management] select { color: #f1f5f9; background-color: #1e293b; } .dark [data-alarm-management] select option { color: #f1f5f9; background: #1e293b; } [data-alarm-management] > .grid > section:first-child th:first-child, [data-alarm-management] > .grid > section:first-child td:first-child { display: none; }`}</style>
+    <style>{`[data-alarm-management] select { color: #0f172a; } [data-alarm-management] select option { color: #0f172a; background: #ffffff; } .dark [data-alarm-management] select { color: #f1f5f9; background-color: #1e293b; } .dark [data-alarm-management] select option { color: #f1f5f9; background: #1e293b; } [data-alarm-management] > .grid > section:first-child th:first-child, [data-alarm-management] > .grid > section:first-child td:first-child { display: none; } [data-alarm-management] button:disabled { cursor: not-allowed; opacity: 0.5; }`}</style>
     <header className="shrink-0"><p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{t('navigation.admin.title')}</p><h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{t('alarmManagement.title')}</h1><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{t('alarmManagement.description')}</p></header>
     <Toast message={notice} variant="success" onClose={() => setNotice('')} /><Toast message={error} variant="error" onClose={() => setError('')} />
     <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(460px,1.2fr)_minmax(560px,1fr)]">

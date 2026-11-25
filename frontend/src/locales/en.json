@@ -286,7 +286,7 @@
     "selectedUsersHint": "Only selected users and channels receive this alarm type.",
     "channels": { "email": "Email" },
     "columns": { "code": "Alarm code", "alarmName": "Alarm name", "description": "Alarm description", "category": "Category", "name": "Alarm type", "recipient": "Recipients", "acknowledgement": "Acknowledgement", "database": "DB storage", "appPush": "In-app alert", "email": "Email", "teamsBot": "Teams bot", "user": "User", "receiver": "Receive", "action": "Action" },
-    "messages": { "loaded": "Alarm management data loaded.", "typeSaved": "Alarm type policy saved.", "userSaved": "User alarm settings saved.", "typeDeleted": "Alarm rule deactivated.", "userDeleted": "Selected users were removed from the recipients.", "loadError": "Unable to load alarm management data.", "saveError": "Unable to save alarm settings.", "deleteError": "Unable to delete alarm settings." }
+    "messages": { "loaded": "Alarm management data loaded.", "recipientsLoaded": "Recipient list loaded.", "typeSaved": "Alarm type policy saved.", "userSaved": "User alarm settings saved.", "typeDeleted": "Alarm rule deactivated.", "userDeleted": "Selected users were removed from the recipients.", "loadError": "Unable to load alarm management data.", "saveError": "Unable to save alarm settings.", "deleteError": "Unable to delete alarm settings." }
   },
   "cameraFocus": {
     "metadataPanel": {
