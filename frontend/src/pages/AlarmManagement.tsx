@@ -32,14 +32,17 @@ const bodyCell =
 function Toggle({
   checked,
   onChange,
+  onClick,
 }: {
   checked: boolean;
   onChange: (value: boolean) => void;
+  onClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
 }) {
   return (
     <input
       type="checkbox"
       checked={checked}
+      onClick={onClick}
       onChange={(event) => onChange(event.target.checked)}
       className="h-4 w-4 accent-blue-600"
     />
@@ -780,28 +783,43 @@ export default function AlarmManagement() {
                           </>
                         )}
                       </td>
-                      <td data-no-row-selection className={`${bodyCell} text-center`}>
+                      <td
+                        data-no-row-selection
+                        className={`${bodyCell} cursor-pointer text-center`}
+                        onClick={() => user && updateUser(user.userId, { push: !value.push })}
+                      >
                         <Toggle
                           checked={value.push}
                           onChange={(checked) =>
                             user && updateUser(user.userId, { push: checked })
                           }
+                          onClick={(event) => event.stopPropagation()}
                         />
                       </td>
-                      <td data-no-row-selection className={`${bodyCell} text-center`}>
+                      <td
+                        data-no-row-selection
+                        className={`${bodyCell} cursor-pointer text-center`}
+                        onClick={() => user && updateUser(user.userId, { email: !value.email })}
+                      >
                         <Toggle
                           checked={value.email}
                           onChange={(checked) =>
                             user && updateUser(user.userId, { email: checked })
                           }
+                          onClick={(event) => event.stopPropagation()}
                         />
                       </td>
-                      <td data-no-row-selection className={`${bodyCell} text-center`}>
+                      <td
+                        data-no-row-selection
+                        className={`${bodyCell} cursor-pointer text-center`}
+                        onClick={() => user && updateUser(user.userId, { teams: !value.teams })}
+                      >
                         <Toggle
                           checked={value.teams}
                           onChange={(checked) =>
                             user && updateUser(user.userId, { teams: checked })
                           }
+                          onClick={(event) => event.stopPropagation()}
                         />
                       </td>
                     </tr>
