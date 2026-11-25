@@ -463,11 +463,15 @@ export default function AlarmManagement() {
             <DataGridTable className="w-full min-w-[860px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm">
               <thead className="sticky top-0 z-10">
                 <tr>
-                  <th className={`w-10 ${headerCell}`}>
+                  <th
+                    className={`w-10 ${headerCell} cursor-pointer`}
+                    onClick={typeSelection.toggleVisible}
+                  >
                     <input
                       aria-label={t("alarmManagement.selectAllTypes")}
                       type="checkbox"
                       checked={typeSelection.allVisibleSelected}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={typeSelection.toggleVisible}
                     />
                   </th>
@@ -673,11 +677,15 @@ export default function AlarmManagement() {
             <DataGridTable className="w-full min-w-[760px] border-separate border-spacing-0 border-l border-t border-[#9dcced] text-left text-sm">
               <thead className="sticky top-0 z-10">
                 <tr>
-                  <th className={`w-10 ${headerCell}`}>
+                  <th
+                    className={`w-10 ${headerCell} cursor-pointer`}
+                    onClick={userSelection.toggleVisible}
+                  >
                     <input
                       aria-label={t("alarmManagement.selectAllUsers")}
                       type="checkbox"
                       checked={userSelection.allVisibleSelected}
+                      onClick={(event) => event.stopPropagation()}
                       onChange={userSelection.toggleVisible}
                     />
                   </th>
