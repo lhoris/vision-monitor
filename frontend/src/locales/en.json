@@ -247,13 +247,13 @@
       "videos": "Video Management",
       "commonCodes": "Common Code Management",
       "queries": "Query Management",
-      "alarmManagement": "Alarm Management",
+      "alarmManagement": "Alarm Rule Management",
       "systemManagement": "System Management",
       "users": "User Management"
     }
   },
   "alarmManagement": {
-    "title": "Alarm Management",
+    "title": "Alarm Rule Management",
     "description": "Manage recipients, acknowledgement scope, and notification channels by alarm type.",
     "typePolicy": "Alarm type policy",
     "userOverrides": "User notification and channel settings",

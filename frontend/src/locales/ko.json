@@ -248,13 +248,13 @@
       "videos": "영상 관리",
       "commonCodes": "공통코드 관리",
       "queries": "쿼리 관리",
-      "alarmManagement": "알람 관리",
+      "alarmManagement": "알람 기준 관리",
       "systemManagement": "시스템 관리",
       "users": "사용자 관리"
     }
   },
   "alarmManagement": {
-    "title": "알람 관리",
+    "title": "알람 기준 관리",
     "description": "알람 유형별 수신자, 확인 방식 및 알림 채널을 관리합니다.",
     "typePolicy": "알람 유형 정책",
     "userOverrides": "사용자별 수신 및 채널 설정",

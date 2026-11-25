@@ -13,7 +13,7 @@ const adminPageLabels: Record<string, string> = {
   '/admin/users': '사용자 관리',
   '/admin/videos': '영상 관리',
   '/admin/common-codes': '공통코드 관리',
-  '/admin/alarm-management': '알람 관리',
+  '/admin/alarm-management': '알람 기준 관리',
 }
 
 export function AdminPlaceholder() {
