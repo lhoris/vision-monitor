@@ -122,7 +122,7 @@ export default function AlarmManagement() {
 
   const updateRecipientDraft = (rowId: number, userId: number | '') => {
     setRecipientDrafts((current) => current.map((draft) => draft.rowId === rowId ? { ...draft, userId } : draft))
-    if (userId !== '') updateUser(userId, { receiver: true })
+    if (userId !== '') updateUser(userId, { receiver: true, push: true, email: false, teams: false })
   }
 
   const selectType = (code: string) => {
