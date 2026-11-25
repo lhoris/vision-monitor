@@ -512,7 +512,6 @@ export default function AlarmManagement() {
                     </td>
                     <td
                       className="border-b border-r border-[#b7d8ee] px-2 dark:border-slate-700"
-                      onClick={(event) => event.stopPropagation()}
                     >
                       {type.id < 0 ? (
                         <input
