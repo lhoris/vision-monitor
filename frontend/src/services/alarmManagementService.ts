@@ -19,4 +19,7 @@ export const alarmManagementService = {
   async updateUser(userId: number, overrides: Record<string, AlarmChannelPolicy>): Promise<AlarmUserSetting> {
     return getResponseData(await apiClient.put<AlarmUserSetting>(`/admin/alarm-management/users/${userId}`, { overrides }), { userId, username: '', name: '', overrides })
   },
+  async deactivateType(id: number): Promise<void> {
+    await apiClient.delete(`/admin/alarm-management/types/${id}`)
+  },
 }

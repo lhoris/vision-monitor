@@ -35,4 +35,12 @@ public class AlarmManagementController {
             @RequestBody AlarmManagementDto.UserSettingUpdate request) {
         return ApiResponse.success(service.updateUser(user.username(), userId, request));
     }
+
+    @DeleteMapping("/types/{detailId}")
+    public ApiResponse<Void> deactivateType(
+            @RequestAttribute(AuthSessionInterceptor.AUTHENTICATED_USER_ATTRIBUTE) AuthenticatedUserDto user,
+            @PathVariable Long detailId) {
+        service.deactivateType(user.username(), detailId);
+        return ApiResponse.success(null);
+    }
 }

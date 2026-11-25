@@ -100,6 +100,19 @@ public class AlarmManagementService {
         return overviewForUser(user);
     }
 
+    @Transactional
+    public void deactivateType(String actorUsername, Long detailId) {
+        requireAdmin(actorUsername);
+        AlarmRule detail = alarmRuleRepository.findById(detailId)
+                .orElseThrow(() -> new ApiException("ALARM_RULE_NOT_FOUND", "알람 기준을 찾을 수 없습니다."));
+        detail.setDataEndStatus("Y");
+        detail.setDataEndObjectId(actorUsername);
+        detail.setDataEndTimestamp(LocalDateTime.now());
+        detail.setLastUpdatedObjectId(actorUsername);
+        detail.setLastUpdatedTimestamp(LocalDateTime.now());
+        alarmRuleRepository.save(detail);
+    }
+
     private UserAlertPreference newPreference(String actor, Long userId, String code) {
         UserAlertPreference preference = new UserAlertPreference();
         preference.setUserId(userId);
