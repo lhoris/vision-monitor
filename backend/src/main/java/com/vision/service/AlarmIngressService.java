@@ -15,6 +15,7 @@ import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AlarmIngressService {
     private static final String ACTIVE = "N";
     private final AlarmRequestRepository alarmRequestRepository;
     private final AlarmRuleRepository alarmRuleRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     public AlarmRequest register(AlarmIngressRequest request) {
@@ -61,8 +63,12 @@ public class AlarmIngressService {
     private String context(AlarmIngressRequest request) {
         Map<String, Object> metadata = request.metadata();
         if (metadata == null || metadata.isEmpty()) return null;
-        return metadata.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + String.valueOf(entry.getValue()))
-                .collect(Collectors.joining(";"));
+        try {
+            return objectMapper.writeValueAsString(metadata);
+        } catch (Exception exception) {
+            return metadata.entrySet().stream()
+                    .map(entry -> entry.getKey() + "=" + String.valueOf(entry.getValue()))
+                    .collect(Collectors.joining(";"));
+        }
     }
 }

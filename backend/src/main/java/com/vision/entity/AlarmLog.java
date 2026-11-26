@@ -82,4 +82,13 @@ public class AlarmLog extends BaseAudit {
     @Builder.Default
     @Column(name = "TEAMS_STATUS", nullable = false, length = 20)
     private String teamsStatus = "SKIPPED";
+
+    @Column(name = "EMAIL_SUBJECT", columnDefinition = "TEXT")
+    private String emailSubject;
+
+    @Column(name = "EMAIL_BODY", columnDefinition = "TEXT")
+    private String emailBody;
+
+    @Column(name = "TEAMS_MESSAGE", columnDefinition = "TEXT")
+    private String teamsMessage;
 }

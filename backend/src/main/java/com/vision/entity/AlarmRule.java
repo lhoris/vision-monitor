@@ -42,4 +42,16 @@ public class AlarmRule extends BaseAudit {
 
     @Column(name = "ACKNOWLEDGEMENT_SCOPE", nullable = false, length = 20)
     private String acknowledgementScope = "INDIVIDUAL";
+
+    @Column(name = "APP_MESSAGE_TEMPLATE", columnDefinition = "TEXT")
+    private String appMessageTemplate;
+
+    @Column(name = "EMAIL_SUBJECT_TEMPLATE", columnDefinition = "TEXT")
+    private String emailSubjectTemplate;
+
+    @Column(name = "EMAIL_BODY_TEMPLATE", columnDefinition = "TEXT")
+    private String emailBodyTemplate;
+
+    @Column(name = "TEAMS_MESSAGE_TEMPLATE", columnDefinition = "TEXT")
+    private String teamsMessageTemplate;
 }

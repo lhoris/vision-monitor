@@ -107,6 +107,10 @@ public class AlarmManagementService {
         if (request.description() != null) detail.setDescription(request.description().trim());
         if (request.category() != null) detail.setCategory(request.category());
         if (request.acknowledgementScope() != null) detail.setAcknowledgementScope(request.acknowledgementScope());
+        if (request.appMessageTemplate() != null) detail.setAppMessageTemplate(request.appMessageTemplate());
+        if (request.emailSubjectTemplate() != null) detail.setEmailSubjectTemplate(request.emailSubjectTemplate());
+        if (request.emailBodyTemplate() != null) detail.setEmailBodyTemplate(request.emailBodyTemplate());
+        if (request.teamsMessageTemplate() != null) detail.setTeamsMessageTemplate(request.teamsMessageTemplate());
         return toTypePolicy(alarmRuleRepository.save(detail));
     }
 
@@ -129,6 +133,10 @@ public class AlarmManagementService {
         rule.setDescription(request.description());
         rule.setCategory(request.category());
         rule.setAcknowledgementScope(request.acknowledgementScope());
+        rule.setAppMessageTemplate(request.appMessageTemplate());
+        rule.setEmailSubjectTemplate(request.emailSubjectTemplate());
+        rule.setEmailBodyTemplate(request.emailBodyTemplate());
+        rule.setTeamsMessageTemplate(request.teamsMessageTemplate());
         rule.setCreatedObjectId(actorUsername);
         rule.setCreatedTimestamp(LocalDateTime.now());
         return toTypePolicy(alarmRuleRepository.save(rule));
@@ -202,7 +210,8 @@ public class AlarmManagementService {
     private AlarmManagementDto.TypePolicy toTypePolicy(AlarmRule detail) {
         return new AlarmManagementDto.TypePolicy(detail.getId(), detail.getCode(), detail.getName(), detail.getNameKo(),
                 detail.getNameEn(), detail.getDescription(), value(detail.getCategory(), "GENERAL"),
-                value(detail.getAcknowledgementScope(), "INDIVIDUAL"));
+                value(detail.getAcknowledgementScope(), "INDIVIDUAL"), detail.getAppMessageTemplate(),
+                detail.getEmailSubjectTemplate(), detail.getEmailBodyTemplate(), detail.getTeamsMessageTemplate());
     }
 
     private AlarmManagementDto.ChannelPolicy toChannelPolicy(AlarmRuleUser detail) {

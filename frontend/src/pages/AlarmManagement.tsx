@@ -156,7 +156,9 @@ export default function AlarmManagement() {
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  const selectedType = data.types.find((type) => type.code === selectedCode);
+  const selectedType = Object.values(draftTypes).find(
+    (type) => type.code === selectedCode,
+  );
   const updateType = (id: number, patch: Partial<AlarmTypePolicy>) => {
     setDraftTypes((current) => ({
       ...current,
@@ -644,6 +646,74 @@ export default function AlarmManagement() {
               선택 {typeSelection.selectedIds.size}건 | 전체{" "}
               {Object.keys(draftTypes).length}건 | 변경 {dirtyTypes.size}건
             </span>
+          </div>
+          <div className="shrink-0 space-y-2 border-t border-slate-200 p-3 dark:border-slate-700">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {t("alarmManagement.templateTitle")}
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                {t("alarmManagement.templateVariables")}
+              </span>
+            </div>
+            {selectedType ? (
+              <div className="grid max-h-64 gap-2 overflow-auto">
+                <label className="text-xs text-slate-600 dark:text-slate-300">
+                  {t("alarmManagement.appTemplate")}
+                  <textarea
+                    value={selectedType.appMessageTemplate || ""}
+                    onChange={(event) =>
+                      updateType(selectedType.id, {
+                        appMessageTemplate: event.target.value,
+                      })
+                    }
+                    placeholder={t("alarmManagement.appTemplatePlaceholder")}
+                    className="mt-1 h-16 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                  />
+                </label>
+                <label className="text-xs text-slate-600 dark:text-slate-300">
+                  {t("alarmManagement.emailSubjectTemplate")}
+                  <input
+                    value={selectedType.emailSubjectTemplate || ""}
+                    onChange={(event) =>
+                      updateType(selectedType.id, {
+                        emailSubjectTemplate: event.target.value,
+                      })
+                    }
+                    placeholder={t("alarmManagement.emailSubjectPlaceholder")}
+                    className="mt-1 h-8 w-full rounded border border-slate-300 px-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                  />
+                </label>
+                <label className="text-xs text-slate-600 dark:text-slate-300">
+                  {t("alarmManagement.emailBodyTemplate")}
+                  <textarea
+                    value={selectedType.emailBodyTemplate || ""}
+                    onChange={(event) =>
+                      updateType(selectedType.id, {
+                        emailBodyTemplate: event.target.value,
+                      })
+                    }
+                    placeholder={t("alarmManagement.emailBodyPlaceholder")}
+                    className="mt-1 h-20 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                  />
+                </label>
+                <label className="text-xs text-slate-600 dark:text-slate-300">
+                  {t("alarmManagement.teamsTemplate")}
+                  <textarea
+                    value={selectedType.teamsMessageTemplate || ""}
+                    onChange={(event) =>
+                      updateType(selectedType.id, {
+                        teamsMessageTemplate: event.target.value,
+                      })
+                    }
+                    placeholder={t("alarmManagement.teamsTemplatePlaceholder")}
+                    className="mt-1 h-16 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                  />
+                </label>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">{t("alarmManagement.selectPrompt")}</p>
+            )}
           </div>
         </section>
         <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white dark:border-slate-700 dark:bg-slate-800">

@@ -31,6 +31,7 @@ public class AlarmRequestFanoutWorker {
     private final AlarmRuleRepository alarmRuleRepository;
     private final UserAccountRepository userRepository;
     private final AlarmRuleUserRepository alarmRuleUserRepository;
+    private final AlarmTemplateRenderer templateRenderer = new AlarmTemplateRenderer();
 
     @Scheduled(fixedDelayString = "${vision.alarm.fanout.fixed-delay-ms:3000}")
     public void processPendingRequests() {
@@ -44,6 +45,7 @@ public class AlarmRequestFanoutWorker {
         if (alarmLogRepository.existsByAlarmRequestId(request.getId())) return;
         AlarmRule rule = alarmRuleRepository.findByCodeIgnoreCaseAndDataEndStatus(request.getAlarmCode(), ACTIVE).orElse(null);
         if (rule == null) return;
+        AlarmTemplateRenderer.Rendered rendered = templateRenderer.render(rule, request);
         List<AlarmRuleUser> configured = alarmRuleUserRepository.findAllByAlarmRuleIdIn(List.of(rule.getId()));
         Map<Long, AlarmRuleUser> preferences = configured.stream()
                 .collect(Collectors.toMap(AlarmRuleUser::getUserId, Function.identity(), (first, ignored) -> first));
@@ -58,7 +60,7 @@ public class AlarmRequestFanoutWorker {
                     .alarmRequestId(request.getId())
                     .alarmType(request.getAlarmCode())
                     .severity(request.getSeverity())
-                    .message(request.getMessage())
+                    .message(rendered.getAppMessage())
                     .sourceType(request.getSourceType())
                     .sourceId(request.getSourceId())
                     .alarmGroupId(request.getAlarmGroupId())
@@ -69,6 +71,9 @@ public class AlarmRequestFanoutWorker {
                     .appStatus(app ? "PENDING" : "SKIPPED")
                     .emailStatus(email ? "PENDING" : "SKIPPED")
                     .teamsStatus(teams ? "PENDING" : "SKIPPED")
+                    .emailSubject(rendered.getEmailSubject())
+                    .emailBody(rendered.getEmailBody())
+                    .teamsMessage(rendered.getTeamsMessage())
                     .build());
         }
     }

@@ -5,6 +5,7 @@ export interface AlarmChannelPolicy { receiver: boolean; push: boolean; email: b
 export interface AlarmTypePolicy {
   id: number; code: string; name: string; nameKo?: string; nameEn?: string; description?: string
   category: 'GENERAL' | 'MODEL'; acknowledgementScope: 'GROUP' | 'INDIVIDUAL'
+  appMessageTemplate?: string; emailSubjectTemplate?: string; emailBodyTemplate?: string; teamsMessageTemplate?: string
 }
 export interface AlarmUserSetting { userId: number; username: string; name: string; overrides: Record<string, AlarmChannelPolicy> }
 export interface AlarmManagementOverview { types: AlarmTypePolicy[]; users: AlarmUserSetting[] }

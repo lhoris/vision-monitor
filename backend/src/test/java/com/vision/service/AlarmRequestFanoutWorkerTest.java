@@ -48,6 +48,7 @@ class AlarmRequestFanoutWorkerTest {
         AlarmRule rule = new AlarmRule();
         rule.setId(20L);
         rule.setCode("MODEL_WARNING");
+        rule.setAppMessageTemplate("[{{severity}}] {{message}} / 카메라 {{cameraId}}");
         when(ruleRepository.findByCodeIgnoreCaseAndDataEndStatus("MODEL_WARNING", "N")).thenReturn(java.util.Optional.of(rule));
         AlarmRuleUser ruleUser = new AlarmRuleUser();
         ruleUser.setAlarmRuleId(20L);
@@ -62,5 +63,6 @@ class AlarmRequestFanoutWorkerTest {
         verify(logRepository).save(captor.capture());
         assertEquals(10L, captor.getValue().getAlarmRequestId());
         assertEquals(7L, captor.getValue().getTargetUserId());
+        assertEquals("[warning] 경고 / 카메라 ", captor.getValue().getMessage());
     }
 }

@@ -1,6 +1,8 @@
 package com.vision.dto;
 
 import com.vision.entity.AlarmLog;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
@@ -18,12 +20,18 @@ public record AlarmLogDto(
         boolean acknowledged,
         Map<String, Object> metadata
 ) {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     public static AlarmLogDto from(AlarmLog alarmLog) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         if (alarmLog.getContext() != null && !alarmLog.getContext().isBlank()) {
-            for (String entry : alarmLog.getContext().split(";")) {
-                String[] pair = entry.split("=", 2);
-                if (pair.length == 2) metadata.put(pair[0], pair[1]);
+            try {
+                metadata.putAll(OBJECT_MAPPER.readValue(alarmLog.getContext(), new TypeReference<Map<String, Object>>() { }));
+            } catch (Exception ignored) {
+                for (String entry : alarmLog.getContext().split(";")) {
+                    String[] pair = entry.split("=", 2);
+                    if (pair.length == 2) metadata.put(pair[0], pair[1]);
+                }
             }
         }
         metadata.put("sourceType", alarmLog.getSourceType());
