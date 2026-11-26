@@ -11,6 +11,7 @@
 - [X] T004 [US1] 사용자 관리 목록에서 이름·이메일 표시값을 마스킹하고 전화번호 표시를 제외한다 in `frontend/src/components/UserManagement/UserManagementGrid.tsx`
 - [X] T005 [US1] 알람 관리 수신자 이름 표시를 공통 마스킹 규칙에 연결한다 in `frontend/src/pages/AlarmManagement.tsx`
 - [X] T006 [US1] 백엔드 알람 수신자 DTO 매핑에 마스킹 정책을 적용한다 in `backend/src/main/java/com/vision/service/AlarmManagementService.java`
+- [X] T006a [US1] 알람 템플릿·SSE·이메일·Teams 렌더링 메시지의 개인정보를 마스킹한다 in `backend/src/main/java/com/vision/service/AlarmTemplateRenderer.java`
 
 ## 3단계: 예외 화면
 
@@ -23,3 +24,4 @@
 - [X] T010 [P] 마스킹 규칙 단위 테스트를 추가한다 in `backend/src/test/java/com/vision/util/PrivacyMaskingTest.java`
 - [X] T011 [P] 프론트엔드 마스킹 규칙 테스트를 추가한다 in `frontend/src/utils/__tests__/privacyMasking.test.ts`
 - [X] T012 백엔드 테스트와 프론트엔드 빌드를 실행하고 수동 검증 체크리스트를 갱신한다 in `specs/036-privacy-masking/quickstart.md`
+- [X] T013 알람 메시지 개인정보 마스킹 단위 테스트를 추가한다 in `backend/src/test/java/com/vision/util/AlarmMessageMaskingTest.java`

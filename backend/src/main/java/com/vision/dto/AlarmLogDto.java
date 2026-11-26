@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import com.vision.util.PrivacyMasking;
 
 /** Alarm log payload shared by the notification bell and alarm list. */
 public record AlarmLogDto(
@@ -26,11 +27,12 @@ public record AlarmLogDto(
         Map<String, Object> metadata = new LinkedHashMap<>();
         if (alarmLog.getContext() != null && !alarmLog.getContext().isBlank()) {
             try {
-                metadata.putAll(OBJECT_MAPPER.readValue(alarmLog.getContext(), new TypeReference<Map<String, Object>>() { }));
+                Map<String, Object> rawMetadata = OBJECT_MAPPER.readValue(alarmLog.getContext(), new TypeReference<Map<String, Object>>() { });
+                rawMetadata.forEach((key, value) -> metadata.put(key, PrivacyMasking.alarmVariable(key, value)));
             } catch (Exception ignored) {
                 for (String entry : alarmLog.getContext().split(";")) {
                     String[] pair = entry.split("=", 2);
-                    if (pair.length == 2) metadata.put(pair[0], pair[1]);
+                    if (pair.length == 2) metadata.put(pair[0], PrivacyMasking.alarmVariable(pair[0], pair[1]));
                 }
             }
         }
@@ -42,7 +44,7 @@ public record AlarmLogDto(
                 modelProcessId,
                 alarmLog.getAlarmType(),
                 alarmLog.getSeverity(),
-                alarmLog.getMessage(),
+                PrivacyMasking.alarmMessage(alarmLog.getMessage()),
                 alarmLog.getOccurredTimestamp().toInstant(ZoneOffset.UTC).toString(),
                 "Y".equalsIgnoreCase(alarmLog.getAcknowledgedStatus()),
                 metadata

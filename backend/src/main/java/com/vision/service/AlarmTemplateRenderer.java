@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vision.entity.AlarmRequest;
 import com.vision.entity.AlarmRule;
+import com.vision.util.PrivacyMasking;
 import lombok.Getter;
 
 import java.time.ZoneOffset;
@@ -29,17 +30,17 @@ public class AlarmTemplateRenderer {
 
     private Map<String, Object> context(AlarmRequest request) {
         Map<String, Object> values = new LinkedHashMap<>();
-        values.put("message", request.getMessage());
+        values.put("message", PrivacyMasking.alarmMessage(request.getMessage()));
         values.put("alarmCode", request.getAlarmCode());
         values.put("severity", request.getSeverity());
         values.put("occurredAt", request.getOccurredTimestamp() == null ? null : request.getOccurredTimestamp().toInstant(ZoneOffset.UTC).toString());
         if (request.getContext() != null && !request.getContext().isBlank()) {
             try {
-                values.putAll(objectMapper.readValue(request.getContext(), new TypeReference<Map<String, Object>>() { }));
+                values.putAll(maskVariables(objectMapper.readValue(request.getContext(), new TypeReference<Map<String, Object>>() { })));
             } catch (Exception ignored) {
                 for (String entry : request.getContext().split(";")) {
                     String[] pair = entry.split("=", 2);
-                    if (pair.length == 2) values.put(pair[0], pair[1]);
+                    if (pair.length == 2) values.put(pair[0], PrivacyMasking.alarmVariable(pair[0], pair[1]));
                 }
             }
         }
@@ -47,6 +48,12 @@ public class AlarmTemplateRenderer {
         values.putIfAbsent("sourceId", values.get("sourceId"));
         values.putIfAbsent("modelProcessId", values.get("modelProcessId"));
         return values;
+    }
+
+    private Map<String, Object> maskVariables(Map<String, Object> values) {
+        Map<String, Object> masked = new LinkedHashMap<>();
+        values.forEach((key, value) -> masked.put(key, PrivacyMasking.alarmVariable(key, value)));
+        return masked;
     }
 
     private String render(String template, Map<String, Object> context, String fallback) {
