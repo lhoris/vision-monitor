@@ -70,6 +70,7 @@ export default function AlarmManagement() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [recipientDrafts, setRecipientDrafts] = useState<RecipientDraft[]>([]);
+  const [templateExpanded, setTemplateExpanded] = useState(true);
   const [selectedRecipientRowId, setSelectedRecipientRowId] = useState<
     number | null
   >(null);
@@ -652,11 +653,24 @@ export default function AlarmManagement() {
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                 {t("alarmManagement.templateTitle")}
               </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                {t("alarmManagement.templateVariables")}
-              </span>
+              <div className="flex items-center gap-2">
+                {templateExpanded && (
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {t("alarmManagement.templateVariables")}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setTemplateExpanded((expanded) => !expanded)}
+                  className="rounded border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+                >
+                  {templateExpanded
+                    ? t("alarmManagement.templateCollapse")
+                    : t("alarmManagement.templateExpand")}
+                </button>
+              </div>
             </div>
-            {selectedType ? (
+            {templateExpanded && selectedType ? (
               <div className="grid max-h-[420px] gap-3 overflow-auto">
                 <label className="text-xs text-slate-600 dark:text-slate-300">
                   {t("alarmManagement.appTemplate")}
@@ -711,9 +725,9 @@ export default function AlarmManagement() {
                   />
                 </label>
               </div>
-            ) : (
+            ) : templateExpanded ? (
               <p className="text-xs text-slate-500">{t("alarmManagement.selectPrompt")}</p>
-            )}
+            ) : null}
           </div>
         </section>
         <section className="relative flex min-h-0 flex-col border border-[#9dcced] bg-white dark:border-slate-700 dark:bg-slate-800">

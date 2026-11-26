@@ -262,6 +262,8 @@
     "masterHint": "알람 기준을 선택하면 오른쪽에서 수신자와 채널을 설정할 수 있습니다.",
     "detail": "수신자 및 채널 설정",
     "templateTitle": "채널별 메시지 템플릿",
+    "templateCollapse": "접기",
+    "templateExpand": "펼치기",
     "templateVariables": "기본 변수는 예시이며, 모델 metadata에 전달한 임의의 변수도 사용할 수 있습니다.",
     "appTemplate": "앱 알람 메시지",
     "appTemplatePlaceholder": "예: {{message}} (비워두면 기본 메시지 사용)",
