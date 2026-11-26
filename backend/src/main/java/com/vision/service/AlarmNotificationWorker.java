@@ -6,6 +6,7 @@ import com.vision.entity.UserAccount;
 import com.vision.repository.AlarmLogRepository;
 import com.vision.repository.UserAccountRepository;
 import com.vision.sse.AlarmEventPublisher;
+import com.vision.util.PrivacyMasking;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,9 +50,11 @@ public class AlarmNotificationWorker {
                 MimeMessageHelper helper = new MimeMessageHelper(message, false, java.nio.charset.StandardCharsets.UTF_8.name());
                 helper.setFrom(emailFrom);
                 helper.setTo(target.getEmail());
-                helper.setSubject(alarm.getEmailSubject() == null || alarm.getEmailSubject().isBlank()
-                        ? alarm.getAlarmType() : alarm.getEmailSubject());
+                String subject = alarm.getEmailSubject() == null || alarm.getEmailSubject().isBlank()
+                        ? alarm.getAlarmType() : alarm.getEmailSubject();
+                helper.setSubject(PrivacyMasking.alarmMessage(subject));
                 String body = alarm.getEmailBody() == null ? alarm.getMessage() : alarm.getEmailBody();
+                body = PrivacyMasking.alarmMessage(body);
                 helper.setText(body == null ? "" : body, body != null && body.matches("(?s).*<\\/?[a-zA-Z][^>]*>.*"));
                 mailSender.send(message);
                 alarmLogRepository.markEmailSent(alarm.getId());

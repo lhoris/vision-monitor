@@ -25,3 +25,4 @@
 - [X] T011 [P] 프론트엔드 마스킹 규칙 테스트를 추가한다 in `frontend/src/utils/__tests__/privacyMasking.test.ts`
 - [X] T012 백엔드 테스트와 프론트엔드 빌드를 실행하고 수동 검증 체크리스트를 갱신한다 in `specs/036-privacy-masking/quickstart.md`
 - [X] T013 알람 메시지 개인정보 마스킹 단위 테스트를 추가한다 in `backend/src/test/java/com/vision/util/AlarmMessageMaskingTest.java`
+- [X] T014 이메일 발송 직전 제목·본문에 개인정보 마스킹을 적용한다 in `backend/src/main/java/com/vision/service/AlarmNotificationWorker.java`
