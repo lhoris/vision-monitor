@@ -8,6 +8,7 @@ import {
   Toast,
 } from "@/components/Common";
 import { useDataGridSelection } from "@/hooks/useDataGridSelection";
+import { maskName } from "@/utils/privacyMasking";
 import {
   alarmManagementService,
   type AlarmChannelPolicy,
@@ -858,7 +859,7 @@ export default function AlarmManagement() {
                                 .filter((item) => item.userId === row.userId)
                                 .map((item) => (
                                   <option key={item.userId} value={item.userId}>
-                                    {item.name} ({item.username})
+                                    {maskName(item.name)} ({item.username})
                                   </option>
                                 ))}
                             {data.users
@@ -875,13 +876,13 @@ export default function AlarmManagement() {
                               )
                               .map((item) => (
                                 <option key={item.userId} value={item.userId}>
-                                  {item.name} ({item.username})
+                                  {maskName(item.name)} ({item.username})
                                 </option>
                               ))}
                           </select>
                         ) : (
                           <>
-                            {user?.name}{" "}
+                            {maskName(user?.name)}{" "}
                             <span className="text-xs text-slate-500">
                               ({user?.username})
                             </span>

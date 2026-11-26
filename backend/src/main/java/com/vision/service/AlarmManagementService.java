@@ -10,6 +10,7 @@ import com.vision.repository.AlarmRuleRepository;
 import com.vision.repository.AlarmRuleUserRepository;
 import com.vision.repository.UserAccountRepository;
 import com.vision.repository.UserAuthorizationRepository;
+import com.vision.util.PrivacyMasking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,7 +73,7 @@ public class AlarmManagementService {
                 .put(detail.getAlarmRuleId(), toChannelPolicy(detail)));
         List<AlarmManagementDto.UserSetting> users = userRepository.findAll().stream()
                 .filter(user -> !"Y".equalsIgnoreCase(user.getDataEndStatus()))
-                .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(),
+                .map(user -> new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), PrivacyMasking.name(user.getName()),
                         effectiveSettings(user, rules, settings)))
                 .toList();
         return users;
@@ -200,7 +201,7 @@ public class AlarmManagementService {
                     AlarmRule rule = rules.get(detail.getAlarmRuleId());
                     if (rule != null) settings.put(rule.getCode(), toChannelPolicy(detail));
                 });
-        return new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), user.getName(), settings);
+        return new AlarmManagementDto.UserSetting(user.getId(), user.getUsername(), PrivacyMasking.name(user.getName()), settings);
     }
 
     private List<AlarmRule> alarmRules() {

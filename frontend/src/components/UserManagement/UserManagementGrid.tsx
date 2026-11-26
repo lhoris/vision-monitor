@@ -12,6 +12,7 @@ import type {
 } from '@/types/userManagement'
 import { ConfirmDialog, DataGridActionButton, DataGridTable, DataGridToolbar, GridColumnFilterRow, type GridColumnFilter } from '@/components/Common'
 import { useDataGridSelection } from '@/hooks/useDataGridSelection'
+import { maskPrivacyValue } from '@/utils/privacyMasking'
 import { canPerformDangerAction, validateUserMutation, type UserValidationErrors } from '@/services/userManagementValidation'
 import { accountStatusLabel, employmentStatusLabel } from './UserStatusBadge'
 
@@ -843,7 +844,7 @@ export function UserManagementGrid({
         }}
         className={`${cellValueClass} ${selectedCellStateClass(row.rowId, field)} ${disabled ? 'cursor-default text-slate-500 dark:text-slate-400' : ''}`}
       >
-        {row[field]}
+        {field === 'name' || field === 'email' || field === 'phone' ? maskPrivacyValue(field, row[field]) : row[field]}
       </button>
     )
   }
@@ -1079,7 +1080,6 @@ export function UserManagementGrid({
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.loginAccount')}</th>
               <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.name')}</th>
               <th className={`w-[190px] ${headerCellClass}`}>{t('userManagement.email')}</th>
-              <th className={`w-[140px] ${headerCellClass}`}>{t('userManagement.phone')}</th>
               <th className={`w-[150px] ${headerCellClass}`}>{t('userManagement.department')}</th>
               <th className={`w-[80px] ${headerCellClass}`}>반</th>
               <th className={`w-[90px] ${headerCellClass}`}>{t('userManagement.password')}</th>
@@ -1096,7 +1096,6 @@ export function UserManagementGrid({
                 <td className={bodyCellClass}>{renderTextCell(row, 'username', t('userManagement.loginAccount'), Boolean(row.id))}{renderError(row, 'username')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'name', t('userManagement.name'))}{renderError(row, 'name')}</td>
                 <td className={bodyCellClass}>{renderTextCell(row, 'email', t('userManagement.email'))}{renderError(row, 'email')}</td>
-                <td className={bodyCellClass}>{renderTextCell(row, 'phone', t('userManagement.phone'))}{renderError(row, 'phone')}</td>
                 <td className={bodyCellClass}>{renderDepartmentSelectCell(row)}{renderError(row, 'department')}</td>
                 <td className={bodyCellClass}>{renderClassSelectCell(row)}</td>
                 <td className={`${bodyCellClass} text-center`}>
