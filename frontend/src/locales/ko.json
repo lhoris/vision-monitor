@@ -265,6 +265,7 @@
     "templateCollapse": "접기",
     "templateExpand": "펼치기",
     "templateVariables": "기본 변수는 예시이며, 모델 metadata에 전달한 임의의 변수도 사용할 수 있습니다.",
+    "templateBindingGuide": "바인딩 방법: 모델 서버가 metadata에 zoneName: A-01을 전달하면 템플릿에 {{zoneName}}으로 입력합니다. 기본 변수와 임의 metadata 변수를 사용할 수 있으며, 값이 없으면 빈 문자열로 처리됩니다.",
     "appTemplate": "앱 알람 메시지",
     "appTemplatePlaceholder": "예: {{message}} (비워두면 기본 메시지 사용)",
     "emailSubjectTemplate": "이메일 제목",

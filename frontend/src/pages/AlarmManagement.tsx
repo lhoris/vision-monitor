@@ -672,6 +672,9 @@ export default function AlarmManagement() {
             </div>
             {templateExpanded && selectedType ? (
               <div className="grid max-h-[420px] gap-3 overflow-auto">
+                <p className="rounded bg-slate-50 px-2 py-2 text-[11px] leading-5 text-slate-500 dark:bg-slate-900/60 dark:text-slate-400">
+                  {t("alarmManagement.templateBindingGuide")}
+                </p>
                 <label className="text-xs text-slate-600 dark:text-slate-300">
                   {t("alarmManagement.appTemplate")}
                   <textarea

@@ -264,6 +264,7 @@
     "templateCollapse": "Collapse",
     "templateExpand": "Expand",
     "templateVariables": "The listed variables are examples; any variable sent in model metadata can also be used.",
+    "templateBindingGuide": "Binding: when the model server sends zoneName: A-01 in metadata, use {{zoneName}} in the template. Built-in and custom metadata variables are supported; missing values become blank.",
     "appTemplate": "App alert message",
     "appTemplatePlaceholder": "Example: {{message}} (blank uses the default message)",
     "emailSubjectTemplate": "Email subject",
