@@ -34,9 +34,7 @@ public record AlarmLogDto(
                 }
             }
         }
-        metadata.put("sourceType", alarmLog.getSourceType());
-        metadata.put("sourceId", alarmLog.getSourceId());
-        Long modelProcessId = isModelSource(alarmLog.getSourceType()) ? parseLongValue(alarmLog.getSourceId()) : null;
+        Long modelProcessId = parseLongValue(metadata.get("modelProcessId"));
         Long cameraId = parseLongValue(metadata.get("cameraId"));
         return new AlarmLogDto(
                 alarmLog.getId(),
@@ -49,10 +47,6 @@ public record AlarmLogDto(
                 "Y".equalsIgnoreCase(alarmLog.getAcknowledgedStatus()),
                 metadata
         );
-    }
-
-    private static boolean isModelSource(String sourceType) {
-        return sourceType != null && sourceType.toUpperCase().contains("MODEL");
     }
 
     private static Long parseLongValue(Object value) {

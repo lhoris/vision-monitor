@@ -11,7 +11,7 @@
 
 ## AlarmRequest
 
-발생한 알람의 원장이다. `context`는 JSON 문자열로 저장하며 템플릿 치환의 입력이 된다.
+발생한 알람의 원장이다. `context`는 JSON 문자열로 저장하며 템플릿 치환의 입력이 된다. 발생 유형과 모델 프로세스 ID는 별도 source 컬럼이 아니라 context 파라미터로 관리한다.
 
 ## AlarmLog
 

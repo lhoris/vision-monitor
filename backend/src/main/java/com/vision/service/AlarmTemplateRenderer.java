@@ -32,10 +32,6 @@ public class AlarmTemplateRenderer {
         values.put("message", request.getMessage());
         values.put("alarmCode", request.getAlarmCode());
         values.put("severity", request.getSeverity());
-        values.put("sourceType", request.getSourceType());
-        values.put("sourceId", request.getSourceId());
-        values.put("modelProcessId", request.getSourceType() != null && request.getSourceType().toUpperCase().contains("MODEL")
-                ? request.getSourceId() : null);
         values.put("occurredAt", request.getOccurredTimestamp() == null ? null : request.getOccurredTimestamp().toInstant(ZoneOffset.UTC).toString());
         if (request.getContext() != null && !request.getContext().isBlank()) {
             try {
@@ -47,6 +43,9 @@ public class AlarmTemplateRenderer {
                 }
             }
         }
+        values.putIfAbsent("sourceType", values.get("sourceType"));
+        values.putIfAbsent("sourceId", values.get("sourceId"));
+        values.putIfAbsent("modelProcessId", values.get("modelProcessId"));
         return values;
     }
 

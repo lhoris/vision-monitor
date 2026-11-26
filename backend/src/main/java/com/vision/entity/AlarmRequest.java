@@ -36,12 +36,6 @@ public class AlarmRequest extends BaseAudit {
     @Column(name = "ALARM_MESSAGE", nullable = false, length = 2000)
     private String message;
 
-    @Column(name = "ALARM_SOURCE_TYPE", length = 50)
-    private String sourceType;
-
-    @Column(name = "ALARM_SOURCE_ID", length = 100)
-    private String sourceId;
-
     @Column(name = "SOURCE_EVENT_ID", nullable = false, length = 100)
     private String sourceEventId;
 

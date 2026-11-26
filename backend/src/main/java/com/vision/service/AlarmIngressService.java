@@ -45,8 +45,6 @@ public class AlarmIngressService {
         alarmRequest.setAlarmCode(rule.getCode());
         alarmRequest.setSeverity(request.severity() == null ? "info" : request.severity());
         alarmRequest.setMessage(request.description() == null ? "" : request.description());
-        alarmRequest.setSourceType(request.source());
-        alarmRequest.setSourceId(request.modelProcessId() == null ? null : String.valueOf(request.modelProcessId()));
         alarmRequest.setSourceEventId(sourceEventId);
         alarmRequest.setAlarmGroupId("GROUP".equalsIgnoreCase(rule.getAcknowledgementScope()) ? UUID.randomUUID().toString() : null);
         alarmRequest.setOccurredTimestamp(occurredAt);
@@ -62,11 +60,15 @@ public class AlarmIngressService {
 
     private String context(AlarmIngressRequest request) {
         Map<String, Object> metadata = request.metadata();
-        if (metadata == null || metadata.isEmpty()) return null;
+        Map<String, Object> values = new java.util.LinkedHashMap<>();
+        if (metadata != null) values.putAll(metadata);
+        if (request.source() != null) values.putIfAbsent("sourceType", request.source());
+        if (request.modelProcessId() != null) values.putIfAbsent("modelProcessId", request.modelProcessId());
+        if (values.isEmpty()) return null;
         try {
-            return objectMapper.writeValueAsString(metadata);
+            return objectMapper.writeValueAsString(values);
         } catch (Exception exception) {
-            return metadata.entrySet().stream()
+            return values.entrySet().stream()
                     .map(entry -> entry.getKey() + "=" + String.valueOf(entry.getValue()))
                     .collect(Collectors.joining(";"));
         }

@@ -21,10 +21,8 @@ class AlarmTemplateRendererTest {
         request.setAlarmCode("MODEL_WARNING");
         request.setSeverity("warning");
         request.setMessage("이상 징후");
-        request.setSourceType("MODEL");
-        request.setSourceId("12");
         request.setOccurredTimestamp(LocalDateTime.now());
-        request.setContext("{\"cameraId\":1}");
+        request.setContext("{\"cameraId\":1,\"sourceType\":\"MODEL\",\"modelProcessId\":12}");
 
         AlarmTemplateRenderer.Rendered rendered = new AlarmTemplateRenderer().render(rule, request);
 

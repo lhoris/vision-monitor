@@ -61,8 +61,6 @@ public class AlarmRequestFanoutWorker {
                     .alarmType(request.getAlarmCode())
                     .severity(request.getSeverity())
                     .message(rendered.getAppMessage())
-                    .sourceType(request.getSourceType())
-                    .sourceId(request.getSourceId())
                     .alarmGroupId(request.getAlarmGroupId())
                     .sourceEventId(request.getSourceEventId() + ":" + recipient.getId())
                     .occurredTimestamp(request.getOccurredTimestamp())

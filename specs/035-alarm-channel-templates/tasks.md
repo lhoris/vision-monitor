@@ -23,6 +23,7 @@
 - [x] T013 `backend/src/main/java/com/vision/service/AlarmIngressService.java`에서 metadata를 JSON으로 저장
 - [x] T014 `backend/src/main/java/com/vision/service/AlarmRequestFanoutWorker.java`에서 기준 템플릿을 수신자별로 렌더링해 로그 저장
 - [x] T015 `backend/src/main/java/com/vision/dto/AlarmLogDto.java`에 채널별 결과 필드 연결
+- [x] T015a `backend/src/main/resources/db/migration/V047__remove_alarm_source_columns.sql`에서 요청·로그의 원천 유형/ID 컬럼 제거
 
 ## Phase 4: fallback 및 검증 (US3)
 
