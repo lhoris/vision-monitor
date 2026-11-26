@@ -261,7 +261,7 @@
     "masterHint": "Select an alarm rule to configure its recipients and channels on the right.",
     "detail": "Recipients and channels",
     "templateTitle": "Channel message templates",
-    "templateVariables": "Variables: {{message}}, {{alarmCode}}, {{cameraId}}, {{modelProcessId}}, {{occurredAt}}",
+    "templateVariables": "The listed variables are examples; any variable sent in model metadata can also be used.",
     "appTemplate": "App alert message",
     "appTemplatePlaceholder": "Example: {{message}} (blank uses the default message)",
     "emailSubjectTemplate": "Email subject",

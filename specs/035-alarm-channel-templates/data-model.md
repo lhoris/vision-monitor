@@ -19,4 +19,4 @@
 
 ## TemplateContext
 
-기본 변수: `message`, `alarmCode`, `severity`, `sourceType`, `sourceId`, `modelProcessId`, `occurredAt` 및 요청 metadata 키.
+기본 변수는 `message`, `alarmCode`, `severity`, `sourceType`, `sourceId`, `modelProcessId`, `occurredAt`이며, 이 목록에 한정하지 않고 요청 metadata의 임의 키를 추가 변수로 사용할 수 있다.
