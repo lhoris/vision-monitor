@@ -292,6 +292,10 @@ export default function AlarmManagement() {
                 description: type.description,
                 category: type.category,
                 acknowledgementScope: type.acknowledgementScope,
+                appMessageTemplate: type.appMessageTemplate,
+                emailSubjectTemplate: type.emailSubjectTemplate,
+                emailBodyTemplate: type.emailBodyTemplate,
+                teamsMessageTemplate: type.teamsMessageTemplate,
               })
             : alarmManagementService.updateType(type.id, {
                 name: type.name,
@@ -300,6 +304,10 @@ export default function AlarmManagement() {
                 description: type.description,
                 category: type.category,
                 acknowledgementScope: type.acknowledgementScope,
+                appMessageTemplate: type.appMessageTemplate,
+                emailSubjectTemplate: type.emailSubjectTemplate,
+                emailBodyTemplate: type.emailBodyTemplate,
+                teamsMessageTemplate: type.teamsMessageTemplate,
               }),
         ),
       );
