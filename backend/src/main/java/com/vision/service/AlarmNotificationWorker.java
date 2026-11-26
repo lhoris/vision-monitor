@@ -21,6 +21,7 @@ public class AlarmNotificationWorker {
     private final AlarmEventPublisher alarmEventPublisher;
 
     @Scheduled(fixedDelayString = "${vision.alarm.worker.fixed-delay-ms:5000}")
+    @Transactional
     public void processPendingChannels() {
         processAppChannels();
         processUnavailableChannel("email");
