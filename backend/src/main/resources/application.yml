@@ -2,6 +2,18 @@ spring:
   application:
     name: vision-monitor
 
+  mail:
+    host: ${SMTP_HOST:1.209.183.51}
+    port: ${SMTP_PORT:25}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+
   datasource:
     # Company DB: jdbc:mariadb://172.18.86.78:3306/PPWIRE
     # Home DB: jdbc:mariadb://192.168.0.11:3306/PPWIRE
@@ -36,6 +48,9 @@ mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
 
 vision:
+  alarm:
+    email:
+      from: ${SMTP_FROM:pd0a5661@posco.com}
   sse:
     model-server-key: ${MODEL_SERVER_KEY:yEICEeuuLY5Uh5LfX83SEyjQtu8vD/MqRUzMg8Fs5qU=}
   model-monitoring:

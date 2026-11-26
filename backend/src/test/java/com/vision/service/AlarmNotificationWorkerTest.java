@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ class AlarmNotificationWorkerTest {
     @Mock AlarmLogRepository alarmLogRepository;
     @Mock UserAccountRepository userRepository;
     @Mock AlarmEventPublisher alarmEventPublisher;
+    @Mock JavaMailSender mailSender;
 
     @Test
     void sendsPendingAppAlarmAndMarksItSent() {
@@ -35,7 +37,7 @@ class AlarmNotificationWorkerTest {
         when(alarmLogRepository.findTop100ByEmailStatusOrderByIdAsc("PENDING")).thenReturn(List.of());
         when(alarmLogRepository.findTop100ByTeamsStatusOrderByIdAsc("PENDING")).thenReturn(List.of());
 
-        new AlarmNotificationWorker(alarmLogRepository, userRepository, alarmEventPublisher).processPendingChannels();
+        new AlarmNotificationWorker(alarmLogRepository, userRepository, alarmEventPublisher, mailSender).processPendingChannels();
 
         verify(alarmEventPublisher).publishToUser("admin", com.vision.dto.AlarmLogDto.from(alarm));
         verify(alarmLogRepository).markAppSent(10L);

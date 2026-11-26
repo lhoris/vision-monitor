@@ -59,6 +59,10 @@ public interface AlarmLogRepository extends JpaRepository<AlarmLog, Long> {
     int markEmailFailed(@Param("id") Long id);
 
     @Modifying
+    @Query("update AlarmLog a set a.emailStatus = 'SENT' where a.id = :id and a.emailStatus = 'PROCESSING'")
+    int markEmailSent(@Param("id") Long id);
+
+    @Modifying
     @Query("update AlarmLog a set a.teamsStatus = 'FAILED' where a.id = :id and a.teamsStatus = 'PROCESSING'")
     int markTeamsFailed(@Param("id") Long id);
 }
