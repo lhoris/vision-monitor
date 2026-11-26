@@ -657,7 +657,7 @@ export default function AlarmManagement() {
               </span>
             </div>
             {selectedType ? (
-              <div className="grid max-h-64 gap-2 overflow-auto">
+              <div className="grid max-h-[420px] gap-3 overflow-auto">
                 <label className="text-xs text-slate-600 dark:text-slate-300">
                   {t("alarmManagement.appTemplate")}
                   <textarea
@@ -668,7 +668,7 @@ export default function AlarmManagement() {
                       })
                     }
                     placeholder={t("alarmManagement.appTemplatePlaceholder")}
-                    className="mt-1 h-16 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                    className="mt-1 h-24 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
                   />
                 </label>
                 <label className="text-xs text-slate-600 dark:text-slate-300">
@@ -694,7 +694,7 @@ export default function AlarmManagement() {
                       })
                     }
                     placeholder={t("alarmManagement.emailBodyPlaceholder")}
-                    className="mt-1 h-20 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                    className="mt-1 h-36 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
                   />
                 </label>
                 <label className="text-xs text-slate-600 dark:text-slate-300">
@@ -707,7 +707,7 @@ export default function AlarmManagement() {
                       })
                     }
                     placeholder={t("alarmManagement.teamsTemplatePlaceholder")}
-                    className="mt-1 h-16 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                    className="mt-1 h-24 w-full resize-y rounded border border-slate-300 p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
                   />
                 </label>
               </div>
