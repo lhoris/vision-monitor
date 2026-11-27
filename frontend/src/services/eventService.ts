@@ -73,29 +73,27 @@ class EventService {
     cameraId: number,
     range: CameraEventsRange
   ): Promise<ApiResponse<CameraEventListDto>> {
-    const result = await this.getCameraEvents(cameraId, {
-      startDate: range.from,
-      endDate: range.to,
-      severity: range.severity,
-      status: range.status,
-    })
-    if (!result) {
+    try {
+      const alarms = getResponseData(await apiClient.get<Event[]>('/alarms'), [])
+        .map(normalizeEvent)
+        .filter((event) => event.cameraId === cameraId)
+        .filter((event) => {
+          const occurredAt = event.timestamp.getTime()
+          const from = new Date(range.from).getTime()
+          const to = new Date(range.to).getTime()
+          return Number.isFinite(occurredAt) && (!Number.isFinite(from) || occurredAt >= from) && (!Number.isFinite(to) || occurredAt <= to)
+        })
+        .filter((event) => !range.severity || event.severity === range.severity)
+        .filter((event) => !range.status || (range.status === 'acknowledged' ? event.acknowledged : !event.acknowledged))
+      const content = alarms.map(toCameraEventDto)
       return {
-        success: false,
-        error: 'CAMERA_EVENTS_UNAVAILABLE',
-        message: 'Camera event history is unavailable.',
+        success: true,
+        data: { content, page: 0, size: content.length, totalElements: content.length },
         timestamp: new Date().toISOString(),
       }
-    }
-    return {
-      success: true,
-      data: {
-        content: result.content.map(toCameraEventDto),
-        page: result.currentPage,
-        size: result.pageSize,
-        totalElements: result.totalElements,
-      },
-      timestamp: new Date().toISOString(),
+    } catch (error) {
+      console.error('Failed to fetch camera alarm history:', error)
+      return { success: false, error: 'CAMERA_EVENTS_UNAVAILABLE', message: 'Camera event history is unavailable.', timestamp: new Date().toISOString() }
     }
   }
 

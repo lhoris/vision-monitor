@@ -268,6 +268,22 @@ export default function CameraFocus() {
         return
       }
 
+      const listedEvent = events.find((event) => event.eventId === routeState.selectedEventId)
+      if (listedEvent) {
+        const occurredAt = new Date(listedEvent.occurredAt)
+        if (!Number.isNaN(occurredAt.getTime())) {
+          setSelectedEventDetail({
+            ...listedEvent,
+            playbackHint: {
+              from: new Date(occurredAt.getTime() - 10_000).toISOString(),
+              to: new Date(occurredAt.getTime() + 20_000).toISOString(),
+              seekAt: occurredAt.toISOString(),
+            },
+          })
+          return
+        }
+      }
+
       const response = await focusApiService.getEventDetail(routeState.selectedEventId)
       if (!cancelled) {
         setSelectedEventDetail(response.success ? response.data ?? null : null)
@@ -279,7 +295,7 @@ export default function CameraFocus() {
     return () => {
       cancelled = true
     }
-  }, [routeState.selectedEventId])
+  }, [events, routeState.selectedEventId])
 
   function handleModeChange(mode: CameraFocusMode) {
     const nextParams = new URLSearchParams(searchParams)
@@ -304,6 +320,27 @@ export default function CameraFocus() {
   }
 
   function handleSelectEvent(eventId: number) {
+    const selectedEvent = events.find((event) => event.eventId === eventId)
+    if (selectedEvent) {
+      const center = new Date(selectedEvent.occurredAt).getTime()
+      if (Number.isFinite(center)) {
+        const width = Math.max(1, recordingWorkArea.to - recordingWorkArea.from)
+        const nextDate = toDateInputValue(new Date(center))
+        const dayStart = `${nextDate}T00:00:00`
+        const centerSeconds = dateToDaySeconds(selectedEvent.occurredAt, dayStart)
+        const from = Math.max(0, Math.min(centerSeconds - width / 2, DAY_SECONDS - width))
+        const nextWorkArea = { from, to: from + width }
+        const nextRange = {
+          from: formatTimelineDateTime(daySecondsToDate(nextWorkArea.from, dayStart)),
+          to: formatTimelineDateTime(daySecondsToDate(nextWorkArea.to, dayStart)),
+          eventId,
+        }
+        setRecordingDate(nextDate)
+        setRecordingWorkArea(nextWorkArea)
+        setRecordingDraftRange(nextRange)
+        setPlaybackRange(nextRange)
+      }
+    }
     const nextParams = new URLSearchParams(searchParams)
     nextParams.set('mode', 'recording')
     nextParams.set('eventId', String(eventId))
